@@ -4,7 +4,7 @@
 // part's own height (`leg`, or 3 m for treads: world/hangar/mech.js hipOf) and the feet on the ground. Hard surface over a gold ball in
 // an ivory cup at every joint (vfx/mechs/parts/kit.js), the limbs lathed over the interstitial's column, their plates curved round them.
 //   clayLegs    biped: lathed thighs and thick calves, a knee cop, a curved greave wrapping the shin, a rounded sabaton of lames with its
-//               toe cap; swung as two pendulums on the stride; the kusazuri's tassets a skirt of curved plates round the pelvis
+//               toe cap; swung as two pendulums on the stride; the kusazuri riding the thighs; the codpiece a Lachryma tank in its guard
 //   springLegs  reverse joint: a thigh thrown forward, a long shin back to a high heel, the metatarsal down to three toes and a spur;
 //               a coiled bronze spring round the knee's axle, its piston beside it
 //   crabLegs    tetrapod: four legs off a broad pelvis plate, their knees raised above the body, tapering to points; a crawl, the
@@ -25,7 +25,7 @@
 import * as THREE from 'three';
 import { Piece } from '../../garden/decorpieces/kit.js';
 import { MECH_LOOK as L, plate, sidePlate, shell, seam, ball, jointBall, aimOf, threadGeometry, band, curved } from './kit.js';
-import { blend, carve, ellipsoid, capsule } from './sdf.js';
+import { blend, carve, meet, ellipsoid, capsule } from './sdf.js';
 import { sideSculpt, aoTone, socket, limbS } from './arms.js';
 import { DANTIAN } from './cores.js';
 
@@ -37,16 +37,46 @@ const up = (prof) => [...prof].reverse();
 /** A plate curved round a limb's front (phi 0 +- half), from its own unit profile, between unit heights y0 and y1, scaled sc. */
 const wrap = (P, prof, y0, y1, half, sc, c, k = 1.1, th = 0.09, mid = 0) => P.geo(curved(band(up(prof), y0, y1, k, 8), th, mid - half, mid + half, 14), { sc, c });
 
-/** The biped's and the reverse joint's pelvis: a rounded hip shell with its belt, the codpiece, the hips' sculpted sockets. (The
+/** The codpiece tank (South, 2026-11-02: "making the male mecha's secondary lachryma tank a codpiece? I think its only fair we make
+ *  both genders of mecha exaggerated"): a glass Lachryma tank (its radius, its centre in the pelvis's frame) cupped in a heavy
+ *  sculpted porcelain guard and seen through an almond window in its front; well below the dantian's lip, so the two never read as
+ *  one. The legs register it (`codpiece`) so the hydraulics fill and slosh it. */
+export const COD_TANK = { r: 0.44, at: [0, -0.46, 1.3] };
+/** The guard as one sculpt: a teardrop cup swelling down out of the hip shell and narrowing below (so the thighs pass it at full
+ *  stride), a fauld's lip flared round its top under the belt, a keel down its middle below the window, its lower tip rolled; the tank
+ *  seen through an almond window cut in its front, a bead round the window. */
+export const COD_GUARD = (() => {
+  const [, ty, tz] = COD_TANK.at, r = COD_TANK.r;
+  const narrow = (y) => 1 - 0.6 * Math.min(1, Math.max(0, -(y - ty) / (r + 0.2))); // (its width falling away below the tank's middle)
+  const cupE = ellipsoid([0, ty - 0.04, tz - 0.06], [r + 0.11, r + 0.24, r + 0.16]);
+  const outer = (x, y, z) => { const k = narrow(y); return cupE(x / k, y, z) * k; };
+  let f = blend(0.16, outer, ellipsoid([0, -0.08, 0.92], [0.46, 0.26, 0.32])); // (swelling down out of the hip shell)
+  f = blend(0.06, f, ellipsoid([0, -0.02, 0.98], [0.64, 0.08, 0.4])); // (the fauld's lip, flared under the belt)
+  f = blend(0.06, f, capsule([0, ty - r * 0.75, tz + r + 0.04], [0, ty - r - 0.24, tz + 0.06], 0.065)); // (the keel)
+  f = blend(0.05, f, ellipsoid([0, ty - r - 0.26, tz + 0.02], [0.17, 0.07, 0.17])); // (its lower tip, rolled)
+  f = meet(0.06, f, (x, y, z) => (y < -0.25 ? 1.02 - z : -1)); // (its back cut away below the hip shell: the thighs swing past it)
+  const almond = (x, y) => Math.max(Math.hypot(x - 0.13, y - ty) - 0.4, Math.hypot(x + 0.13, y - ty) - 0.4); // (a vesica 0.54 wide, 0.76 high)
+  const bead = (x, y, z) => Math.max(Math.abs(almond(x, y)) - 0.04, Math.abs(outer(x, y, z)) - 0.055, tz - z);
+  f = blend(0.025, f, bead); // (the bezel's bead round the window)
+  f = carve(0.03, f, (x, y, z) => Math.max(almond(x, y), tz + 0.05 - z)); // (the window)
+  return carve(0.03, f, (x, y, z) => Math.hypot(x, y - ty, z - tz) - r - 0.025); // (the tank's seat)
+})();
+/** The codpiece: the guard (one sculpt) and the tank in it (the skin's heart, the glass). */
+function codpiece(S) {
+  const { r, at } = COD_TANK;
+  sideSculpt(S.p, COD_GUARD, [[-0.7, -1.25, 0.6], [0.7, 0.12, 1.95]], 0.05, { key: 'legs.codguard5', tone: aoTone(COD_GUARD, L.pale, L.mid, 0.07) });
+  S.core.ball(r * 0.36, { at, c: 0xffffff }, 18, 12); S.j.ball(r, { at, c: 0xffffff }, 30, 20);
+}
+
+/** The biped's and the reverse joint's pelvis: a rounded hip shell with its belt, the codpiece tank, the hips' sculpted sockets. (The
  *  kusazuri ride the thighs: `faulds`.) */
 function pelvis(S, hipX, F) {
-  const { p, g } = S, w = F.hips;
+  const { p } = S, w = F.hips;
   p.lathe([[0.001, -0.62], [0.8, -0.58], [1.22, -0.3], [1.32, 0.05], [1.24, 0.3], [1.12, 0.4], [1.02, 0.37], [0.88, 0.2], [0.62, -0.05], [0.001, -0.12]], { sc: [w, 1, 0.72], c: L.pale }, 32); // (the hip shell, its top a socket the dantian sits in)
   S.trim.ring(1.08, 0.04, { at: [0, 0.4, 0], sc: [w, 1, 0.73], c: L.trimM }, 40, 5); // (the socket's lip, in trim: no gold wire round the dantian)
   S.trim.geo(curved([[1.3, 0.14], [1.34, 0.24], [1.28, 0.34]], 0.1, 0.42, PI * 2 - 0.42, 6), { sc: [w, 1, 0.74], c: L.trimM }); // (the belt, open at the front under the dantian)
-  p.geo(plate([[-0.34, 0.3], [0.34, 0.3], [0.27, -0.64], [0, -0.78], [-0.27, -0.64]], 0.22, 0.06), { at: [0, 0, 0.92], c: L.mid }); // (the codpiece)
+  codpiece(S);
   for (const [s] of SIDES) socket(p, 0.58 * F.joint, { at: [s * hipX, -0.35, 0] });
-  seam(g, [[0.1, 0.28, 1.06], [-0.07, 0.0, 1.06], [0.09, -0.32, 1.05], [-0.03, -0.64, 1.0]], 0.03);
 }
 /** The kusazuri as three lames hung on the outside of a thigh, riding its joint (so the stride never drives one into the thigh or
  *  the hip ball: South, 2026-11-02, "the tassets are clipping into the hips"), each curved round the thigh rad out from the joint's
@@ -85,7 +115,7 @@ export const LEG_LOOKS = {
     const len = (H - 0.35 - FH - 0.1) / (Math.cos(A[0]) + Math.cos(A[0] + A[1])), T = len, Sh = len;
     const TH = [[0.5, -0.12], [0.84, -0.22], [0.92, -0.42], [0.86, -0.56], [0.76, -0.58], [0.76, -0.62], [0.84, -0.64], [0.74, -0.88], [0.58, -1.0]];
     const SH = [[0.46, -0.12], [0.78, -0.22], [0.96, -0.42], [0.9, -0.6], [0.78, -0.62], [0.78, -0.66], [0.84, -0.68], [0.66, -0.9], [0.46, -1.0]];
-    put(ctx.pelvis, (S) => pelvis(S, hipX, F));
+    put(ctx.pelvis, (S) => pelvis(S, hipX, F)); ballAt('codpiece', ctx.pelvis, COD_TANK.r, COD_TANK.at); // (the codpiece's tank: the hydraulics fill it)
     const legs = {};
     for (const [s, k] of SIDES) {
       const hip = joint(`hip${k}`, ctx.pelvis, [s * hipX, -0.35, 0], [A[0], 0, s * 0.04]);
@@ -126,7 +156,7 @@ export const LEG_LOOKS = {
   springLegs(ctx) {
     const { H, joint, put, ballAt } = ctx, FF = ctx.F, F = 0.36, A = [-0.65, 1.45, -1.05], T = 2.3, M = 1.9, hipX = 1.05, r = FF.limb, j = FF.joint;
     const Sh = (H - 0.35 - F - 0.09 - T * Math.cos(A[0]) - M * Math.cos(A[0] + A[1] + A[2])) / Math.cos(A[0] + A[1]);
-    put(ctx.pelvis, (S) => pelvis(S, hipX, FF));
+    put(ctx.pelvis, (S) => pelvis(S, hipX, FF)); ballAt('codpiece', ctx.pelvis, COD_TANK.r, COD_TANK.at);
     const legs = {};
     for (const [s, k] of SIDES) {
       const hip = joint(`hip${k}`, ctx.pelvis, [s * hipX, -0.35, 0], [A[0], 0, s * 0.05]);

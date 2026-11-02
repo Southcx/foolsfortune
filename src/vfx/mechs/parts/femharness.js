@@ -24,66 +24,13 @@
 // belt and the Order of the Garter's sash; Haydee's and Elemental Gearbolt's suits read as panel lines.
 //
 //   HARNESSES[id] = { label, pelvis(S, P), chest(S, C), bust(S, B), thigh(S, T) }   (each optional)   HARNESS_IDS   harnessOf(F)
-//   P { f, at(q), surf (femlegs.js surfAt), open(q) (true where a point is in the hip ball's opening) }
-//   C { on(phi, y, k), top, choker (Vector3), shoulder [x, y] }   B { s, r, z0, rim(a, k), local(v), choker }   T { s, len, rAt(y) }
+//   P { f, at(q), surf (femlegs.js surfAt), open(q) (true where a point is in the hip ball's opening), nrm(q) }
+//   C { on(phi, y, k), top, choker (Vector3), shoulderY, under, nrm(p) }   B { s, r, z0, zb, rim(a, k), local(v), choker, shoulder, nrm(p) }   T { s, len, rAt(y) }
+// The second sets, drawn with the flat lines (ribbons, bows, rope, beads), are femharness2.js's; the drawing kit is femharnesskit.js.
 // ---------------------------------------------------------------------------------------
-import * as THREE from 'three';
-import { MECH_LOOK as L, tube } from './kit.js';
-
-const PI = Math.PI;
-const smooth = (u) => { u = Math.max(0, Math.min(1, u)); return u * u * (3 - 2 * u); };
-/** A gold line along points (a fine tube in the gold piece). */
-const gilt = (S, pts, r = 0.024, n = 0) => { if (pts.length > 2) tube(S.g, pts, r, L.gold, n || pts.length * 3); };
-/** A trim line along points (the trim piece's bead). */
-const trim = (S, pts, r = 0.018, c = L.trimM, n = 0) => { if (pts.length > 2) tube(S.trim, pts, r, c, n || pts.length * 3); };
-
-/** Points on the pelvis's surface along a path [[phi, y], ...] (phi round the pelvis's axis from the front, + toward +X), each a ray
- *  from the axis at that height; a sample dropped where it falls into the hip ball's opening or jumps off its neighbours (a crease, a
- *  cleft), so a line never dives. `lift` pushes it a hair off the surface. */
-function onPelvis(P, path, lift = 0.006) {
-  const raw = path.map(([phi, y]) => { const d = [Math.sin(phi), 0, Math.cos(phi)], q = P.surf(P.f, [0, y, 0], d); return q && !P.open(q) ? [q[0] + d[0] * lift, q[1], q[2] + d[2] * lift] : null; });
-  const r = raw.map((q) => (q ? Math.hypot(q[0], q[2]) : null)), out = [];
-  for (let i = 0; i < raw.length; i++) {
-    if (!raw[i]) continue;
-    const near = [r[i - 1], r[i + 1]].filter((v) => v != null), m = near.length ? near.reduce((a, b) => a + b, 0) / near.length : r[i];
-    if (Math.abs(r[i] - m) < 0.18) out.push(P.at(raw[i]));
-  }
-  return out;
-}
-/** A path [[phi, y]] sampled along phi from a to b by y(phi). */
-const path = (a, b, y, n = 28) => Array.from({ length: n + 1 }, (_, i) => { const p = a + ((b - a) * i) / n; return [p, y(p)]; });
-const mirror = (pts) => pts.map(([x, y, z]) => [-x, y, z]);
-/** A line laid on both sides of the pelvis (the +X half's path, mirrored). */
-const both = (P, pth, draw) => { const q = onPelvis(P, pth); draw(q); draw(mirror(q)); return q; };
-
-/** The high-cut leg line: from the crotch's front up over the crest (`top` at phi 1.45) and down under the cheek behind. */
-const legLine = (top = 0.42, front = -0.78, back = -1.02) => (phi) => phi < 1.45
-  ? front + (top - front) * Math.sin((PI / 2) * smooth((phi - 0.1) / 1.35)) ** 1.3
-  : back + (top - back) * Math.cos((PI / 2) * smooth((phi - 1.45) / 1.6)) ** 1.15;
-/** A slung belt's line: low at the front, over the crest at the side, at the sacrum behind. */
-const beltLine = (front = -0.12, side = 0.34, back = 0.12) => (phi) => phi < 1.6 ? front + (side - front) * Math.sin((PI / 2) * (phi / 1.6)) ** 1.5 : back + (side - back) * Math.cos((PI / 2) * ((phi - 1.6) / (PI - 1.6)));
-
-/** The plates' gold rims (the bezel's ring round the tank: B.rim), whole. */
-const plateRim = (S, B, r = 0.03) => gilt(S, Array.from({ length: 41 }, (_, i) => B.rim((i / 40) * PI * 2)), r, 64);
-/** A line from a point on a plate's rim to a point in the chest's frame (the gorget's, a shoulder's), lifted over the chest on its way. */
-const strap = (S, B, from, to, r = 0.03, lift = 0.12, c = null) => {
-  const C = B.local(to), pts = [0, 0.35, 0.7, 1].map((k) => { const m = new THREE.Vector3(...from).lerp(C, k); m.z += lift * Math.sin(PI * k); return m.toArray(); });
-  if (c == null) gilt(S, pts, r, 16); else trim(S, pts, r, c, 16);
-};
-/** A plate's underwire from its outer top round its foot to its inner top (the halter's), its two ends returned. */
-function underwire(S, B, r = 0.035) {
-  const s = B.s, out = s > 0 ? 0 : PI, inA = s > 0 ? PI : 0, a0 = out + (s > 0 ? 0.95 : -0.95), a1 = inA + (s > 0 ? -1.15 : 1.15);
-  const sweep = (s > 0 ? -1 : 1) * (2 * PI - Math.abs(a1 - a0)), wire = [];
-  for (let i = 0; i <= 24; i++) wire.push(B.rim(a0 + sweep * (i / 24)));
-  gilt(S, wire, r, 40); return [wire[0], wire[wire.length - 1], (a) => B.rim(a0 + sweep * a)];
-}
-/** A small gold coin standing on a surface at q facing out along n (a flat disc). */
-const _qa = new THREE.Quaternion(), _ea = new THREE.Euler(), _up = new THREE.Vector3(0, 1, 0), _nv = new THREE.Vector3();
-const coin = (S, q, n, r = 0.05) => { _qa.setFromUnitVectors(_up, _nv.set(...n).normalize()); _ea.setFromQuaternion(_qa); S.g.cyl(r, r, 0.014, { at: q, rot: [_ea.x, _ea.y, _ea.z], c: L.gold }, 10); };
-/** The outward normal of the pelvis's surface at its point q (the ray's own direction, near enough for a coin). */
-const outOf = (q) => { const l = Math.hypot(q[0], q[2]) || 1; return [q[0] / l, -0.25, q[2] / l]; };
-/** A spiral in (phi, y) round a centre, from radius r0 in to r1 over `turns`. */
-const spiral = (pc, yc, r0, r1, turns, a0 = 0, kphi = 1, n = 30) => Array.from({ length: n + 1 }, (_, i) => { const t = i / n, a = a0 + t * turns * PI * 2, r = r0 + (r1 - r0) * t; return [pc + Math.cos(a) * r * kphi, yc + Math.sin(a) * r]; });
+import { MECH_LOOK as L } from './kit.js';
+import { MORE_HARNESSES } from './femharness2.js';
+import { smooth, gilt, trim, onPelvis, path, mirror, both, legLine, beltLine, plateRim, strap, underwire, coin, outOf, spiral, PI } from './femharnesskit.js';
 
 export const HARNESSES = {
   halter: { label: 'halter',
@@ -174,5 +121,6 @@ export const HARNESSES = {
     bust(S, B) { plateRim(S, B); const s = B.s; strap(S, B, B.rim(PI / 2 + s * 0.6), B.shoulder, 0.028); },
   },
 };
+Object.assign(HARNESSES, MORE_HARNESSES); // (the second sets: femharness2.js)
 export const HARNESS_IDS = Object.keys(HARNESSES);
 export const harnessOf = (F) => HARNESSES[F?.harness] || HARNESSES.halter;

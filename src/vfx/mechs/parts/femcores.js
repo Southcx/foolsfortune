@@ -48,6 +48,9 @@ const TORSO = {
     spine: { lo: DANTIAN.lo, hi: 1.24, r: DANTIAN.r, rt: 0.3 }, ribs: { top: 1.36, cell: 0.058 } },
 };
 
+/** The chest plates as tanks: the sphere's radius against the plate's (k), its centre out from the plate's foot (out, a share of
+ *  its radius), the bezel's plane over the foot (zb m) and how far the foot sits under the chest's skin (sink m). */
+const TANK = { k: 0.92, out: 0.5, zb: 0.03, sink: 0.07 };
 /** A torso in a figure (femlegs.js FIGURES): its chest plates the figure's, its wasp waist drawn in or let out by `waistK`, eased
  *  back to the profile as drawn up the ribs. */
 const figured = (T, fig) => ({ ...T, fig: fig.id, bust: { ...T.bust, ...fig.bust },
@@ -184,32 +187,39 @@ export function femCoreLook(id, F) {
   /** The plates' harness (femharness.js: the halter's gold underwires run up to a gorget's point at the collar, or another set) is
    *  drawn in each plate's own frame so it rides the plate's spring; its lines up to the collar end at `choker` (the chest's frame). */
   const choker = new THREE.Vector3(0, top - 0.2, profAt(P, top - 0.2) * T.d + 0.07), Hn = harnessOf(F);
+  /** The chest's outward normal near a point on it (the plan's own, read off a small step out), and a tank's (out of its glass,
+   *  flattened toward the plate's face on the bezel). */
+  const chestN = ([x, y, z]) => { const phi = Math.atan2(x, z), a = on(phi, y, 1.0), b = on(phi, y, 1.12), d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], l = Math.hypot(...d) || 1; return d.map((v) => v / l); };
+  const tankN = (z0) => ([x, y, z]) => { const d = [x, y, Math.max(z - z0, 0) + 0.35], l = Math.hypot(...d) || 1; return d.map((v) => v / l); };
   const shoulderPt = (s) => new THREE.Vector3(...on(s * 0.9, T.shoulderY + 0.06, 1.06));
   /** The plates as Lachryma tanks (South, 2026-11-02: "we can turn the chest into lachryma tanks as well, since they're already
    *  sphere shaped"): each a glass sphere (the `j` shell) round a skin's heart, seated in a rolled porcelain bezel where it leaves the
    *  chest, its back buried in the chest; the parts body registers it (`tank`) so the hydraulics fill it with your Lachryma and slosh
    *  it as the plate bounces (vfx/mechs/hydraulics.js). The bezel stands at `zb` over the plate's foot, the harness's rim on it. */
-  const tank = { r: B.r, at: [0, 0, B.h - B.r] }, zb = B.h * 0.24, rb = Math.sqrt(Math.max(0.01, B.r ** 2 - (zb - tank.at[2]) ** 2));
+  // proud (South, 2026-11-02: "increase the protrusion ... they read a little flat"): the plate's foot at the chest's skin, the sphere's
+  // centre `TANK.out` of its radius out from it, so about three quarters of the glass stands clear and reads in profile; a little
+  // smaller than the plate was (`TANK.k`) so the two bezels stay apart at the sternum
+  const rt = B.r * TANK.k, tank = { r: rt, at: [0, 0, rt * TANK.out] }, zb = TANK.zb, rb = Math.sqrt(Math.max(0.01, rt ** 2 - (zb - tank.at[2]) ** 2));
   const bust = {
-    at: (s) => [s * B.x, B.y, front(B.x) - B.h * 0.3],
+    at: (s) => [s * B.x, B.y, front(B.x) - TANK.sink],
     rot: (s) => [0.12, s * 0.32, 0],
     tank,
     build(S, s) {
-      const z0 = tank.at[2], r = B.r;
+      const z0 = tank.at[2], r = rt;
       S.core.ball(r * 0.36, { at: tank.at, c: 0xffffff }, 18, 12); S.j.ball(r, { at: tank.at, c: 0xffffff }, 28, 18); // (the heart; the glass)
       // the bezel: a rolled porcelain ring round the glass where it leaves the chest, its skirt run back into the chest
-      S.p.geo(shell([[rb - 0.015, zb + 0.05], [rb + 0.02, zb + 0.075], [rb + 0.07, zb + 0.05], [rb + 0.09, zb], [rb + 0.08, zb - 0.08], [rb + 0.03, zb - 0.22]], 40).rotateX(PI / 2), { c: L.pale });
+      S.p.geo(shell([[rb - 0.015, zb + 0.05], [rb + 0.02, zb + 0.075], [rb + 0.07, zb + 0.05], [rb + 0.09, zb], [rb + 0.08, zb - 0.08], [rb + 0.02, zb - 0.24], [rb - 0.08, zb - 0.4]], 40).rotateX(PI / 2), { c: L.pale });
       if (id === 'kilnCore') S.trim.geo(shell([[rb + 0.075, zb - 0.03], [rb + 0.095, zb - 0.05], [rb + 0.085, zb - 0.07]], 40).rotateX(PI / 2), { c: L.trimM });
       const at = new THREE.Vector3(...bust.at(s)), q = new THREE.Quaternion().setFromEuler(new THREE.Euler(...bust.rot(s))).invert();
       const local = (v) => v.clone().sub(at).applyQuaternion(q);
-      Hn.bust?.(S, { s, r, z0, choker, shoulder: shoulderPt(s), local, rim: (a, k = 1) => [Math.cos(a) * (rb + 0.055) * k, Math.sin(a) * (rb + 0.055) * k, zb + 0.07] });
+      Hn.bust?.(S, { s, r, z0, zb, choker, shoulder: shoulderPt(s), local, nrm: tankN(z0), rim: (a, k = 1) => [Math.cos(a) * (rb + 0.055) * k, Math.sin(a) * (rb + 0.055) * k, zb + 0.07] });
     },
   };
   return {
     mounts, prof: P, plan: W, bust,
     chest(S) {
       build(S); sockets(S);
-      collar(S); Hn.chest?.(S, { on, top, choker, shoulderY: T.shoulderY }); // (the harness's lines on the chest itself)
+      collar(S); Hn.chest?.(S, { on, top, choker, shoulderY: T.shoulderY, under: U, nrm: chestN }); // (the harness's lines on the chest itself)
     },
     /** The waist column (in the waist's frame). Haydee's: a jointed spine piece, a skin ball at each end in its ivory socket (the
      *  pelvis's below, the ribcage's above), a porcelain drum between with a trim band. */

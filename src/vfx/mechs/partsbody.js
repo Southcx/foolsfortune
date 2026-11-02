@@ -38,7 +38,7 @@
 //   THE BACK     setCape(id) (vfx/mechs/capes.js CAPES: the drums' ring, the flame halo, Fujin's wind bag, the heavenly sash, the
 //   PIECE        knight's cape) worn at the shoulders and back clear of the cradle, laid out again whenever the frame is rebuilt or a
 //                part swapped; its cloth stepped in pose() with the chest plates' springs (the same frame time)
-//   THE RUNTIME  (world/hangar/mech.js's contract) arms[side] { pivot, hand, weapon, held (where a carried prop is parented) };
+//   THE RUNTIME  (world/hangar/mech.js's contract) arms[side] { pivot, hand, weapon, held (where a carried prop is parented), muzzle (where its weapon's shot leaves, or null) };
 //                partAt(part, out); pose({ ..., joints, holding, lean }) shows Dovina's joint states (progress/mechs/joints.js) by
 //                showJoints: fractured crazed and sagging, snapped HIDDEN with all past it (joints.js past; the runtime throws its own
 //                prop), mended once all are whole; `holding` hides that hand's weapon, `lean` tilts the body to a side
@@ -57,7 +57,7 @@
 //
 //   const B = new MechPartsBody(game, { form?, pauldron?, hip?, cape? })   B.build(stats) (progress/mechs/frame.js assemble)   B.group   B.joints   B.mats   B.height
 //   B.pose({ pos, yaw, gait, walk, kneel, armL, armR, sealed, barrier, lean, joints, holding, dt? })   B.jiggle(v)   BUST_SPRING   B.seat(out)   B.back(out)   B.hand(side, out)
-//   B.arms[side]   B.partAt(part, out)   B.showJoints(J, holding)   B.limbs (the same)   B.setForm(form)   B.setPauldron(id)   B.setHip(id)   B.setCape(id)   B.setFigure(id)   B.setHarness(id)
+//   B.arms[side]   B.partAt(part, out)   B.showJoints(J, holding)   B.limbs (the same)   B.setForm(form)   B.setPauldron(id)   B.setHip(id)   B.setCape(id)   B.setFigure(id)   B.setHarness(id)   B.setGunblade(id)   B.setCradle(id)
 //   B.form   B.pauldron   B.hipId   B.capeId   B.cape
 //   B.equip(slot, id)   B.setJoint(id, state) -> { group, joint, slots } | null   B.mend()   B.state { [joint]: state }   B.dispose()
 //   B.fade(ratio) (the frame's fade: the camera's arm over its rest length, mechpilot.js camera; MECH_FADE)
@@ -67,14 +67,16 @@ import * as THREE from 'three';
 import { PARTS } from '../../progress/mechs/parts.js';
 import { assemble } from '../../progress/mechs/frame.js';
 import { past } from '../../progress/mechs/joints.js';
-import { MECH_LOOK as L, seg, bake, mechMaterials, crackNet, formOf } from './parts/kit.js';
+import { MECH_LOOK as L, seg, bake, mechMaterials, crackNet, formOf, profAt } from './parts/kit.js';
 import { headLookOf } from './parts/heads.js';
-import { coreLook, CRADLE, cradle, cradleParts, DANTIAN } from './parts/cores.js';
+import { coreLook, CRADLE, cradle, cradleParts, DANTIAN, GEN_TOP } from './parts/cores.js';
+import { CRADLE_IDS } from './parts/cradles.js';
 import { PAULDRONS } from './parts/pauldrons.js';
 import { armLookOf, gripAt } from './parts/arms.js';
 import { LEG_LOOKS } from './parts/legs.js';
 import { FEM_LEGS } from './parts/femlegs.js';
-import { WEAPON_LOOKS } from './parts/weapons.js';
+import { weaponLook } from './parts/weapons.js';
+import { GUNBLADE_IDS, GUNBLADE_DEFAULT } from './parts/gunblades.js';
 import { BOOSTER_LOOKS, GENERATOR_LOOKS, BACK_LOOKS } from './parts/backs.js';
 import { wearHelm, HELMS } from './helms.js';
 import { wearCape, CAPES } from './capes.js';
@@ -139,6 +141,7 @@ export class MechPartsBody {
     this.clear();
     if (stats?.form) this.form = stats.form;
     this.F = { ...formOf(this.form) }; this.form = this.F.id; if (this.F.fem) { this.F.figure = FIGURE_IDS.includes(this.figure) ? this.figure : 'd'; this.F.harness = HARNESS_IDS.includes(this.harness) ? this.harness : 'halter'; } // (the doll's figure and harness)
+    this.F.cradle = CRADLE_IDS.includes(this.cradleId) ? this.cradleId : CRADLE_IDS[0]; // (the cradle's mount, any form: parts/cradles.js)
     this.stats = stats?.parts ? stats : assemble(stats || {});
     this.sel = { ...this.stats.sel };
     for (const id of Object.keys(LIMB)) this.state[id] = 'whole';
@@ -197,7 +200,8 @@ export class MechPartsBody {
       for (const [s, k] of SIDES) j[`pauldron${k}`].position.set(s * M.shoulder[0], M.shoulder[1], 0);
       j.neck.position.set(0, M.neck[0], M.neck[1]);
       for (const [s, k] of SIDES) j[`shoulder${k}`].position.set(s * M.shoulder[0], M.shoulder[1], 0);
-      j.backMount.position.set(0, M.back[0], M.back[1]); j.generator.position.set(0, M.gen[0], M.gen[1]);
+      j.backMount.position.set(0, M.back[0], M.back[1]);
+      { const gy = Math.min(M.gen[0], GEN_TOP), gz = gy < M.gen[0] && C.plan ? C.plan(0, gy, -profAt(C.prof, gy))[2] - 0.5 : M.gen[1]; j.generator.position.set(0, gy, gz); } // (the generator held under the cradle's mount, any form: cores.js GEN_TOP)
       j.booster.position.set(0, M.boost[0], M.boost[1]); j.plug.position.set(0, M.plug[0], M.plug[1]);
       j.cradle.position.set(0, CRADLE.at[0], M.cradleZ ?? CRADLE.at[1]);
       for (const [s, k] of SIDES) { // (a feminine core's chest plates, each on its own joint for the spring)
@@ -206,6 +210,7 @@ export class MechPartsBody {
         this.put(b, 'core', (S) => C.bust.build(S, s));
         if (C.bust.tank) this.ballAt('core', `bust${k}`, b, C.bust.tank.r, C.bust.tank.at); // (a chest plate's Lachryma tank: the hydraulics fill and slosh it)
       }
+      if (C.tank) this.ballAt('core', 'tank', j.chest, C.tank.r, C.tank.at); // (the hero's chest tank: the hydraulics fill and slosh it)
       if (this.sel.arms) this.layoutArms();
     } else if (slot === 'head') {
       const H = headLookOf(id, this.F);
@@ -227,8 +232,10 @@ export class MechPartsBody {
       for (const [s, k] of SIDES) { j[`pauldron${k}`].scale.setScalar(this.F.pauldron); if (fn) this.put(j[`pauldron${k}`], 'pauldron', (S) => fn(S, s)); }
       this.owned.pauldron ||= [];
     } else if (slot === 'weaponL' || slot === 'weaponR') {
-      const k = slot.slice(-1), s = k === 'L' ? 1 : -1, W = WEAPON_LOOKS[id];
+      const k = slot.slice(-1), s = k === 'L' ? 1 : -1, W = weaponLook(id, this.gunbladeId);
       if (W) this.put(j[`grip${k}`], slot, (S) => W.build(S, s));
+      if (W?.muzzle) { const m = new THREE.Group(); m.name = `mech.muzzle${k}`; m.position.set(W.muzzle[0] * s, W.muzzle[1], W.muzzle[2]); j[`grip${k}`].add(m); this.owned[slot].push(m); } // (where its shot leaves: parts/gunblades.js)
+      if (this.arms[k]) this.arms[k].muzzle = this.owned[slot].find((m) => m.name === `mech.muzzle${k}`) || null;
       if (this.armLook) this.buildHand(k);
     } else if (slot === 'booster') {
       const B = BOOSTER_LOOKS[id]; if (B) this.put(j.booster, slot, (S) => B(S, this.core?.mounts.boost[2] ?? 0.85));
@@ -250,7 +257,7 @@ export class MechPartsBody {
   /** A kick to the chest plates' springs (m/s, up positive): a hit's flinch, the mount's thump, a stomp the runtime knows of. */
   jiggle(v = 1.5) { for (const k of ['L', 'R']) this.bounce[k].v += v * (k === 'R' ? 0.92 : 1); this.hydraulics?.kick(v); }
   buildHand(k) {
-    const s = k === 'L' ? 1 : -1, slot = `hand${k}`, W = WEAPON_LOOKS[this.sel[`weapon${k}`]];
+    const s = k === 'L' ? 1 : -1, slot = `hand${k}`, W = weaponLook(this.sel[`weapon${k}`], this.gunbladeId);
     this.takeDown(slot);
     this.put(this.joints[`hand${k}`], slot, (S) => this.armLook.hand(S, s, W ? W.grip : 'open'));
     const A = this.armLook, wr = A.wristBall ?? A.wrist * this.F.joint * (this.F.fem ? 1 : this.F.gauntlet || 1); // (the wrist's bottle, arms.js hand())
@@ -324,7 +331,15 @@ export class MechPartsBody {
   }
   /** The doll's figure ('a' | 'b' | 'c': the fem parts' FIGURES), the frame rebuilt in it; a hero keeps its own. */
   setFigure(id) { const f = FIGURE_IDS.includes(id) ? id : 'd'; if (f === this.figure) return this; this.figure = f; if (this.body && this.F?.fem) this.rebuild(); return this; }
+  /** The blade weapon's look (parts/gunblades.js GUNBLADE_IDS: 'gunblade' the default, 'pepperbox', 'bayonet', 'wheellock', 'gatling', 'saya'), each hand holding it rebuilt. */
+  setGunblade(id) {
+    const g = GUNBLADE_IDS.includes(id) ? id : GUNBLADE_DEFAULT; if (g === (this.gunbladeId ?? GUNBLADE_DEFAULT)) return this; this.gunbladeId = g;
+    if (this.body) for (const k of ['L', 'R']) if (this.sel[`weapon${k}`] === 'greatBlade') this.buildSlot(`weapon${k}`);
+    return this;
+  }
   /** The doll's harness (femharness.js HARNESSES: 'halter', 'highcut', 'coins', 'cords', 'nouveau', 'garters'), the frame rebuilt in it. */
+  /** The cradle's mount ('boss' | 'sunk' | 'kiln' | 'yoke' | 'halo': parts/cradles.js CRADLE_IDS), the frame rebuilt with it; any form. */
+  setCradle(id) { const c = CRADLE_IDS.includes(id) ? id : CRADLE_IDS[0]; if (c === (this.cradleId ?? CRADLE_IDS[0])) return this; this.cradleId = c; if (this.body) this.rebuild(); return this; }
   setHarness(id) { const h = HARNESS_IDS.includes(id) ? id : 'halter'; if (h === this.harness) return this; this.harness = h; if (this.body && this.F?.fem) this.rebuild(); return this; }
   /** Both pauldrons swapped in place (PAULDRONS: 'default', 'none', 'osode', 'zaku', 'wing', 'spaulder', 'disc', 'horn'). */
   setPauldron(id) { this.pauldron = PAULDRONS[id] !== undefined ? id : 'default'; if (this.body) { this.buildSlot('pauldron'); if (this.capeId) this.wearCape(); } return this; }
@@ -384,7 +399,7 @@ export class MechPartsBody {
     const sw = Math.sin(PI * gait) * walk;
     this.body.position.y = -(this.legs?.drop(kneel) ?? 0) - Math.abs(sw) * (this.stats.legType === 'tank' ? 0 : 0.2);
     j.waist.rotation.x += kneel * 0.22; this.body.rotation.z = lean; // (lean: a leg gone, the frame kneels to that side)
-    const W = { L: WEAPON_LOOKS[this.sel.weaponL], R: WEAPON_LOOKS[this.sel.weaponR] };
+    const W = { L: weaponLook(this.sel.weaponL, this.gunbladeId), R: weaponLook(this.sel.weaponR, this.gunbladeId) };
     for (const [s, k] of SIDES) {
       const a = k === 'L' ? armL : armR, swing = (s > 0 ? sw : -sw) * 0.18;
       j[`shoulder${k}`].rotation.x += -1.35 * a + swing - kneel * 0.4;

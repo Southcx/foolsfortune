@@ -6,14 +6,18 @@
 // wrist keeps it level as the arm swings up (`level`, 0 it follows the arm, 1 it stays pointing ahead).
 //   fist        the bare hand clenched (its knuckle guard and gold studs are the hand's own, arms.js)
 //   bigGun      THE PSYGUN's giant form: a six-chambered cylinder over the carry handle, a long barrel with a gold muzzle, a stock back
-//   greatBlade  the Sondelass's cutlass: a curved porcelain blade with a gold edge line and a fuller in trim, a gold basket guard
+//   greatBlade  the blade weapon (PARTS `greatBlade`): worn as a gunblade's variant (vfx/mechs/parts/gunblades.js: the gunblade, the
+//               Sondelass's cutlass with a revolver in its basket and a barrel along its back, the default; the pepperbox, bayonet,
+//               wheellock, gatling and saya), chosen by the mech's style (`gunblade`), read through `weaponLook(id, gunblade)`
 // Prior art: Medabots' arm weapons (the weapon is the arm: Metabee's revolver, Rokusho's sword); Armored Core's arm units; Gundam's
 // beam rifle and its carry handle; the seven tools' own looks (docs/GLOSSARY.md section 2).
 //
-//   WEAPON_LOOKS[id] = { grip: 'fist' | 'hold', level 0..1, build(S, s) }
+//   WEAPON_LOOKS[id] = { grip: 'fist' | 'hold', level 0..1, muzzle? [x, y, z] (where a shot leaves, in the grip's frame), build(S, s) }
+//   weaponLook(partId, gunblade) -> the look a weapon part is drawn in (the blade weapon's: its gunblade's variant)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { MECH_LOOK as L, plate, sidePlate, shell, seam, labTone, ball } from './kit.js';
+import { MECH_LOOK as L, sidePlate, shell, seam, labTone } from './kit.js';
+import { GUNBLADES, GUNBLADE_DEFAULT } from './gunblades.js';
 
 const PI = Math.PI;
 /** A shell along +Z (a profile [[r, z], ...] lathed round Z). */
@@ -25,7 +29,7 @@ export const WEAPON_LOOKS = {
     build() { /* (the hand clenches; its knuckle guard is the hand's own: vfx/mechs/parts/arms.js) */ },
   },
   bigGun: {
-    grip: 'hold', level: 1,
+    grip: 'hold', level: 1, muzzle: [0, 1.15, 5.85],
     build(S) {
       const { p, g, l } = S;
       S.core.cyl(0.14, 0.14, 1.3, { rot: [PI / 2, 0, 0], c: L.coreD }, 12); // (the carry handle's haft)
@@ -42,18 +46,7 @@ export const WEAPON_LOOKS = {
       seam(g, [[0.46, 1.05, -0.4], [0.47, 0.85, 0.2], [0.46, 1.1, 0.8]], 0.025);
     },
   },
-  greatBlade: {
-    grip: 'hold', level: 0.35,
-    build(S) {
-      const { p, g, l } = S;
-      S.core.cyl(0.18, 0.2, 1.6, { rot: [PI / 2, 0, 0], at: [0, 0, -0.1], c: L.coreD }, 14); // (the hilt)
-      g.ball(0.3, { at: [0, 0, -1.0], c: L.gold }, 16, 12); // (the pommel)
-      g.geo(new THREE.TorusGeometry(0.7, 0.07, 6, 24, PI * 1.1).rotateZ(-PI * 0.05).rotateY(PI / 2), { at: [0, 0, 0.5], c: L.gold }); // (the basket guard)
-      g.cyl(0.55, 0.55, 0.14, { rot: [PI / 2, 0, 0], at: [0, 0, 0.75], c: L.bronze }, 20);
-      const blade = [[0.8, 0.28], [3.5, 0.45], [5.8, 0.85], [7.0, 1.45], [7.25, 1.85], [6.6, 1.0], [4.6, -0.32], [2.6, -0.42], [0.8, -0.32]];
-      p.geo(sidePlate(blade, 0.16, 0.05), { c: L.pale });
-      seam(g, [[0, -0.36, 0.9], [0, -0.42, 2.6], [0, -0.32, 4.6], [0, 1.0, 6.6], [0, 1.85, 7.25]], 0.05); // (the edge's gold line)
-      S.trim.geo(sidePlate([[1.2, 0.0], [4.2, 0.15], [5.6, 0.5], [5.5, 0.62], [4.1, 0.3], [1.2, 0.14]], 0.2, 0.02), { c: L.trimM }); // (the fuller)
-    },
-  },
+  ...GUNBLADES, // (the blade weapon's looks: vfx/mechs/parts/gunblades.js)
 };
+/** The look a weapon part is drawn in: the blade weapon wears its gunblade's variant (the default the gunblade), every other its own. */
+export const weaponLook = (id, gunblade = GUNBLADE_DEFAULT) => (id === 'greatBlade' ? GUNBLADES[gunblade] || GUNBLADES[GUNBLADE_DEFAULT] : WEAPON_LOOKS[id]);
