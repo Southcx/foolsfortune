@@ -147,16 +147,18 @@ export class TouchArc {
     const pair = beltPairOf(g), drawE = pair.find((e) => e.id === 'tool');
     this.belt = [...pair.filter((e) => e.id !== 'tool'), art].filter(Boolean); this.beltTap = drawE || this.belt.find((e) => e.id === 'skiff') || null;
     const has = (id) => {
-      if (id === 'use') return !!use;
+      if (id === 'use') return ctx === 'foot' || !!use; // (on foot A is never empty: USE with a thing in reach, else the kick, Dovina's ruling 2026-11-02)
       if (id === 'parry') return ctx === 'tool' || learned(g, 'kick');
       if (id === 'art') return !!art;
       if (id === 'draw') return !!this.beltTap;
       return true;
     };
     const P = placeOf(g), safe = { right: P.view.w - (P.safe?.r || 0), bottom: P.view.h - (P.safe?.b || 0) };
-    const slots = arcOf(ctx, has, safe).filter((s) => s.slot !== 'PICK' || this.picks.length);
+    let slots = arcOf(ctx, has, safe).filter((s) => s.slot !== 'PICK' || this.picks.length);
+    const kicks = ctx === 'foot' && !use; // (nothing to use: A is the kick, V's press, and E (the same press, the parry) stands down so no two tiles are one thing)
+    if (kicks) slots = slots.filter((s) => s.slot !== 'E').map((s) => (s.slot === 'A' ? { ...s, action: 'parry' } : s));
     const face = {
-      A: ctx === 'tool' ? { glyph: tc?.[0]?.glyph, word: tc?.[0]?.word, corner: tc?.[0]?.corner } : { label: use },
+      A: ctx === 'tool' ? { glyph: tc?.[0]?.glyph, word: tc?.[0]?.word, corner: tc?.[0]?.corner } : kicks ? { glyph: null, word: 'KICK' } : { label: use }, // (the kick's glyph is Calissa's to draw: its word until then)
       B: blinks ? { glyph: 'blink', word: 'BLINK' } : { glyph: 'dash', word: null },
       C: { glyph: 'jump', word: null }, D: tc ? { glyph: tc[1]?.glyph, word: tc[1]?.word } : null, E: { glyph: 'parry', word: 'PARRY' },
       F: art ? { glyph: art.glyph, word: String(art.word || '').length <= 6 ? art.word : null, charge: art.charge, dim: art.dim } : null, // (a long art's name would fall under the least type in one cell: its glyph alone)

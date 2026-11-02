@@ -8,14 +8,15 @@
 // the shutter): what owns a tap there keeps it.
 //
 // Prior art: the genre's tap-to-target (Diablo Immortal, Genshin Impact's tap on an enemy to lock on; Pokémon GO's tap to interact),
-// a double tap as the deliberate one so a stray tap never acts (iOS's double tap to zoom).
+// a double tap as the deliberate one so a stray tap never acts (iOS's double tap to zoom). One tap on the chevron itself is deliberate
+// already (it is drawn to be pointed at): it uses its thing, the second way (Dovina's ruling, 2026-11-02).
 //
 //   const D = new TouchDoubleTap(game, input, canvas)   D.update()   D.act(x, y) -> 'use' | 'lock' | 'release' | false   DTAP
 // ---------------------------------------------------------------------------------------
 
 /** ms: the longest a tap may be held; slop: px it may move and stay a tap; gap: real ms from the first tap's lift to the second's
  *  landing; near: px between the two taps; px: how near the tap a thing must be drawn; beat: F held this long, after this long. */
-export const DTAP = { ms: 250, slop: 14, gap: 320, near: 50, px: 70, beat: 50 };
+export const DTAP = { ms: 250, slop: 14, gap: 320, near: 50, px: 70, beat: 50, chev: 48 }; // (chev: px from the chevron's drawn point a single tap on it uses the thing)
 
 export class TouchDoubleTap {
   constructor(game, input, canvas) {
@@ -34,6 +35,7 @@ export class TouchDoubleTap {
   /** It lifted: a tap, and the second of two, names what is under it. */
   up(at, ms) {
     if (at.pinched || ms - (at.tapMs ?? -1e9) > DTAP.ms || Math.hypot(at.x - at.x0, at.y - at.y0) > DTAP.slop) { this.last = null; return false; }
+    if (this.onChevron(at.x, at.y)) { this.last = null; return 'use'; } // (one tap on the interact chevron itself uses its thing: the second way beside the double tap, Dovina's ruling 2026-11-02)
     const l = this.last;
     if (!l || at.tapMs - l.ms > DTAP.gap || Math.hypot(at.x - l.x, at.y - l.y) > DTAP.near) { this.last = { ms, x: at.x, y: at.y }; return false; }
     this.last = null;
@@ -49,6 +51,14 @@ export class TouchDoubleTap {
     if (!t) return false;
     if (L.target?.ref === t.ref) { L.release(); return 'release'; }
     L.set(t); return 'lock';
+  }
+  /** A single tap on the chevron where it is drawn: F pressed for the thing it points at (as the double tap's, a beat later). */
+  onChevron(x, y) {
+    const g = this.game, C = g.interact?.chevron;
+    if (!C?.group?.visible || !g.interact?.cur || g.cursorFree?.() || g.touch?.screenTaken?.() || g.touch?.tools?.lens) return false;
+    const p = C.group.position.clone().project(g.camera); if (p.z > 1) return false;
+    if (Math.hypot((p.x * 0.5 + 0.5) * innerWidth - x, (0.5 - p.y * 0.5) * innerHeight - y) > DTAP.chev) return false;
+    const t = performance.now(); this.steps.push([t + DTAP.beat, true], [t + 2 * DTAP.beat, false]); return true;
   }
   offerAt(x, y) {
     const g = this.game, cam = g.camera, W = innerWidth, H = innerHeight; let best = null, bd = DTAP.px;
