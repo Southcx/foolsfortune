@@ -3,14 +3,19 @@
 // mech wears beside its parts, chosen and kept: its form (the heroic frame, the doll or Drossel's, vfx/mechs/partsbody.js `setForm`), its pauldrons
 // (`setPauldron`, the parts' `PAULDRONS`) and its helm (vfx/mechs/helms.js `game.mechHelm`). Worn on the hangar's frame whenever it is
 // built or rebuilt; kept in the save (section `mechStyle`, the player's). Looks only: never a part's numbers, which are Dovina's.
+// A feminine form never shows a bare head: with no helm chosen it wears its own (kit.js FORMS `helm`, South, 2026-11-02: "we're
+// going with floating helmets for heads"), the kept choice still none.
 // Prior art: Armored Core's paint and decal page beside its assembly (a look kept apart from the parts), the Pneuka Jar's look
 // (vfx/pneukajar/look.js: slots of looks over one model, one save section).
 //
 //   installMechStyle(game) -> game.mechStyle { form, pauldron, helm, set(slot, id), wear(body) }   `/mechstyle form|pauldron|helm <id>`
 // ---------------------------------------------------------------------------------------
+import { formOf } from './parts/kit.js';
 
 /** The looks a frame starts in. */
 export const MECH_STYLE = { form: 'hero', pauldron: null, helm: null };
+/** The helm a frame wears: the one chosen, else its form's own (a feminine form's), else none. */
+const helmOf = (L) => L.helm ?? formOf(L.form).helm ?? null;
 
 export function installMechStyle(game) {
   const L = { ...MECH_STYLE, worn: null };
@@ -21,7 +26,7 @@ export function installMechStyle(game) {
     if (!B) return;
     if (B.form !== L.form) B.setForm?.(L.form);
     if ((B.pauldron ?? null) !== L.pauldron) B.setPauldron?.(L.pauldron);
-    if ((B.helm?.id ?? null) !== L.helm) game.mechHelm?.(L.helm);
+    const helm = helmOf(L); if ((B.helm?.id ?? null) !== helm) game.mechHelm?.(helm);
     L.worn = B; L.stamp = B.builtAt ?? B.group?.children?.length;
   };
   L.set = (slot, id) => {

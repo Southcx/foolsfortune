@@ -1,25 +1,31 @@
 // ---------------------------------------------------------------------------------------
 // A FEMININE MECH'S CORES (the part library's chests for the forms with `fem`, kit.js FORMS; asked for by cores.js `coreLook`): the
-// same three cores (clayCore, kilnCore, lightCore) built as a feminine torso, never the hero's chest slimmed. One dense lathed profile
-// (a wasp waist swelling to the ribcage and back in under the shoulders) pressed into its plan (`planOf`: an oval, the back flatter, the
-// bust two soft swells of the front shell), cut into a few long porcelain panels over the interstitial (a groove where Haydee has a
-// panel line, and no more), the sockets ivory so any head and arms seat, the back closing round the cradle's boss as every core does.
-//   haydee   (the `doll` form) Haydee's white android: an exaggerated hourglass, the ribcage narrow and the waist pinched to a wasp's,
-//            a full rounded chest shell split from the ribs at the underbust line, the abdomen one smooth plate, a low collar ring
+// same three cores (clayCore, kilnCore, lightCore) built as a feminine torso, never the hero's chest slimmed. The torso is the narrow
+// top of a pear (South, 2026-11-02: "pear shape over hourglass ... the complement to the male mecha"): the ribcage and the shoulders
+// narrower than the hips below them (femlegs.js), the waist drawn in, the weight low. One dense lathed profile pressed into its plan
+// (`planOf`: an oval, the back flatter, a low swell where the chest plates sit), cut into a few long porcelain panels over the
+// interstitial (a groove where Haydee has a panel line, and no more), the sockets ivory so any arms seat, the back closing round the
+// cradle's boss as every core does. No neck socket: the head slot is a helm floating over the collar (femheads.js).
+// THE CHEST PLATES (`bust`, South, 2026-11-02: kept at their size and given a spring "for comedic effect"): two armoured domes, each
+// built in its own joint's frame (bustL/R off the chest, +Z out of the plate), so the parts body can bounce them on a damped spring
+// (partsbody.js BUST_SPRING); plates and a gold rim, no anatomical detail.
+//   haydee   (the `doll` form) Haydee's white android: the ribcage narrow and the waist pinched, the chest plates full, the abdomen one
+//            smooth plate, a low collar ring
 //      clayCore   the plain shell: the chest, the ribs, the abdomen, a flank and a shoulder blade a side
 //      kilnCore   a darker underbust band and the abdomen cut into three corset bands, a trim rim at the collar
 //      lightCore  the flanks opened into four ribs over the lit core, a sternum strip
-//   drossel  Drossel von Flügel's: narrow and corseted, a small bust, sloping shoulders, a high Medici collar standing behind the neck,
-//            a stepped stomacher down the front to a point, fine gold bands, a brooch at the throat
+//   drossel  Drossel von Flügel's: narrow and corseted, small chest plates, sloping shoulders, a high Medici collar standing at the
+//            collar (no neck under it), a stepped stomacher down the front to a point, fine gold bands, a brooch at the throat
 //      clayCore   the corset's panels and its stomacher in trim, two gold bands
 //      kilnCore   the corset boned: eight trim bones round it, three gold bands, its lacing up the back in gold
 //      lightCore  a birdcage: the flanks openwork, thin ribs over the lit core, the stomacher and the collar kept
-// Prior art: Haydee (Haydee Interactive, 2016: the white android's hourglass and its sparse panel lines); Elemental Gearbolt (Alfa
-// System, 1997: the mechanical girls' smooth porcelain torsos); Drossel von Flügel of Fireball (Jinni's Animation Studios for Disney
-// Japan, 2008: the robot duchess's corseted white body and its aristocratic stance); the Victorian corset's busk, boning and
-// stomacher, the Medici collar, the cameo brooch; the ball-jointed doll's torso shell; the hero cores' sculpt (cores.js).
+// Prior art: Haydee (Haydee Interactive, 2016: the white android's sparse panel lines); Elemental Gearbolt (Alfa System, 1997: the
+// mechanical girls' smooth porcelain torsos); Drossel von Flügel of Fireball (Jinni's Animation Studios for Disney Japan, 2008: the
+// robot duchess's corseted white body); the Venus of Willendorf and the Jomon dogu (the narrow top over the low weight); the
+// Victorian corset's busk, boning and stomacher, the Medici collar, the cameo brooch; the ball-jointed doll's torso shell; the hero
+// cores' sculpt (cores.js).
 //
-//   femCoreLook(id, F) -> the same contract as cores.js coreLook: { mounts, prof, plan, chest(S), waist(S) }
+//   femCoreLook(id, F) -> the same contract as cores.js coreLook: { mounts, prof, plan, chest(S), waist(S), bust: { at(s), rot(s), build(S, s) } }
 // ---------------------------------------------------------------------------------------
 import { MECH_LOOK as L, band, profAt, panel, cup, ball, shell, sculpt, labTone, tube } from './kit.js';
 
@@ -30,10 +36,10 @@ const bump = (y, a, b) => (y <= a || y >= b ? 0 : Math.sin((PI * (y - a)) / (b -
 
 /** The torsos (r m, y m over the chest's base; the profile runs down past the base to cover the wasp waist). */
 const TORSO = {
-  haydee: { prof: [[0.4, -0.78], [0.38, -0.5], [0.4, -0.2], [0.46, 0.2], [0.62, 0.7], [0.86, 1.2], [1.05, 1.65], [1.14, 2.05], [1.16, 2.4], [1.1, 2.7], [0.92, 2.96], [0.6, 3.12], [0.34, 3.18]],
-    d: 0.74, back: 0.66, bust: { x: 0.48, y: 2.1, s: 0.2, amp: 0.78 }, under: 1.78, shoulderY: 2.62, cup: 0.42 },
-  drossel: { prof: [[0.4, -0.55], [0.34, -0.25], [0.36, 0.1], [0.46, 0.5], [0.66, 1.0], [0.84, 1.5], [0.96, 1.95], [0.98, 2.3], [0.9, 2.6], [0.72, 2.84], [0.46, 3.0], [0.28, 3.06]],
-    d: 0.72, back: 0.7, bust: { x: 0.36, y: 2.08, s: 0.1, amp: 0.2 }, under: 1.72, shoulderY: 2.48, cup: 0.36 },
+  haydee: { prof: [[0.46, -0.78], [0.4, -0.5], [0.38, -0.2], [0.42, 0.2], [0.56, 0.7], [0.76, 1.2], [0.9, 1.65], [0.97, 2.05], [0.97, 2.4], [0.9, 2.66], [0.74, 2.9], [0.5, 3.06], [0.3, 3.12]],
+    d: 0.78, back: 0.68, bust: { x: 0.42, y: 2.06, s: 0.16, amp: 0.22, r: 0.5, h: 0.5 }, under: 1.72, shoulderY: 2.56, cup: 0.4 },
+  drossel: { prof: [[0.44, -0.55], [0.34, -0.25], [0.33, 0.1], [0.42, 0.5], [0.6, 1.0], [0.75, 1.5], [0.85, 1.95], [0.86, 2.3], [0.78, 2.56], [0.62, 2.8], [0.4, 2.96], [0.26, 3.02]],
+    d: 0.74, back: 0.7, bust: { x: 0.33, y: 2.04, s: 0.08, amp: 0.1, r: 0.37, h: 0.3 }, under: 1.68, shoulderY: 2.44, cup: 0.34 },
 };
 
 function planOf(T) {
@@ -42,7 +48,7 @@ function planOf(T) {
     const r = Math.hypot(x, z); if (r < 1e-5) return [x, y, z];
     const c = z / r, f = Math.max(0, c);
     let zz = z > 0 ? z * T.d : z * T.back;
-    zz += f ** 1.5 * B.amp * Math.exp(-(((Math.abs(x) - B.x) ** 2) + ((y - B.y) * 0.8) ** 2) / B.s); // (the bust: two swells of the front shell)
+    zz += f ** 1.5 * B.amp * Math.exp(-(((Math.abs(x) - B.x) ** 2) + ((y - B.y) * 0.8) ** 2) / B.s); // (a low swell where each chest plate sits)
     zz -= (z < 0 ? 1 : 0) * 0.08 * bump(y, 1.4, 2.9); // (the back flatter between the blades)
     return [x * (1 - 0.05 * f * bump(y, 0.4, 1.6)), y, zz];
   };
@@ -68,7 +74,6 @@ export function femCoreLook(id, F) {
   const hoop = (S, y, h, k = 1.05, c = L.trimM, piece = S.trim) => piece.geo(sculpt(shell(band(P, y - h, y + h, k, 2), 44), W), { c });
   const backPlates = (S, y0, y1, a, c = L.pale) => panels(S, [[y0, y1, a, PI - gap - G, c], [y0, WIN[0], PI - gap - G, PI - G, c], [WIN[1], y1, PI - gap - G, PI - G, c]]);
   const sockets = (S) => {
-    S.p.geo(cup(0.36 * F.joint).rotateX(PI), { at: [0, mounts.neck[0], mounts.neck[1]], c: L.ivory });
     for (const s of [-1, 1]) S.p.geo(cup(T.cup).rotateZ(s * PI / 2), { at: [s * mounts.shoulder[0], mounts.shoulder[1], 0], c: L.ivory });
   };
   const U = T.under;
@@ -143,8 +148,22 @@ export function femCoreLook(id, F) {
     },
   };
   const build = (D ? drossel : haydee)[id] || (D ? drossel : haydee).clayCore;
+  /** The chest plates: a dome each in its joint's frame (+Z out), seated on the shell's front at the plate's height. */
+  const B = T.bust, front = (x) => T.d * Math.sqrt(Math.max(0.05, profAt(P, B.y) ** 2 - x * x)) + B.amp * 0.8;
+  const bust = {
+    at: (s) => [s * B.x, B.y, front(B.x) - B.h * 0.3],
+    rot: (s) => [0.12, s * 0.32, 0],
+    build(S, s) {
+      const r = B.r, h = B.h, dome = shell([[0.001, h], [r * 0.45, h * 0.9], [r * 0.8, h * 0.6], [r * 0.98, h * 0.22], [r, 0.0], [r * 0.9, -0.12]], 32).rotateX(PI / 2);
+      S.p.geo(dome, { sc: [1, 0.94, 1], c: L.pale });
+      S.g.ring(r * 0.99, D ? 0.03 : 0.035, { at: [0, 0, 0.02], sc: [1, 0.94, 1], c: L.gold }, 36, 4); // (the plate's rim)
+      if (id === 'kilnCore') S.trim.geo(shell([[r * 0.62, h * 0.72], [r * 0.7, h * 0.66], [r * 0.62, h * 0.6]], 32).rotateX(PI / 2), { sc: [1, 0.94, 1], c: L.trimM });
+      if (D) S.trim.geo(shell([[0.001, h * 1.02], [r * 0.25, h * 0.98], [r * 0.3, h * 0.9]], 20).rotateX(PI / 2), { c: L.trimL }); // (a lace boss)
+      S.core.geo(shell([[r * 0.9, -0.1], [r * 0.8, 0.0]], 24).rotateX(PI / 2), { c: L.coreD }); // (the gap under the rim)
+    },
+  };
   return {
-    mounts, prof: P, plan: W,
+    mounts, prof: P, plan: W, bust,
     chest(S) {
       build(S); sockets(S);
       if (!D) { // Haydee's collar ring and the panel line from the underbust round to the blade

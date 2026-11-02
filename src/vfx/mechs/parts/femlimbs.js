@@ -16,7 +16,9 @@
 // Drossel von Flügel of Fireball (Jinni's Animation Studios for Disney Japan, 2008: the duchess's slender arms); the Victorian
 // gigot (leg-of-mutton) sleeve and the opera glove; the ball-jointed doll's arm; the hero arms' hands and layout (arms.js).
 //
-//   femArmLook(id, F) -> { splay (the arms' hang out from the body), upper, fore, palm, ball, elbow, wrist, shoulder(S, s), foreArm(S, s), hand(S, s, grip), pauldron(S, s) }
+// The arms hang out over the broad hips (the pear, femlegs.js): splayed at the shoulder, the elbow barely turned back in (`bend`).
+//
+//   femArmLook(id, F) -> { splay (the arms' hang out from the body), bend (the elbow's turn back in), upper, fore, palm, ball, elbow, wrist, shoulder(S, s), foreArm(S, s), hand(S, s, grip), pauldron(S, s) }
 // ---------------------------------------------------------------------------------------
 import { MECH_LOOK as L, shell, plate, sculpt, ball, profAt } from './kit.js';
 import { lathe } from './femlegs.js';
@@ -59,7 +61,7 @@ const puff = (k) => (S, s) => {
 export function femArmLook(id, F) {
   const A = ARMS[id] || ARMS.clayArms, D = F.fem === 'drossel', k = D ? 0.8 : 1, UP = sc(A.UP, k), FO = sc(A.FO, k);
   return {
-    splay: D ? 0.16 : 0.22, upper: A.upper * (D ? 1.04 : 1), fore: A.fore * (D ? 1.04 : 1), palm: A.palm * (D ? 0.92 : 1), ball: A.ball, elbow: A.elbow, wrist: A.wrist,
+    splay: D ? 0.46 : 0.48, bend: 0.08, upper: A.upper * (D ? 1.04 : 1), fore: A.fore * (D ? 1.04 : 1), palm: A.palm * (D ? 0.92 : 1), ball: A.ball, elbow: A.elbow, wrist: A.wrist,
     pauldron: D ? puff(id === 'strongArms' ? 1.12 : 1) : deltoid(id === 'strongArms' ? 1.18 : 1),
     shoulder(S, s) {
       ball(S.g, this.ball * F.joint); core(S, 0.2 * k, this.upper);
