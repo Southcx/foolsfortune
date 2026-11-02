@@ -18,6 +18,7 @@
 //                    map      a map folded in three                               settings  a gear
 //                    chat     a speech balloon                                    pause  two bars
 //                    menu     three bars (the top bar folded to one tab)          more   three dots (the cluster's strip folded)
+//                    fold     the tablitas: three plates on crossed ribbons (the arc folded: TOUCH-REBUILD.md 7)
 //                    overhead an eye looking down on a planetoid (TOP VIEW, the garden only)
 //                    skiff    the board under its sail (summon or recall)          godhand  the hand over the ground (raise or let go)
 //                    jelly    a slip jelly on its four toes, wet down its flank (the mount Y calls when it was chosen last)
@@ -546,6 +547,22 @@ export const TOUCH_ART = {
     '..............',
     '..##########..',
     '..##########..',
+    '..............',
+    '..............',
+    '..............',
+  ],
+  fold: [ // (the tablitas: three plates on crossed ribbons, the arc folded)
+    '..............',
+    '..............',
+    '.#########....',
+    '.#-------#+...',
+    '.#########.+..',
+    '...+.#########',
+    '....+#-------#',
+    '.....#########',
+    '.#########.+..',
+    '.#-------#+...',
+    '.#########....',
     '..............',
     '..............',
     '..............',

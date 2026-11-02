@@ -10,6 +10,7 @@
 //   openRadial(anchorEl, items [{ id, glyph, word, lit, tint, corner }], { onPick(item), sticky, size, R, from, to }) -> close()
 // ---------------------------------------------------------------------------------------
 import { TouchTile } from './tile.js';
+import { radialBack } from './arcdress.js';
 
 /** Fan `items` round `anchorEl`'s centre between the angles `from` and `to` (radians, y down: PI is left, 1.5 PI up), radius `R` at least; past five choices, two rings. */
 export function openRadial(anchorEl, items, { onPick, sticky = false, size = 44, R = 64, from = Math.PI * 0.15, to = Math.PI * 0.85 } = {}) {
@@ -19,7 +20,8 @@ export function openRadial(anchorEl, items, { onPick, sticky = false, size = 44,
   const rings = n > 5 ? 2 : 1, per = Math.ceil(n / rings), span = Math.max(0.5, Math.abs(to - from));
   const r1 = Math.max(R, per > 1 ? (size + 14) * (per - 1) / span : R); // (wide enough that no two choices on a ring touch, corners included: square tiles on a curve)
   let off = null, tiles = [];
-  const close = () => { if (off) document.removeEventListener('pointerdown', off, true); off = null; for (const t of tiles) t.el.remove(); tiles = []; };
+  const backs = Array.from({ length: rings }, (_, k) => radialBack(cx, cy, r1 + k * (size + 14), size, from, to)); // (the clay band each ring stands on: ui/touch/arcdress.js)
+  const close = () => { if (off) document.removeEventListener('pointerdown', off, true); off = null; for (const t of tiles) t.el.remove(); tiles = []; for (const b of backs) b.remove(); backs.length = 0; };
   tiles = items.map((it, i) => {
     const ring = Math.floor(i / per), k = i - ring * per, m = Math.min(per, n - ring * per), r = r1 + ring * (size + 14);
     const a = from + (to - from) * (m > 1 ? k / (m - 1) : 0.5);
