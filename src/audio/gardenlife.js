@@ -38,7 +38,7 @@
 //   sfx.spiritFarewellAsk(st, feeling) .spiritFarewell(st, feeling) .spiritSummon(from) .spiritOut(st, feeling)
 //   sfx.spiritSparStart() .spiritSpar(st)
 //   sfx.decorPlace(st) .decorMove() .decorRemove() .decorBuy(st) .decorGet(st, first) .decorRefuse()
-//   sfx.gardenPrune(left) .gardenThornGrow() .gardenTend(st) .gardenHarmony(st, band, was)
+//   sfx.gardenPrune(left) .gardenThornGrow() .gardenScorch() .gardenTend(st) .gardenHarmony(st, band, was)
 //   sfx.pressOpen(st) .pressClose() .pressLoad(st, count) .pressUnload(count) .pressStep(st, hue) .pressRefuse() .alchemySeasoned(st)
 //   sfx.sporeBedNew() .sporeInoculate(st, strain) .sporeSet(st, strain) .sporeBack() .sporeLearn(st, strain) .myggPick(st, n) .myggGiven(st)
 //   sfx.gardenCascade() .gardenPlanetoidSet(st) .gardenDigest(st)
@@ -206,6 +206,14 @@ export class GardenLifeSounds {
     if (!this.ok() || !this.allow('gardenThornGrow', 1)) return;
     const t = this.ctx.currentTime, d = this.out(0.1, 0.35);
     this.tone(t, 0.6, { f0: 70, f1: 95, type: 'sawtooth', gain: 0.12, dest: d }); this.noise(t, 0.5, { type: 'bandpass', f0: 700, f1: 1100, q: 6, gain: 0.25, attack: 0.15, dest: d });
+  }
+  /** Moss scorched to ash by Fury rain (garden.scorch, GALL-AND-FURY.md 8): a hiss of rain on hot ground, a crackle, the ash settling. */
+  gardenScorch() {
+    if (!this.ok() || !this.allow('gardenScorch', 0.5)) return;
+    const t = this.ctx.currentTime, d = this.out(0.25, 0.4);
+    this.noise(t, 0.9, { type: 'highpass', f0: 3000, f1: 1800, gain: 0.3, attack: 0.05, dest: d }); // (the sizzle)
+    for (let i = 0; i < 8; i++) this.noise(t + 0.1 + Math.random() * 0.7, 0.015, { type: 'bandpass', f0: 2000 + Math.random() * 2500, q: 3, gain: 0.35, dest: d }); // (the moss crackling)
+    this.noise(t + 0.8, 0.8, { type: 'lowpass', f0: 900, f1: 300, gain: 0.12, attack: 0.2, dest: d }); // (the ash settling)
   }
   /** A planetoid tended (once a kind a game day): a breath of a shimmer, a sixteenth behind the act's own sound. */
   gardenTend(st) {

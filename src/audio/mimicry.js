@@ -6,11 +6,13 @@
 //   YOUR TURN   (mimic.turn) the demonstration over: a turning chime, the same two notes answered upward
 //   SOLVED      (mimic.solve { stars }) one to three stars: a rising arpeggio a star long, the third ending on a bell
 //   LEFT        (mimic.leave) the patch let go: the hum falling away
+//   READ        (mimic.read { cells }) a Layer View read lifting a veiled puzzle: a breath of air drawn off it and a glassy shimmer
+//               climbing, longer for more cells laid bare
 //
 // Prior art: Simon (the shown sequence, then yours), Zelda's song lessons (the teacher plays, you answer), a Mario Kart medal's
 // one, two or three chimes.
 //
-//   sfx.mimicOpen() .mimicStep(i) .mimicTurn() .mimicSolve(stars) .mimicLeave()
+//   sfx.mimicOpen() .mimicStep(i) .mimicTurn() .mimicSolve(stars) .mimicLeave() .mimicRead(cells)
 // ---------------------------------------------------------------------------------------
 
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
@@ -22,6 +24,12 @@ export class MimicrySounds {
     const t = this.ctx.currentTime, d = this.out(0.25, 0.6);
     this.tone(t, 1.8, { f0: 82.4, type: 'triangle', gain: 0.12, dest: d }); // (the stone woken)
     [76, 83].forEach((m, i) => this.tone(t + 0.3 + i * 0.15, 0.7, { f0: hz(m), gain: 0.06, dest: d })); // (the System's chime)
+  }
+  mimicRead(cells = 1) {
+    if (!this.ok() || !this.allow('mimicRead', 2)) return;
+    const t = this.ctx.currentTime, d = this.out(1, 0.6), n = Math.max(1, Math.min(8, Math.ceil((cells | 0) / 8)));
+    this.noise(t, 0.5, { type: 'bandpass', f0: 2500, f1: 6000, q: 1, gain: 0.12, attack: 0.15, dest: d }); // (the veil drawn off)
+    for (let k = 0; k < n + 2; k++) this.tone(t + 0.1 + k * 0.06, 0.4, { f0: hz(76 + 12 * Math.floor(k / SCALE.length) + SCALE[k % SCALE.length]), gain: 0.03, dest: d }); // (a glassy shimmer climbing)
   }
   mimicStep(i = 0) {
     if (!this.ok() || !this.allow('mimicStep', 6)) return;

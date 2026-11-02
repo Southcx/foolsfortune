@@ -192,7 +192,7 @@ export class MechMount {
       spin.setFromAxisAngle(Fr.up, -turns * PI * 2 * (1 - u)); q.copy(Fr.q).premultiply(spin);
       const half = Math.floor(u * turns * 2); if (half > this.turnsSaid && half < turns * 2) { this.turnsSaid = half; g.events?.emit('mech.mount', { beat: 'turn', n: half, by: 'courier' }); }
     } else { pos.copy(Fr.at); q.copy(Fr.q); }
-    if (t >= t4 && !this.beats.has('lock')) { this.say('lock'); if (typeof g.fx?.impact === 'function') g.fx.impact(top.clone(), Fr.up.clone(), { sparks: 14, dust: 4 }); g.vfx?.play?.('domain.spellscription.hit', { pos: top.clone(), normal: Fr.up.clone(), scale: 1.6 }); }
+    if (t >= t4 && !this.beats.has('lock')) { this.say('lock'); body.jiggle?.(1.2); if (typeof g.fx?.impact === 'function') g.fx.impact(top.clone(), Fr.up.clone(), { sparks: 14, dust: 4 }); g.vfx?.play?.('domain.spellscription.hit', { pos: top.clone(), normal: Fr.up.clone(), scale: 1.6 }); }
     if (J) { J.group.position.copy(pos); J.group.quaternion.copy(q); J.group.visible = true; }
     // the wake: the gate's way, out from the cradle, the eyes last
     U.uOrigin.value.copy(Fr.at); U.uReach.value = (body.height || 15) * 1.25;

@@ -13,8 +13,8 @@
 // (lit with the cradle); the neck is hidden and the helm hangs over the collar with a gap, bobbing slowly. Its ornament (crests, horns,
 // antlers, frills, tusks, fangs, wings, maedate, ears, plumes) grown by HELM_LOOK.orn about its seat (South, 2026-11-02: "increase the
 // size of the ornamentation by about 30%"), the bowl and lames a head's. Eight here, and eight after real helmets
-// (vfx/mechs/helms/historical.js: Kiyomasa's, Kuroda's, the Maeda's, Ieyasu's, Henry VIII's, Negroli's, Sutton Hoo, a turban helm);
-// the shapes in vfx/mechs/helms/kit.js:
+// (vfx/mechs/helms/historical.js: Kiyomasa's, Kuroda's, the Maeda's, Ieyasu's, Henry VIII's, Negroli's, Sutton Hoo, a turban helm), and
+// twenty-two for the Major Arcana, a culture a card (vfx/mechs/helms/arcana.js and arcana2.js, ARCANA_HELMS the card to its helm); the shapes in vfx/mechs/helms/kit.js:
 //   stag         Honda Tadakatsu's antlers made heavy: thick branching beams about two heads across, a gold burr at each root, a
 //                heavy brow, a tuft of rust between the beams
 //   tyrant       a tyrannosaur's skull: its snout a short peak over the void, teeth hanging from the brim, a brow ridge with
@@ -47,6 +47,7 @@ import { Piece } from '../garden/decorpieces/kit.js';
 import { plate } from './parts/kit.js';
 import { HELM_LOOK, L, PI, V, R, bez, taper, rod, along, add, gem, icoDome, bowl, shikoro, flat, fukigaeshi, teeth, orn } from './helms/kit.js';
 import { HISTORICAL, BUILD_HISTORICAL } from './helms/historical.js';
+import { ARCANA, BUILD_ARCANA } from './helms/arcana.js';
 export { HELM_LOOK };
 
 export const HELMS = {
@@ -59,6 +60,7 @@ export const HELMS = {
   kabuto: { label: "Daimyo's kabuto" },
   szyszak: { label: "Hussar's szyszak" },
   ...HISTORICAL,
+  ...ARCANA,
 };
 
 // ------------------------------------------------------------------ the helms
@@ -226,7 +228,7 @@ function szyszak(B) {
     tint: [L.plume.ivory, L.plume.rust, L.plume.ivory, L.plume.slate, L.plume.ivory, L.plume.ochre, L.plume.ivory] }));
 }
 
-const BUILD = { stag, tyrant, mammoth, sabretooth, pterosaur, triceratops, kabuto, szyszak, ...BUILD_HISTORICAL };
+const BUILD = { stag, tyrant, mammoth, sabretooth, pterosaur, triceratops, kabuto, szyszak, ...BUILD_HISTORICAL, ...BUILD_ARCANA };
 function build(id) {
   const B = { p: new Piece(), t: new Piece(), g: new Piece(), lab: new Piece(), c: new Piece(), e: new Piece(), plumes: [] };
   for (const P of [B.g, B.t, B.p]) P.rod = (a, b, r, o) => rod(P, a, b, r * HELM_LOOK.chunk * 1.2, o, 5); // (every bar and spar chunky, meeting both its ends)

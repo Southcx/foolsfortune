@@ -28,7 +28,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { plate, sidePlate } from '../parts/kit.js';
-import { L, PI, V, R, bez, taper, along, gem, facet, icoDome, bowl, shikoro, flat, fukigaeshi, orn } from './kit.js';
+import { L, PI, V, R, bez, taper, along, gem, facet, icoDome, bowl, shikoro, flat, fukigaeshi, orn, stage, edge } from './kit.js';
 
 export const HISTORICAL = {
   nagaEboshi: { label: "Kiyomasa's naga-eboshi" },
@@ -41,15 +41,6 @@ export const HISTORICAL = {
   turban: { label: 'Turban helm' },
 };
 
-const _Y = new V(0, 1, 0), _q = new THREE.Quaternion(), _eu = new THREE.Euler();
-/** A faceted frustum from a to b (an n-sided prism stage of a crown), radius ra at a and rb at b, `sc` stretching it across. */
-function stage(P, a, b, ra, rb, n, o = {}) {
-  const A = new V(...a), Bv = new V(...b), d = Bv.clone().sub(A), len = d.length();
-  _q.setFromUnitVectors(_Y, d.normalize()); _eu.setFromQuaternion(_q, 'XYZ');
-  P.geo(facet(new THREE.CylinderGeometry(rb, ra, len * 1.04, n, 1)), { ...o, at: A.add(Bv).multiplyScalar(0.5).toArray(), rot: [_eu.x, _eu.y, _eu.z] });
-}
-/** Gold along a run of points (an edge). */
-const edge = (g, pts, r = 0.05) => { for (let i = 1; i < pts.length; i++) g.rod(pts[i - 1], pts[i], r, {}, 5); };
 /** A peak over the brow. */
 const peak = (p, g, c, w = R * 2.05, d = 0.75, tilt = -0.3) => { p.box(w, 0.08, d, { at: [0, 0.05, R * 0.95], rot: [tilt, 0, 0], c }, 0.02); g.box(w, 0.07, 0.1, { at: [0, 0.05 + Math.sin(-tilt) * d * 0.45, R * 0.95 + d * 0.45] }, 0.02); };
 /** A cheek plate each side, gold-riveted. */

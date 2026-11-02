@@ -19,6 +19,7 @@
 //                ground over about a real second once the body is gone
 //   THE BURST    its life at none: gobs of its body and a fine spray flung out in its colour, a low ring of drops over the ground, a
 //                small shake, a wide puddle left soaking in (Petra's placeholder dust in burst() is hers, to go when she agrees)
+//   THE SADDLE   the Pneuka Jar's seat on the crown (Petra's `rider.saddle`): a lacquered kura and its tassels (vfx/jellymount/saddle.js)
 //   THE CHOICE   Y held: the mounts' ring round the Courier (vfx/jellymount/ring.js), the Solar Skiff on the left, the jelly on the
 //                right, the lit one lifted
 // Where Petra's tick places the body each frame, this runs after it and sets its place and size in the call, the slump and the air
@@ -37,6 +38,7 @@ import { drawSealFace } from '../sealface.js';
 import { featTint } from '../oxidation.js';
 import { SlipPuddles } from './puddles.js';
 import { MountRing } from './ring.js';
+import { dressSaddle, swingSaddle } from './saddle.js';
 
 /** The look's numbers: the seat over the ground (Petra's SEAT, the jelly's crown); the seal's place on the body (its middle's height
  *  and its size, metres in the body's own space; the haunches' angle off the tail), strength and its ink's field; the body's widening as it wells up and
@@ -195,6 +197,8 @@ export class JellyMountLook {
       if (this.air) this.vy = (J.P ?? this.game.player).vel.y;
     }
     if (B?.mesh && B.root.visible) this.shape(J, B);
+    const S = this.game.jellyMount?.rider?.saddle; // (the Pneuka Jar's saddle: Petra's Group, dressed once, its tassels swung: vfx/jellymount/saddle.js)
+    if (S) { if (!S.userData.dressed) dressSaddle(S, this.game); swingSaddle(S, raw); }
     this.puddles.update(raw);
     this.ring.update(raw);
   }
