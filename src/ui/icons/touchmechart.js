@@ -3,10 +3,11 @@
 // context, ui/touch/arc.js, its faces ui/mechs/mechfaces.js), 14 x 14 in the icons' hand (ui/icons/hand.js), spread into TOUCH_ART
 // (touchart.js) as 'touch.<id>'. Each is the frame's own verb at its scale, the arm's glyph the weapon it holds (PARTS, progress/mechs/parts.js):
 //   mkfist     a clenched fist, knuckles up                   mkblade    the great blade, its edge lit, its guard and grip
-//   mkblaster  the big gun's barrel, a flash at its muzzle    mkpress    an open hand pressed on a hex (the barrier pressed: AT Field)
+//   mkblaster  the big gun's barrel, a flash at its muzzle    mkpress    a big hex, a palm lit inside it, ringed dark (the barrier pressed)
 //   mkmissiles three motes on their trails out of a pod       mkshield   a kite shield, its boss lit
-//   mkunit     a pack on the back, its two pods (no back unit worn)
-//   mkboost    a thruster's bell, its flame streaming out     mkcable    the umbilical's plug, its two prongs, the cable curling off
+//   mkunit     a pod on the back mount, two launch tubes standing out of it, their mouths lit (no back unit worn)
+//   mkboost    a thruster's bell, its flame streaming out     mkcable    the umbilical's plug, two lit prongs, its thick cord in a curl
+// (PRESS, UNIT and CABLE redrawn bold for 48 px: one big shape each, its lit part large, 2026-11-02)
 //   mkexit     the Pneuka Jar lifting out of its cradle under an arrow (stepping out: X)
 // Where a glyph acts on matter the matter is '#', the part that does the thing '+', the ground and what waits '-' (touchart.js's rule).
 //
@@ -20,23 +21,24 @@ import { grid } from './hand.js';
 /** A pointy hex's border round (7, 7) at `r`, its distance on the hex's own metric. */
 const hexD = (x, y) => { const dx = Math.abs(x + 0.5 - 7), dy = Math.abs(y + 0.5 - 7); return Math.max(dx * 0.866 + dy * 0.5, dx); };
 
-/** The open hand (the press): four fingers, a thumb, the palm and its wrist; '+' at the fingertips where they meet the hex. */
+/** The palm (the press): four fingers, a thumb, the palm and its wrist, lit inside the hex. */
 const HAND = [
   '..............',
   '..............',
-  '....+.+.+.....',
-  '....#.#.#.+...',
-  '....#.#.#.#...',
-  '....#.#.#.#...',
-  '....#######...',
-  '..#.#######...',
-  '...########...',
-  '....#######...',
-  '.....#####....',
-  '.....#####....',
-  '.....#####....',
+  '.....+.+.+....',
+  '.....+.+.+.+..',
+  '..+..+.+.+.+..',
+  '..+..+.+.+.+..',
+  '..++.+++++++..',
+  '...+++++++++..',
+  '....++++++++..',
+  '....+++++++...',
+  '.....+++++....',
+  '.....+++++....',
+  '..............',
   '..............',
 ];
+const inHand = (x, y) => (HAND[y]?.[x] ?? '.') === '+';
 
 export const TOUCH_MECH_ART = {
   mkfist: [
@@ -88,10 +90,9 @@ export const TOUCH_MECH_ART = {
     '..............',
   ],
   mkpress: grid(14, 14, (x, y) => {
-    const h = HAND[y]?.[x];
-    if (h && h !== '.') return h;
-    const d = hexD(x, y);
-    return d <= 6.6 && d > 5.6 ? '-' : null;
+    if (inHand(x, y)) return '+';
+    if (hexD(x, y) > 6.6) return null;
+    return inHand(x - 1, y) || inHand(x + 1, y) || inHand(x, y - 1) || inHand(x, y + 1) ? 'x' : '-'; // (the hex dim, the palm ringed dark in it)
   }),
   mkmissiles: [
     '.+.....+......',
@@ -127,18 +128,18 @@ export const TOUCH_MECH_ART = {
   ],
   mkunit: [
     '..............',
-    '...###..###...',
-    '..####..####..',
-    '..####..####..',
-    '..#++#..#++#..',
-    '..####..####..',
-    '..##########..',
-    '..##########..',
-    '..##########..',
-    '..##..##..##..',
-    '..##########..',
-    '...########...',
-    '..............',
+    '.+++.....+++..',
+    '.#x#.....#x#..',
+    '.###.....###..',
+    '.###.....###..',
+    '.###.....###..',
+    '#############.',
+    '#############.',
+    '##xxxxxxxxx##.',
+    '#############.',
+    '#############.',
+    '.##.......##..',
+    '.##.......##..',
     '..............',
   ],
   mkboost: [
@@ -158,20 +159,20 @@ export const TOUCH_MECH_ART = {
     '..............',
   ],
   mkcable: [
-    '.........+..+.',
-    '.........+..+.',
-    '........######',
-    '........######',
-    '........######',
-    '.........####.',
-    '..........##..',
-    '.........-....',
-    '.......--.....',
-    '.....--.......',
-    '....-.........',
-    '...-..........',
-    '...-..........',
-    '..-...........',
+    '...++....++...',
+    '...++....++...',
+    '...++....++...',
+    '.############.',
+    '.############.',
+    '.##xxxxxxxx##.',
+    '.############.',
+    '..##########..',
+    '.....----.....',
+    '......--..---.',
+    '......--.-..--',
+    '......---...--',
+    '.......----.-.',
+    '.........---..',
   ],
   mkexit: [
     '......+.......',

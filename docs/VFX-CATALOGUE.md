@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-11-02). 646 effects in 42 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-11-02). 679 effects in 44 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -576,25 +576,53 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `flourish.whole.moths` | one-shot | sprites:moth, sprites:soft |  |  |
 | `flourish.whole.porcelain` | one-shot | sprites:shard, sprites:swirl, sprites:glint |  |  |
 
-### mech (17)
+### giant (20)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `giant.burrow.draw` | one-shot | sprites:puff, sprites:soft | round the burrow's vortex: sand drawn in and down toward its eye | vfx/mechs/giants/colossusmarks.js |
+| `giant.clod.burst` | one-shot | sprites:shard, sprites:puff, shake | a clod come down: fired-clay shards over the sand the runtime throws | vfx/mechs/giants/colossusmarks.js |
+| `giant.clod.trail` | one-shot | sprites:puff, sprites:soft | the hurled clod's sand streaming off it | vfx/mechs/giants/colossusmarks.js |
+| `giant.field.grind` | one-shot | sprites:streak, sprites:hex |  | vfx/mechs/giants/atfield.js |
+| `giant.field.hit` | one-shot | sprites:hex, sprites:star4 |  | vfx/mechs/giants/atfield.js |
+| `giant.field.tear` | one-shot | sprites:hex, shape:hoop, shape:disc, shake |  | vfx/mechs/giants/atfield.js |
+| `giant.grab.dust` | one-shot | sprites:puff, sprites:chip | a foot pressed into the yard under the weight | vfx/mechs/giants/grapple.js |
+| `giant.grab.lift` | one-shot | sprites:puff, shake | the giant torn off the ground: a ring of dust where it stood | vfx/mechs/giants/grapple.js |
+| `giant.post.bell` | one-shot | shape:hoop×2, sprites:glint | the post's bell struck: a giant called | vfx/mechs/giants/post.js |
+| `giant.sand.pour` | one-shot | sprites:streak, sprites:puff | a windup's tell: sand running off the arm about to swing, in a falling sheet | vfx/mechs/giants/colossusmarks.js |
+| `giant.sand.shed` | one-shot | sprites:soft, sprites:puff |  | vfx/mechs/giants/colossus.js |
+| `giant.sand.slump` | one-shot | sprites:puff, sprites:chip, shake |  | vfx/mechs/giants/colossus.js |
+| `giant.slam` | one-shot | shape:ring×2, sprites:puff, sprites:chip, shake, hitstop | a giant driven into the ground at the mech's feet: the powerbomb | feedback/tracking/mechnight.js, vfx/mechs/giants/grapple.js, world/hangar/giantgrapple.js |
+| `giant.strain.spark` | one-shot | sprites:streak, sprites:puff | the frame's joint under a held giant: embers spat from it | vfx/mechs/giants/grapple.js |
+| `giant.straw.burst` | one-shot | sprites:streak, sprites:puff |  | vfx/mechs/giants/straw.js |
+| `giant.straw.dust` | one-shot | sprites:puff, shake |  | vfx/mechs/giants/straw.js |
+| `giant.straw.spill` | one-shot | sprites:streak, sprites:puff |  | vfx/mechs/giants/straw.js |
+| `giant.throw.impact` | one-shot | sprites:puff, sprites:chip, shape:ring, shake | a thrown giant into a building or the ground: debris and a column of dust | vfx/mechs/giants/grapple.js |
+| `giant.throw.trail` | one-shot | sprites:streak, sprites:puff | a thrown giant's whoosh: streaks along its flight and sand torn off it | vfx/mechs/giants/grapple.js |
+| `giant.wave.spray` | one-shot | sprites:puff, sprites:streak | the cone's crest breaking: sand flung forward off its lip | vfx/mechs/giants/colossusmarks.js |
+
+### mech (20)
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
 | `mech.blink.step` | one-shot | shape:ring, shape:pillar, sprites:star4 |  | vfx/mechs/speciallooks.js |
 | `mech.gust` | one-shot | shape:wave, sprites:puff, sprites:chip, sprites:streak |  | vfx/mechs/speciallooks.js |
-| `mech.gust.cone` | one-shot | shape:cone |  | vfx/mechs/speciallooks.js |
+| `mech.gust.cone` | one-shot | shape:cone×2 |  | vfx/mechs/speciallooks.js |
+| `mech.gust.ground` | one-shot | shape:beam×2 | the wind's track on the ground: a long dark scour and streaks of light along it, `dir` the gust, `scale` its reach | vfx/mechs/speciallooks.js |
 | `mech.hasten.halo` | held | shape:ring, shape:hoop, shape:quad×2 |  | vfx/mechs/speciallooks.js |
 | `mech.hasten.hold` | held | shape:ring×3, sprites:star4, sprites:streak |  | vfx/mechs/speciallooks.js |
 | `mech.pull.motes` | one-shot | sprites:streak, sprites:soft |  | vfx/mechs/speciallooks.js |
-| `mech.pull.snap` | one-shot | shape:ring, sprites:puff, sprites:chip |  | vfx/mechs/speciallooks.js |
-| `mech.pull.tether` | one-shot | shape:beam |  | vfx/mechs/speciallooks.js |
+| `mech.pull.snap` | one-shot | shape:disc, shape:ring, sprites:puff, sprites:chip |  | vfx/mechs/speciallooks.js |
+| `mech.pull.tether` | one-shot | shape:beam×2 |  | vfx/mechs/speciallooks.js |
 | `mech.quake` | one-shot | shape:ring, shape:band, shape:disc, sprites:puff, sprites:chip, shake |  | vfx/mechs/speciallooks.js |
 | `mech.ready` | one-shot | sprites:star4, shape:hoop, sprites:glint |  | vfx/mechs/speciallooks.js |
+| `mech.scan.ground` | held | shape:disc, shape:ring, shape:hoop | held under the marked giant: its weak point's ring on the ground, dark under light | vfx/mechs/speciallooks.js |
 | `mech.scan.iris` | one-shot | shape:disc, shape:hoop, sprites:star4 |  | vfx/mechs/speciallooks.js |
-| `mech.scan.mark` | held | shape:disc, shape:hoop×3, shape:ring, sprites:star4 |  | vfx/mechs/speciallooks.js |
-| `mech.scan.sweep` | one-shot | shape:cone×2 |  | vfx/mechs/speciallooks.js |
+| `mech.scan.mark` | held | shape:disc×2, shape:hoop×3, shape:ring, sprites:star4 |  | vfx/mechs/speciallooks.js |
+| `mech.scan.sweep` | one-shot | shape:cone×3 |  | vfx/mechs/speciallooks.js |
 | `mech.sunder.crumble` | one-shot | sprites:chip, sprites:puff, sprites:sparkle |  | vfx/mechs/speciallooks.js |
-| `mech.sunder.edge` | one-shot | shape:beam×2 |  | vfx/mechs/speciallooks.js |
+| `mech.sunder.edge` | one-shot | shape:beam×3 |  | vfx/mechs/speciallooks.js |
+| `mech.sunder.scar` | one-shot | shape:beam×2, sprites:puff | the line cut in the ground under the blade: played at its start, `dir` along it flat, `scale` its length | vfx/mechs/speciallooks.js |
 | `mech.ward.cast` | one-shot | shape:ring, shape:hoop, shape:disc, shape:crescent×3, sprites:talisman, shake |  | vfx/mechs/speciallooks.js |
 | `mech.ward.hold` | held | shape:ring, shape:hoop, shape:band, sprites:talisman |  | vfx/mechs/speciallooks.js |
 
@@ -668,6 +696,21 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `sea.salvage.open.uncommon` | one-shot | sprites:star4, sprites:ringthin, sprites:glint, light |  |  |
 | `sea.salvage.part` | one-shot | sprites:shard, sprites:star4 |  | vfx/opensea/salvagelooks.js |
 | `sea.salvage.rise` | one-shot | sprites:ringthin, sprites:drip, sprites:puff |  | vfx/opensea/salvagelooks.js |
+
+### challenge (10)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `challenge.ball.dust` | one-shot | sprites:puff | the rolled tower's foot on the yard | vfx/mechs/challenges/index.js |
+| `challenge.hit` | one-shot | shape:ring, sprites:star4, sprites:glint | a throw scored: a gold ring out where it landed, chips and a glint | vfx/mechs/challenges/index.js |
+| `challenge.lamp` | one-shot | sprites:star4, shape:hoop |  | vfx/mechs/challenges/index.js |
+| `challenge.line.lit` | one-shot | sprites:sparkle | the smash challenges' moments (vfx/mechs/challenges/moments.js), the colossus's marks and tells (giants/colossusmarks.js), the giant post's bell (giants/post.js) and giant wrestling's (giants/grapple.js), at the mech's scale | vfx/mechs/challenges/index.js |
+| `challenge.medal.1` | one-shot | sprites:diamond | a challenge's end, bronze .. gold: confetti in the medal's metal over the lane |  |
+| `challenge.medal.2` | one-shot | sprites:diamond, sprites:glint |  |  |
+| `challenge.medal.3` | one-shot | sprites:diamond, shape:disc, sprites:glint, light |  |  |
+| `challenge.pin.chips` | one-shot | sprites:chip, sprites:puff | a pin knocked: glazed clay chips off its foot, a puff of the yard's dust; `dir` the way it falls | vfx/mechs/challenges/index.js |
+| `challenge.pin.thud` | one-shot | sprites:puff, sprites:chip | a pin down on the ground along its length | vfx/mechs/challenges/index.js |
+| `challenge.strike` | one-shot | shape:disc, sprites:diamond, light | STRIKE or SPARE at the pins: a gold sunburst over them, the house's confetti flung up | vfx/mechs/challenges/index.js |
 
 ### blow (9)
 

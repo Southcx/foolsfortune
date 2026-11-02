@@ -17,10 +17,13 @@ Everything below is on `claude/calissa-art-cups` (Petra gates it to the publishe
    counting down in Nixie tubes, the cable, a damage doll of your frame, the giant's barrier and stagger. Get low on battery or
    berserk to see it change. The gantry's page (the lectern) is dressed as a garage with load and energy gauges.
 6. **The camera close to a building**: your frame dithers out so you can see.
-7. **The Pneuka Jar's saddle** on the slip jelly mount (Y in the Dunes): a lacquered kura with tassels.
+7. **Dovina's smash challenges and the colossus** (her note has the how): the lane under a vermilion torii whose lamps count you in,
+   kokeshi bowling pins that tip with a STRIKE tag, a painted target, medal confetti; the dune colossus as a sand-shedding haniwa with
+   Lachrymite in its back, its burrow, clod and wave marked; hold a giant overhead and the frame's joints glow ember, slam it for dust.
+8. **The Pneuka Jar's saddle** on the slip jelly mount (Y in the Dunes): a lacquered kura with tassels.
 
 **Not right yet:** the yard is lit by the clock's noon sun under a dusk sky (asked Petra for a zone light); hip pieces on the tetrapod
 and treads hang as a farthingale and may still look odd; the knight cape reads heavy brown more than cloth; PRESS's, UNIT's and
-CABLE's tile glyphs are hard to read at 48 px; Dovina's colossus is drawn but waits on her runtime (it dresses on a `sand` row).
+CABLE's tile glyphs are hard to read at 48 px; the colossus is still cylinders from the side, the sand wave reads poorly in a still, effects small from 40 m.
 
 Delete this note once read.

@@ -4,7 +4,7 @@
 //   SOUP      pieces gathered a (joint, material) and merged into one mesh each when done (a primitive placed, turned and scaled),
 //             so a dressed joint is one draw a material, parented to the placeholder's own joint and carried by its pose
 //   CANVASES  the burlap (the weave, a stitched seam round its edge), the sack's front (Strawman's red-on-cream target), the sack's
-//             face (stitched X eyes, a running-stitch mouth), the clay's face (fired terracotta, its hollow eyes and mouth dark), drawn
+//             face (stitched X eyes, a running-stitch mouth), the fired clay, drawn
 //             once and shared by every giant
 //   TUFT      a burst of straw (thin cones splayed out round a ring), the straw giant's seams and fists
 //   HIDE      a placeholder's own meshes hidden (its materials' `visible` false, kept for its own dispose), and shown again
@@ -12,7 +12,7 @@
 // marionette's sack canvases (vfx/strawmanwell/marionette.js), Strawman's make (vfx/strawman.js).
 //
 //   new Soup()  .add(joint, geo, matKey, { at, rot, scale })  .done(mats) -> meshes   tuft(soup, joint, matKeys, r, n, len, { at, up, rot })
-//   giantCanvas(kind) -> CanvasTexture (shared; 'burlap' | 'target' | 'face' | 'clay' | 'clayFace')   hidePlaceholder(mats, hide)
+//   giantCanvas(kind) -> CanvasTexture (shared; 'burlap' | 'target' | 'face' | 'clay')   hidePlaceholder(mats, hide)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -58,7 +58,7 @@ export function tuft(S, joint, mats, r, n, len, { at = [0, 0, 0], up = 1, rot = 
 }
 
 const CANVAS = {};
-/** A shared canvas, drawn once: the burlap's weave, the sack's target, the sack's face, the fired clay and the clay's face. */
+/** A shared canvas, drawn once: the burlap's weave, the sack's target, the sack's face and the fired clay. */
 export function giantCanvas(kind) {
   if (CANVAS[kind]) return CANVAS[kind];
   const S = 256, cv = document.createElement('canvas'); cv.width = cv.height = S; const g = cv.getContext('2d');
@@ -87,12 +87,6 @@ export function giantCanvas(kind) {
     for (let k = 0; k < 160; k++) { const x = (k * 71) % S, y = (k * 37 + k * k) % S, r = 6 + (k % 9) * 3; g.fillStyle = `rgba(${k % 3 ? '70,30,14' : '220,150,100'},0.10)`; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); }
     for (let k = 0; k < 400; k++) { g.fillStyle = k % 2 ? 'rgba(40,20,10,0.5)' : 'rgba(240,210,170,0.4)'; g.fillRect((k * 131) % S, (k * 89) % S, 2, 2); }
     g.strokeStyle = 'rgba(50,22,10,0.35)'; g.lineWidth = 1; for (let k = 0; k < 14; k++) { g.beginPath(); let x = (k * 53) % S, y = (k * 29) % S; g.moveTo(x, y); for (let s = 0; s < 6; s++) { x += ((s * 7 + k) % 9) - 4; y += 9; g.lineTo(x, y); } g.stroke(); }
-    if (kind === 'clayFace') { // (the haniwa's face: two almond hollows and a round mouth, cut through)
-      g.fillStyle = '#120806';
-      for (const x of [86, 170]) { g.beginPath(); g.ellipse(x, 104, 26, 13, 0, 0, Math.PI * 2); g.fill(); }
-      g.beginPath(); g.ellipse(128, 182, 18, 15, 0, 0, Math.PI * 2); g.fill();
-      g.fillStyle = 'rgba(200,60,40,0.4)'; for (const x of [62, 194]) { g.beginPath(); g.arc(x, 150, 16, 0, Math.PI * 2); g.fill(); } // (a haniwa's red ochre on the cheeks)
-    }
   }
   const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
   return (CANVAS[kind] = t);

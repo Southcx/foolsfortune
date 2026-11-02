@@ -96,7 +96,8 @@ function licking(mat, U) {
 
 /** The inner row as fire (2026-11-02: South's last look, "it reads as lavender petals"): the lick's vertex wave run faster (`uLick`), and
  *  each tongue coloured up its height (aTongue.w) from an ember root through a gold core to the film's violet only at the tip, additive,
- *  its brightness the lick's strength; a flicker run up it so the light moves as the shape does. */
+ *  its brightness the lick's strength (kept under white: additive over the gold, it bleached to petals); a flicker run up it so the
+ *  light moves as the shape does; its tongues narrower and longer than the gold's, so they read as flame. */
 function fire(mat, U) {
   licking(mat, U);
   const lick = mat.onBeforeCompile;
@@ -109,8 +110,8 @@ function fire(mat, U) {
 varying float vFireU; varying float vFirePh; uniform vec4 uLick;`)
       .replace('vec4 diffuseColor = vec4( diffuse, opacity );', `float fu = vFireU, fl = 0.75 + 0.25 * sin(uLick.x * 9.0 + vFirePh * 2.0 - fu * 7.0);
   vec3 emb = vec3(1.0, 0.32, 0.06), gld = vec3(1.0, 0.78, 0.3), tip = vec3(${hexVec(L.film)});
-  vec3 fc = mix(emb, gld, smoothstep(0.0, 0.45, fu)); fc = mix(fc, vec3(1.0, 0.95, 0.8), smoothstep(0.3, 0.55, fu) * (1.0 - smoothstep(0.55, 0.8, fu)) * 0.6); fc = mix(fc, tip, smoothstep(0.72, 1.0, fu));
-  vec4 diffuseColor = vec4(fc * (1.6 * uLick.w) * fl, opacity * (1.0 - 0.55 * smoothstep(0.8, 1.0, fu)));`);
+  vec3 fc = mix(emb, gld, smoothstep(0.0, 0.45, fu)); fc = mix(fc, vec3(1.0, 0.95, 0.8), smoothstep(0.3, 0.55, fu) * (1.0 - smoothstep(0.55, 0.8, fu)) * 0.35); fc = mix(fc, tip, smoothstep(0.72, 1.0, fu));
+  vec4 diffuseColor = vec4(fc * (1.2 * uLick.w) * fl, opacity * (1.0 - 0.55 * smoothstep(0.8, 1.0, fu)));`);
   };
   mat.customProgramCacheKey = () => 'mech-halo-fire';
   return mat;
@@ -202,7 +203,7 @@ export const HALOS = {
       const g = Pc.done(); g.setAttribute('aTongue', new THREE.Float32BufferAttribute(tg, 4)); g.setAttribute('aPhase', new THREE.Float32BufferAttribute(ph, 1));
       return g;
     };
-    const gm = new THREE.Mesh(row(13, Rr, R * 0.27, R * 0.6, 0, 0.14 * k0, 0), goldM), fm = new THREE.Mesh(row(13, Rr * 0.97, R * 0.17, R * 0.52, -0.14 * k0 - 0.05, 0.08 * k0, 0.5), filmM);
+    const gm = new THREE.Mesh(row(13, Rr, R * 0.27, R * 0.6, 0, 0.14 * k0, 0), goldM), fm = new THREE.Mesh(row(13, Rr * 0.97, R * 0.12, R * 0.66, -0.14 * k0 - 0.05, 0.08 * k0, 0.5), filmM);
     for (const [m, nm] of [[gm, 'flames'], [fm, 'fire']]) { m.name = `mech-cape.kohai.${nm}`; m.castShadow = m === gm; group.add(m); own.push(m); } // (the fire is light: no shadow)
     // the embers: small motes off the flames' tips, rising and fading
     const E = new THREE.InstancedMesh(new THREE.OctahedronGeometry(0.07 * k0 + 0.03, 0), emberM, Kl.embers); E.name = 'mech-cape.kohai.embers'; group.add(E); own.push(E);
