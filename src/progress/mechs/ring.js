@@ -52,7 +52,7 @@ const M = (o) => ({ k: 0.4, windup: 1, region: 'head', answers: ['dodge', 'duck'
  *  the answers that work, its counter window (real s it is open after being answered), whether answering it earns a star, its arm. */
 export const RIVALS = {
   // THE SPARRING FRAME (Glass Joe's place): slow, its guard low, a taunt that is a gift. Hit its head while it beckons for a star.
-  sparring: { label: 'Sparring frame', line: 'The gantry\'s old practice frame, rebuilt. It guards its body and leaves its head.', stamina: 140, guard: 'low',
+  sparring: { label: 'Sparring frame', line: 'The gantry\'s old practice frame, rebuilt. It guards its body and leaves its head open.', stamina: 140, guard: 'low',
     speed: [1, 1.1, 1.25], getUp: [3, 6, 9], gap: 1.6,
     pattern: ['jab', 'wait', 'jab', 'hook', 'wait', 'taunt'],
     moves: {
