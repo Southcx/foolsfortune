@@ -564,3 +564,21 @@ shortfall cracked from the vessel) to aberrance (a creature whose rules you rewr
 raised together give one of 21 pairings, a move that asks both questions at once. A domain grows by shu-ha-ri (keep the form 1 to 14, break it
 from 15, leave it from 60): each rung above the widening is an art opened by the domain's level or by its feat, the first relations at 15
 (DOMAINS.md 16, 17), worn under the psyche's notches (Hollow Knight's budget, each switchable), an action sharing the art key's slot.
+
+## 33. Mechs: the Jar drives a giant (South, 2026-11-02; docs/plans/MECHS.md)
+
+South: "Giant robots. Pilotable. They should have a cradle for the Pneuka Jar to screw into ... Neon Genesis Evangelion mixed with armored
+core, mixed with the giant robot sections from Ratchet and clank." And the ruling with it: **what rides is the Pneuka Jar, sealed in a
+cradle or set in a saddle; the Courier rides only the Solar Skiff.** The Courier is the body that walks and holds the tools; the Jar is the
+soul that drives other bodies (section 32: one Vessoul).
+
+- **Taken:** Evangelion's entry plug (the cradle, screwed home), sync ratio (output and feedback both scale with it), the umbilical cable
+  and its five minutes, the AT Field neutralised at close range, the berserk. Armored Core's assembly (nine slots, each part a trade of
+  mass, load and power; four leg types) and AC6's stagger. Giant Clank's scale and its short, loud moveset.
+- **Its lesson:** mass and power. a = F / m, p = m v, P = E / t, the pendulum's stride (T = 2π √(2L / 3g)) and Froude's walking limit, all
+  felt in the frame's handling and never said. Sync rises when you walk with the stride, so the pendulum is the skill.
+- **Its law:** a mech is its own body (a cradle of kind `body`), so the core movement is never touched. Its damage is the vessel's one rule
+  (FORMS `mech`); its barrier is the pool's shield; its battery backs onto the pool.
+- **Cross-module from the start:** sync's ceiling is your mental state (cook before a launch); a giant felled feeds Psychokinesis, sync
+  feeds Possession; in the world (v2) its steps are the loudest noise on the island, its stomps are warp marks (sentinels come), Fury's
+  lightning fills its battery, and what it throws is an Impact blow at its mass.

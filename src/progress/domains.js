@@ -132,6 +132,12 @@ export const SOURCES = [
   { event: 'skiff.grind.end', domain: 'spellscription', base: 6,  quality: (e) => (e.by === 'courier' && e.why === 'end' ? q01((e.metres || 0) / 40) : null) },
   { event: 'ship.part',       domain: 'manifestation',  acts: 6,  quality: (e) => (e.by === 'courier' && e.how === 'forge' ? 0.9 : null) },
   { event: 'ship.part',       domain: 'alteration',     acts: 2,  quality: (e) => (e.by === 'courier' && e.how === 'wear' ? 0.5 : null) },
+  // (MECHS.md 7) a mech: a body driven is Possession's question, a frame assembled Manifestation's, a barrier neutralised Alteration's,
+  // a giant felled Psychokinesis' (the heaviest thing moved by your will)
+  { event: 'mech.sync',       domain: 'possession',     acts: 1,  quality: (e) => (e.by === 'courier' ? q01(e.v || 0) : null) },
+  { event: 'mech.assemble',   domain: 'manifestation',  acts: 2,  quality: (e) => (e.by === 'courier' ? 0.5 : null) },
+  { event: 'mech.barrier',    domain: 'alteration',     acts: 4,  quality: (e) => (e.by === 'courier' && e.neutralised ? 0.8 : null) },
+  { event: 'giant.down',      domain: 'psychokinesis',  acts: 10, quality: (e) => (e.by === 'courier' ? 0.8 : null) },
   { event: 'track.validate',  domain: 'manifestation',  acts: 4,  quality: (e) => (e.by === 'courier' && e.fresh !== false ? 0.6 : null) },
   { event: 'haunt.end',       domain: 'possession',     acts: (e) => Math.max(1, Math.round((e.seconds || 0) / 10)), quality: (e) => (e.by !== 'courier' || e.why !== 'done' ? null : e.held ? 0.7 + 0.3 * q01((e.wrecks || 0) / 3) : 0.35) },
   // the open sea (OPEN-SEA.md 12 to 15): a crate hauled up on the line is a thing moved by will (Psychokinesis, by its tier); a beast
