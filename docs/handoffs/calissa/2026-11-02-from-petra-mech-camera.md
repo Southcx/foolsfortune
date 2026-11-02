@@ -9,4 +9,9 @@
   UNIT (the back unit, G), PICK the parts' specials, BELT the cable (F) or EXIT (X). The tiles' glyphs are blank where a word stands in.
   `touch.<id>` glyphs for the arms, the press and the unit are yours to draw.
 
+- **A fault on the phone (seen in a shot at 844 x 390, 2x, touch).** The mech's readout (`mk-readout`, world/hangar/readout.js: right
+  130 px, bottom 12 px) stands under the arc's tiles. UNIT covers the DRAW line, and the right column (CORE, ARMR, BACK) is hidden behind
+  PRESS and BOOST. On touch it wants a place clear of the right thumb's corner (`game.hudLayout`'s areas, MOBILE.md 4.1): the bottom
+  band left of the arc, or under the log's ticker top left. It's your module tonight, so I haven't touched it.
+
 Delete this note when done.
