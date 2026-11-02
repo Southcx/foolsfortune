@@ -14,6 +14,9 @@
 //   Wrecking Spin LMB held TECH.spinHold real s with a club in hand: a full turn striking all round (props.js swing)
 //   Grab, Throw, Javelin, Slab Shield: the props' (props.js): F, RMB with a thing held (tapped a club's swing, held and let go a throw,
 //                 point first with a post or girder), V with a slab
+//   Giant Throw   F on a staggered giant in reach: lifted over the frame's head, RMB throws it, LMB slams it (giantgrapple.js, which
+//                 takes F before the pilot's own F line reads it: it hides the press from the pilot's keys for the frame, and takes
+//                 both arms while a giant is held)
 // Every jump says `mech.jump`. The plain moveset is unchanged: a technique takes a press only where its own keys are met.
 //
 // Prior art: The Incredible Hulk: Ultimate Destruction (2005: the Thunderclap, Ground Pound, Elbow Drop, Super Jump, the shoulder charge
@@ -22,7 +25,7 @@
 //
 //   const T = new MechTech(pilot)   T.reset()   T.open(id) -> bool   T.drive(K, dt) -> { L, R } (the arm presses it took)
 //   T.jumpKeys(K, dt)   T.ram(dt) (before the move)   T.landed(fall) (the pilot's landing)   T.cityBlow(from, dir, reach, k, r) -> bool
-//   T.hitGiant(id, k, stagger, region, heavy) -> giant.js blow's result   TECH
+//   T.hitGiant(id, k, stagger, region, heavy) -> giant.js blow's result   T.grapple (Grapple, giantgrapple.js)   TECH
 //   events: mech.technique { id, by, through?, fell?, height? }, mech.jump { by, super? }, mech.hit { weapon, region, ..., crit, by }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -31,6 +34,7 @@ import { outputK } from '../../progress/mechs/rules.js';
 import { legsLeft } from '../../progress/mechs/joints.js';
 import { PROVING } from './layout.js';
 import { MECH_BODY, seatOf, heightOf } from './mech.js';
+import { Grapple } from './giantgrapple.js';
 
 /** The keys' timing (real s; placeholders for feel, South's to judge): a chord's window (Street Fighter's throw is about 0.1), Super
  *  Jump's hold, the Wrecking Spin's hold, a technique's rest before it can be done again, the Elbow Drop's dive (m/s down), the
@@ -39,8 +43,8 @@ export const TECH = { chord: 0.15, superHold: 1, spinHold: 0.6, rest: 0.8, dive:
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _f = new THREE.Vector3(), _d = new THREE.Vector3();
 
 export class MechTech {
-  constructor(pilot) { this.p = pilot; this.game = pilot.game; this.reset(); }
-  reset() { this.t = 0; this.pressT = { L: -9, R: -9 }; this.cool = {}; this.charge = -1; this.diving = null; this.ramming = null; this.lHold = 0; this.rHold = -1; this.spun = false; }
+  constructor(pilot) { this.p = pilot; this.game = pilot.game; this.grapple = new Grapple(this); this.reset(); }
+  reset() { this.t = 0; this.pressT = { L: -9, R: -9 }; this.cool = {}; this.charge = -1; this.diving = null; this.ramming = null; this.lHold = 0; this.rHold = -1; this.spun = false; this.grapple?.reset(); }
   get city() { return this.p.hangar.city?.built ? this.p.hangar.city : null; }
   get props() { return this.p.hangar.props; }
   out() { return this.p.berserk > 0 ? outputK(1) : outputK(this.p.sync); }
@@ -71,6 +75,9 @@ export class MechTech {
   /** The arm presses a technique takes this frame (the rest go to the arms as before). */
   drive(K, dt) {
     this.t += dt; const used = { L: false, R: false }, P = this.props, held = P?.held;
+    // Giant Throw first: F on a staggered giant is its (the pilot's own F line must not also read it); a giant held takes both arms
+    if (K.pressed('KeyF') && this.grapple.tryF()) { const was = K.pressed; K.pressed = (k) => k !== 'KeyF' && was(k); }
+    const hold = this.grapple.drive(K); if (hold) return hold;
     const lP = K.pressed('Mouse0'), rP = K.pressed('Mouse2');
     if (lP) this.pressT.L = this.t; if (rP) this.pressT.R = this.t;
     // the Thunderclap: both hands within the chord (the first's blow called back)

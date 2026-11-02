@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE MECH'S READOUT, A PLACEHOLDER (docs/plans/MECHS.md 4.4, 8: Calissa's to build as an Eva-style plug-suit HUD in the Clay dress):
 // a small plain panel while the Pneuka Jar is sealed in a piloted mech, saying what is: sync as a percent, the battery and its seconds
-// left at the draw now, CABLE or OFF CABLE, each region's crack, and the straw giant's barrier and stagger when it is near. It never
+// left at the draw now, CABLE or OFF CABLE, each region's crack, and the straw giant's barrier and stagger when it is near, and the lane's smash challenge under way (challenges.js). It never
 // narrates (the log does: Dovina's rules on the mech's events). Its classes are `mk-readout` and `mk-ro-*` for Calissa's dress.
 //
 // Prior art: Evangelion's entry-plug displays (sync ratio, the internal battery's countdown, the umbilical's state), Armored Core's
@@ -51,6 +51,8 @@ export class MechReadout {
         `BARRIER  ${B.downT > 0 ? `DOWN ${Math.ceil(B.downT)}s` : pct(B.up)}`,
         `STAGGER  ${s.staggerT > 0 ? 'STAGGERED' : pct(s.v / STAGGER.full)}`);
     }
+    const Ch = this.hangar.challenges?.lines(); // (the smash challenge running, or the lectern's offer when the frame stands at it: challenges.js)
+    if (Ch) lines.push('', ...Ch);
     this.el.innerHTML = lines.join('\n');
   }
 }
