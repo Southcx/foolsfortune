@@ -130,6 +130,7 @@ export class MechPilot {
 
   /** The launch: the gantry's lift rides up the shaft, then under the seam the mech is set down in the proving ground. */
   lift(dt) {
+    if (this.game.mechMount?.playing) return; // (the lift waits for the Jar to screw in and the frame to wake: Calissa's mount, vfx/mechs/mount.js, `mech.mount { beat: 'power' }`)
     const L = HANGAR.lift; this.liftT += dt;
     this.pos.y += (L.rise / L.t) * dt;
     if (this.liftT >= L.t && !this.liftDone) {
