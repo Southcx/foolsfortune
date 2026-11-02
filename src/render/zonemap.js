@@ -62,6 +62,9 @@ const BY_ID = Object.fromEntries(ZONE_TESTS.map((z) => [z.id, z]));
 
 /** A roofed room far from the workshop, where the sun's shadow camera never reaches: no sun there (lit, it shines on every upward face
  *  through the roof, Calissa's shots of the Touchstone), as under the ground (boot/frame.js `under`). */
+/** A zone's camera far plane (m) where it is drawn further than the room default the Dunes ease toward: the proving ground's giant
+ *  stands 230 m from the launch (Dovina's hangar, 2026-11-02). Read by the one place that sets the far plane (world/dunes/dunes.js). */
+export const ZONE_FAR = { provingground: 600 };
 export const ROOFED = new Set(['touchstone', 'bazaar', 'sandbox', 'strawmanwell', 'hangar']); // (the bazaar's dome too: Calissa, 2026-10-30, "the sun through a dome is a leak, not a look")
 
 /** What each zone is underfoot and as a space (Wanda's hooks, 2026-10-30): its `floor`, a step's surface where nothing on the ground

@@ -67,7 +67,8 @@ export class Kitchen {
       const row = el('div', 'ck-row'); side.appendChild(row);
       const btn = (t, run, cls = '') => { const b = el('button', `ck-b ${cls}`, t); b.onclick = (e) => { e.stopPropagation(); run(b); }; row.appendChild(b); return b; };
       this[`page_${step}`](root, row, btn, el);
-    }, { title: 'THE HEARTH', sub: 'click or tap · F closes' });
+    }, { title: 'THE HEARTH', sub: 'click or tap · F closes', aside: this.game.cookStage ? 'right' : null }); // (set aside: the cooking stage draws the kitchen in 3D beside it, vfx/cooking/cookstage.js)
+    this.game.cookStage?.enter(this);
   }
 
   // ------------------------------------------------------------------ choose

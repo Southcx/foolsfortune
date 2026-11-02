@@ -1099,7 +1099,9 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 
 395. **A system joins its phase after it is built, and a missing one throws.** A registration that reads
   `game[name]` before the line that builds it passes `undefined`; quietly ignored, the system never runs and nothing says so.
+396. **A publish's old pack docs are deleted only after the publish is confirmed, never in the same parallel
+  batch.** A refused publish leaves the old page live, and its docs are the ones the delete takes.
 
-NEW:drops-belong-to-place. **A thing that falls in a place belongs to that place's rules.** A creature's drop in a Well is the run's
+397. **A thing that falls in a place belongs to that place's rules.** A creature's drop in a Well is the run's
   haul (lost with a shatter, home up the way up); a drop left lying is cleared when its render zone is left. A pickup that skips the
   place's own economy is a leak of value; one that outlives its place is a leak of objects.

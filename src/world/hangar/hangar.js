@@ -40,7 +40,7 @@ const GAP = 4, DOOR_H = 5, REACH = 1.8; // (the south wall's door gap and its he
 
 /** The two rooms' air (fog colour, exponential density): the hall's at the Sandbox's warmth; the yard's a dusk haze about a tenth as
  *  thick, so a 16 m giant reads at 200 m (exp(-(0.0012 x 200)^2) keeps 94% of it). */
-export const AIR = { hangar: { fog: 0x5a4a3c, density: 0.0045 }, provingground: { fog: 0x9a8a78, density: 0.0012, far: 600 } };
+export const AIR = { hangar: { fog: 0x5a4a3c, density: 0.0045 }, provingground: { fog: 0x9a8a78, density: 0.0012 } };
 
 export class Hangar {
   constructor(game) {
@@ -155,8 +155,7 @@ export class Hangar {
     const A = AIR[z]; if (!A) return;
     F.color.setHex(A.fog); F.density = A.density;
     if (z === 'provingground' && g.scene.background?.isColor) g.scene.background.setHex(A.fog); // (the yard's horizon as its haze, not the hall's dark)
-    // (the yard's far plane opened past the giant, 230 m off at launch: the Dunes set it each frame before this, and set it back on leaving)
-    const cam = g.camera; if (A.far && Math.abs(cam.far - A.far) > 1) { cam.far = A.far; cam.updateProjectionMatrix(); }
+    // (the yard's far plane, 600 m past the giant 230 m off at launch, is render/zonemap.js ZONE_FAR's: set with the rest in world/dunes/dunes.js)
   }
 
   update(dt) {
@@ -167,7 +166,7 @@ export class Hangar {
     this.giant.update(dt, this.bout.active ? null : this.pilot.target()); // (no giant cuts into a bout)
     this.bout.tick(dt);
     this.city.update(dt, g.rawDt ?? dt); this.props.update(dt); // (the chunks falling, the city re-meshed, the props in flight)
-    this.readout.update(g.rawDt ?? dt, on && this.pilot.mode === 'pilot');
+    this.readout.update(g.rawDt ?? dt, on && this.pilot.mode === 'pilot' && !this.bout.active); // (a bout has its own readout: ringbout.js)
     const it = g.interact?.cur, P = g.player;
     if (it?.id === 'hangar' && P.peekLatch?.('KeyF') && !C2?.sealed) {
       P.latch('KeyF');

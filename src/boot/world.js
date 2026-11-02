@@ -44,6 +44,7 @@ import { GodhandLooks } from '../vfx/godhand/godhandlooks.js';
 import { DomainLooks } from '../vfx/domainlooks.js';
 import { installSentinelBody } from '../vfx/sentinelbody.js';
 import { installDropSprites } from '../vfx/dropsprites.js';
+import { installMechLooks } from '../vfx/mechs/clayframe.js';
 import { SentinelLook } from '../vfx/sentinellook.js';
 import { PalmDieLook } from '../vfx/godhand/palmdie.js';
 import { MawWipe } from '../vfx/mawwipe.js';
@@ -82,6 +83,7 @@ export async function bootWorld(game, made) {
   game.systems.add('world', () => game.duelFoes.update(), { name: 'duelFoes' });
   game.touchstoneLook = new TouchstoneLook(game); // (the Touchstone dressed as a dark assay hall, built and taken down with her area: vfx/touchstonelook.js)
   game.bazaarHall = new BazaarHall(game); // (the bazaar's Gold Saucer dress: dome, mosaic, stalls, neon, lanterns, carnival props; vfx/bazaarhall.js)
+  for (const name of ['touchstoneLook', 'bazaarHall']) game.systems.add('fx', game[name], { clock: 'raw', name }); // (the `fx` phase: core/systems.js)
   { // (the moonflowers on the pond's far shore: sacred datura is a desert native; vfx/datura.js)
     const at = (a, k = 1.12) => ({ x: DUNE.x + POND.x + Math.cos(a) * POND.rx * k, z: DUNE.z + POND.z + Math.sin(a) * POND.rz * k });
     game.daturas = new Daturas(game, [{ ...at(-2.2), n: 9 }, { ...at(-1.75, 1.18), n: 6 }, { ...at(-2.6, 1.1), n: 7 }]);
@@ -100,6 +102,7 @@ export async function bootWorld(game, made) {
   game.sentinelLook = new SentinelLook(game); // (a sentinel's moments: the sand it rises from, its slam, a crack, a mend, its fall: vfx/sentinellook.js)
   installSentinelBody(game); // (a sentinel's body for its mind: game.makeSentinelBody({ scale }), vfx/sentinelbody.js)
   installDropSprites(game); // (the drops' 48 x 48 sprites by broader kind: game.dropSprites.texture(cat), vfx/dropsprites.js)
+  installMechLooks(game); // (a mech's body for the hangar: the clay frame, vfx/mechs/clayframe.js)
   game.domainLooks = new DomainLooks(game); // (the domains' effects at their moments: a level-up at the Courier, a god power's act beside its mark; vfx/domainlooks.js)
   game.systems.add('fx', game.domainLooks, { clock: 'raw', name: 'domainLooks' }); // (the `fx` phase: core/systems.js)
   game.palmDieLook = new PalmDieLook(game); // (the palm die in the god hand's palm, in your stones' mineral: vfx/godhand/palmdie.js)

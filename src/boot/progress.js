@@ -134,6 +134,7 @@ export function bootProgress(game, made) {
   game.macros = new MacroBook(game); // (what they have composed for minds: tools/veritome/mind/macros.js, the Codex's VERITOME, THE MIND)
   game.flash = new Flash(game); // (the Veritome's flash: 1 with the book out; it dazzles and stuns: tools/veritome/flash.js)
   game.reprogram = new Reprogram(game); // (a stunned mind, opened with the middle button and rewritten: tools/veritome/reprogram.js)
+  game.systems.add('minds', game.flash, { clock: 'raw', name: 'flash', after: 'oddsTags' }); game.systems.add('minds', game.reprogram, { clock: 'raw', name: 'reprogram', after: 'pairSpecials' }); // (the `minds` phase: core/systems.js)
   game.finishPlate = new FinishPlate(game); // (a photo finish at the Raceway kept as a plate in the Veritome's memory: tools/veritome/finishplate.js)
   game.log.onSend = (t) => game.chat.run(t);
 }

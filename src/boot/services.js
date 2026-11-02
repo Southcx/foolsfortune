@@ -139,6 +139,7 @@ export async function bootServices(made) {
   game.ui = new HideUI(game); // (F2: the interface off the screen, for a clean shot)
   game.glyphs = new Glyphs(game); // (the !!! over a bite: marks in the world, on the thing they are about)
   game.ai = new AI(game); // (what creatures notice and what the world offers them: ai/, docs/AI.md)
+  game.systems.add('minds', game.ai, { name: 'ai' }); // (the `minds` phase's first: core/systems.js)
   game.signatures = new Signatures(game); standardSignatures(game); // (where Lachryma is, for whatever senses it: signatures.js)
   game.px = px; // (the maker's pixel art, for any window that wants it: ui/pixel.js)
   game.cinema = new Cinema(game); // (bars, a composition for the camera, a vignette)

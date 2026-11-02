@@ -64,7 +64,7 @@ export function mechRules({ on, L, log }) {
   on('city.break', (e) => { if (!mine(e)) return; L.inc('mech.destroy.cells', e.cells || 0); if (e.chunks) L.inc('mech.destroy.chunks', e.chunks); });
   on('city.felled', (e) => {
     if (!mine(e)) return; L.inc('mech.destroy.buildings'); if (e.topple) L.inc('mech.destroy.topple');
-    log.say('gain', e.topple ? `The ${e.label || 'building'} comes down in one.` : `The ${e.label || 'building'} comes down.`, { key: 'city.felled', throttle: 1.5 });
+    log.say('gain', e.topple ? `The ${(e.label || 'building').toLowerCase()} comes down in one.` : `The ${(e.label || 'building').toLowerCase()} comes down.`, { key: 'city.felled', throttle: 1.5 });
   });
   on('mech.grab', (e) => { if (mine(e)) L.inc(`mech.prop.grab.${e.prop}`); });
   on('mech.prop.hit', (e) => { if (!mine(e)) return; L.inc('mech.prop.hit'); if ((e.n || 0) >= 3) L.inc('mech.prop.spin3'); if (e.prop === 'limb' && e.own) L.inc('mech.limb.own'); });
@@ -73,7 +73,7 @@ export function mechRules({ on, L, log }) {
   on('mech.joint', (e) => {
     if (e.to !== 'snapped') return; if (e.who !== 'mech' && e.by === 'courier') L.inc(`mech.joint.snap.${e.who}`);
     const part = { neck: 'head', shoulderL: 'left arm', shoulderR: 'right arm', elbowL: 'left forearm', elbowR: 'right forearm', hipL: 'left leg', hipR: 'right leg', backMount: 'back unit' }[e.joint] || 'part';
-    log.say(e.who === 'mech' ? 'warn' : 'gain', e.who === 'mech' ? `Your mech's ${part} tears off.` : `The ${e.label || e.who}'s ${part} tears off.`, { key: `mech.joint.${e.who}.${e.joint}`, throttle: 1 });
+    log.say(e.who === 'mech' ? 'warn' : 'gain', e.who === 'mech' ? `Your mech's ${part} tears off.` : `The ${(e.label || e.who).toLowerCase()}'s ${part} tears off.`, { key: `mech.joint.${e.who}.${e.joint}`, throttle: 1 });
   });
   // ---- the ring (ring.js events, carried by the runtime with `by` and the rival's id) ----
   on('bout.enter', (e) => { if (mine(e)) log.say('info', `You square up to the ${(e.label || 'rival').toLowerCase()}.`, { key: 'bout.enter', throttle: 2 }); });

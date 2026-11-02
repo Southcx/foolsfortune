@@ -40,6 +40,8 @@ const LAYERS = [
   { id: 'sandbox', name: 'THE SANDBOX', zone: 'sandbox', cell: 2, sight: 7 }, // (the hand's physics room: world/sandbox/sandbox.js)
   { id: 'strawmanwell', name: "STRAWMAN'S WELL", zone: 'strawmanwell', cell: 2, sight: 7 }, // (the 2D platformer's test bench: world/strawmanwell/)
   { id: 'touchstone', name: 'THE TOUCHSTONE', zone: 'touchstone', cell: 2, sight: 7 }, // (the Assay's dark room: world/touchstone/touchstone.js)
+  { id: 'hangar', name: 'THE HANGAR', zone: 'hangar', cell: 2, sight: 7 }, // (the mechs' hall: world/hangar/)
+  { id: 'provingground', name: 'THE PROVING GROUND', zone: 'provingground', cell: 8, sight: 40 }, // (the yard at the mech's scale beside it: world/hangar/provingground.js)
 ];
 const BY_ZONE = Object.fromEntries(LAYERS.filter((l) => l.zone).map((l) => [l.zone, l]));
 const LAYER_BY_ID = Object.fromEntries(LAYERS.map((l) => [l.id, l]));

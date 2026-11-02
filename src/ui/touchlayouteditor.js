@@ -26,6 +26,7 @@ import { TouchTile, TILE } from './touch/tile.js';
 import { placeOf } from './touch/areas.js';
 import { defaultSpots } from './touch/cluster.js';
 import { HUD_LAYOUT } from './hudlayout.js';
+import { ARC_GRID } from '../progress/toucharc.js';
 import { brineFrame, GOLD, COUNT_FACE } from './brineframe.js';
 import { clayDress } from './goalswindow.js';
 import { FONT } from './theme.js';
@@ -182,7 +183,7 @@ export class TouchLayoutEditor {
     this.rects = [];
     this.tiles.forEach((t, i) => {
       const size = Math.max(TILE.min, Math.round(spots[i][2] * k)), w = t.widthFor(size), c = P.slots?.[i] ? L.fromFrac(P.slots[i]) : { x: spots[i][0] + spots[i][2] / 2, y: spots[i][1] + spots[i][2] / 2 };
-      const q = L.clampRect({ x: c.x - w / 2, y: c.y - (size + TILE.foot) / 2, w, h: size + TILE.foot }, [panel, ...this.rects]);
+      const q = L.clampRect(this.snap({ x: c.x - w / 2, y: c.y - (size + TILE.foot) / 2, w, h: size + TILE.foot }, size), [panel, ...this.rects]);
       t.place(q.x, q.y, size, w); this.rects.push(q);
     });
     this.home = L.stickHome(P, [panel, ...this.rects]); this.ringAt = -9;
@@ -192,6 +193,15 @@ export class TouchLayoutEditor {
     const ks = L.obstacles().filter((o) => o !== T);
     while (this.keeps.children.length < ks.length) this.keeps.append(make('div', 'tle-keep'));
     [...this.keeps.children].forEach((el, i) => { const o = ks[i]; el.hidden = !o; if (o) Object.assign(el.style, { left: `${Math.round(o.x)}px`, top: `${Math.round(o.y)}px`, width: `${Math.round(o.w)}px`, height: `${Math.round(o.h)}px` }); });
+  }
+
+  /** A tile's place snapped to whole cells of the arc's grid (progress/toucharc.js ARC_GRID: one gutter, counted from the safe area's
+   *  bottom-right edges in), each step its own size and the gutter, so tiles let go anywhere stand in rows with equal padding (South,
+   *  2026-11-02: "the tiles need equal padding or else it looks awful"). */
+  snap(r, size) {
+    const V = placeOf(this.game).view, G = ARC_GRID, pitch = size + G.gutter, R = V.w - G.edge, B = V.h - G.edge;
+    const nx = Math.max(0, Math.round((R - r.w - r.x) / pitch)), ny = Math.max(0, Math.round((B - r.h - r.y) / pitch));
+    return { ...r, x: R - r.w - nx * pitch, y: B - r.h - ny * pitch };
   }
 
   /** A finger let go: the draft takes the places as they were clamped, so what is kept is where it stood. */
