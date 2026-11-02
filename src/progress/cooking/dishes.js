@@ -14,6 +14,7 @@
 //
 //   FAMILIES (bread built; pasta, sheets, noodles, seafood on the 3D stage)   DISHES { id: { family, moves, base, label, line } }   dishFor(family, addin) -> { id, label }
 //   GRADES [{ id, at, strength, hold }]   gradeOf(scores, hits, ruined) -> grade   lift(grade) -> grade   serve({ family, addin, scores, hits, ruined, adjusted }) -> served
+//   dishDraught(taste, grade) -> { feeling, strength, hold } | null   (batch and auto-cook: progress/cooking/batch.js)
 // ---------------------------------------------------------------------------------------
 import { tasteOf, leadOf, ADJUST, FEELING_TASTE, isFish } from './flavour.js';
 import { SPECIES } from '../../tools/sondelass/angling/species.js';
@@ -79,10 +80,14 @@ export function serve({ family, addin = null, scores = [], hits = [], ruined = f
   if (rightFix) G = lift(G);
   const ids = [...(F?.base || []), ...(addin ? [addin] : [])], t = tasteOf(ids);
   if (adjusted && ADJUST[adjusted]) for (const [k, v] of Object.entries(ADJUST[adjusted].taste)) t[k] += v;
+  return { dish, grade: G.id, taste: t, draught: dishDraught(t, G) };
+}
+/** The draught a dish of this taste lays at a grade ({ feeling, strength, hold real s }), or null (dubious, or no feeling taste). */
+export function dishDraught(t, G) {
   const lead = leadOf(t);
-  if (G.id === 'dubious' || !lead) return { dish, grade: G.id, taste: t, draught: null };
+  if (!G || G.id === 'dubious' || !lead) return null;
   const loud = Math.min(1, (t[FEELING_TASTE[lead.feeling]] || 0) / 0.8); // (how loud the feeling is: an add-in's 0.8 is full; plain bread's starch a whisper)
   const strength = Math.min(1, G.strength * (1 + 0.25 * t.kokumi) * Math.max(0.2, loud));
   const hold = Math.round(DRINK_HOLD * G.hold * (1 + t.umami));
-  return { dish, grade: G.id, taste: t, draught: { feeling: lead.feeling, strength: +strength.toFixed(3), hold } };
+  return { feeling: lead.feeling, strength: +strength.toFixed(3), hold };
 }

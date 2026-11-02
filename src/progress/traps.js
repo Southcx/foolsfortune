@@ -22,6 +22,8 @@
 // Divination is the rider's: Read shows a possessed trap's next intent (TRACK-EDITOR.md 6).
 //
 //   TRAP   TRAPS[kind] = { label, line, power, cost, cycle: { period, min, max, tell, active }, cooldown, size, ... }   TRAP_KINDS
+//   TRAP_OPEN[kind] = { count?: [key, n], feat?: [key, n], hint } (null: given)   trapOpen(kind, L) -> bool (G309: the editor's traps by
+//   achievement, never by a god power's level: DESIGN.md 22, arts only by achievement)
 //   autoPhase(kind, period, offset, t) -> { phase: 'idle' | 'tell' | 'active', k (0..1 through it), swing? }
 //   class TrapClock: .phase .k  .fire() -> bool  .ready  .step(dt)   (a possessed trap's clock: idle -> tell -> active -> cooldown)
 // ---------------------------------------------------------------------------------------
@@ -107,4 +109,25 @@ export class TrapClock {
       if (this.t >= dur) { this.phase = 'idle'; this.cool = this.K.cooldown; if (this.kind === 'pendulum') this.from = -(this.from ?? 1); }
     }
   }
+}
+
+/** Which traps the editor offers (GAPS G309; TRACK-EDITOR.md 9): two given from the start, the rest each opened by a count way (haunted
+ *  races run: where you meet traps fired at you, TRACK-EDITOR.md 7) or a feat way (wrecking rivals with the trap before it in the
+ *  ladder while you haunt a track: you learn a trap by using the last one well). Super Mario Maker's elements unlocked as you build,
+ *  Ultimate Chicken Horse's box of traps; the god powers still make them, their level never gates them. Counts sized at about two
+ *  haunted races a rung (a race 3 to 4 real minutes: the whole box in about 40 minutes of haunted racing). */
+export const TRAP_OPEN = {
+  pillars: null,
+  gust: null,
+  pendulum: { count: ['race.haunted', 2], feat: ['trap.wreck.pillars', 3], hint: 'Race 2 haunted races, or wreck 3 rivals with rising pillars' },
+  sinkhole: { count: ['race.haunted', 4], feat: ['trap.wreck.gust', 3], hint: 'Race 4 haunted races, or wreck 3 rivals with a gust gate' },
+  gusher: { count: ['race.haunted', 6], feat: ['trap.wreck.pendulum', 3], hint: 'Race 6 haunted races, or wreck 3 rivals with a pendulum' },
+  portal: { count: ['race.haunted', 8], feat: ['trap.warp.on', 3], hint: 'Race 8 haunted races, or ride a portal on 3 times' },
+  turret: { count: ['race.haunted', 10], feat: ['trap.parry', 1], hint: 'Race 10 haunted races, or send a turret\'s flame back once' },
+};
+/** Is a trap kind open in the editor (a ledger predicate). */
+export function trapOpen(kind, L) {
+  const R = TRAP_OPEN[kind]; if (R === null) return true; if (!R) return false;
+  const got = (k) => L?.get?.(k) || 0;
+  return (R.count && got(R.count[0]) >= R.count[1]) || (R.feat && got(R.feat[0]) >= R.feat[1]);
 }

@@ -4,7 +4,8 @@
 // world/drops/creaturedrops.js). Plain words, Espada's to word (CLARITY.md).
 //
 // Ledger: cook.serve, cook.serve.<grade>, cook.dish.<id>, cook.family.<family>, cook.true, cook.true.<dish>, cook.dubious, cook.move.<move>, cook.hit.<move>,
-// cook.learn (a new recipe), hi cook.grade (0 dubious .. 5 true); drop.take, drop.take.<cat>, drop.rare, first drop.first.
+// cook.learn (a new recipe), hi cook.grade (0 dubious .. 5 true), hi cook.best.<dish> (the same, a dish's), cook.batch, cook.batch.servings,
+// hi cook.batch.size, cook.auto, cook.eat (a batch's serving eaten from the Box); drop.take, drop.take.<cat>, drop.rare, first drop.first.
 //
 //   cookingRules({ on, L, log })   (tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
@@ -21,9 +22,21 @@ export function cookingRules({ on, L, log }) {
   on('cook.serve', (e) => {
     if (e.by !== 'courier') return;
     L.inc('cook.serve'); L.inc(`cook.serve.${e.grade}`); L.inc(`cook.dish.${e.dish}`); L.inc(`cook.family.${String(e.dish).split('.')[0]}`); L.hi('cook.grade', ORDER.indexOf(e.grade));
-    if (e.true) { L.inc('cook.true'); L.inc(`cook.true.${e.dish}`); }
+    L.hi(`cook.best.${e.dish}`, ORDER.indexOf(e.grade)); // (a dish's best: what auto-cook reads, progress/cooking/batch.js autoCookOf)
+    if (e.true) { L.inc('cook.true'); L.inc(`cook.true.${e.dish}`); } // (a batch is one cook: its TRUE counts once, whatever its n)
+    if (e.n > 1) { L.inc('cook.batch'); L.inc('cook.batch.servings', e.n); L.hi('cook.batch.size', e.n); }
+    if (e.auto) L.inc('cook.auto');
     const held = e.feeling ? ` Its ${e.feeling} lasts ${e.hold} real seconds.` : '';
-    log.say('gain', `You served ${art(e.label)} ${e.label.toLowerCase()}: ${e.grade}.${held}`, { key: 'cook.serve', throttle: 1 });
+    const how = e.auto ? 'auto-cooked' : 'served';
+    const what = e.n > 1 ? `a batch of ${e.n}, ${e.label.toLowerCase()}` : `${art(e.label)} ${e.label.toLowerCase()}`;
+    const rest = e.kept > 0 ? ` ${e.kept} ${e.kept === 1 ? 'serving is' : 'servings are'} in your Pneuka Box.` : '';
+    log.say('gain', `You ${how} ${what}: ${e.grade}.${held}${rest}`, { key: 'cook.serve', throttle: 1 });
+  });
+  on('cook.eat', (e) => {
+    if (e.by !== 'courier') return;
+    L.inc('cook.eat');
+    const held = e.feeling ? ` Its ${e.feeling} lasts ${e.hold} real seconds.` : '';
+    log.say('gain', `You ate ${art(e.label)} ${e.label.toLowerCase()}.${held}`, { key: 'cook.eat', throttle: 1 });
   });
   on('drop.take', (e) => {
     if (e.by !== 'courier') return;

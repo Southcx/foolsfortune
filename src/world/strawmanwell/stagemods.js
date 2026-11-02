@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// STRAWMAN'S WELL'S STAGE MODULES: waves 2 to 4, a module a stage (docs/plans/STRAWMANS-WELL.md 4; FIGHTER.md for the Arena), each in its
+// STRAWMAN'S WELL'S STAGE MODULES: waves 2 to 4, a module a stage (docs/plans/STRAWMANS-WELL.md 4; FIGHTER.md for the Arena and the flat stage), each in its
 // own file under stages/ so a stage is built, changed and taken down without touching the room (strawmanwell.js) or another stage.
 //
 // A stage module (the default export of stages/<id>.js), every hook optional but build:
@@ -31,6 +31,7 @@ import chase from './stages/chase.js';
 import wall from './stages/wall.js';
 import maze from './stages/maze.js';
 import arena from './stages/arena.js';
+import flatstage from './stages/flatstage.js';
 
-export const MODS = [arsenal, swing, flip, pit, jar, troupe, script, depth, chase, wall, maze, arena];
+export const MODS = [arsenal, swing, flip, pit, jar, troupe, script, depth, chase, wall, maze, arena, flatstage];
 export const MOD = Object.fromEntries(MODS.map((m) => [m.id, m]));

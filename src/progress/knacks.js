@@ -65,6 +65,9 @@ export const KNACKS = {
   biteSense: { name: 'Bite Sense', does: 'Holds the hook\'s window a third longer when a fish takes the lure', // (ANGLING.md 6; the plan's name, Espada's to rule)
     opens: (L) => G(L, 'angle.hookset') >= 200 || G(L, 'angle.hookset.perfect') >= 25, // (200 hooks set, or 25 set in the window's sweet middle: angler.js quality 'perfect')
     switch: "tools/sondelass/angling/angler.js (the bite's window: f.window x1.3 while game.knacks.on('biteSense'), the !!! held with it: Petra's)", number: 'the window x1.3' },
+  thermometer: { name: 'Thermometer', does: 'Shows a cooking move\'s value as a number, and its heart, beside the food\'s own tells', // (SPIRIT-COOKING.md 4: "the tell is the interface, never a thermometer ... a late-earned knack"; G231; plain name, Espada's to rule)
+    opens: (L) => G(L, 'cook.serve') >= 150 || G(L, 'cook.true') >= 20, // (late: 150 dishes served, or 20 True cooks: by then you read the tells, and the number only confirms them)
+    switch: "world/garden/kitchen.js (the cooking window: the move's value 0..1 on its unit and the heart's mark beside the tells, while game.knacks.on('thermometer'): Petra's)", number: 'the value and its heart shown' },
   // Two-Tone (an agate's two colours on a creature's body) waits for the agate named at appraisal (`appraise.mood`), which it counts.
 };
 

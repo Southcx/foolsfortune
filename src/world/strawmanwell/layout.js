@@ -15,12 +15,12 @@ export const AT = { x: 3400, y: 200, z: -3000 };
 /** Metres between lanes (south, -z, from the wings). */
 export const LANE = 40;
 /** The zone's box (render/zonemap.js reads these numbers). */
-export const ZONE = { x0: AT.x - 50, x1: AT.x + 300, z0: AT.z - 18 * LANE - 30, z1: AT.z + 40, y0: AT.y - 50, y1: AT.y + 250 }; // (18 lanes south of the wings: render/zonemap.js's box says the same)
+export const ZONE = { x0: AT.x - 50, x1: AT.x + 300, z0: AT.z - 19 * LANE - 30, z1: AT.z + 40, y0: AT.y - 50, y1: AT.y + 250 }; // (19 lanes south of the wings: render/zonemap.js's box says the same)
 
 /** Each stage's lane: its order south of the wings, its length (m of run), the camera's height band over the floor (m) and where you
  *  start (m along the lane); its goal and checkpoints are its builder's (world/strawmanwell/stages*.js). The wings are the hub. */
 const ROWS = [
-  ['wings', 0, 92, [2.2, 5], 4],
+  ['wings', 0, 97, [2.2, 5], 4], // (97: room for the flat stage's door at 92.5)
   ['run', 1, 112, [2.2, 9], 2],
   ['climb', 2, 56, [2.2, 10], 2],
   ['stomp', 3, 44, [2.2, 6], 2],
@@ -40,6 +40,7 @@ const ROWS = [
   ['wall', 16, 80, [2.2, 9], 2],
   ['maze', 17, 46, [2.2, 23], 2], // (wave 3: the day's 4 x 4 rooms, 41 m by 28 m, stood up along the lane)
   ['arena', 18, 90, [3, 11], 40.5], // (the Courier set down on the main stage's left, FIGHTER.md 5: stages/arena.js ARENA)
+  ['flatstage', 19, 90, [3, 11], 39.4], // (the flat stage, Final Destination's, FIGHTER.md 5.1: stages/flatstage.js FLAT; the Courier at -5.6 of mid 45)
 ];
 export const LANES = Object.fromEntries(ROWS.map(([id, k, len, band, start]) => [id, { id, k, z: AT.z - k * LANE, len, band, start }]));
 export const laneOf = (id) => LANES[id] || null;
@@ -47,7 +48,7 @@ export const laneOf = (id) => LANES[id] || null;
 /** The wings' doors, one a stage in STAGES' order (m along the wings), the way out, and where Strawman stands (centre stage). */
 export const WINGS = {
   doors: { run: 7, climb: 11.5, stomp: 16, brawl: 25, machine: 29.5, flood: 34, arsenal: 38.5, swing: 43, flip: 47.5, pit: 52, jar: 56.5, troupe: 61,
-    script: 65.5, depth: 70, chase: 74.5, wall: 79, maze: 83.5, arena: 88 },
+    script: 65.5, depth: 70, chase: 74.5, wall: 79, maze: 83.5, arena: 88, flatstage: 92.5 },
   hub: 1.6, strawman: 20.5, rack: 4.3, // (rack: the movement profiles' rack, F to change: progress/movementprofiles.js)
 };
 
