@@ -22,10 +22,10 @@ bottom: (802, 343) on a 896 x 414 iPhone.
 | inner | **B** | 60 | 120 | 152° |
 | inner | **D** | 60 | 120 | 122° (the diagonal: the easiest reach after A, so the second weapon verb has it) |
 | inner | **C** | 60 | 120 | 92° (up: the thumb flicks to it) |
-| outer | **F** the meter | 54 | 196 | 176° (the far end, as ruled; ringed, gold when full) |
-| outer | **E** | 48 | 194 | 153° |
-| outer | **PICK** | 44 | 192 | 131° |
-| outer | **BELT** | 44 | 192 | 110° |
+| outer | **E** | 48 | 192 | 110° (the fold's root) |
+| outer | **F** the meter | 54 | 192 | 131° (ringed, gold when full) |
+| outer | **PICK** | 44 | 192 | 153° |
+| outer | **BELT** | 44 | 192 | 176° (the far end) |
 
 - **The inner ring** holds what a fight presses over and over. **The outer ring** holds the deliberate presses, so a swap, a pick or an
   art never goes off in a flurry.
@@ -34,8 +34,7 @@ bottom: (802, 343) on a 896 x 414 iPhone.
 
 ## Smaller points
 
-- **PICK and BELT** sit on the outer ring's upper end, past E, not on the screen's edge. The right edge under the Sight is too narrow
-  for two 44 px tiles.
+- **PICK and BELT** sit at the outer ring's far end, away from the fold's root, so a fight's half-open fold never shows them.
 - **The middle.** The arc keeps out of the centre 60% except its lower-right corner. The outer ring's F and E reach into it by about
   80 px at the bottom, under where the bodies stand. Every corner-arc game gives that corner up.
 - **A directional slot** (A and D in the Arena; D with a tool drawn) wears four small gold chevrons on its rim, so the stick's
