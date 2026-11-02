@@ -166,7 +166,7 @@ export class Ship {
     this.aimAt(view, I, abeam, waves, arena, swing); this.aimArgs = [view, abeam, waves, arena, swing];
     // the roll, its charges (and its window the parry at sea), the mercy after a hit
     const R = S.roll;
-    if (hit.has('KeyE') && this.rollT <= 0 && this.charges >= 1) { this.rollT = R.time; this.charges--; sfx.roll(); this.onRoll?.(); }
+    if (hit.has('KeyE') && this.rollT <= 0 && this.charges >= 1) { this.rollT = R.time; this.charges--; sfx.railRoll?.(); this.onRoll?.(); }
     if (this.rollT > 0) { this.rollT = Math.max(0, this.rollT - dt); this.spin = (1 - this.rollT / R.time) * Math.PI * 2 * (sx >= 0 ? 1 : -1); } else this.spin = 0;
     if (this.charges < R.charges) { this.rechargeT += dt; if (this.rechargeT >= R.recharge) { this.rechargeT = 0; this.charges++; } } else this.rechargeT = 0;
     // the parry at sea is the roll (the owner's ruling, RAIL-OVERHAUL.md: V retires on the rail): its turning window sends an outlined
@@ -181,7 +181,7 @@ export class Ship {
       if (keys.has('Mouse0')) { // (Astral a spread of three, Umbral one heavy shot)
         if (F.spread > 1) for (let i = 0; i < F.spread; i++) shots?.gun(this.nose, _n.copy(this.aim).applyAxisAngle(_b.set(0, 1, 0), (i - (F.spread - 1) / 2) * 0.06));
         else { const s = shots?.gun(this.nose, this.aim); if (s) s.dmg = F.heavy; }
-        sfx.tap?.(9);
+        sfx.railGun?.(this.game?.music?.grid?.()); // (the ship's own gun on the sixteenth: audio/crossing.js)
       }
       if (this.painting) this.paint(waves);
       const q = this.queue.shift();
@@ -195,7 +195,7 @@ export class Ship {
     if (!rmb && this.painting) {
       this.painting = false;
       const live = this.locks.filter((f) => f.alive);
-      if (live.length) { const volley = { n: live.length, flown: 0, hit: 0, downs: 0 }; for (const to of live) this.queue.push({ to, volley }); this.onVolley?.(volley); sfx.seekers?.(live.length); }
+      if (live.length) { const volley = { n: live.length, flown: 0, hit: 0, downs: 0 }; for (const to of live) this.queue.push({ to, volley }); this.onVolley?.(volley); sfx.railVolley?.(live.length, this.game?.music?.grid?.()); }
       this.locks.length = 0;
     }
     this.place(view);
@@ -297,12 +297,12 @@ export class Ship {
   absorb(s) {
     const L = this.game?.lachryma, per = T.ship.absorb || 1, room = L ? Math.max(0, L.max - L.value) : 0;
     const over = L ? Math.max(0, per - room) / per : 1;
-    this.surge = Math.min(SURGE.full, this.surge + SURGE.per * over); this.onAbsorb?.(s); sfx.absorb?.(0);
+    this.surge = Math.min(SURGE.full, this.surge + SURGE.per * over); this.onAbsorb?.(s); { const t = performance.now(); this.drinkN = t - (this.drinkT ?? -1e9) < 1500 ? Math.min(7, (this.drinkN || 0) + 1) : 0; this.drinkT = t; sfx.railDrink?.(this.drinkN, this.game?.music?.grid?.()); } // (a degree up the scale a drink in a run: audio/crossing.js)
   }
   /** A foe's shot passed close without a hit (the shot field's call, once a shot: Dovina's measure): Lachryma to the pool, capped a bar
    *  (T.ship.graze; the owner's ruling, 2026-10-20). The stage pays it (onGraze). */
   graze(s) { this.onGraze?.(s); }
-  returned() { sfx.ricochet?.(); this.onReturned?.(); }
+  returned() { sfx.railRicochet?.(); this.onReturned?.(); }
   /** The hurtbox the shot field reads (the hull's: ships.js). */
   get hurtR() { return this.hull?.hurt ?? T.ship.hurt; }
   /** The surge let go: a lance at every live foe the camera sees, both worlds, and a half bar untouchable; the chain reset (the stage's). */
@@ -311,9 +311,9 @@ export class Ship {
     const volley = { n: live.length, flown: 0, hit: 0, downs: 0 };
     for (const f of live) shots?.lance(this.nose, f, volley);
     this.surge = 0; this.mercy = Math.max(this.mercy, SURGE.mercy);
-    this.onSurge?.(volley); this.game.events?.emit('rail.surge', { n: live.length, by: 'courier' }); sfx.seekers?.(live.length);
+    this.onSurge?.(volley); this.game.events?.emit('rail.surge', { n: live.length, by: 'courier' }); sfx.railVolley?.(live.length, this.game?.music?.grid?.());
   }
-  turned() { sfx.ricochet?.(); }
+  turned() { sfx.railRicochet?.(); }
 
   tint() { const c = COLOR[this.aspect] ?? 0xffc65c; this.look?.keelMat?.color.setHex(c); } // (the ship's feeling as its keel's glow: Calissa's to dress)
 
