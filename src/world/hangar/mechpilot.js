@@ -48,7 +48,7 @@ import { GIANT_LOOK } from './giant.js';
  *  above, where it looks); the mouse's swing (rad a pixel); the mech's turn (rad a real s, a tank's on the spot quicker); a Shift
  *  held longer than `tap` real s is the assault boost; a heading change sharper than `fight` rad starts a step where it is; the hover's
  *  rise cap (m/s); the kneel's ease (a real s); the speed under which the frame stands. */
-export const PILOT = { cam: { back: 2.3, up: 0.95, look: 0.62, ease: 14 }, swing: 0.0026, pitch: 0.002, turn: 1.4, tankTurn: 2, tap: 0.22, fight: 0.7, rise: 8, kneel: 1, still: 0.4 };
+export const PILOT = { cam: { back: 2.3, up: 0.95, look: 0.62, ease: 14, clear: 1.5 }, swing: 0.0026, pitch: 0.002, turn: 1.4, tankTurn: 2, tap: 0.22, fight: 0.7, rise: 8, kneel: 1, still: 0.4 };
 /** The keys taken while sealed (core/input.js claim): the walk, boosts, jump, the arms, the back unit, the barrier, the cable, unseal,
  *  and the Courier's own verbs that would otherwise wake under them (the belt's R and X, the emotes' and the god hand's keys). */
 export const CLAIM = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'Space', 'Mouse0', 'Mouse1', 'Mouse2', 'KeyG', 'KeyV', 'KeyF', 'KeyX', 'KeyQ', 'KeyE', 'KeyR', 'KeyC', 'KeyY'];
@@ -408,10 +408,19 @@ export class MechPilot {
     const back = h * C.back, a = this.camYaw;
     _c.set(this.pos.x - Math.sin(a) * back * Math.cos(this.camPitch), this.pos.y + h * C.up + Math.sin(this.camPitch) * back, this.pos.z - Math.cos(a) * back * Math.cos(this.camPitch));
     _l.copy(this.pos).setY(this.pos.y + h * C.look);
+    this.clearCity(_l, _c, C.clear);
     if (this.shake > 0) { // (a blow felt in the cradle: the view knocked by its weight, scaled by the setting visual.shake)
       const m = this.shake * this.shake * h * 0.035 * shakeOf();
       _c.x += (SHAKE_R() - 0.5) * m; _c.y += (SHAKE_R() - 0.5) * m; _c.z += (SHAKE_R() - 0.5) * m;
     }
     g.cinema?.shot('mech', { pos: _c, look: _l, bars: 0, ease: C.ease });
+  }
+  /** The view kept out of the toy city's buildings: a building between the frame and the camera brings the camera in to `clear` metres
+   *  short of it (a third-person camera's spring arm, Unreal's; the cells are the city's own, world/hangar/city.js raycast). */
+  clearCity(from, to, clear) {
+    const City = this.hangar.city; if (!City?.built || this.mode !== 'pilot') return;
+    const len = _s.subVectors(to, from).length(); if (len < 0.01) return;
+    const hit = City.raycast(from, _s.divideScalar(len), len); if (!hit) return;
+    to.copy(from).addScaledVector(_s, Math.max(0, hit.t - clear));
   }
 }
