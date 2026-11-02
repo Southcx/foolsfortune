@@ -16,7 +16,8 @@
 // up the shaft), Armored Core's garage, the Sandbox's and the Touchstone's rooms (world/sandbox/sandbox.js: the area, arrival, F wiring).
 //
 //   game.hangar = new Hangar(game)   .build()   .teardown()   .built   .here   .arrive()   .leave()   .update(dt)   .light()
-//   .state (MechState: the frame and its cracks, save section `mech`)   .pilot (MechPilot)   .giant (StrawGiant)   .field (ProvingGround)
+//   .state (MechState: the frame and its cracks, save section `mech`)   .pilot (MechPilot)   .giant (StrawGiant)   .field (ProvingGround)   .bout (RingBout)
+//   .city (ToyCity: the voxel buildings, city.js)   .props (MechProps: what the mech picks up, props.js)
 //   .cradle (the mech's body cradle while built)   .deck (the lift's deck)   events: hangar.enter, hangar.leave { by }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -30,6 +31,9 @@ import { StrawGiant } from './giant.js';
 import { ProvingGround } from './provingground.js';
 import { MechReadout } from './readout.js';
 import { MechAssembly } from './assembly.js';
+import { ToyCity } from './city.js';
+import { MechProps } from './props.js';
+import { RingBout } from './ringbout.js';
 
 const C = { floor: 0x8a7a68, wall: 0x7a5a48, roof: 0x3a2a22, iron: 0x4c4a48, walk: 0x6b5a4a, lectern: 0x6b4a36, gold: 0xd9a441, door: 0x6b5a3a, deck: 0x5a5048 };
 const GAP = 4, DOOR_H = 5, REACH = 1.8; // (the south wall's door gap and its height, F's reach to the lectern and the door, in metres)
@@ -43,6 +47,10 @@ export class Hangar {
     this.game = game; this.built = false;
     this.state = new MechState(game); this.pilot = new MechPilot(this); this.giant = new StrawGiant(game); this.field = new ProvingGround(game);
     this.readout = new MechReadout(this); this.assembly = new MechAssembly(this);
+    this.city = new ToyCity(this); this.props = new MechProps(this); // (v2: the toy city and what is loose in it, MECHS.md 9.1, 9.2)
+    this.city.onChunk = (c) => this.props.addChunk(c); this.city.onGirder = (at) => this.props.addGirder(at);
+    this.giant.onLimb = (part, at) => this.props.spawnLimb({ from: 'giant', part, at, label: this.giant.G.label });
+    this.bout = new RingBout(this); // (the proving ground's boxing ring: a Punch-Out bout with a rival frame, world/hangar/ringbout.js)
     this.cradle = null; this.deck = null;
   }
 
@@ -83,7 +91,8 @@ export class Hangar {
     for (const [lx, lz] of [[-18, -14], [18, -14], [-18, 12], [18, 12]]) K.lamp(X(lx), y + h - 3, Z(lz), 1.4);
     K.finish();
     g.scene.add(room);
-    this.field.build();
+    this.field.build(); this.bout.build();
+    this.city.build(this.field.group); this.props.build(this.field.group); // (whole on every visit)
     this.pilot.build(); this.pilot.toGantry();
     const P = PROVING.at, Gs = PROVING.giant;
     this.giant.spawn(this.field.group, new THREE.Vector3(P.x + Gs.x, P.y, P.z + Gs.z), Gs.yaw);
@@ -107,7 +116,7 @@ export class Hangar {
     const g = this.game;
     if (this.cradle) { g.cradles?.remove(this.cradle); this.cradle = null; }
     this.readout.hide(); this.assembly.close();
-    this.giant.dispose(); this.pilot.dispose(); this.field.teardown();
+    this.bout.teardown(); this.props.teardown(); this.city.teardown(); this.giant.dispose(); this.pilot.dispose(); this.field.teardown();
     this.kit?.dispose(); this.room = null; this.kit = null; this.deck = null; this.built = false;
   }
 
@@ -154,8 +163,10 @@ export class Hangar {
     if (!this.built) { this.readout.hide(); return; }
     const g = this.game, C2 = g.cradles, on = !!this.cradle && C2?.sealed === this.cradle && C2.phase === 'on';
     if (!on) this.pilot.idle(dt); else this.pilot.drawCable();
-    this.giant.update(dt, this.pilot.target());
-    this.readout.update(g.rawDt ?? dt, on && this.pilot.mode === 'pilot');
+    this.giant.update(dt, this.bout.active ? null : this.pilot.target()); // (no giant cuts into a bout)
+    this.bout.tick(dt);
+    this.city.update(dt, g.rawDt ?? dt); this.props.update(dt); // (the chunks falling, the city re-meshed, the props in flight)
+    this.readout.update(g.rawDt ?? dt, on && this.pilot.mode === 'pilot' && !this.bout.active); // (a bout has its own readout: ringbout.js)
     const it = g.interact?.cur, P = g.player;
     if (it?.id === 'hangar' && P.peekLatch?.('KeyF') && !C2?.sealed) {
       P.latch('KeyF');

@@ -13,6 +13,8 @@
 //   Kindle     (the Lantern Wisp's own) Dread gems on your half burned into embers: the fuel its secret runs on kept from you (secrets.js)
 //   Spew       (an aberrant slip jelly's own) a heap of its slime thrown onto your half at once: Hurl, bigger (ABERRANTS.md 5)
 //   Harden     (the slip jelly's own) slime on your half set into plain junk, which a Transmute cannot turn: its answer to a pile kept
+//   Shuffle    (an aberrant clapperjar's own) gems on your half swapped about: a clapperjar's mischief, the board you read undone
+//   Syncopate  (the clapperjar's own) its clap moved to the off-beat, and back: its answer to a player keeping its time (secrets.js)
 // A ruleset's `foe`: { moves: [{ skill, every, first?, n?, wake? }], desperate?: { at, moves: [{ skill, n? }] } }: each move fires when its
 // countdown (`first`, then `every`) runs out; `desperate` fires once, when the aberrant's half is down to `at` columns. A move with
 // `wake: 'half'` sleeps (no countdown, no badge) until its secret is half done (secrets.js `secret.half`): the aberrant noticing.
@@ -50,6 +52,14 @@ export const FOE_SKILLS = {
     fire: (s, M) => { const b = s.board, cells = [], at = []; b.each((p, x, y) => { if (b.mine(0, x) && p.slime) cells.push([x, y]); });
       for (let i = 0; i < M.n && cells.length; i++) { const [x, y] = cells.splice(s.r.int(cells.length), 1)[0], p = b.at(x, y); Object.assign(p, { slime: undefined, extra: undefined }); at.push({ at: [x, y], id: p.id }); }
       return [{ type: 'foe.skill', side: 1, skill: 'harden', n: at.length, cells: at }]; } },
+  shuffle: { label: 'Shuffle', line: 'Swaps the colours of up to 6 gems on your half',
+    fire: (s, M) => { const cells = gemsOf(s), at = []; for (let i = 0; i < M.n && cells.length; i++) at.push(cells.splice(s.r.int(cells.length), 1)[0]);
+      const was = at.map(([x, y]) => s.board.at(x, y).colour), out = [];
+      at.forEach(([x, y], i) => { const p = s.board.at(x, y), c = was[(i + 1) % was.length]; if (c !== p.colour) out.push({ at: [x, y], id: p.id, from: p.colour, colour: c }); p.colour = c; }); // (colours turned one along: never a new colour)
+      return [{ type: 'foe.skill', side: 1, skill: 'shuffle', n: out.length, cells: out }]; } },
+  syncopate: { label: 'Syncopate', line: 'Moves its clap to the off-beat, or back onto the beat',
+    fire: (s) => { const S = s.secret; if (!S || S.id !== 'clapback') return []; S.off = !S.off; // (the run kept: the next drag must find the new clap, the answer is to listen)
+      return [{ type: 'foe.skill', side: 1, skill: 'syncopate', off: S.off }]; } },
   kindle: { label: 'Kindle', line: 'Burns up to 3 Dread gems on your half into embers', // (Espada's, 2026-10-28)
     fire: (s, M) => { const b = s.board, cells = []; b.each((p, x, y) => { if (b.mine(0, x) && p.kind === 'gem' && p.colour === 'dread') cells.push([x, y]); }); const at = [];
       for (let i = 0; i < M.n && cells.length; i++) { const [x, y] = cells.splice(s.r.int(cells.length), 1)[0], was = b.at(x, y), p = piece('ember', { count: s.rs.embers?.count ?? 3 }); b.set(x, y, p); at.push({ at: [x, y], from: was.id, id: p.id, colour: was.colour }); }

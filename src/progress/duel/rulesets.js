@@ -62,6 +62,16 @@ export const RULESETS = {
     pve: { perColumn: 5 }, secret: 'dissolve',
     foe: { moves: [{ skill: 'hurl', every: 1, first: 1, n: 3 }, { skill: 'spew', every: 3, first: 2, n: 7 }, { skill: 'reclaim', every: 5, first: 4 }, { skill: 'harden', every: 2, first: 1, n: 4, wake: 'half' }],
       desperate: { at: 2, moves: [{ skill: 'spew', n: 9 }] } } },
+  // AN ABERRANT CLAPPERJAR (ABERRANTS.md 5.2, G1): the clay folk's lowest, gone wrong in Mirth. Mirth's mirrored gravity (your half
+  // falls, its frozen half would rise), the Wisp's board and rules, Mirth's colours with Grief (its weakness, Mirth's opposite) on the
+  // board. Its foe skills are mischief, not weight: junk thrown every 2nd turn, your gems shuffled every 3rd, the Line reclaimed every
+  // 5th; once two of your turns have kept its time, Syncopate wakes and moves its clap every other turn. Its secret: clap back
+  // (secrets.js). A first pass on the Wisp's measured numbers (the Line's duel is the Wisp's less the fog and the embers: easier); the
+  // secret is a skill of the hands and the ear, which no stand-in measures: South's play is its test.
+  clapperjar: { feeling: 'mirth', board: { w: 12, h: 9, perColumn: 2, landCap: 6 }, match: 3, cluster: 4, gravity: (x, y, b) => (b.sideOf(x) === 0 ? DIRS.S : DIRS.N), colours: 5, drip: 4,
+    palette: ['wonder', 'mirth', 'desire', 'fury', 'grief'], bot: { pairs: 0.8, sample: 8 }, pve: { perColumn: 5 }, secret: 'clapback',
+    foe: { moves: [{ skill: 'hurl', every: 2, first: 1, n: 3 }, { skill: 'shuffle', every: 3, first: 2, n: 6 }, { skill: 'reclaim', every: 5, first: 4 }, { skill: 'syncopate', every: 2, first: 1, wake: 'half' }],
+      desperate: { at: 2, moves: [{ skill: 'shuffle', n: 10 }, { skill: 'hurl', n: 4 }] } } },
   // STRAWMAN'S PRACTICE DUEL (South, 2026-10-27, via Petra: "test more basic implementations of the puzzle duel module"): the duel with
   // nothing but its core, for testing the duel itself at the sparring circle. The smallest board that still chains (8 x 8, a half of
   // 4 columns: three colours chained too easily, five too rarely), plain gravity on both halves, runs of 3 and any 4 touching (the
@@ -79,11 +89,11 @@ export const RULESETS = {
 };
 
 /** A creature kind's own ruleset, where it has one (`c.kind` -> a RULESETS key). */
-export const KIND_RULESETS = { wisp: 'lanternwisp', strawman: 'strawman', slipjelly: 'slipjelly' };
+export const KIND_RULESETS = { wisp: 'lanternwisp', strawman: 'strawman', slipjelly: 'slipjelly', clapper: 'clapperjar' };
 
 /** The practice duel's difficulty, for a pick at the lectern (Petra's to wire): the ruleset a choice loads, easiest first. 'wisp' is
  *  the Lantern Wisp's own board met in practice (its fog and embers), to rehearse the real fight. */
-export const PRACTICE = { idle: 'strawmanIdle', plain: 'strawman', wisp: 'lanternwisp', jelly: 'slipjelly' }; // (jelly: the aberrant slip jelly's board, rehearsed before any jelly in the world goes wrong)
+export const PRACTICE = { idle: 'strawmanIdle', plain: 'strawman', wisp: 'lanternwisp', jelly: 'slipjelly', clap: 'clapperjar' }; // (clap: the aberrant clapperjar's, its secret rehearsed to the cue; jelly: the aberrant slip jelly's board, rehearsed before any jelly in the world goes wrong)
 
 /** The ruleset a creature brings to a duel: its kind's own (an aberrant Lantern Wisp's), else its feeling's (`c.grade`, a blotling's
  *  weather), else fury's. */

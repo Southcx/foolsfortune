@@ -10,7 +10,7 @@
 //   Herd       (Possession, Herd)                    gems of one colour within 2 of a row or column come onto it
 //   Transmute  (Alteration, Transmute)               every gem of one colour on your half turns to another, and none of it falls for 2 turns
 //   Miracle    (Spellscription, the miracles)        one colour's weather on your half: its gems clear at any 2 touching, this turn and your next
-//   and a learned skill (learned.js, a row with `learned`): an aberrant's own, open once learned (Kindle, the Lantern Wisp's; Absorb, the slip jelly's)
+//   and a learned skill (learned.js, a row with `learned`): an aberrant's own, open once learned (Kindle, the Lantern Wisp's; Absorb, the slip jelly's; Encore, the clapperjar's)
 // Each is paid from the pool (the Courier's own, as the duel opened: the hand's powers cost Lachryma in the world too), which your clears
 // fill (`drink`: a point a gem you clear, Puzzle Quest's mana) and your turn's regen tops up (duel.js PVE.regen), and each rests a few of
 // your turns once used (`rest`: Puzzle & Dragons' cooldowns). As many a turn as the pool pays for, each once (South, 2026-10-29: "use
@@ -147,6 +147,12 @@ export const DUEL_POWERS = {
       for (const [x, y] of DUEL_POWERS.absorb.reach(s, side, a)) { cells.push({ at: [x, y], id: b.at(x, y).id }); b.set(x, y, null); }
       const n = Math.min(capOf(S) - S.pool, cells.length * DUEL_POWERS.absorb.each); S.pool += n;
       return [{ type: 'absorb', side, at: a.at, cells, n, pool: S.pool }]; } },
+  // The clapperjar's Encore, yours (learned.js): a crowd calling for more. Cast before the drag, it lets you drag a second time this
+  // turn. The PvE duel's one drag a turn is its pace (23.1), so it rests longest and costs most of the learned three.
+  encore: { domain: 'ouranurgy', label: 'Encore', line: 'You may drag twice this turn', cost: 20, rest: 4, target: null, learned: true,
+    legal: (s, side) => !s.sides[side].dragged && !s.sides[side].encore,
+    reach: () => [],
+    apply: (s, side) => { s.sides[side].encore = 1; return [{ type: 'encore', side }]; } },
 };
 export const POWER_IDS = Object.keys(DUEL_POWERS);
 

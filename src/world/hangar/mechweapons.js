@@ -15,7 +15,11 @@
 //
 //   const W = new MechWeapons(pilot)   W.reset()   W.arm(side, { down, pressed, released })   W.backUnit(pressed)   W.update(dt)
 //   W.swing(side) -> 0..1 (the pose)   W.charge(speed)   W.blockK(fromPos) -> the shield's share of a blow from there   TIMING   REGION_OF
-//   events: mech.hit { weapon, region, staggered, pierced, blocked?, felled?, by }
+//   W.later(t, fn, side?)   W.cancel(side) (an arm's blow still to land called back)   W.cityBlow(P, kind, k, heavy)
+// v2 (MECHS.md 9): every blow also strikes the toy city where it lands (city.js: a fist a ball on the first cell along the arms' aim, the
+// bell a cone, a shot the first cell on its line, the beam a ray through everything); an arm past a fractured joint works at its lock
+// (joints.js lockOf: k and timing), an arm gone at a joint has no weapon, the back mount snapped no back unit.
+//   events: mech.hit { weapon, region, staggered, pierced, arm?, crit, blocked?, felled?, by }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { outputK } from '../../progress/mechs/rules.js';
@@ -40,30 +44,31 @@ export class MechWeapons {
   }
   newArm() { return { cool: 0, n: 0, sinceT: 9, hold: 0, swing: 0 }; }
   get stats() { return this.p.stats; }
-  partOf(side) { return this.p.broken(side === 'L' ? 'armL' : 'armR') ? null : this.stats.parts[side === 'L' ? 'weaponL' : 'weaponR']; }
+  partOf(side) { return this.p.broken(side === 'L' ? 'armL' : 'armR') || !this.p.armLock(side) ? null : this.stats.parts[side === 'L' ? 'weaponL' : 'weaponR']; } // (an arm broken, or gone at a joint: no weapon)
   swing(side) { return this.arms[side].swing; }
   out() { return this.p.berserk > 0 ? outputK(1) : outputK(this.p.sync); }
 
   /** One arm's trigger this frame. */
   arm(side, { down, pressed, released }) {
     const A = this.arms[side], P = this.partOf(side); if (!P) return;
+    const lock = this.p.armLock(side); // (a fractured joint: the arm works at joints.js JOINT.locked, its blows lighter and slower)
     A.sinceT += this.p.dt;
     if (P.charge) { // (a gun: a shot on the press, the charged beam on a long hold's release)
-      if (pressed && A.cool <= 0) { this.shot(side, P, false); A.cool = 1 / (P.rate || 2); }
+      if (pressed && A.cool <= 0) { this.shot(side, P, false); A.cool = 1 / (P.rate || 2) / lock; }
       A.hold = down ? A.hold + this.p.dt : A.hold;
       if (released) { if (A.hold >= P.charge.hold) this.shot(side, P, true); A.hold = 0; }
       return;
     }
     if (!pressed || A.cool > 0) return;
-    if (P.string) { A.n = A.sinceT < TIMING.string ? (A.n % P.string) + 1 : 1; A.sinceT = 0; A.cool = TIMING.cool; this.melee(side, P, { heavy: !!P.heavy && A.n === P.string, kind: 'string' }); return; }
-    if (P.paint) { A.cool = TIMING.brush; this.melee(side, P, { kind: 'paint' }); return; }
-    if (P.cone) { A.cool = TIMING.bell; this.melee(side, P, { kind: 'cone' }); return; }
-    if (P.momentum) { A.cool = TIMING.flail; this.melee(side, P, { kind: 'momentum', heavy: true }); }
+    if (P.string) { A.n = A.sinceT < TIMING.string ? (A.n % P.string) + 1 : 1; A.sinceT = 0; A.cool = TIMING.cool / lock; this.melee(side, P, { heavy: !!P.heavy && A.n === P.string, kind: 'string' }); return; }
+    if (P.paint) { A.cool = TIMING.brush / lock; this.melee(side, P, { kind: 'paint' }); return; }
+    if (P.cone) { A.cool = TIMING.bell / lock; this.melee(side, P, { kind: 'cone' }); return; }
+    if (P.momentum) { A.cool = TIMING.flail / lock; this.melee(side, P, { kind: 'momentum', heavy: true }); }
   }
 
   /** The back unit on G: missiles, the shield raised or lowered, the vane's mark. TODO(Dovina): the great lens's plate at scale. */
   backUnit(pressed) {
-    const B = this.p.broken('back') ? null : this.stats.parts.back; if (!B || !pressed || this.backCool > 0) return;
+    const B = this.p.broken('back') || !this.p.armLock('back') ? null : this.stats.parts.back; if (!B || !pressed || this.backCool > 0) return; // (the back mount snapped: the back unit is gone)
     if (B.volley) { this.backCool = 2; this.p.spend(B.cost || 0); const G = this.p.giant, d = this.gap(); this.tracer(this.p.mech.back(_a), G ? G.c.center(_b) : _a.clone().addScaledVector(this.p.forward(_f), B.range), 0xffe0a0); if (G && d <= B.range) this.later(TIMING.fly, () => { for (let i = 0; i < B.volley; i++) this.land(B, 'volley', { k: B.k, stagger: B.stagger }); }); return; }
     if (B.block) { this.shieldUp = !this.shieldUp; this.backCool = 0.3; return; }
     if (B.mark) { this.marked = !this.marked; this.backCool = 0.3; }
@@ -77,18 +82,30 @@ export class MechWeapons {
   /** The gap (m) from the mech's footprint to the giant's, or Infinity. */
   gap() { const G = this.p.giant; if (!G?.c?.alive) return Infinity; return Math.hypot(G.pos.x - this.p.pos.x, G.pos.z - this.p.pos.z) - MECH_BODY.radius - GIANT_LOOK.radius; }
   inFront(cos = FRONT) { const G = this.p.giant; if (!G) return false; _a.subVectors(G.pos, this.p.pos).setY(0).normalize(); return _a.dot(this.p.forward(_f)) >= cos; }
-  later(t, fn) { this.pending.push({ t, fn }); }
+  later(t, fn, side = null) { this.pending.push({ t, fn, side }); }
+  /** An arm's blow still to land called back (the Thunderclap takes both hands: mechtech.js). */
+  cancel(side) { this.pending = this.pending.filter((q) => q.side !== side); }
 
   melee(side, P, { heavy = false, kind }) {
     this.arms[side].swing = 1; this.p.spend(P.cost || 0); this.p.faceGiant(P.range * 2);
-    this.later(TIMING.land, () => {
+    const lock = this.p.armLock(side) || 1;
+    this.later(TIMING.land / lock, () => {
       if (kind === 'paint') this.paint(P);
-      if (kind === 'cone') { if (this.gap() <= P.range && this.inFront(Math.cos(((P.cone / 2) * Math.PI) / 180))) this.land(P, kind, { stagger: P.stagger }); return; }
+      const k = (kind === 'momentum' ? Math.max(P.k, chargeK(this.stats.mass, this.p.speed)) : P.k * (P.mass ? 1 : this.stats.punch)) * lock;
+      this.cityBlow(P, kind, k * this.out(), heavy); // (the toy city takes the blow where it lands: city.js, MECHS.md 9.1)
+      if (kind === 'cone') { if (this.gap() <= P.range && this.inFront(Math.cos(((P.cone / 2) * Math.PI) / 180))) this.land(P, kind, { stagger: P.stagger * lock, arm: side }); return; }
       if (this.gap() > P.range || !this.inFront()) return;
-      const k = kind === 'momentum' ? Math.max(P.k, chargeK(this.stats.mass, this.p.speed)) : P.k * (P.mass ? 1 : this.stats.punch);
-      this.land(P, kind, { k, heavy });
+      this.land(P, kind, { k, heavy, arm: side });
       if (kind === 'paint') this.p.giant?.slow(P.paint.slow, TIMING.slowFor);
-    });
+    }, side);
+  }
+  /** A melee blow on the toy city: the bell's cone over everything ahead, the rest a ball on the first cell along the arms' aim within
+   *  the part's reach (a fist a ball of 2 m, the heavy third and the flail 3 m: destruction.js carve's ball). The brush paints, it breaks nothing. */
+  cityBlow(P, kind, k, heavy) {
+    const C = this.p.hangar.city; if (!C?.built || kind === 'paint') return;
+    const T = this.p.tech, from = T.chest(_a), dir = T.aim(_f);
+    if (kind === 'cone') { C.strike({ kind: 'cone', at: from, dir, r: P.range / 4, angle: ((P.cone / 2) * Math.PI) / 180 }, k, 'courier'); return; }
+    T.cityBlow(from, dir, MECH_BODY.radius + P.range, k, heavy || kind === 'momentum' ? 3 : 2);
   }
 
   /** A shot of the big gun, or the charged beam: aimed at the giant while it is within the lock and in view, else straight ahead. */
@@ -96,9 +113,15 @@ export class MechWeapons {
     const G = this.p.giant, from = this.p.mech.hand(side, _a).clone(), d = this.gap(), lock = this.p.lockRange();
     const locked = G?.c?.alive && d <= lock && this.p.inView(G.pos);
     if (beam) this.p.spend(P.charge.cost); else this.p.spend(P.cost || 0);
-    const to = locked ? G.c.center(_b).clone() : from.clone().addScaledVector(this.p.aimDir(_f), Math.min(P.range, 160));
+    let to = locked ? G.c.center(_b).clone() : from.clone().addScaledVector(this.p.aimDir(_f), Math.min(P.range, 160));
+    const armK = this.p.armLock(side) || 1, C = this.p.hangar.city;
+    if (C?.built) { // (the toy city in the way: a shot strikes the first cell on its line and stops there; the beam carves a ray through everything)
+      const dir = _f.subVectors(to, from).normalize(), len = from.distanceTo(to);
+      if (beam) C.strike({ kind: 'ray', at: from, dir, r: 1.5 }, P.charge.k * this.out() * armK, 'courier');
+      else { const hit = C.raycast(from, dir, len); if (hit) { C.strike({ kind: 'ball', at: hit.point, r: 1.2 }, P.k * this.out() * armK, 'courier'); to = hit.point; this.tracer(from, to, 0xffc070, 0.12); return; } }
+    }
     this.tracer(from, to, beam ? 0xfff2b0 : 0xffc070, beam ? 0.5 : 0.12);
-    if (locked && d <= P.range) this.land(P, beam ? 'beam' : 'shot', beam ? { k: P.charge.k, pierce: true, stagger: P.stagger * 3 } : { k: P.k, stagger: P.stagger });
+    if (locked && d <= P.range) this.land(P, beam ? 'beam' : 'shot', beam ? { k: P.charge.k * armK, pierce: true, stagger: P.stagger * 3, arm: side } : { k: P.k * armK, stagger: P.stagger, arm: side });
   }
 
   /** The great brush's swath laid on the paint map in the pool's feeling (the weather's where you stand, else Wonder). */
@@ -117,12 +140,12 @@ export class MechWeapons {
   }
 
   /** A blow on the giant through its rules, said as mech.hit. */
-  land(P, kind, { k = P.k, stagger = P.stagger || 0, heavy = false, pierce = false } = {}) {
+  land(P, kind, { k = P.k, stagger = P.stagger || 0, heavy = false, pierce = false, arm = null } = {}) {
     const G = this.p.giant; if (!G) return;
     const region = this.marked ? 'head' : REGION_OF[kind] || 'body', weapon = P.id || this.idOf(P);
-    const r = G.blow({ weapon, k: k * this.out(), stagger, heavy, pierce, region });
+    const r = G.blow({ weapon, k: k * this.out(), stagger, heavy, pierce, region, from: this.p.pos, by: 'courier' }); // (from: a body blow from its side lands on that arm, giant.js)
     if (!r.blocked && r.staggered) this.p.staggerHit();
-    this.game.events?.emit('mech.hit', { weapon, region, staggered: !!r.staggered, pierced: !!r.pierced, ...(r.blocked ? { blocked: true } : {}), ...(r.felled ? { felled: true } : {}), by: 'courier' });
+    this.game.events?.emit('mech.hit', { weapon, region, staggered: !!r.staggered, pierced: !!r.pierced, ...(arm ? { arm } : {}), crit: !!r.crit, ...(r.blocked ? { blocked: true } : {}), ...(r.felled ? { felled: true } : {}), by: 'courier' });
   }
   idOf(P) { const S = this.stats.parts; for (const s of ['weaponL', 'weaponR', 'back']) if (S[s] === P) return this.stats.sel[s]; return 'fist'; }
 

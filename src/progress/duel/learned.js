@@ -20,6 +20,8 @@ export const LEARNED = {
   kindle: { from: 'wisp', secret: 'snuff', wins: 5, hint: 'Learned from the aberrant Lantern Wisp.' },
   // the slip jelly's Absorb: its secret dissolved once, or 5 slip jellies beaten at the Line (powers.js absorb: junk drunk for the pool)
   absorb: { from: 'slipjelly', secret: 'dissolve', wins: 5, hint: 'Learned from an aberrant slip jelly.' },
+  // the clapperjar's Encore: its secret clapped back once, or 5 clapperjars beaten at the Line (powers.js encore: a second drag this turn)
+  encore: { from: 'clapper', secret: 'clapback', wins: 5, hint: 'Learned from an aberrant clapperjar.' },
 };
 
 const got = (L, k) => L?.get?.(k) || 0;

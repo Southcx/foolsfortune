@@ -18,6 +18,8 @@
 //   (k is what the view draws on the body; a secret is won by its own test, the Wisp's at k 1, the jelly's by one turn's clear)
 //   secretOf(s) -> { id, k (0..1), ... } | null   secretStep(s, side, events) -> events (duel.js after each settle of the Courier's)
 //   lightOf(s) -> the fog's light now (dread.js visibleTo reads it: the Wisp's lantern)
+//   CLAP { window }   clapOf(clock) -> 'on' | 'off' | 'miss' (where a drag was let go against the duel cue's beat: music/clock.js's clock;
+//   the session's, on the drag action as `beat`: the clapperjar's secret reads it)
 //   events: secret.step { id, k, light? } (its progress moved), secret.half { id } (the aberrant notices: its gated moves wake),
 //   duel.secret { winner: 0, id } (won: the duel's end, beside duel.line / duel.full)
 // ---------------------------------------------------------------------------------------
@@ -63,7 +65,40 @@ export const SECRETS = {
       if (S.melt >= def.need && s.winner === null) { s.winner = 0; out.push({ type: 'duel.secret', winner: 0, id: 'dissolve', n: S.melt }); }
       return out;
     } },
+  // AN ABERRANT CLAPPERJAR: CLAP BACK (ABERRANTS.md 5.2, G1). A clapperjar claps on the beat of the duel's cue, and so must you: let your
+  // turn's drag go on its clap and have it clear, `need` turns running, and it loses its own time, claps itself to pieces and is mended.
+  // The tell is the clap itself, seen on its body and heard over the cue (never a gauge). The cost: a drag let go on the beat is a drag
+  // cut to the music's time, not to the board's best (the drag's timer still runs). The answer: once two turns have kept time its
+  // Syncopate wakes (foeskills.js) and moves its clap to the off-beat (the "and" between), and back, every other turn: you must listen.
+  // The mechanic is the lesson (DESIGN.md 22): keeping time, then syncopation, as a drummer learns them.
+  // Prior art: Rhythm Heaven (a lenient window on a heard beat, the off-beat turned on you), Crypt of the NecroDancer (every move on the
+  // beat), Parappa's call and response, Patapon's drums, a busker's crowd clapping along.
+  clapback: { of: 'The clapperjar', label: 'Clap back', line: 'Let your drag go on its clap, and clear, three turns running: it loses its own time and claps itself to pieces', need: 3,
+    start: () => ({ id: 'clapback', k: 0, streak: 0, off: false, last: -9, half: false }),
+    step: (s, side, events) => {
+      const S = s.secret, def = SECRETS.clapback; if (side !== 0 || s.beatLast == null || S.last === s.ply) return []; // (only a drag of yours counts, the turn's first: s.beatLast is set by act for a drag; an Encore's second keeps no extra time)
+      const kept = s.beatLast === (S.off ? 'off' : 'on') && events.some((e) => e.type === 'clear' && e.side === 0);
+      S.streak = kept && s.ply - S.last <= 2 ? S.streak + 1 : kept ? 1 : 0; S.last = s.ply; // (a turn skipped, or a drag off its clap, starts it over)
+      S.k = S.streak / def.need;
+      const out = [{ type: 'secret.step', id: 'clapback', k: S.k, streak: S.streak, beat: s.beatLast, kept }];
+      if (!S.half && S.streak >= 2) { S.half = true; out.push({ type: 'secret.half', id: 'clapback' }); }
+      if (S.streak >= def.need && s.winner === null) { s.winner = 0; out.push({ type: 'duel.secret', winner: 0, id: 'clapback' }); }
+      return out;
+    } },
 };
+
+/** How near a beat a drag must be let go to count, in real seconds either side, heard (Rhythm Heaven's lenient window is about 0.07;
+ *  at the duel cue's 132 bpm a beat is 0.45 real s, so 0.06 either side is 26% of the time on and 26% off: three turns running by chance
+ *  is under 2 in 100, and each must clear as well). */
+export const CLAP = { window: 0.06 };
+
+/** Where a drag let go now stands against the cue's beat: 'on' (on a beat), 'off' (on the "and" between), or 'miss'; 'miss' with no
+ *  cue playing. `clock` is music/clock.js's (game.music.clock()). */
+export function clapOf(clock, window = CLAP.window) {
+  if (!clock || !(clock.spb > 0)) return 'miss';
+  const f = ((clock.beat % 1) + 1) % 1, on = Math.min(f, 1 - f) * clock.spb, off = Math.abs(f - 0.5) * clock.spb;
+  return on <= window ? 'on' : off <= window ? 'off' : 'miss';
+}
 
 /** The duel's secret as it stands, or null (a ruleset without one; any style but the PvE duel). */
 export const secretOf = (s) => s.secret || null;

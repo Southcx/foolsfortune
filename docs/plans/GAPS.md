@@ -54,7 +54,7 @@ Rows that are parked or wait on South are not built until South rules.
 
 | id | plan | item | owner | status | mobile |
 | --- | --- | --- | --- | --- | --- |
-| G1 | ABERRANTS | The clapperjar as the next aberrant (Mirth): clap-on-the-beat board, secret = clear on its rhythm three turns running with the Crucibelle's time; no `clapperjar` ruleset or secret in `progress/duel/` | Dovina + Petra + Calissa + Wanda | parked (plan 5.2, waits on South to pick) | duel screen: the drag; the beat is read from the drag, no new input |
+| G1 | ABERRANTS | The clapperjar as the next aberrant (Mirth): rules built (ruleset `clapperjar`, secret `clapback`, Shuffle, Syncopate, Encore, drops, du14); the drag's `beat` and where it goes wrong are Petra's; its look Calissa's, its clap in the cue Wanda's | Dovina + Petra + Calissa + Wanda | rules built 2026-11-02 (plan 5.2) | duel screen: the drag; the beat is read from the drag's release, no new input |
 | G2 | ABERRANTS | Strawman's plain teaching secret ("clear every colour once", shown from the start); `secrets.js` has no Strawman entry (only the practice end's look exists) | Dovina | parked (plan 5.2) | duel screen: the drag; no new input |
 | G3 | ABERRANTS | A bound spirit lending a hand in a duel (garden changing a duel's rules) | Dovina + Petra | parked (base change bad; the garden is in flux) | NEEDS: a spirit-help tile on the duel screen's left column |
 | G4 | ABERRANTS | A learned skill that acts on the aberrant's half (the jelly's Spew turned round); its half is frozen in the PvE duel | Dovina | parked (plan 8) | NEEDS: a power tile on the duel screen (same as the other learned powers' tiles) |

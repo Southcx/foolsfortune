@@ -254,3 +254,140 @@ Domain experience: sealing and sync time feed **Possession** (a body driven is p
    out by its height) and the shake; the area's registration.
 
 Order: the hangar and the straw giant first (v1, this round). The world (5.4) once South has played v1.
+
+## 9. v2: everything breaks (South, 2026-11-02)
+
+> "make the giant robot module include a strong showcase of environmental destruction elements and technique capabilities, think
+> incredible hulk's ultimate destruction for Ps2, or even the voxel carving mechanic we've already shown for fossils. Also do you know
+> the game Toribash? ... dismembered mechanical joints like rock em sock em robots would be sick, also, how about we spice things up
+> with some of the mechanics from Punch-Out!! Since ostensibly you're testing against another giant robot opponent."
+
+One idea runs under all four: **at a mech's scale, everything breaks, and whatever breaks off is a weapon.** A building chipped by your
+fists drops a chunk you throw at the giant. A rival's arm torn off at the elbow becomes the club you hit the giant with. Rules are in
+`src/progress/mechs/`. The runtime is in `src/world/hangar/`. Every number below was measured (scratchpad `ring.mjs`, the node probes in
+the commit).
+
+### 9.1 The toy city (`destruction.js`; Teardown's voxels, Red Faction's collapse, Ultimate Destruction's integrity)
+- **Buildings as voxels.** Fifteen buildings of 1 m cells stand in the proving ground: houses, shop rows, blocks, glass towers on steel,
+  and bottle kilns.
+- **Materials.** Each cell is glass, timber, brick, stone or steel. Each has the hits it takes to break (in full blows), a density, and
+  a span.
+- **Carving.** A blow carves a shape out of the building, as the slab's verbs do at the bench: a fist a ball, the assault boost a
+  capsule along its path, the clap a cone, the beam a ray.
+- **Collapse.** Every carve then runs `collapse()`. A cell stands on what is under it. It may reach sideways over air only as far as
+  its material's span (brick 2 cells, steel 6).
+- **The foot.** Once a building's foot (its lowest 3 or more cells) has lost 3 in 10 of its cells, everything above it comes down at
+  once (Ultimate Destruction's integrity).
+- **Chunks.** What comes away falls as chunks. Each has a mass and lands as an Impact blow (`fallBlow`: m g h over 900 kJ, capped at
+  3). Chunks can be picked up.
+- **Measured** (clay fist 0.6 on one wall's foot):
+  - a house falls in 16 or 17 blows, a shop row 20 to 22, a kiln 36 to 39, a block 43 to 93 (by where along its wall they land:
+    `node scripts/mechs.mjs`);
+  - a glass tower stands on steel: fists cannot fell it, so it takes the Ground Pound or the beam;
+  - one charge cuts a tunnel through anything;
+  - a collapse costs under 6 ms on the tower.
+- **Counts:** cells broken (`mech.destroy.cells`), chunks, buildings felled, and felled in one blow (topple).
+- **Resets** every visit. No cubes: the toy city is a toy.
+
+### 9.2 Techniques and props (`techniques.js`; Ultimate Destruction's moves and weaponizing)
+- **The ten techniques.** Each is paid from the battery, carves where it lands, and strikes what is in reach.
+  - Grab and Throw are known from the start.
+  - Thunderclap (LMB+RMB): a cone that staggers and breaks glass.
+  - Ground Pound (C on the ground).
+  - Elbow Drop (C in the air, harder for each metre fallen).
+  - Super Jump (Space held, ×2.5).
+  - Battering Ram (the assault boost carving its path through a building).
+  - Uppercut (W+LMB).
+  - Wrecking Spin (LMB held with a club).
+  - Javelin (a post or girder thrown point first, piercing 3).
+  - Slab Shield (V holding a slab).
+- **Opening them.** Each Art past grab and throw has a count way and a feat way in the ledger (`techniqueOpen`). The DEBUG save's lend
+  opens them all.
+- **Props**, each with a mass, a club's k, reach and hits, and a throw's k from its energy (½mv² over 900 kJ, capped):
+  - a lamp post pulled from the street;
+  - a girder from a broken building;
+  - a chunk (a slab of 8 t or more is also a shield);
+  - a torn-off limb;
+  - a water tower.
+- **Weight.** A prop held adds its mass to the frame's load, so a girder slows a light frame. The plain moveset is unchanged: a prop is
+  a modifier in your hand.
+
+### 9.3 Joints (`joints.js`; Toribash, Rock 'Em Sock 'Em)
+- **Nine joints.** Every frame (yours, the rivals', a giant's) has nine: neck, shoulders, elbows, waist, hips and back mount.
+- **Strain.** A blow on a region strains its joints, but only by what it carries past a force threshold (k 0.8, Toribash's rule).
+  Plain blows never strain; heavies do.
+- **Fracture and snap.**
+  - A joint fractures at strain 1.4: its limb works at 60%, a leg at 70% of the stride.
+  - It snaps at 2.6, or with one blow of 0.9 more once fractured: the limb comes off.
+  - The limb is a prop anyone can swing. A rival with an arm gone loses that arm's moves.
+- **Guarding costs the arms.** A blocked blow strains the blocker's arms with no threshold.
+- **The head.** The neck snapped is Rock 'Em Sock 'Em's KO in the ring. Outside it, the frame loses its lock-on.
+- Joints mend at the gantry with the cracks.
+
+### 9.4 The ring (`ring.js`; Punch-Out!!)
+- **The ring** is in the proving ground. A rival frame boxes you there: the camera behind you, no walking.
+- **Controls.** A/D tapped dodges left or right. S tapped ducks; S held blocks. LMB and RMB punch to the body, or to the head with W
+  held. Space throws the star punch. Mash to get up.
+- **The rivals' tells.** Each rival is a pattern of moves, each shown first by a tell: a shoulder twitch, an arm cocked, a crouch,
+  three hops, a blink.
+- **Counters and stars.** A move answered right leaves the rival open, and punches then land ×1.5. Starred moves and taunts give a
+  star (up to 3). The star punch spends them all for ×2.2, ×3.4 or ×4.8.
+- **Hearts.** 20 at a round's start. A blocked punch costs 1 and a hit costs 3. At none you are winded until a clean dodge.
+- **Stamina** is the bout's shield: down at zero.
+  - The count runs to 10. You rise by mashing; a rival rises at its own count.
+  - Three downs in a round is a TKO.
+  - A snapped neck ends the bout ("head"), and so do both arms off ("arms").
+  - Three rounds of 3 real minutes, then a decision.
+- **The circuit**, each rival open once the one before it is beaten:
+  - **the sparring frame** (Glass Joe's place: guards its body, taunts);
+  - **the heavy frame** (Bald Bull's: covers up between blows; its charge is put down by one body blow in its last 0.35 s);
+  - **the champion frame** (Tyson's: 90 real s of dynamite uppercuts that take your head in a few, its blink the tell, a feint).
+- **Measured** (12 bouts each, four stand-ins: an expert who reads at 0.15 s and 95%, a decent one at 0.3 s and 75%, a novice at
+  0.45 s and 50%, a masher who never answers):
+
+  | rival | expert | decent | novice | masher |
+  | --- | --- | --- | --- | --- |
+  | sparring | 12 of 12, 30 s | 12, 29 s | 12, 30 s | 12, 24 s |
+  | heavy | 12, 64 s | 12, 89 s | 10, 113 s | 0 |
+  | champion | 12, 106 s | 8, 97 s | 0 (loses its head in 38 s) | 0 (19 s) |
+
+- **Tuning steps.**
+  - Joints first strained on every blow: necks snapped in 3 s, so the threshold came in.
+  - At neck tough 2, the champion fell in 26 s to cheap star punches, so the neck went to 3 and star punches were guarded outside an
+    opening.
+  - Arms torn off by blocked punches decided every champion bout, so the block strain went from 0.5 to 0.2.
+
+### 9.5 Events, the ledger, achievements
+- **Events (the runtime's):**
+  - `city.break { building, cells, chunks }`, `city.felled { building, label, topple }`, `city.land { mass, height, k, on }`;
+  - `mech.technique { id, through?, fell?, height? }`, `mech.roof`, `mech.jump`;
+  - `mech.hit { ..., arm, crit }`;
+  - `mech.grab { prop }`, `mech.prop.hit { prop, n, own? }`, `mech.prop.throw { prop, hit, javelin?, own? }`,
+    `mech.prop.break { prop, shield? }`;
+  - `mech.joint { who: 'mech' | 'giant' | 'rival', joint, to, label }`;
+  - the boxing ring's `bout.*` (ring.js) with `rival` and `label`, plus `bout.enter`;
+  - `giant.down { weapon: 'rubble' }` when a chunk fells it.
+- Every event carries `by`.
+- **Ledger:** `tracking/mechs.js` (its header lists the keys).
+- **Achievements:** mk8 First Bout, mk9 Charge Breaker, mk10 Knock Its Block Off, mk11 Champion, mk12 Perfect Bout, mk13 Wrecking Crew,
+  mk14 Bring It Down, mk15 Under the Rubble, mk16 Spare Parts, mk17 Every Technique.
+
+### 9.6 Who builds what (v2)
+- **Dovina:** the rules (`destruction.js`, `techniques.js`, `joints.js`, `ring.js`), tracking, achievements, this section, and the
+  runtime by builders in `src/world/hangar/`:
+  - `city.js`: the voxel buildings meshed by material, chunks and debris;
+  - `props.js` and `techniques` in the pilot: grab, throw, the ten;
+  - `ring.js` and `rival.js`: the ring, the rival's placeholder body, and Punch-Out's camera and keys;
+  - joints laid on the mech, the giant and the rival, with limbs coming off as props.
+- **Calissa:**
+  - the materials' cells (brick, glass and steel as the clay city's);
+  - the chunks' and the debris' look (the voxel batch);
+  - the rivals' bodies (three frames with their tells drawn on their bodies);
+  - the joints' sparks and a limb's tearing;
+  - the head's spring;
+  - the ring's dress (ropes, posts, the corner).
+- **Wanda:** brick, glass and steel breaking; a building coming down; the bell between rounds; the count; the crowd; each rival's tell
+  as a sound (Punch-Out's cues: every tell has one); a joint snapping.
+- **Espada:** the techniques', props' and rivals' words, and the log lines.
+- **Petra:** the gate; the camera's shake on a collapse; whether a building's chunk may enter the ammo.js physics later (for now a chunk
+  is flown by its own ballistics).
