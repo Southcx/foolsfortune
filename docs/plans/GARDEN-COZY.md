@@ -187,7 +187,7 @@ governs the mental state: pushed up by what is drunk, settled by quiet. It is **
 - [ ] **A6. The briar garden as a choice, not a fail state.**
   - Briar has its own life. Fury, Gall and Dread spirits like it (+1 bond a game day while their planetoid is under 0.35).
   - Briar fruit grows only on thorns: a material of Gall's kind, the one way to get it in the garden.
-  - Briar visitors come to it (C4).
+  - Briar visitors come to it (C4). Built as rules: the Lantern Wisp (one planetoid in briar, a dreading garden) and the blotling (two in briar), `progress/realm.js` VISITORS; Briar Guests (gy22) when one settles. Petra feeds the briar count to the visit check.
   - A player who wants a bristly garden keeps one. Viva Piñata's sours and Black & White's evil land, both playable.
 - [ ] **A7. Shown, never said as a number.** Two avenues or more (CLAUDE.md):
   - **The ground:** thorns, blooms and the light.
@@ -283,7 +283,7 @@ make a garden.
   - a spirit's gift at dawn (C5);
   - a wish's thanks (C2);
   - a visitor's gift (C4, the existing VISITORS' "leave a gift");
-  - an achievement, for the set centrepieces;
+  - an achievement, for the set centrepieces (built: `CENTRE_FEATS`, progress/decor.js: a feeling's centrepiece by a farewell of its feeling, gy17 .. gy21; the Tea Path's by First Bloom, the Kiln Yard's by Potter of Worlds, the Stargazer's by Four Seasons, the Briar Throne by Bramble Keeper; it then shows in the catalogue to buy);
   - briar pieces from briar fruit (A6).
 - [ ] **D6. The garden's rating** (Animal Crossing's island rating, adapted).
   - **Scored by variety in each grid region** (a cube face's quarter): half a point a piece, counted up to 3 of a kind, plus 0.75

@@ -65,6 +65,10 @@ export const KNACKS = {
   biteSense: { name: 'Bite Sense', does: 'Holds the hook\'s window a third longer when a fish takes the lure', // (ANGLING.md 6; the plan's name, Espada's to rule)
     opens: (L) => G(L, 'angle.hookset') >= 200 || G(L, 'angle.hookset.perfect') >= 25, // (200 hooks set, or 25 set in the window's sweet middle: angler.js quality 'perfect')
     switch: "tools/sondelass/angling/angler.js (the bite's window: f.window x1.3 while game.knacks.on('biteSense'), the !!! held with it: Petra's)", number: 'the window x1.3' },
+  autoCook: { name: 'Auto-Cook', does: 'Cooks a dish you know with no minigame, one grade below your best for it', // (G228; SPIRIT-COOKING.md 15: Stardew's machines, Monster Hunter's auto-crafting; plain name, Espada's to rule)
+    opens: (L) => G(L, 'cook.true') >= 1 || (L.under ? L.under('cook.dish.').some(([, v]) => v >= 5) : false),
+    switch: "world/garden/kitchen.js (the choose page's AUTO-COOK button, built: shown while game.knacks.on('autoCook') and progress/cooking/batch.js autoCookOf(dish, game.ledger) gives a grade)",
+    number: "one grade below the dish's best (hi cook.best.<dish>), never above PERFECT, never dubious; for a dish cooked 5 times or once TRUE" },
   thermometer: { name: 'Thermometer', does: 'Shows a cooking move\'s value as a number, and its heart, beside the food\'s own tells', // (SPIRIT-COOKING.md 4: "the tell is the interface, never a thermometer ... a late-earned knack"; G231; plain name, Espada's to rule)
     opens: (L) => G(L, 'cook.serve') >= 150 || G(L, 'cook.true') >= 20, // (late: 150 dishes served, or 20 True cooks: by then you read the tells, and the number only confirms them)
     switch: "world/garden/kitchen.js (the cooking window: the move's value 0..1 on its unit and the heart's mark beside the tells, while game.knacks.on('thermometer'): Petra's)", number: 'the value and its heart shown' },

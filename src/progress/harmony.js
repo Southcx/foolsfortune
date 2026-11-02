@@ -13,7 +13,7 @@
 //
 //   HARMONY, TEND, CARRY, NEGLECT, THORNS, BRIAR   bandOf(h) -> 'briar' | 'between' | 'bloom'   briarOf(h) -> 0 comfort .. 1 briar
 //   carriedIn({ v, brimming }) -> negative   dayStep(p, { held }) -> { h, thorns, grew }   (pure: scripts/garden.mjs measures them)
-//   game.harmony = new Harmony(game)   .update(dt)   .of(planetoid) -> 0..1   .band(planetoid)   .briarK(planetoid?) -> 0..1 (the looks')   .thorns(planetoid) -> [{ at, n }]
+//   game.harmony = new Harmony(game)   .update(dt)   .of(planetoid) -> 0..1   .band(planetoid)   .briarK(planetoid?) -> 0..1 (the looks')   .briarCount()   .thorns(planetoid) -> [{ at, n }]
 //   .prune(planetoid) -> { ok, cutting }   (world/garden/thornpatches.js calls it)   .settleK(pos) -> 1 | INCENSE.k   /harmony
 //   events: garden.tend { planetoid, kind, h }   garden.harmony { planetoid, band, was, h, blooming }   garden.thorn { planetoid, at, n }
 //           garden.prune { planetoid, n, h }   garden.briar.held { planetoid, days }   garden.harmony.ask { planets }
@@ -115,6 +115,8 @@ export class Harmony {
     for (const p of R.plots?.plots || []) if (p.placed?.feature === 'incense' && p.pos && p.pos.distanceTo(pos) < INCENSE.reach) return INCENSE.k;
     return 1;
   }
+  /** How many planetoids are in briar now (the briar visitors' want: realm.js VISITORS). */
+  briarCount() { return Object.values(this.s.by).filter((p) => bandOf(p.h) === 'briar').length; }
   list() { return Object.entries(this.s.by).map(([planetoid, p]) => ({ planetoid, band: bandOf(p.h), thorns: p.thorns.reduce((n, t) => n + t.n, 0) })); }
   /** A gauge moved: the band said once it changes (the log's line, the look's cue). */
   set(id, h, cause) {
