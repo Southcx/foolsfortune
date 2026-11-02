@@ -33,6 +33,13 @@ import { TouchTile, TILE } from './tile.js';
 import { touchTiles } from './presses.js';
 import { placeOf, windowOpen } from './areas.js';
 import { openRadial } from './radial.js';
+import { specialsOf } from '../../progress/mechs/specials.js';
+
+/** A mech's parts' specials as PICK's items (the arms' first: a tap is it), each its move's name, dim while it rests. */
+function mechPicks(g) {
+  const P = g.hangar?.pilot, L = specialsOf(P?.stats); if (!P) return [];
+  return ['arms', 'head', 'legs', 'core'].filter((k) => L[k]).map((k) => ({ id: `mech.${k}`, glyph: null, word: L[k].label.toUpperCase().slice(0, 8), dim: (P.specials?.ready(k) ?? 1) < 1 }));
+}
 import { useLabel } from './cluster.js';
 import { inHandCtx, toolCluster, stripOf, beltPairOf, artTile, ACTION_TILES } from './actioncontext.js';
 import { CURSOR } from '../../core/touchcursor.js';
@@ -136,7 +143,7 @@ export class TouchArc {
     const g = this.game, use = useLabel(g), tool = ctx === 'tool' ? inHandCtx(g) : null, art = artTile(g);
     const tc = tool ? toolCluster(g, tool) : null, blinks = g.actions?.resolve?.('touch', 'dash')?.id === 'blink.ground';
     const third = tool && ACTION_TILES[tool]?.third && tc?.[2] && tc[2].id !== 'jump' ? tc[2] : null;
-    this.picks = ctx === 'tool' ? [...stripOf(g).filter((e) => e.id !== 'art'), third].filter(Boolean) : [];
+    this.picks = ctx === 'tool' ? [...stripOf(g).filter((e) => e.id !== 'art'), third].filter(Boolean) : ctx === 'mech' ? mechPicks(g) : [];
     const pair = beltPairOf(g), drawE = pair.find((e) => e.id === 'tool');
     this.belt = [...pair.filter((e) => e.id !== 'tool'), art].filter(Boolean); this.beltTap = drawE || this.belt.find((e) => e.id === 'skiff') || null;
     const has = (id) => {

@@ -4,12 +4,12 @@
 // shoots and charges, `volley` fires missiles, `block` is a shield; South, 2026-11-02: a blade and a blaster, the brush, bell, flail,
 // vane and lens retired), and the charge (an assault boost into a giant, its blow the frame's momentum: frame.js chargeK). Each blow on a
 // giant goes through its rules (giant.js blow: the barrier, the stagger, its vessel) at the part's k x outputK(sync) and its stagger.
-//   the fist and the great blade: a string of three (the third heavy where the part says), a blow landing a beat after the press
-//   the big gun: a shot at most `rate` a real s on a press; held `charge.hold` real s and let go, the charged beam (it pierces a barrier)
+//   the fist and the blade: a string of three (the third heavy where the part says), a blow landing a beat after the press
+//   the blaster: a shot at most `rate` a real s on a press; held `charge.hold` real s and let go, the charged beam (it pierces a barrier)
 // An arm broken (MECHS.md 4.7) has no weapon; the back broken, no back unit. Shots are drawn as plain tracer lines (Calissa's looks later).
 //
 // Prior art: Armored Core's arm units (one trigger a hand), Ratchet & Clank's Giant Clank (a punch string and a charge), Evangelion's
-// pallet rifle and progressive knife, the Courier's own tools' grammar (TOOLS-TOGETHER.md: the gun shoots, the bell tolls).
+// pallet rifle and progressive knife, the Courier's own tools' grammar (TOOLS-TOGETHER.md: the gun shoots, the blade cuts); a part's own move is its special (mechspecials.js).
 //
 //   const W = new MechWeapons(pilot)   W.reset()   W.arm(side, { down, pressed, released })   W.backUnit(pressed)   W.update(dt)
 //   W.swing(side) -> 0..1 (the pose)   W.charge(speed)   W.blockK(fromPos) -> the shield's share of a blow from there   TIMING   REGION_OF
@@ -36,7 +36,7 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _f = new THREE.Vector3
 export class MechWeapons {
   constructor(pilot) { this.p = pilot; this.game = pilot.game; this.tracers = []; this.mat = null; this.reset(); }
   reset() {
-    this.arms = { L: this.newArm(), R: this.newArm() }; this.pending = []; this.chargeCool = 0; this.backCool = 0; this.shieldUp = false;
+    this.arms = { L: this.newArm(), R: this.newArm() }; this.pending = []; this.chargeCool = 0; this.backCool = 0; this.shieldUp = false; this.marked = false; // (marked: a head's special, Scan, has the giant's weak point shown: mechspecials.js)
     for (const T of this.tracers) { T.line.parent?.remove(T.line); T.line.geometry.dispose(); T.line.material.dispose(); } this.tracers = [];
   }
   newArm() { return { cool: 0, n: 0, sinceT: 9, hold: 0, swing: 0 }; }
@@ -124,7 +124,7 @@ export class MechWeapons {
   /** A blow on the giant through its rules, said as mech.hit. */
   land(P, kind, { k = P.k, stagger = P.stagger || 0, heavy = false, pierce = false, arm = null } = {}) {
     const G = this.p.giant; if (!G) return;
-    const region = REGION_OF[kind] || 'body', weapon = P.id || this.idOf(P);
+    const region = this.marked ? 'head' : REGION_OF[kind] || 'body', weapon = P.id || this.idOf(P);
     const r = G.blow({ weapon, k: k * this.out(), stagger, heavy, pierce, region, from: this.p.pos, by: 'courier' }); // (from: a body blow from its side lands on that arm, giant.js)
     if (!r.blocked && r.staggered) this.p.staggerHit();
     this.game.events?.emit('mech.hit', { weapon, region, staggered: !!r.staggered, pierced: !!r.pierced, ...(arm ? { arm } : {}), crit: !!r.crit, ...(r.blocked ? { blocked: true } : {}), ...(r.felled ? { felled: true } : {}), by: 'courier' });

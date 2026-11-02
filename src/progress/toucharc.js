@@ -49,7 +49,7 @@ export const TOUCH_ARC = {
            BELT: { tap: 'stepOff', hold: ['stepOff', 'recall'] } },                             // D and E in the air only (ctx skiff.air)
   rail:  { A: 'raFire', B: 'raRoll', C: 'raForm', D: 'raLock', E: 'parry', F: 'raSurge' },
   mech:  { A: 'primary', B: 'dash', C: 'jump', D: 'secondary', E: 'parry', F: 'art',
-           BELT: { tap: 'use', hold: ['use', 'draw'] } },                                      // (MECHS.md 4.9: the arms, boost, jump, the barrier, the back unit; the cable and unseal)
+           PICK: { tap: 'picks', hold: 'picks' }, BELT: { tap: 'use', hold: ['use', 'draw'] } },        // (PICK: the parts' specials, MECHS.md 10.2)                                      // (MECHS.md 4.9: the arms, boost, jump, the barrier, the back unit; the cable and unseal)
   helm:  { A: 'heFire', B: 'heUp', D: 'heBroad', E: 'heParry', F: 'heMount1',
            BELT: { tap: 'heMount2', hold: ['heMount1', 'heMount2', 'heMoor'] } },
 };

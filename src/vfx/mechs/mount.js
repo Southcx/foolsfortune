@@ -28,11 +28,12 @@ import * as THREE from 'three';
 import { runningHand } from '../../ui/runninghand.js';
 import { cellsOf } from '../../npc/neuralesespelling.js';
 import { ROOTS } from '../../npc/neuraleseroots.js';
+import { dressMech, MECH_BLANK } from './mechglaze.js';
 
 /** The timings (real s, the full mount; a second seal on the visit at `quick` of them) and the look. */
 export const MECH_MOUNT = {
   hold: 0.55, fly: 1.25, hover: 0.25, screw: 1.25, wake: 1.9, power: 0.6, quick: 0.5,
-  over: 2.4, hoverUp: 1.1, reach: 1.25, front: 0.45, rest: 0.09, breath: 0.6, tile: 4.2,
+  over: 2.4, hoverUp: 1.1, reach: 1.25, front: 0.45, rest: 0.09, breath: 0.6, tile: 4.2, unpaint: 1.6,
   cam: { side: [9, 3, 13], screw: [3.6, 4, -6.5], wake: [12, 7, -20] },
 };
 const M = MECH_MOUNT, PI = Math.PI;
@@ -63,41 +64,64 @@ function circuitTile() {
   return TILE;
 }
 
-// ------------------------------------------------------------------ the traces on the porcelain
-/** The waking traces laid into a MeshStandardMaterial (once; its uniforms returned): uCharge 0..1 the wave's front, uGlow the
- *  brightness, uOrigin the cradle in the world, uReach how far the wave runs (m). */
-function wakeTraces(mat) {
+// ------------------------------------------------------------------ the traces and the paint, on the shell's three materials
+/** The uniforms every dressed material of a body shares (one wave): uCharge 0..1 the front, uGlow the traces' brightness, uPaint the
+ *  share of the Courier's colours held everywhere (0 the blank frame, 1 fired), uOrigin the cradle, uReach how far the wave runs (m). */
+function wakeUniforms() {
+  return { uTrace: { value: circuitTile() }, uCharge: { value: 0 }, uGlow: { value: 0 }, uPaint: { value: 0 }, uOrigin: { value: new THREE.Vector3() },
+    uReach: { value: 18 }, uFront: { value: M.front * 4 }, uTile: { value: 1 / M.tile }, uTime: { value: 0 } };
+}
+/** The waking traces and the blank laid into one material (once), after its finish (vfx/finish.js, so the Courier's colours are what
+ *  the wave paints): `blank` the frame's colour before it is fired, `traces` whether the running hand is written on it. */
+function wakeTraces(mat, U, blank, traces = true) {
   if (mat.userData.mountU) return mat.userData.mountU;
-  const U = { uTrace: { value: circuitTile() }, uCharge: { value: 0 }, uGlow: { value: 0 }, uOrigin: { value: new THREE.Vector3() }, uReach: { value: 18 },
-    uFront: { value: M.front * 4 }, uTile: { value: 1 / M.tile }, uTime: { value: 0 } };
-  const prev = mat.onBeforeCompile?.bind(mat);
+  const own = { uBlank: { value: new THREE.Color(blank) }, uTraced: { value: traces ? 1 : 0 } };
+  const prev = mat.onBeforeCompile?.bind(mat), prevKey = mat.customProgramCacheKey?.bind(mat);
   mat.onBeforeCompile = (sh, r) => {
     prev?.(sh, r);
-    Object.assign(sh.uniforms, U);
+    Object.assign(sh.uniforms, U, own);
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vMtLP; varying vec3 vMtLN; varying vec3 vMtWP;')
       .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvMtLP = position; vMtLN = normal; vMtWP = (modelMatrix * vec4(position, 1.0)).xyz;');
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
 varying vec3 vMtLP; varying vec3 vMtLN; varying vec3 vMtWP;
-uniform sampler2D uTrace; uniform float uCharge, uGlow, uReach, uFront, uTile, uTime; uniform vec3 uOrigin;
+uniform sampler2D uTrace; uniform float uCharge, uGlow, uPaint, uReach, uFront, uTile, uTime, uTraced; uniform vec3 uOrigin, uBlank;
 vec3 mtFilm(float t) { t = fract(t) * 4.0; // (the film's four: violet, teal, gold, rose, vfx/oxidation.js FILM)
   vec3 a = vec3(0.30, 0.06, 0.70), b = vec3(0.04, 0.55, 0.75), c = vec3(0.95, 0.72, 0.18), d = vec3(0.85, 0.10, 0.50);
   return t < 1.0 ? mix(a, b, t) : t < 2.0 ? mix(b, c, t - 1.0) : t < 3.0 ? mix(c, d, t - 2.0) : mix(d, a, t - 3.0); }`)
-      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-if (uGlow > 0.001) {
-  vec3 w = pow(abs(normalize(vMtLN)), vec3(4.0)); w /= (w.x + w.y + w.z);
-  vec3 p = vMtLP * uTile;
-  float tr = texture2D(uTrace, p.zy).r * w.x + texture2D(uTrace, p.xz).r * w.y + texture2D(uTrace, p.xy).r * w.z;
-  float d = distance(vMtWP, uOrigin), f = uCharge * uReach;
-  float lit = 1.0 - smoothstep(f - uFront, f, d), edge = exp(-pow((d - f) / uFront, 2.0)) * step(uCharge, 0.999);
-  vec3 col = mtFilm(d * 0.045 + uTime * 0.05);
-  totalEmissiveRadiance += col * tr * (lit * uGlow + edge * 2.6) + vec3(1.0) * tr * edge * 0.8;
-}`);
+      .replace('#include <lights_physical_fragment>', `{
+  float mtD = distance(vMtWP, uOrigin), mtF = uCharge * uReach;
+  float mtLit = (1.0 - smoothstep(mtF - uFront, mtF, mtD)) * step(0.001, uCharge);
+  float mtEdge = exp(-pow((mtD - mtF) / uFront, 2.0)) * step(0.001, uCharge) * step(uCharge, 0.999);
+  float mtK = max(uPaint, mtLit); // (the Courier's colours where the wave has passed, the blank frame ahead of it)
+  float mtL = dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114));
+  diffuseColor.rgb = mix(uBlank * (0.75 + 0.5 * mtL), diffuseColor.rgb, mtK);
+  totalEmissiveRadiance *= mtK;
+  if (uTraced > 0.5 && (uGlow > 0.001 || mtEdge > 0.001)) {
+    vec3 w = pow(abs(normalize(vMtLN)), vec3(4.0)); w /= (w.x + w.y + w.z);
+    vec3 p = vMtLP * uTile;
+    float tr = texture2D(uTrace, p.zy).r * w.x + texture2D(uTrace, p.xz).r * w.y + texture2D(uTrace, p.xy).r * w.z;
+    vec3 col = mtFilm(mtD * 0.045 + uTime * 0.05);
+    totalEmissiveRadiance += col * tr * (mtLit * uGlow + mtEdge * 2.6) + vec3(1.0) * tr * mtEdge * 0.8;
+  }
+  totalEmissiveRadiance += mtFilm(mtD * 0.045 + uTime * 0.05) * mtEdge * 0.35; // (the front itself, a seam of the film running over the shell)
+}
+#include <lights_physical_fragment>`);
   };
-  mat.customProgramCacheKey = () => 'mech-wake-traces';
+  mat.customProgramCacheKey = () => `${prevKey ? prevKey() : ''}-mechwake`;
   mat.needsUpdate = true;
-  mat.userData.mountU = U;
+  return (mat.userData.mountU = own);
+}
+
+/** A body's shell dressed once (the Courier's finishes on its plates, trim and core: vfx/mechs/mechglaze.js) and the wave laid on;
+ *  its shared uniforms kept on the body. */
+function wakeBody(body, game) {
+  if (body.userData?.wakeU) return body.userData.wakeU;
+  dressMech(body, game);
+  const U = wakeUniforms(), m = body.mats || {};
+  for (const [mat, blank, traced] of [[m.porcelain, MECH_BLANK.bisque, true], [m.trim, MECH_BLANK.trim, true], [m.core, MECH_BLANK.core, false]]) if (mat) wakeTraces(mat, U, blank, traced);
+  (body.userData ||= {}).wakeU = U;
   return U;
 }
 
@@ -108,16 +132,18 @@ export class MechMount {
     this.from = new THREE.Vector3(); this.cam = new THREE.Vector3(); this.look = new THREE.Vector3(); this.camOn = false;
     this.beats = new Set(); this.turnsSaid = 0;
     game.events?.on?.('hangar.enter', () => { this.visit++; });
+    game.events?.on?.('vessel.fire', () => { const B = this.body; if (B?.mats) dressMech(B, game); }); // (a firing at the kiln worn by the frame too)
   }
   get body() { return this.game.hangar?.pilot?.mech || null; }
 
   update(dt) {
-    const g = this.game, H = g.hangar, C = g.cradles, body = this.body;
+    const g = this.game, H = g.hangar, C = g.cradles, body = this.body, raw = g.rawDt ?? dt;
+    if (body?.mats) { this.U = wakeBody(body, g); this.U.uTime.value += raw; } // (every frame the hangar builds starts blank: no Jar in it)
     const mine = !!H && !!C?.sealed && C.sealed === H.cradle && !!body?.cradle?.frame;
     if (mine && !this.active) this.begin(body);
     if (!mine && this.active) this.end();
-    if (!this.active) return;
-    const raw = g.rawDt ?? dt; this.t += raw / this.k; this.U.uTime.value += raw;
+    if (!this.active) { if (this.U) { this.U.uPaint.value = Math.max(0, this.U.uPaint.value - raw / M.unpaint); this.U.uGlow.value = Math.max(0, this.U.uGlow.value - raw); } return; } // (the Courier gone, its colours drain out of the shell)
+    this.t += raw / this.k;
     this.play(body);
   }
 
@@ -125,13 +151,13 @@ export class MechMount {
     const g = this.game, c = g.cradles.sealed;
     this.active = true; this.playing = true; this.t = 0; this.beats.clear(); this.turnsSaid = 0;
     this.k = this.seen === this.visit ? M.quick : 1; this.seen = this.visit;
-    this.U = wakeTraces(body.mats.porcelain); this.U.uCharge.value = 0; this.U.uGlow.value = 0;
+    this.U = wakeBody(body, g); dressMech(body, g); this.U.uCharge.value = 0; this.U.uGlow.value = 0; this.U.uPaint.value = 0; // (the look as fired now: a firing since is worn)
     this.from.copy(c.at); // (the Jar starts where the Courier folded into it, on the walkway)
     this.camOn = false;
   }
   end() {
     this.active = false; this.playing = false; this.wake = 0;
-    if (this.U) { this.U.uGlow.value = 0; this.U.uCharge.value = 0; }
+    if (this.U) this.U.uCharge.value = 0;
     this.game.cinema?.unshot('mechMount');
   }
   say(beat) { if (this.beats.has(beat)) return; this.beats.add(beat); this.game.events?.emit('mech.mount', { beat, by: 'courier' }); }
@@ -166,15 +192,15 @@ export class MechMount {
       spin.setFromAxisAngle(Fr.up, -turns * PI * 2 * (1 - u)); q.copy(Fr.q).premultiply(spin);
       const half = Math.floor(u * turns * 2); if (half > this.turnsSaid && half < turns * 2) { this.turnsSaid = half; g.events?.emit('mech.mount', { beat: 'turn', n: half, by: 'courier' }); }
     } else { pos.copy(Fr.at); q.copy(Fr.q); }
-    if (t >= t4 && !this.beats.has('lock')) { this.say('lock'); g.fx?.impact?.(top.clone(), Fr.up.clone(), { sparks: 14, dust: 4 }); g.vfx?.play?.('domain.spellscription.hit', { pos: top.clone(), normal: Fr.up.clone(), scale: 1.6 }); }
+    if (t >= t4 && !this.beats.has('lock')) { this.say('lock'); if (typeof g.fx?.impact === 'function') g.fx.impact(top.clone(), Fr.up.clone(), { sparks: 14, dust: 4 }); g.vfx?.play?.('domain.spellscription.hit', { pos: top.clone(), normal: Fr.up.clone(), scale: 1.6 }); }
     if (J) { J.group.position.copy(pos); J.group.quaternion.copy(q); J.group.visible = true; }
     // the wake: the gate's way, out from the cradle, the eyes last
     U.uOrigin.value.copy(Fr.at); U.uReach.value = (body.height || 15) * 1.25;
     if (t < t4) { U.uCharge.value = 0; U.uGlow.value = 0; }
     else if (t < t5) { this.say('wake'); U.uCharge.value = ease((t - t4) / M.wake); U.uGlow.value = 1; }
-    else { U.uCharge.value = 1; const u = Math.min(1, (t - t5) / M.power);
+    else { U.uCharge.value = 1; U.uPaint.value = 1; const u = Math.min(1, (t - t5) / M.power);
       if (!this.beats.has('power')) { this.say('power'); const h = body.joints?.head || body.joints?.neck; const at = h ? h.getWorldPosition(new THREE.Vector3()) : Fr.at.clone();
-        g.vfx?.play?.('domain.spellscription.level', { pos: at, scale: 2.4 }); g.fx?.flash?.(0.35); }
+        g.vfx?.play?.('domain.spellscription.level', { pos: at, scale: 2.4 }); }
       U.uGlow.value = THREE.MathUtils.lerp(1.6, M.rest, u) + (u >= 1 ? Math.sin(U.uTime.value * PI * 2 * M.breath * 0.4) * M.rest * 0.5 : 0); }
     this.wake = U.uCharge.value; this.playing = t < t6 + 0.3;
     this.camera(body, Fr, pos, t, t2, t4, t6);

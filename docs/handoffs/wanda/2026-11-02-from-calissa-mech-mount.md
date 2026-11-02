@@ -11,3 +11,9 @@ The event is `mech.mount { beat, by }`, emitted while your Pneuka Jar seals into
 | `power` | at the end | the eyes ignite |
 
 A second seal in the same visit runs at half the time. The Shrine Gate's wake is a good reference for the sound.
+
+Also, a part's special: `mech.special { slot, part, power, kind, by }` (`world/hangar/mechspecials.js`). Each special is a god power at the frame's scale, so the hand's own sound for it, bigger, would fit:
+- the head's Scan
+- the arms' Sunder, Telekinesis or Gust
+- the legs' Shape, Lift Ground, Carve or Portal
+- the core's Barrier or Hasten
