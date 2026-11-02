@@ -3,7 +3,7 @@
 // (progress/cooking/; world/garden/kitchen.js) and for what falls out of a creature you brought down (progress/creaturedrops.js;
 // world/drops/creaturedrops.js). Plain words, Espada's to word (CLARITY.md).
 //
-// Ledger: cook.serve, cook.serve.<grade>, cook.dish.<id>, cook.true, cook.true.<dish>, cook.dubious, cook.move.<move>, cook.hit.<move>,
+// Ledger: cook.serve, cook.serve.<grade>, cook.dish.<id>, cook.family.<family>, cook.true, cook.true.<dish>, cook.dubious, cook.move.<move>, cook.hit.<move>,
 // cook.learn (a new recipe), hi cook.grade (0 dubious .. 5 true); drop.take, drop.take.<cat>, drop.rare, first drop.first.
 //
 //   cookingRules({ on, L, log })   (tracking/rules.js calls it)
@@ -20,7 +20,7 @@ export function cookingRules({ on, L, log }) {
   on('cook.dubious', (e) => { if (e.by !== 'courier') return; L.inc('cook.dubious'); log.say('warn', 'Dubious dish. A little Lachryma returns to your pool.', { key: 'cook.dubious', throttle: 1 }); });
   on('cook.serve', (e) => {
     if (e.by !== 'courier') return;
-    L.inc('cook.serve'); L.inc(`cook.serve.${e.grade}`); L.inc(`cook.dish.${e.dish}`); L.hi('cook.grade', ORDER.indexOf(e.grade));
+    L.inc('cook.serve'); L.inc(`cook.serve.${e.grade}`); L.inc(`cook.dish.${e.dish}`); L.inc(`cook.family.${String(e.dish).split('.')[0]}`); L.hi('cook.grade', ORDER.indexOf(e.grade));
     if (e.true) { L.inc('cook.true'); L.inc(`cook.true.${e.dish}`); }
     const held = e.feeling ? ` Its ${e.feeling} lasts ${e.hold} real seconds.` : '';
     log.say('gain', `You served ${art(e.label)} ${e.label.toLowerCase()}: ${e.grade}.${held}`, { key: 'cook.serve', throttle: 1 });
