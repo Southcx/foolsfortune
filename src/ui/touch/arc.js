@@ -53,12 +53,9 @@ export function arcContext(g) {
   return inHandCtx(g) ? 'tool' : 'foot';
 }
 
-/** The folded column's stepped rim, a placeholder until Calissa's: the tiles behind it shown as two clay edges under its foot. */
-const CSS = '.tt.arc-stack{box-shadow:0 5px 0 -1px #5a3324,0 10px 0 -3px #3e2218,0 12px 8px rgba(0,0,0,.35)}';
 
 export class TouchArc {
   constructor(game) {
-    if (typeof document !== 'undefined' && !document.querySelector('style[data-toucharc]')) { const st = document.createElement('style'); st.setAttribute('data-toucharc', ''); st.textContent = CSS; document.head.appendChild(st); }
     this.game = game; this.tiles = new Map(); this.ctx = null; this.fold = 'folded'; this.touched = 0; this.key = ''; this.shown = new Set();
     this.down = new Map(); this.picks = []; this.belt = []; this.closeRadial = null; this.holdT = 0;
   }
@@ -185,10 +182,10 @@ export class TouchArc {
       this.shown = want;
     }
     for (const s of show) {
-      const t = this.tile(s.slot), f = this.collapsed ? { glyph: 'more', word: null } : face[s.slot] || {};
+      const t = this.tile(s.slot), f = this.collapsed ? { glyph: 'fold', word: null } : face[s.slot] || {};
       if (f.label) t.label(f.label.word, f.label.corner); else t.face({ glyph: f.glyph ?? null, word: f.word ?? null, corner: f.corner ?? null, tint: f.tint ?? null });
       const stack = this.collapsed || (folded && s.slot === this.foldFace && foldSlots.length > 1);
-      t.el.classList.toggle('arc-stack', stack); // (the stepped rim of the folded column: Calissa's look)
+      t.el.classList.toggle('arc-stack', stack); // (the stepped rim of the folded column: Calissa's dress, ui/touch/arcdress.js)
       // (for Calissa's dress: data-slot is the slot (A..G, PICK, BELT); data-fold is the fold column's state on its tiles, 'folded' (the
       //  stack), 'flipping' (landing in the cascade) or 'open'; absent on the arc's other tiles)
       const fk = foldSlots.includes(s.slot) ? (stack ? 'folded' : flipK(s.slot) < 1 ? 'flipping' : 'open') : null;
