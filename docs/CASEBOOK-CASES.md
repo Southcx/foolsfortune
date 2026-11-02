@@ -4922,3 +4922,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   phase. After: the world phase lists 40; `looks` (16) and `marks` (24) were unchanged by the throw, so no earlier registration was
   passing nothing.
 - **Rule:** 395
+
+### 2026-11-02 · v389's pack docs deleted while v389 was still the live page (the publish routine; found by Petra at once)
+- **Seen:** the v390 publish was refused, but the delete of v389's 34 pack docs had been sent beside it in parallel and went through. For
+  about three real minutes the live page was v389 with no pack: the iOS route (every file 403, the build read from the pack) could not
+  load. The desk's route, the files, was unaffected.
+- **Cause, as measured:** the publish and the delete batch were sent in one parallel set. The publish was refused because the session had
+  restarted and had not listed the artifact's files since (`three-PbuhuByN.js` "not read as published").
+- **Fix:** the files listed, v390 published (version 1793585655-7573), its pack whole. The routine now runs the delete as its own step,
+  after the publish's result is read.
+- **Rule:** 396

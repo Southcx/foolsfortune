@@ -1099,3 +1099,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 
 395. **A system joins its phase after it is built, and a missing one throws.** A registration that reads
   `game[name]` before the line that builds it passes `undefined`; quietly ignored, the system never runs and nothing says so.
+396. **A publish's old pack docs are deleted only after the publish is confirmed, never in the same parallel
+  batch.** A refused publish leaves the old page live, and its docs are the ones the delete takes.
