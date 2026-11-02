@@ -1060,3 +1060,40 @@ Withdrawn: a wrangle, the March, grog, punt, a buckle, a teardrop, the coup, a g
   - yielded: "You yield the duel."
   - fled (Dovina's): "You flee the duel." / "You fail to flee." / "You flee at once."
   - The test foe's name stays **Aberrant Lantern Wisp**.
+
+### Grain and the hearth *(Espada's, 2026-11-02, for South's Spirit Cooking widening; names South's to rule)*
+
+**Why the Pneuka Jar knows bread.** A jar's first work was holding grain. Long before a pot held tears it held barley against the
+winter: the pithos, the storage jar, is the oldest pantry, and the Great Slip Jelly still wears one as its crown. Kaolin Anagami is a
+potter's ego, and a potter's island remembers the granary before the kiln. So when the Vessoul kneads, the hand is not learning a new
+craft; the Jar is remembering its first one. Grain is the island's oldest patience made food: a seed kept through a bad season is hope
+kept in a jar.
+
+**The two grains.** Wheat was gathered and sown in the Fertile Crescent about ten thousand years ago; rice in the Yangtze valley about
+as long. Each built half the world's tables, and each is a feeling's patience: wheat needs the knead and the proof (time spent working
+it), rice the wash and the soak (time spent waiting on it). The hearth teaches both, and that is the module's lesson in one line: the
+grain is the same human patience, worked two ways.
+
+**The noodle's road.** The pulled noodle (lamian) is folded and stretched, and each fold doubles the strands: 2, 4, 8 ... 128 after
+seven folds. That is the module's showpiece and a true number. The road runs east and west. Pulled and cut wheat noodles crossed to
+Japan as ramen, udon (wheat) and soba (buckwheat, which is not wheat at all). Dried pasta was made in Sicily long before Marco Polo
+sailed: al-Idrisi recorded *itriyya* there in 1154. The tale that Polo brought noodles home from China is a myth, first printed in an
+American pasta trade magazine in 1929. The two ends met again in the 1960s, when Tokyo's cooks made *wafu* pasta (spaghetti with
+mentaiko, shiso and nori). The lore is that the road was always one road: the same flour, the same water, the same hands, east and west.
+
+**Soul seafood.** The Weir's fish are made of feeling (each its colour, ANGLING.md). A fish caught in Lachryma and cooked carries the
+feeling it was caught in, so the seafood course is the one dish whose feeling the catch chooses, not the add-in. Eating what you fished
+out of a sea of tears is the oldest trade there is: a fisher's bread is the sea's.
+
+**The names.** South coined *Spirit Pasta*, *Soul Noodles*, *Soul Food* and *Soul Seafood* (2026-11-02). Plain names hold in the UI
+until he calls the module final (CLAUDE.md). Recorded as his candidates:
+
+| plain (now, in the UI) | South's coinage (the lore name, when ruled) |
+|---|---|
+| Spirit Cooking (the module; already South's, ruled 2026-11-01) | Spirit Cooking |
+| pasta, noodles (a dish family) | Spirit Pasta, Soul Noodles |
+| the cuisine as a whole (in the lore only) | Soul Food |
+| seafood (the fish course) | Soul Seafood |
+
+Canon now: the grain lore above, the Jar as granary. Open: which coinage becomes the lore name, and whether *Soul Food* names the whole
+cuisine or one dish.

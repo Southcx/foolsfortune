@@ -48,6 +48,11 @@ export const FORMS = {
   pot:     { regions: ['body'], crack: 0.65, mendAfter: 0, mendRate: 0, pool: false },
   clapper: { regions: ['body'], crack: 3.6, mendAfter: 0, mendRate: 0, pool: false }, // (one blow bursts it, as today)
   dummy:   { regions: ['body'], crack: 0.08, mendAfter: 0, mendRate: 0, pool: false }, // (a straw dummy's percent: 8 a full blow, as today)
+  // a mech (MECHS.md 4.7): the Pneuka Jar's driven body, thick armour, its pool the Courier's (one Vessoul, one pool: the barrier); mended
+  // only at the hangar's gantry. A region's part armour scales the k before it lands (progress/mechs/frame.js `armour`)
+  mech:    { regions: ['head', 'core', 'armL', 'armR', 'legs', 'back'], crack: 0.18, mendAfter: 0, mendRate: 0, pool: true },
+  // a giant (MECHS.md 5.3): a creature at a mech's scale, no pool (its barrier is its own rule, mechs/rules.js), eighty full blows to fell
+  giant:   { regions: ['head', 'body', 'armL', 'armR', 'legs'], crack: 0.045, mendAfter: 0, mendRate: 0, pool: false },
   // a Figment's glaze shell: its poise as crazing; the crackle break is this shell's shatter (stun.js keeps the depth and the drain)
   shell:   { regions: ['shell'], crack: 0.08, mendAfter: 1.4, mendRate: 0.32, pool: false }, // (Impact's poise, types.js: 0.08 a blow of power 1, twelve plain shots)
 };

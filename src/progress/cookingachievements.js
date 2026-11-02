@@ -18,6 +18,8 @@ export function cookingAchievements({ C, H, F }) {
   C('ck3', 'garden', 'The Hearth', 4, 'mechanic', 'A True Loaf', 'Bake a TRUE loaf: every move at its heart.', 'cook.true', 1);
   F('ck4', 'garden', 'The Hearth', 3, 'collect', 'Seven Loaves', 'Bake a loaf of every feeling, and a plain one.', (L) => LOAVES.filter((k) => L.get(`cook.dish.bread.${k}`) >= 1).length, LOAVES.length);
   C('ck5', 'garden', 'The Hearth', 3, 'endure', 'Daily Bread', 'Serve 50 dishes.', 'cook.serve', 50);
+  C('ck6', 'garden', 'The Hearth', 1, 'mechanic', 'Al Dente', 'Boil pasta to the soul: a thin white thread left at its heart.', 'cook.hit.boil', 1);
+  C('ck7', 'garden', 'The Hearth', 2, 'collect', 'Soul Seafood', 'Sear a fish you landed from the Lachryma.', 'cook.family.seafood', 1);
   C('loot1', 'battle', 'Slip Jellies', 1, 'count', 'Spoils', 'Pick up 25 things a creature dropped.', 'drop.take', 25);
   C('loot2', 'battle', 'Slip Jellies', 3, 'mechanic', 'Lucky Find', 'Pick up a rare drop.', 'drop.rare', 1);
 }
