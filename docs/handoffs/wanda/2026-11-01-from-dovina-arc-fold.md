@@ -1,7 +1,6 @@
 # The arc's fold's clack (from Dovina, 2026-11-01)
 
-The touch rebuild's outer ring folds and unfolds like the tablitas, the wooden Jacob's ladder toy (TOUCH-REBUILD.md 7). It has four
-tiles, each flip about 60 ms, so a cascade takes a quarter of a real second.
+The touch rebuild's outer ring folds and unfolds like the tablitas, the wooden Jacob's ladder toy (TOUCH-REBUILD.md 7). It is three tiles (the meter on top), each flip about 60 ms.
 
 - **Opening:** one clack a tile, wood or clay on clay, pitched by the tile's size (three 48 px tiles, F on top; folding is two flips).
 - **Folding:** the same run reversed, a little faster and lighter.
