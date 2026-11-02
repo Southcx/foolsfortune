@@ -74,6 +74,7 @@ export function bootMoreChatCommands(game, made) {
   game.rhythm = new Rhythm(game);
   game.debugChests = new DebugChests(game); // (what a test session needs, beside the thing under test: debug/debugchest.js, docs/plans/DEBUG-CHESTS.md)
   game.busk = new Busk(game); // (the busker's mats on the piers: F with the Crucibelle worn begins a song: world/busk.js)
+  game.systems.add('world', game.debugChests, { clock: 'raw', name: 'debugChests' }); game.systems.add('world', () => game.busk.update(), { name: 'busk' }); // (core/systems.js)
   game.chat.add('garden', { debug: true, help: "into your Inner Realm from where you stand (a tester's way: a Shrine is the door)", run: () => game.realm?.enter(game.shrines?.get?.(game.shrines.last) || null) });
   // (a tester's way to the mycelium until the garden's features are placed by hand: MYCELIUM.md; every verb reports through its event)
   game.chat.add('spore', { debug: (a) => a[0] === 'bed', help: 'the spore beds: /spore bed | inoculate <bed> <feeling> | set <bed> <box slot> [slot] | back <bed> | harvest <bed>', run: (a) => {

@@ -64,6 +64,7 @@ export async function bootCreatures(game, made) {
   game.spirits = new Spirits(game); // (smoke spirits on their side: the Crucibelle's and the Lockheart's: spirits.js)
   game.bound = new Bound(game); // (the Figments caught, waiting in the Jar for the garden: creatures/bound.js)
   game.catchLook = new CatchLook({ fx: game.fx }); scene.add(game.catchLook.group); // (Calissa's: one look for the hand's catch and the coffin's, vfx/catch.js)
+  game.systems.add('world', (raw) => game.catchLook.update(raw, game.camera), { clock: 'raw', name: 'catchLook' }); // (core/systems.js)
   game.crystals = new Crystals(game); // (Lachryma set hard in the sand: the Dreamvane's: world/dunes/crystals.js)
   game.dunesAreas = new DunesAreas(game); // (the Dunes as five areas: the one you are in, said as you reach it: world/dunes/areacut.js)
   game.rareFinds = new RareFinds(game); // (an area's condition-bound find: the ridges' fulgurite, the ruins' Wisp: world/dunes/rarefinds.js)

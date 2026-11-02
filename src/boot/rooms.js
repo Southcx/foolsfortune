@@ -79,8 +79,14 @@ export function bootRooms(game, made) {
     game.wellTargets = new TrainingTargets(game.strawmanWell); // (its filler foes, Strawman's family: world/strawmanwell/targets.js)
     game.wellLook = new WellLook(game); // (the Well dressed as Pip's toy theatre: vfx/strawmanwell/look.js)
     game.impacts = new ThrownHits(game); // (anything loose thrown or kicked fast enough strikes a creature: world/impacts.js)
+    // (the rooms' runtimes each frame: core/systems.js, the `world` phase; the Well's targets and its look after the Well, the hits after what throws)
+    for (const name of ['solar', 'mimicry', 'sandbox', 'strawmanWell']) game.systems.add('world', game[name], { name });
+    game.systems.add('world', game.wellTargets, { name: 'wellTargets', after: 'strawmanWell' });
+    game.systems.add('world', game.wellLook, { clock: 'raw', name: 'wellLook', after: 'wellTargets' });
+    game.systems.add('world', game.impacts, { name: 'impacts', after: ['sandbox', 'strawmanWell'] });
     game.mimicryLooks = new MimicryLooks(game); game.sandboxLook = new SandboxLook(game); game.panicMarks = new PanicMarks(game); game.domainArtMarks = new DomainArtMarks(game); // (the puzzle stones, the ghost and a step's mark; the Sandbox dressed; panic over a creature a thrown thing struck: vfx/mimicry/, vfx/sandbox/, vfx/panic.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
+    game.systems.add('world', game.geysers, { name: 'geysers' });
     game.makeSeaSerpent = (o) => new SeaSerpentBody(game, o); // (the sea serpent's body for its mind to drive: vfx/opensea/seaserpentbody.js, drive/update/hit/down)
     installSeaBeasts(game); // (the other sea beasts' bodies: game.makeSeaBeast(id, o) for the chain chassis, game.makeUmibozu(o), /beastlook: vfx/opensea/beasts/)
     game.cardBackOpen = (id) => cardBackOpen(id, game.ledger); // (what opens each of Calissa's card backs, for her picker's OPEN_WHEN: progress/cardbacks.js)
@@ -97,6 +103,7 @@ export function bootRooms(game, made) {
     for (const name of ['seaLooks', 'puzzleLooks', 'bottleLooks', 'salvageLooks', 'shipPartWear']) game.systems.add('looks', game[name], { name });
     game.systems.add('looks', game.seaHull, { clock: 'raw', name: 'seaHull' });
     game.raceway = new Raceway(game); game.race = new Race(game); // (the Solar Skiff's test circuit and its time trial, built the first time it is entered: world/raceway/, docs/plans/SKIFF-RACING.md)
+    game.systems.add('world', game.raceway, { name: 'raceway' }); game.systems.add('world', game.race, { name: 'race', after: 'raceway' });
     game.interact.add('find', () => (game.dialogue?.open || !idle() ? null : game.well.finds?.near(player) ?? null)); // (an artifact in a Well's wall: world/well/finds.js)
     game.interact.add('ostracon', () => (game.dialogue?.open || !idle() ? null : game.ostraca?.near(player) ?? null)); // (a sherd with a word on it, a stele: world/ostraca.js)
     // the kiln station: F at the kiln's mouth (courier/moves/kiln.js)
@@ -106,8 +113,11 @@ export function bootRooms(game, made) {
       return d < 2.4 && Math.abs(player.pos.y - KILN_AT.y) < 1.5 ? { pos: KILN_AT.clone().setY(KILN_AT.y + 1.7), d } : null;
     });
     game.shrines = new Shrines(game); // (rest, travel, made whole, the Spirit Garden's door: world/shrines.js; it adds its own interact source)
+    game.systems.add('world', () => game.shrines.update(), { name: 'shrines' });
     game.rail = new Emocean(game); game.pier = new Pier(game); // (the crossing: F at a jetty's end, the rail shooter; world/emocean/)
     game.mooring = new Mooring(game); game.encounterFilm = new EncounterFilm(game); // (the chosen hull alongside the pier: vfx/mooring.js; the encounters at sea filmed: vfx/encounters/film.js)
+    game.systems.add('world', () => game.pier.update(), { name: 'pier' });
+    game.systems.add('world', game.mooring, { clock: 'raw', name: 'mooring', after: 'pier' }); game.systems.add('world', game.encounterFilm, { clock: 'raw', name: 'encounterFilm', after: 'mooring' });
     if (game.dunes?.beach) game.pier.add('anagami', () => { const j = game.dunes.beach.jetty; return j && { end: j.end, top: j.top, yaw: -Math.PI / 2 }; });
     game.pier.add('margarite', () => game.margarite.pier);
     game.interact.add('push', () => {
