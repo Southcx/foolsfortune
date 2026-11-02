@@ -18,10 +18,10 @@ const pad = (s, n) => String(s).padEnd(n), f = (v, d = 1) => (+v).toFixed(d);
 
 const FRAMES = {
   'clay frame': {},
-  'tank, flail': { legs: 'treadLegs', arms: 'strongArms', weaponL: 'greatFlail', weaponR: 'greatBell', core: 'kilnCore' },
+  'tank, blade': { legs: 'treadLegs', arms: 'strongArms', weaponL: 'greatBlade', weaponR: 'bigGun', core: 'kilnCore' },
   'spring, blade': { legs: 'springLegs', arms: 'quickArms', weaponL: 'greatBlade', weaponR: 'fist', core: 'lightCore', generator: 'lightGenerator' },
   'crab, gun': { legs: 'crabLegs', weaponL: 'bigGun', weaponR: 'bigGun', back: 'missiles', generator: 'bigGenerator', booster: 'highBooster' },
-  'overweight': { legs: 'springLegs', arms: 'clayArms', weaponL: 'greatFlail', weaponR: 'greatBell', core: 'kilnCore', back: 'shield', generator: 'bigGenerator' },
+  'overweight': { legs: 'springLegs', arms: 'quickArms', weaponL: 'greatBlade', weaponR: 'bigGun', core: 'kilnCore', back: 'shield', generator: 'bigGenerator' },
 };
 
 console.log('FRAMES (mass t, accel m/s², a step s, walk top m/s, quick boost Δv m/s, boost top m/s, jump m/s, idle draw kW, battery min at rest)');
@@ -33,7 +33,7 @@ for (const [name, sel] of Object.entries(FRAMES)) {
 
 // the duel model: one weapon, swung at its own rate at 0.6 sync (a fair pilot); the giant's barrier dropped once at the start (2 s of
 // pressing) and again each time it rises; stagger filled by blows, then the staggered window's blows doubled (heavy ones x3)
-const RATE = { fist: 1.1, bigGun: 3, greatBlade: 0.9, greatBrush: 0.7, greatBell: 0.35, greatFlail: 0.5 };
+const RATE = { fist: 1.1, bigGun: 3, greatBlade: 0.9 };
 const giant = GIANTS.straw, gForm = FORMS.giant, line = breakLine('giant'), sync = 0.6;
 console.log(`\nTHE STRAW GIANT (falls at ${line} cracks, ${gForm.crack} a full blow: ${Math.round(line / gForm.crack)} unmultiplied full blows), at sync ${sync} (output x${outputK(sync)})`);
 console.log(`${pad('weapon', 12)}${pad('blows', 7)}${pad('real s', 8)}${pad('staggers', 10)}${pad('kJ spent', 10)}${pad('battery %', 10)}`);
@@ -56,7 +56,7 @@ for (const w of partsIn('weaponL').filter((id) => RATE[id])) {
 const mech = FORMS.mech, swipe = giant.moves.swipe, slam = giant.moves.slam;
 const toCore = REGION_BREAK / (swipe.k * mech.crack * clay.armour.core);
 console.log(`\nTHE GIANT ON THE CLAY FRAME: a swipe k ${swipe.k} cracks the core ${f(swipe.k * mech.crack, 3)} (unshielded): ${f(toCore, 1)} swipes to break it, about ${f(toCore * swipe.every, 0)} real s at one every ${swipe.every} s; a slam k ${slam.k} on the head`);
-console.log(`a charge at the clay frame's boost top (${f(clay.boostTop)} m/s) lands k ${f(chargeK(clay.mass, clay.boostTop), 2)}; the tank frame's (${f(assemble(FRAMES['tank, flail']).boostTop)} m/s) k ${f(chargeK(assemble(FRAMES['tank, flail']).mass, assemble(FRAMES['tank, flail']).boostTop), 2)}`);
+console.log(`a charge at the clay frame's boost top (${f(clay.boostTop)} m/s) lands k ${f(chargeK(clay.mass, clay.boostTop), 2)}; the tank frame's (${f(assemble(FRAMES['tank, blade']).boostTop)} m/s) k ${f(chargeK(assemble(FRAMES['tank, blade']).mass, assemble(FRAMES['tank, blade']).boostTop), 2)}`);
 console.log(`the cable reaches ${ENERGY.cable} m; off it the clay frame has ${f(clay.minutesIdle)} real minutes at rest, ${f(clay.capacity / (clay.draw + clay.fire) / 60, 2)} boosting flat out`);
 
 // ---- v2 (MECHS.md 9): the toy city's buildings under the fist and the charge, and the ring's bouts against four stand-ins ----

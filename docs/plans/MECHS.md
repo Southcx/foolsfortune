@@ -66,7 +66,7 @@ Nine slots. Each part is a row of honest numbers (`PARTS`, `src/progress/mechs/p
 | **legs** | the load limit, the leg length (the stride and the walk's top speed), the leg type | mass |
 | **booster** | thrust (kN): the dash, the jump, the hover | draw while firing |
 | **generator** | output (kW) and capacity (kJ, the battery while off the cable) | mass |
-| **left arm weapon / right arm weapon** | a tool's giant form (4.3) | mass, draw per use |
+| **left arm weapon / right arm weapon** | the blade, the blaster or the fist (4.3) | mass, draw per use |
 | **back unit** | one more: missiles, a shield, a radar, a camera | mass, draw |
 
 **Leg types** (each its own movement, AC's four):
@@ -93,21 +93,25 @@ What moves it:
 
 Sync starts at 0.3 on sealing and settles toward 0.4 at rest.
 
-### 4.3 The seven tools at giant scale (the arm weapons)
+### 4.3 The arm weapons: a blade and a blaster (South, 2026-11-02)
 
-Every tool has a giant form, so a mech fights in the Courier's own grammar:
+> "the mechs don't need access to all the lachryma tools. A blade and a blaster is more than enough for now, we can bake special moves
+> into a per-part basis, and amplify/modify existing God Art abilities." (passed on by Calissa)
 
-| tool | giant form | its verb at scale |
-|---|---|---|
-| psygun | **the big gun** | a rifle: shots, a charged beam that pierces a giant's barrier while it holds |
-| Sondelass | **the great blade** | a cutlass string of three, the third a launcher that staggers |
-| Soul Brush | **the great brush** | paints the ground in a swath of the pool's feeling (the paint map at scale); a giant in its paint is slowed |
-| Crucibelle | **the great bell** | a toll in a cone that stuns smaller things outright and adds stagger to a giant |
-| Lockheart | **the great flail** | a coffin on a chain: the heaviest blow, momentum-scaled; it can hoover a giant's barrier into the battery |
-| Dreamvane | **the great vane** | a back unit only: the radar and the weak point marked |
-| Veritome | **the great lens** | a back unit only: photographs a giant (a plate, the bestiary at scale) |
+| weapon | what it does |
+|---|---|
+| **the big gun** (the blaster) | a rifle: shots, and a charged beam that pierces a giant's barrier while it holds |
+| **the great blade** | a cutlass string of three, the third a launcher that staggers |
+| **the fist** | the bare hands: a punch string of three (Giant Clank's) |
 
-And the bare hands: **the fist**, a punch string of three (Giant Clank's).
+**Retired** with the ruling: the great brush, bell and flail (arm weapons), and the great vane and lens (back units). A saved frame
+wearing one falls back to the clay frame's part in that slot.
+
+**Next, not yet designed** (South's direction):
+- special moves carried by a part, each part its own;
+- the God Arts amplified or modified when cast from the frame.
+
+The back units that stay are the missiles and the shield.
 
 ### 4.4 Energy and the cable (Evangelion's five minutes)
 
@@ -129,7 +133,7 @@ And the bare hands: **the fist**, a punch string of three (Giant Clank's).
 
 ### 4.6 Stagger and the heavy blow (Armored Core 6's ACS)
 
-A giant fills a **stagger** gauge with every blow (impact weighs most: the flail, the fist, the charge). Full, it **staggers** for 3 real
+A giant fills a **stagger** gauge with every blow (impact weighs most: the fist and the charge). Full, it **staggers** for 3 real
 s: every blow lands x2, and a charge or a heavy blow on it then is a **critical** (x3, its region broken).
 
 ### 4.7 Damage by region (the vessel's rule, Front Mission's parts)
@@ -204,7 +208,7 @@ The hangar's door opens on the Dunes: a mech walked in the world. Cross-module f
   (a lightning rod). Real, and a reason to stand tall in a storm;
 - **thrown things**: its hands pick up a boulder or a pot of the island's size and throw it, an Impact blow by its energy
   (`world/impacts.js`): the mass is huge, so is the blow;
-- **the paint map**: the great brush paints at scale; walking in crude, the mech slides.
+- **the paint map**: walking in crude, the mech slides.
 
 ## 6. Economy
 
