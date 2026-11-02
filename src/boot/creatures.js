@@ -20,6 +20,7 @@ import { installPlaces } from '../world/places.js';
 import { Dissolve } from '../vfx/dissolve.js';
 import { FigmentScatter } from '../vfx/figmentscatter.js';
 import { BlowFeel } from '../vfx/blowfeel.js';
+import { SmearFrames } from '../vfx/smearframe.js';
 import { SpawnLook } from '../vfx/spawnlook.js';
 import { SlipJellies } from '../creatures/jelly/slipjelly.js';
 import { WEIR_SPAWN } from '../tools/sondelass/angling/weir.js';
@@ -52,6 +53,7 @@ export async function bootCreatures(game, made) {
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
   game.spawnLook = new SpawnLook(game); // (how a creature comes in: the island's own rise from the ground, an Egregore or a stray tears in from midair: vfx/spawnlook.js)
   game.systems.add('fx', (d) => game.spawnLook.update(d, game.camera), { clock: 'raw', name: 'spawnLook' }); // (the `fx` phase: core/systems.js)
+  game.smears = new SmearFrames(game); // (a finisher's smear frame, two display frames of the blade's arc: vfx/smearframe.js)
   game.blowFeel = new BlowFeel(game); // (a melee blow's weight, looks only: its sparks, ring, ribbon flare, camera kick, flinch: vfx/blowfeel.js)
   game.oddsTags = new OddsTags(game); // (the world's chances pinned to their thing, for True Odds: feedback/oddstags.js)
   game.figmentScatter = new FigmentScatter(game); // (a Figment's death: snapped, its wire, motes into the air and the ground: vfx/figmentscatter.js)

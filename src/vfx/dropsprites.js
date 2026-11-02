@@ -14,6 +14,7 @@
 // the keyline.
 //
 //   installDropSprites(game) -> game.dropSprites   .texture(cat) -> THREE.Texture | null (cached; null for a kind not drawn)
+//   game.dropMoments (DropMoments): a rare drop's glint on `drop.fall { rare }`, a burst at the chest on `drop.take` (vfx/library/drops.js)
 //   .canvas(cat) -> the 48 x 48 canvas (the Codex or a window may show it)   DROP_SPRITES (the kinds drawn)   DROP_SPRITE (its numbers)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -206,4 +207,23 @@ export class DropSprites {
 }
 
 /** Once, at boot: the drops' runtime (Dovina's world/drops/creaturedrops.js) asks `game.dropSprites` before drawing its own disc. */
-export function installDropSprites(game) { return (game.dropSprites = new DropSprites()); }
+/** A drop's moments on Dovina's events (world/drops/creaturedrops.js): a rare one's glint as it is thrown out, and the burst as one
+ *  reaches the Box at the chest (the library's `drop.rare`, `drop.take`: vfx/library/drops.js). */
+export class DropMoments {
+  constructor(game) {
+    this.game = game; this.ctx = { pos: new THREE.Vector3(), tint: 0xd9c8ff };
+    game.events?.on?.('drop.fall', (e) => { if (e?.rare) this.rare(e); });
+    game.events?.on?.('drop.take', () => this.take());
+  }
+  rare(e) {
+    const L = this.game.creatureDrops?.list, d = L && [...L].reverse().find((x) => x.id === e.item && x.rare);
+    if (!d) return;
+    this.ctx.pos.copy(d.pos); this.game.vfx?.play('drop.rare', this.ctx);
+  }
+  take() {
+    const P = this.game.player; if (!P) return;
+    this.ctx.pos.set(P.pos.x, P.pos.y + 0.9, P.pos.z); this.game.vfx?.play('drop.take', this.ctx);
+  }
+}
+
+export function installDropSprites(game) { game.dropMoments = new DropMoments(game); return (game.dropSprites = new DropSprites()); }

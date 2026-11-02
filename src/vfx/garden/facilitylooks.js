@@ -10,6 +10,8 @@
 //   THE ATHANOR   its tower furnace on the west shoulder (the press keeps the crown, the hokora the east), its door to the crown,
 //                 smoke from its cap; stepped round the planetoid if a plot or a lotus stands where it would
 //   THE TREE      the cocoon tree hung with silk cocoons as lanterns, clear of its three pods' boughs, lit at dusk
+//   THE HEARTH    Spirit Cooking's station as a kamado, its pots, its flue smoking and the bread's things (facilitymodels.js hearth), on
+//                 the Athanor beside the tower, stepped round the shoulder until clear of it, a plot and a lotus (its feature moved too)
 //   THE CHIMNEY   the mat a round straw mat; a climbing kiln of four chambers and its firebox stepping up the ball to the needle's
 //                 foot beside it; the needle crowned with the kiln's stack, smoking
 //   (the hokora's torii and streamers are its own model's: vfx/garden/hokora.js)
@@ -21,7 +23,7 @@
 // buildings of a home garden as toys); the dress-over-the-placeholder way of the open sea's looks (vfx/opensea/isletlooks.js).
 //
 //   game.facilityLooks = new FacilityLooks(game)   (dresses on garden.enter; smokes while inside)   .update(rawDt)   FACILITY_LOOK
-//   .spots { kura, gate, athanor, mat, kiln: [], stack } (each one's frame, a Matrix4: for a camera or a probe)
+//   .spots { kura, gate, athanor, hearth, mat, kiln: [], stack } (each one's frame, a Matrix4: for a camera or a probe)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -36,6 +38,7 @@ export const FACILITY_LOOK = {
   lanterns: { n: 9, ring: [3.35, 4.05], top: [5.25, 5.6], thread: 0.9, sc: [0.9, 1.1], clearOfPods: 0.42 },
   kiln: { lon: 140, lats: [10, 19, 28, 37, 45], foot: [0, 0.25, 0.5, 0.8, 1.15] },
   stack: { lift: 0.3, smoke: 7.5 },
+  hearth: { step: 15, clearTower: 4.2, clear: 2.4, smoke: 3.05 }, // (degrees round the shoulder a step; metres clear of the tower's foot, of a plot or lotus; its flue's mouth)
 };
 const UP = new THREE.Vector3(0, 1, 0), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _t1 = new THREE.Vector3(), _t2 = new THREE.Vector3();
 const dirOf = (lat, lon) => { const a = THREE.MathUtils.degToRad(lat), b = THREE.MathUtils.degToRad(lon); return new THREE.Vector3(Math.cos(a) * Math.sin(b), Math.sin(a), Math.cos(a) * Math.cos(b)); };
@@ -84,11 +87,26 @@ export class FacilityLooks {
     } }
     // the Athanor's tower: the west shoulder, stepped round until no plot or lotus stands within its footing
     { const P = S.by.athanor; if (P) {
-      const busy = [...(R.plots?.plots || []).filter((p) => p.planet === P).map((p) => p.pos), ...S.lotuses.filter((l) => l.planet === P).map((l) => l.pos), ...S.features.filter((f) => f.planet === P && f.kind !== 'athanor').map((f) => f.pos)];
+      const busy = [...(R.plots?.plots || []).filter((p) => p.planet === P).map((p) => p.pos), ...S.lotuses.filter((l) => l.planet === P).map((l) => l.pos), ...S.features.filter((f) => f.planet === P && f.kind !== 'athanor' && f.kind !== 'hearth').map((f) => f.pos)]; // (the hearth steps round the tower, not the tower round it)
       let n = dirOf(L.athanor.lat, L.athanor.lon);
       for (let k = 0; k < 360 / L.athanor.step; k++) { n = dirOf(L.athanor.lat, L.athanor.lon + k * L.athanor.step); const at = P.c.clone().addScaledVector(n, P.r); if (!busy.some((q) => q.distanceTo(at) < L.athanor.clear + 1.6)) break; }
       const m = put('athanor', standOn(P, n, { toward: P.c.clone().addScaledVector(UP, P.r * 2), foot: 2.1, lift: -0.05 }));
       this.vents.push({ m, y: L.athanor.smoke }); this.spots.athanor = m;
+    } }
+    // Spirit Cooking's hearth (world/garden/hearth.js, Dovina's place): a kamado on the Athanor near the tower, stepped round the shoulder
+    // until clear of the tower, a plot and a lotus; its feature moved with it, so F finds it there, and its stand-in hidden
+    { const P = S.by.athanor; if (P && game.hearth && !feat('hearth')) game.hearth.place?.(); const f = feat('hearth'); if (P && f) {
+      const H = L.hearth, tower = this.spots.athanor ? _a.setFromMatrixPosition(this.spots.athanor).clone() : null;
+      const busy = [...(R.plots?.plots || []).filter((q) => q.planet === P).map((q) => q.pos), ...S.lotuses.filter((l) => l.planet === P).map((l) => l.pos)];
+      let n = f.pos.clone().sub(P.c).normalize(), at = null;
+      const lat = THREE.MathUtils.radToDeg(Math.asin(Math.max(-1, Math.min(1, n.y)))), lon = THREE.MathUtils.radToDeg(Math.atan2(n.x, n.z));
+      for (let k = 0; k < 360 / H.step; k++) {
+        n = dirOf(lat, lon + Math.ceil(k / 2) * H.step * (k % 2 ? 1 : -1)); at = P.c.clone().addScaledVector(n, P.radiusAt ? P.radiusAt(n) : P.r);
+        if ((!tower || tower.distanceTo(at) > H.clearTower) && !busy.some((q) => q.distanceTo(at) < H.clear)) break;
+      }
+      const m = put('hearth', standOn(P, n, { toward: P.c.clone().addScaledVector(UP, P.r * 2), foot: 1.4, lift: -0.04 }));
+      f.pos.copy(at); if (f.mesh) { f.mesh.visible = false; f.mesh.position.copy(at); }
+      this.vents.push({ m: m.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0, -0.355)), y: H.smoke }); this.spots.hearth = m;
     } }
     // the cocoon tree's silk lanterns, in its own frame, clear of the boughs that hold its pods
     { const T = S.tree; if (T) {

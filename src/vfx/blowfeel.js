@@ -9,6 +9,7 @@
 //   - the swing's ribbon flaring on the frame that connects (vfx.js `sw.flare`: its uniforms, its one program)
 //   - a tiny camera kick along the blade on a heavy, a launcher and a finisher (the recoil spring, `P.punchV`, scaled by the setting
 //     visual.shake: config.js shakeOf; off, none), once a blow's part
+//   - a smear frame on a finisher: the blade's arc drawn solid for two display frames (vfx/smearframe.js)
 //   - the struck body's flinch: a white flash a frame and a half (`model.flinch()`; Strawman's alone today: no other creature has a
 //     hurt flash to ask)
 // Built once: any tool on the combo engine asks `land` from its onHit (the cutlass first); a tool's own blow (the stinger) asks `sting`.
@@ -67,6 +68,7 @@ export class BlowFeel {
     if (!at || !this.game.vfx) return;
     const w = blowWeight(c, h);
     this.burst(w, kind, ent, at, this.travel(dir, segment), h);
+    if (w === 'finisher') this.smear(at, _d, segment, h);
     const W = BLOW_WEIGHT[w];
     swing?.flare?.(W.flare, W.flareDur);
     if (W.kick && (this.kicked !== c || this.kickedPart !== (c?.part ?? 0))) { this.kicked = c; this.kickedPart = c?.part ?? 0; this.kick(_d, W.kick, w === 'launcher'); }
@@ -77,7 +79,17 @@ export class BlowFeel {
     if (!at || !this.game.vfx) return;
     _d.copy(dir).normalize();
     this.burst('finisher', ent?.type === 'creature' ? 'creature' : '', ent, at, _d, { cause: 'sliced' });
+    this.smear(at, _d, null, { cause: 'sliced' });
     swing?.flare?.(BLOW_WEIGHT.finisher.flare, BLOW_WEIGHT.finisher.flareDur);
+  }
+
+  /** A finisher's smear frame (vfx/smearframe.js): the blade's two ends now, else from the chest to the contact (a fist, a foot, a
+   *  thrust), swept back against its travel. */
+  smear(at, dir, segment, h) {
+    const S = this.game.smears; if (!S) return;
+    if (segment) segment(_a, _b);
+    else { const P = this.game.player; _a.copy(P?.pos || at); _a.y += 1.2; _b.copy(at); }
+    S.play(_a, _b, _r.copy(dir), DAMAGE_TINT[typeOf(h?.cause || 'sliced')] ?? DAMAGE_TINT.impact);
   }
 
   /** The blade's travel at the contact, into _d: the swing's tangent; with none, along the blade. */
