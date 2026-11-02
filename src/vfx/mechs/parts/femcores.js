@@ -8,7 +8,8 @@
 // cradle's boss as every core does. No neck socket: the head slot is a helm floating over the collar (femheads.js).
 // THE CHEST PLATES (`bust`, South, 2026-11-02: kept at their size and given a spring "for comedic effect"): two armoured domes, each
 // built in its own joint's frame (bustL/R off the chest, +Z out of the plate), so the parts body can bounce them on a damped spring
-// (partsbody.js BUST_SPRING); plates and a gold rim, no anatomical detail.
+// (partsbody.js BUST_SPRING), no anatomical detail; since 2026-11-02 each a Lachryma tank (South: "turn the chest into lachryma tanks as
+// well, since they're already sphere shaped"), a glass sphere in a porcelain bezel the hydraulics fill (`tank`), the harness on it.
 //   haydee   (the `doll` form) Haydee's white android: the ribcage broad but still well inside the hips, the chest plates full, the
 //            shoulder line falling to the caps, a low collar ring; under the ribcage the waist column, a jointed spine piece (a skin ball
 //            in an ivory socket at each end, a porcelain drum between: `spine`)
@@ -23,13 +24,14 @@
 // mechanical girls' smooth porcelain torsos); the Venus of Willendorf and the Jomon dogu (the narrow top over the low weight); the
 // ball-jointed doll's torso shell; the hero cores' sculpt (cores.js).
 //
-//   femCoreLook(id, F) -> the same contract as cores.js coreLook: { mounts, prof, plan, chest(S), waist(S), spine, bust: { at(s), rot(s), build(S, s) } }
+//   femCoreLook(id, F) -> the same contract as cores.js coreLook: { mounts, prof, plan, chest(S), waist(S), spine, bust: { at(s), rot(s), tank { r, at }, build(S, s) } }
 //   (spine: Haydee's waist column's two balls { lo, hi, r, rt } in the waist's frame, for the parts body's crazing)
 // ---------------------------------------------------------------------------------------
-import { MECH_LOOK as L, band, profAt, panel, jointBall, shell, sculpt, tube } from './kit.js';
+import { MECH_LOOK as L, band, profAt, panel, jointBall, shell, sculpt } from './kit.js';
 import * as THREE from 'three';
 import { sphere, ellipsoid, cone, torus, blend, carve } from './sdf.js';
 import { aoTone, surfAt, sculptSide, socketProf, bead, DANTIAN, figureOf } from './femlegs.js';
+import { harnessOf } from './femharness.js';
 
 const PI = Math.PI;
 const WIN = [1.32, 2.82]; // (the back's window round the cradle's boss: cores.js's own)
@@ -42,7 +44,7 @@ const TORSO = {
   // size of the chest, and slope the shoulders slightly down"): the shell closes at the ribcage's foot over the waist column's top ball
   // (`spine`), the ribcage ~15% broader (`wide`, eased in up the ribs), the chest plates 1.25x, the shoulder line falling to the caps
   haydee: { prof: [[0.3, 0.5], [0.42, 0.6], [0.58, 0.86], [0.78, 1.25], [0.92, 1.65], [0.97, 2.05], [0.95, 2.28], [0.85, 2.56], [0.66, 2.82], [0.46, 2.99], [0.3, 3.08]],
-    d: 0.78, back: 0.68, wide: 1.15, bust: { x: 0.52, y: 2.02, s: 0.2, amp: 0.27, r: 0.62, h: 0.62 }, under: 1.68, shoulderY: 2.38, cup: 0.42,
+    d: 0.78, back: 0.68, wide: 1.15, bust: { x: 0.68, y: 2.02, s: 0.2, amp: 0.27, swell: 0.3, r: 0.62, h: 0.62 }, under: 1.68, shoulderY: 2.38, cup: 0.42,
     spine: { lo: DANTIAN.lo, hi: 1.24, r: DANTIAN.r, rt: 0.3 }, ribs: { top: 1.36, cell: 0.058 } },
 };
 
@@ -58,7 +60,7 @@ function planOf(T) {
     const r = Math.hypot(x, z); if (r < 1e-5) return [x, y, z];
     const c = z / r, f = Math.max(0, c), wx = wideAt(T, y), X = x * wx;
     let zz = z > 0 ? z * T.d : z * T.back;
-    zz += f ** 1.5 * B.amp * Math.exp(-(((Math.abs(X) - B.x) ** 2) + ((y - B.y) * 0.8) ** 2) / B.s); // (a low swell where each chest plate sits)
+    zz += f ** 1.5 * B.amp * (B.swell ?? 1) * Math.exp(-(((Math.abs(X) - B.x) ** 2) + ((y - B.y) * 0.8) ** 2) / B.s); // (a low swell where each chest plate sits)
     zz -= (z < 0 ? 1 : 0) * 0.08 * bump(y, 1.4, 2.9); // (the back flatter between the blades)
     return [X * (1 - 0.05 * f * bump(y, 0.4, 1.6)), y, zz];
   };
@@ -82,7 +84,7 @@ function ribField(T, P) {
   const barrel = (X, y, Z) => {
     const wx = tab(WX, y), r0 = Math.hypot(X / wx, Z), c = r0 > 1e-5 ? Z / r0 : 0, f = Math.max(0, c);
     const x0 = X / (wx * (1 - 0.05 * f * bump(y, 0.4, 1.6)));
-    const z0 = Z > 0 ? (Z - f ** 1.5 * B.amp * Math.exp(-(((Math.abs(X) - B.x) ** 2) + ((y - B.y) * 0.8) ** 2) / B.s)) / T.d : (Z + 0.08 * bump(y, 1.4, 2.9)) / T.back;
+    const z0 = Z > 0 ? (Z - f ** 1.5 * B.amp * (B.swell ?? 1) * Math.exp(-(((Math.abs(X) - B.x) ** 2) + ((y - B.y) * 0.8) ** 2) / B.s)) / T.d : (Z + 0.08 * bump(y, 1.4, 2.9)) / T.back;
     const side = (Math.hypot(x0, z0) - tab(R, y)) * 0.66, cap = y - top, h = Math.min(1, Math.max(0, 0.5 + (cap - side) / 0.12)); // (its top rounded)
     const d = side + (cap - side) * h + 0.06 * h * (1 - h), lo = foot - y, g = Math.min(1, Math.max(0, 0.5 + (lo - d) / 0.12)); // (its foot rounded too)
     return d + (lo - d) * g + 0.06 * g * (1 - g);
@@ -178,40 +180,36 @@ export function femCoreLook(id, F) {
   };
   const build = haydee[id] || haydee.clayCore;
   /** The chest plates: a dome each in its joint's frame (+Z out), seated on the shell's front at the plate's height. */
-  const B = T.bust, front = (x) => T.d * Math.sqrt(Math.max(0.05, profAt(P, B.y) ** 2 - (x / wideAt(T, B.y)) ** 2)) + B.amp * 0.8;
-  /** The halter (South, 2026-11-02: "the gold rings on the bust should be sloped outwards like a halter top, coming to a point like a
-   *  gorget/choker"): each plate's gold line run under it from its outer top round to its inner top (an underwire), then from both
-   *  tops up and in over the chest to one point at the collar, so the lines slope outward going down from the neck; drawn in the
-   *  plate's own frame so it rides the plate's spring, the point a little gold drop where the two meet. */
-  const choker = new THREE.Vector3(0, top - 0.2, profAt(P, top - 0.2) * T.d + 0.07);
-  const halter = (S, s, r, h) => {
-    const at = new THREE.Vector3(...bust.at(s)), q = new THREE.Quaternion().setFromEuler(new THREE.Euler(...bust.rot(s))).invert();
-    const local = (v) => v.clone().sub(at).applyQuaternion(q), rim = (a, z = 0.03) => [Math.cos(a) * r * 0.99, Math.sin(a) * r * 0.94, z];
-    const out = s > 0 ? 0 : PI, inA = s > 0 ? PI : 0; // (the outer side +X on the left plate)
-    const a0 = out + (s > 0 ? 0.95 : -0.95), a1 = inA + (s > 0 ? -1.15 : 1.15), wire = [];
-    const sweep = (s > 0 ? -1 : 1) * (2 * PI - Math.abs(a1 - a0)); // (the long way round, through the plate's foot)
-    for (let i = 0; i <= 24; i++) wire.push(rim(a0 + sweep * (i / 24)));
-    tube(S.g, wire, 0.035, L.gold, 40);
-    const C = local(choker), lift = (p0, k) => { const m = new THREE.Vector3(...p0).lerp(C, k); m.z += 0.12 * Math.sin(PI * k); return m.toArray(); };
-    for (const end of [wire[0], wire[wire.length - 1]]) tube(S.g, [end, lift(end, 0.35), lift(end, 0.7), C.toArray()], 0.03, L.gold, 16);
-    S.g.ball(0.07, { at: C.toArray(), c: L.gold }, 12, 8);
-  };
+  const B = T.bust, front = (x) => T.d * Math.sqrt(Math.max(0.05, profAt(P, B.y) ** 2 - (x / wideAt(T, B.y)) ** 2)) + B.amp * (B.swell ?? 1) * 0.8;
+  /** The plates' harness (femharness.js: the halter's gold underwires run up to a gorget's point at the collar, or another set) is
+   *  drawn in each plate's own frame so it rides the plate's spring; its lines up to the collar end at `choker` (the chest's frame). */
+  const choker = new THREE.Vector3(0, top - 0.2, profAt(P, top - 0.2) * T.d + 0.07), Hn = harnessOf(F);
+  const shoulderPt = (s) => new THREE.Vector3(...on(s * 0.9, T.shoulderY + 0.06, 1.06));
+  /** The plates as Lachryma tanks (South, 2026-11-02: "we can turn the chest into lachryma tanks as well, since they're already
+   *  sphere shaped"): each a glass sphere (the `j` shell) round a skin's heart, seated in a rolled porcelain bezel where it leaves the
+   *  chest, its back buried in the chest; the parts body registers it (`tank`) so the hydraulics fill it with your Lachryma and slosh
+   *  it as the plate bounces (vfx/mechs/hydraulics.js). The bezel stands at `zb` over the plate's foot, the harness's rim on it. */
+  const tank = { r: B.r, at: [0, 0, B.h - B.r] }, zb = B.h * 0.24, rb = Math.sqrt(Math.max(0.01, B.r ** 2 - (zb - tank.at[2]) ** 2));
   const bust = {
     at: (s) => [s * B.x, B.y, front(B.x) - B.h * 0.3],
     rot: (s) => [0.12, s * 0.32, 0],
+    tank,
     build(S, s) {
-      const r = B.r, h = B.h, dome = shell([[0.001, h], [r * 0.45, h * 0.9], [r * 0.8, h * 0.6], [r * 0.98, h * 0.22], [r, 0.0], [r * 0.9, -0.12]], 32).rotateX(PI / 2);
-      S.p.geo(dome, { sc: [1, 0.94, 1], c: L.pale });
-      halter(S, s, r, h); // (the plate's rim as a halter's line, run up to the gorget's point at the collar)
-      if (id === 'kilnCore') S.trim.geo(shell([[r * 0.62, h * 0.72], [r * 0.7, h * 0.66], [r * 0.62, h * 0.6]], 32).rotateX(PI / 2), { sc: [1, 0.94, 1], c: L.trimM });
-      S.core.geo(shell([[r * 0.9, -0.1], [r * 0.8, 0.0]], 24).rotateX(PI / 2), { c: L.core }); // (the gap under the rim)
+      const z0 = tank.at[2], r = B.r;
+      S.core.ball(r * 0.36, { at: tank.at, c: 0xffffff }, 18, 12); S.j.ball(r, { at: tank.at, c: 0xffffff }, 28, 18); // (the heart; the glass)
+      // the bezel: a rolled porcelain ring round the glass where it leaves the chest, its skirt run back into the chest
+      S.p.geo(shell([[rb - 0.015, zb + 0.05], [rb + 0.02, zb + 0.075], [rb + 0.07, zb + 0.05], [rb + 0.09, zb], [rb + 0.08, zb - 0.08], [rb + 0.03, zb - 0.22]], 40).rotateX(PI / 2), { c: L.pale });
+      if (id === 'kilnCore') S.trim.geo(shell([[rb + 0.075, zb - 0.03], [rb + 0.095, zb - 0.05], [rb + 0.085, zb - 0.07]], 40).rotateX(PI / 2), { c: L.trimM });
+      const at = new THREE.Vector3(...bust.at(s)), q = new THREE.Quaternion().setFromEuler(new THREE.Euler(...bust.rot(s))).invert();
+      const local = (v) => v.clone().sub(at).applyQuaternion(q);
+      Hn.bust?.(S, { s, r, z0, choker, shoulder: shoulderPt(s), local, rim: (a, k = 1) => [Math.cos(a) * (rb + 0.055) * k, Math.sin(a) * (rb + 0.055) * k, zb + 0.07] });
     },
   };
   return {
     mounts, prof: P, plan: W, bust,
     chest(S) {
       build(S); sockets(S);
-      collar(S);
+      collar(S); Hn.chest?.(S, { on, top, choker, shoulderY: T.shoulderY }); // (the harness's lines on the chest itself)
     },
     /** The waist column (in the waist's frame). Haydee's: a jointed spine piece, a skin ball at each end in its ivory socket (the
      *  pelvis's below, the ribcage's above), a porcelain drum between with a trim band. */

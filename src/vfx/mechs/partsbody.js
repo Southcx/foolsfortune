@@ -57,7 +57,7 @@
 //
 //   const B = new MechPartsBody(game, { form?, pauldron?, hip?, cape? })   B.build(stats) (progress/mechs/frame.js assemble)   B.group   B.joints   B.mats   B.height
 //   B.pose({ pos, yaw, gait, walk, kneel, armL, armR, sealed, barrier, lean, joints, holding, dt? })   B.jiggle(v)   BUST_SPRING   B.seat(out)   B.back(out)   B.hand(side, out)
-//   B.arms[side]   B.partAt(part, out)   B.showJoints(J, holding)   B.limbs (the same)   B.setForm(form)   B.setPauldron(id)   B.setHip(id)   B.setCape(id)
+//   B.arms[side]   B.partAt(part, out)   B.showJoints(J, holding)   B.limbs (the same)   B.setForm(form)   B.setPauldron(id)   B.setHip(id)   B.setCape(id)   B.setFigure(id)   B.setHarness(id)
 //   B.form   B.pauldron   B.hipId   B.capeId   B.cape
 //   B.equip(slot, id)   B.setJoint(id, state) -> { group, joint, slots } | null   B.mend()   B.state { [joint]: state }   B.dispose()
 //   B.fade(ratio) (the frame's fade: the camera's arm over its rest length, mechpilot.js camera; MECH_FADE)
@@ -80,8 +80,11 @@ import { wearHelm, HELMS } from './helms.js';
 import { wearCape, CAPES } from './capes.js';
 import { wearHip, HIPS } from './parts/hips.js';
 import { MechHydraulics } from './hydraulics.js';
-/** The doll's figures (South, 2026-11-02: "an A, B and C option"), built by the fem parts from `F.figure`. */
-export const FIGURE_IDS = ['a', 'b', 'c'];
+import { HARNESS_IDS } from './parts/femharness.js';
+/** The doll's figures (South, 2026-11-02: "an A, B and C option"; D, A's bust and rump on B's hips and thighs, the default), built by the fem parts from `F.figure`. */
+export const FIGURE_IDS = ['d', 'a', 'b', 'c'];
+/** The doll's harnesses (parts/femharness.js: the halter the default), drawn by the fem parts from `F.harness`. */
+export { HARNESS_IDS };
 
 const PI = Math.PI, SIDES = [[1, 'L'], [-1, 'R']];
 /** What each joint takes off with it when it snaps (Dovina's joints.js `limb`, as slots). The waist never snaps. */
@@ -135,7 +138,7 @@ export class MechPartsBody {
   build(stats) {
     this.clear();
     if (stats?.form) this.form = stats.form;
-    this.F = { ...formOf(this.form) }; this.form = this.F.id; if (this.F.fem) this.F.figure = FIGURE_IDS.includes(this.figure) ? this.figure : 'a'; // (the doll's figure: A, B or C)
+    this.F = { ...formOf(this.form) }; this.form = this.F.id; if (this.F.fem) { this.F.figure = FIGURE_IDS.includes(this.figure) ? this.figure : 'd'; this.F.harness = HARNESS_IDS.includes(this.harness) ? this.harness : 'halter'; } // (the doll's figure and harness)
     this.stats = stats?.parts ? stats : assemble(stats || {});
     this.sel = { ...this.stats.sel };
     for (const id of Object.keys(LIMB)) this.state[id] = 'whole';
@@ -201,6 +204,7 @@ export class MechPartsBody {
         const b = j[`bust${k}`]; if (!C.bust) continue;
         b.position.set(...C.bust.at(s)); b.userData.home = b.position.clone(); this.rest(b, C.bust.rot(s));
         this.put(b, 'core', (S) => C.bust.build(S, s));
+        if (C.bust.tank) this.ballAt('core', `bust${k}`, b, C.bust.tank.r, C.bust.tank.at); // (a chest plate's Lachryma tank: the hydraulics fill and slosh it)
       }
       if (this.sel.arms) this.layoutArms();
     } else if (slot === 'head') {
@@ -319,7 +323,9 @@ export class MechPartsBody {
     this.form = F.id; if (this.body) this.rebuild(); return this;
   }
   /** The doll's figure ('a' | 'b' | 'c': the fem parts' FIGURES), the frame rebuilt in it; a hero keeps its own. */
-  setFigure(id) { const f = FIGURE_IDS.includes(id) ? id : 'a'; if (f === this.figure) return this; this.figure = f; if (this.body && this.F?.fem) this.rebuild(); return this; }
+  setFigure(id) { const f = FIGURE_IDS.includes(id) ? id : 'd'; if (f === this.figure) return this; this.figure = f; if (this.body && this.F?.fem) this.rebuild(); return this; }
+  /** The doll's harness (femharness.js HARNESSES: 'halter', 'highcut', 'coins', 'cords', 'nouveau', 'garters'), the frame rebuilt in it. */
+  setHarness(id) { const h = HARNESS_IDS.includes(id) ? id : 'halter'; if (h === this.harness) return this; this.harness = h; if (this.body && this.F?.fem) this.rebuild(); return this; }
   /** Both pauldrons swapped in place (PAULDRONS: 'default', 'none', 'osode', 'zaku', 'wing', 'spaulder', 'disc', 'horn'). */
   setPauldron(id) { this.pauldron = PAULDRONS[id] !== undefined ? id : 'default'; if (this.body) { this.buildSlot('pauldron'); if (this.capeId) this.wearCape(); } return this; }
   rebuild() {
