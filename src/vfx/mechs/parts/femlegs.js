@@ -156,7 +156,7 @@ export const halfSpace = ([nx, ny, nz], o) => { const l = Math.hypot(nx, ny, nz)
  *  waist column's well (`navel`), its lip under the dantian's equator. The leotard's panel lines are fine trim beads laid
  *  on its surface. Sizes in m, the pelvis's frame. */
 const PELVIS = {
-  bout: { at: [0, -0.3, 0.02], r: [2.4, 0.9, 1.12] }, waist: { at: [0, 0.5, -0.05], r: [1.04, 0.58, 0.76] }, belly: { at: [0, 0.02, 0.5], r: [0.82, 0.48, 0.58] },
+  bout: { at: [0, -0.24, 0.02], r: [2.34, 0.82, 1.1] }, waist: { at: [0, 0.5, -0.05], r: [1.04, 0.58, 0.76] }, belly: { at: [0, 0.02, 0.5], r: [0.82, 0.48, 0.58] },
   glute: { at: [0.78, -0.42, -0.86], r: [0.92, 0.8, 0.72] }, crest: { y0: 0.18, y1: 0.44, a0: -1.0, a1: 0.6, r0: 0.08, r1: 0.11 },
   thigh: { gap: 0.05, back: 0.86, top: 0.25 }, hood: { lip: 0.22, reach: 0.95 }, navel: { y: 0.87, r: 0.42, front: [0, 1.02, 0.56], fr: 0.3 },
   k: { body: 0.34, glute: 0.3, crest: 0.12, hood: 0.13, thigh: 0.12, socket: 0.07 }, cell: 0.07, far: 0.3, hooded: false,

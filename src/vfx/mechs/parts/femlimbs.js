@@ -28,15 +28,15 @@ const core = (S, r, len, from = 0.05) => S.core.lathe([[r, -from], [r, -len]], {
 /** The arms: lengths (m), balls, and the profiles (r m, y in lengths). */
 const ARMS = {
   clayArms: { upper: 2.45, fore: 2.35, palm: 0.85, ball: 0.55, elbow: 0.42, wrist: 0.36,
-    UP: [[0.36, 0.1], [0.46, -0.05], [0.47, -0.3], [0.42, -0.62], [0.33, -0.92], [0.3, -1.03]],
+    UP: [[0.36, 0.1], [0.46, -0.05], [0.4, -0.28], [0.345, -0.55], [0.315, -0.8], [0.3, -0.95], [0.3, -1.03]],
     FO: [[0.28, 0.06], [0.34, -0.06], [0.37, -0.25], [0.3, -0.65], [0.22, -0.95], [0.2, -1.03]],
     hand: { w: 1.02, h: 0.82, d: 0.46, fl: [0.86, 0.7], fw: 0.22 } },
   strongArms: { upper: 2.35, fore: 2.3, palm: 0.98, ball: 0.62, elbow: 0.5, wrist: 0.44,
-    UP: [[0.4, 0.1], [0.52, -0.05], [0.53, -0.3], [0.46, -0.65], [0.36, -0.92], [0.33, -1.03]],
+    UP: [[0.4, 0.1], [0.52, -0.05], [0.45, -0.28], [0.385, -0.55], [0.345, -0.8], [0.33, -0.95], [0.33, -1.03]],
     FO: [[0.3, 0.06], [0.36, -0.06], [0.42, -0.3], [0.55, -0.64], [0.6, -0.8], [0.44, -0.88], [0.26, -0.96], [0.24, -1.03]],
     hand: { w: 1.15, h: 0.95, d: 0.52, fl: [0.86, 0.68], fw: 0.26 } },
   quickArms: { upper: 2.7, fore: 2.55, palm: 0.8, ball: 0.5, elbow: 0.38, wrist: 0.32,
-    UP: [[0.32, 0.1], [0.4, -0.05], [0.41, -0.3], [0.36, -0.65], [0.28, -0.92], [0.26, -1.03]],
+    UP: [[0.32, 0.1], [0.4, -0.05], [0.345, -0.28], [0.3, -0.55], [0.275, -0.8], [0.26, -0.95], [0.26, -1.03]],
     FO: [[0.24, 0.06], [0.3, -0.06], [0.32, -0.25], [0.26, -0.65], [0.19, -0.95], [0.17, -1.03]],
     hand: { w: 0.92, h: 0.76, d: 0.42, fl: [0.94, 0.78], fw: 0.19 } },
 };
@@ -119,7 +119,7 @@ export function femArmLook(id, F) {
     shoulder(S, s) {
       // the upper arm lathed between its sockets: a lip under the shoulder's ball, a cup over the elbow's (femlegs.js socketLimb)
       const rs = this.ball * F.joint, rb = this.elbow * F.joint;
-      jointBall(S, rs); core(S, 0.2, this.upper - rb * 1.1, rs * 1.05); socketLimb(S, UP, this.upper, { top: rs, bot: rb, grooves: [0.55] });
+      jointBall(S, rs); core(S, 0.2, this.upper - rb * 1.1, rs * 1.05); socketLimb(S, UP, this.upper, { top: rs, bot: rb }); // (a concave taper from the shoulder's swell to the elbow, no groove: South, 2026-11-02)
     },
     foreArm(S, s) {
       const rb = this.elbow * F.joint, rw = this.wrist * F.joint * (F.gauntlet || 1);

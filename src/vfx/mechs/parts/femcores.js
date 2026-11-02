@@ -26,7 +26,7 @@
 //   femCoreLook(id, F) -> the same contract as cores.js coreLook: { mounts, prof, plan, chest(S), waist(S), spine, bust: { at(s), rot(s), build(S, s) } }
 //   (spine: Haydee's waist column's two balls { lo, hi, r, rt } in the waist's frame, for the parts body's crazing)
 // ---------------------------------------------------------------------------------------
-import { MECH_LOOK as L, band, profAt, panel, jointBall, shell, sculpt } from './kit.js';
+import { MECH_LOOK as L, band, profAt, panel, jointBall, shell, sculpt, tube } from './kit.js';
 import * as THREE from 'three';
 import { sphere, ellipsoid, cone, torus, blend, carve } from './sdf.js';
 import { aoTone, surfAt, sculptSide, socketProf, bead } from './femlegs.js';
@@ -95,8 +95,10 @@ export function femCoreLook(id, F) {
   const top = P[P.length - 1][1], depth = (y) => profAt(P, y) * T.back, wide = (y) => profAt(P, y);
   const gap = Math.asin(Math.min(0.9, 0.5 / profAt(P, 2.1)));
   const mounts = {
-    neck: [top - 0.04, 0.06], shoulder: [wide(T.shoulderY) * wideAt(T, T.shoulderY) * 0.98 + (T.wide ? 0.08 : 0.04), T.shoulderY], back: [1.05, -(depth(1.05) + 0.5)], gen: [0.62, -(depth(0.62) + 0.5)],
-    boost: [0.32, -(depth(0.32) + 0.5), Math.max(0.5, wide(0.32) * 0.8)], plug: [0.4, -(depth(0.4) + 0.6)], cradleZ: -depth(L.cradleY) + 0.06,
+    neck: [top - 0.04, 0.06], shoulder: [wide(T.shoulderY) * wideAt(T, T.shoulderY) * 0.98 + (T.wide ? 0.08 : 0.04), T.shoulderY], back: [1.5, -(depth(1.5) + 0.5)], gen: [1.12, -(depth(1.12) + 0.42)],
+    boost: [1.45, -(depth(1.45) + 0.42), Math.max(0.5, wide(1.45) * 0.62)], plug: [1.0, -(depth(1.0) + 0.5)], cradleZ: -depth(L.cradleY) + 0.06,
+    // (the back's hardware all on the upper back with the cradle, square between the shoulder blades, never down at the waist and hips:
+    // the doll's waist is narrow, and anything hung there showed beside it from the front: South, 2026-11-02)
   };
   const on = (phi, y, k = 1.04) => { const r = profAt(P, y) * k; return W(Math.sin(phi) * r, y, Math.cos(phi) * r); };
   /** Panels: [y0, y1, a0, a1, tone, k], mirrored when a0 > 0 (a centre panel spans -a1..a1 when a0 < 0). */
@@ -174,13 +176,30 @@ export function femCoreLook(id, F) {
   const build = haydee[id] || haydee.clayCore;
   /** The chest plates: a dome each in its joint's frame (+Z out), seated on the shell's front at the plate's height. */
   const B = T.bust, front = (x) => T.d * Math.sqrt(Math.max(0.05, profAt(P, B.y) ** 2 - (x / wideAt(T, B.y)) ** 2)) + B.amp * 0.8;
+  /** The halter (South, 2026-11-02: "the gold rings on the bust should be sloped outwards like a halter top, coming to a point like a
+   *  gorget/choker"): each plate's gold line run under it from its outer top round to its inner top (an underwire), then from both
+   *  tops up and in over the chest to one point at the collar, so the lines slope outward going down from the neck; drawn in the
+   *  plate's own frame so it rides the plate's spring, the point a little gold drop where the two meet. */
+  const choker = new THREE.Vector3(0, top - 0.2, profAt(P, top - 0.2) * T.d + 0.07);
+  const halter = (S, s, r, h) => {
+    const at = new THREE.Vector3(...bust.at(s)), q = new THREE.Quaternion().setFromEuler(new THREE.Euler(...bust.rot(s))).invert();
+    const local = (v) => v.clone().sub(at).applyQuaternion(q), rim = (a, z = 0.03) => [Math.cos(a) * r * 0.99, Math.sin(a) * r * 0.94, z];
+    const out = s > 0 ? 0 : PI, inA = s > 0 ? PI : 0; // (the outer side +X on the left plate)
+    const a0 = out + (s > 0 ? 0.95 : -0.95), a1 = inA + (s > 0 ? -1.15 : 1.15), wire = [];
+    const sweep = (s > 0 ? -1 : 1) * (2 * PI - Math.abs(a1 - a0)); // (the long way round, through the plate's foot)
+    for (let i = 0; i <= 24; i++) wire.push(rim(a0 + sweep * (i / 24)));
+    tube(S.g, wire, 0.035, L.gold, 40);
+    const C = local(choker), lift = (p0, k) => { const m = new THREE.Vector3(...p0).lerp(C, k); m.z += 0.12 * Math.sin(PI * k); return m.toArray(); };
+    for (const end of [wire[0], wire[wire.length - 1]]) tube(S.g, [end, lift(end, 0.35), lift(end, 0.7), C.toArray()], 0.03, L.gold, 16);
+    S.g.ball(0.07, { at: C.toArray(), c: L.gold }, 12, 8);
+  };
   const bust = {
     at: (s) => [s * B.x, B.y, front(B.x) - B.h * 0.3],
     rot: (s) => [0.12, s * 0.32, 0],
     build(S, s) {
       const r = B.r, h = B.h, dome = shell([[0.001, h], [r * 0.45, h * 0.9], [r * 0.8, h * 0.6], [r * 0.98, h * 0.22], [r, 0.0], [r * 0.9, -0.12]], 32).rotateX(PI / 2);
       S.p.geo(dome, { sc: [1, 0.94, 1], c: L.pale });
-      S.g.ring(r * 0.99, 0.035, { at: [0, 0, 0.02], sc: [1, 0.94, 1], c: L.gold }, 36, 4); // (the plate's rim)
+      halter(S, s, r, h); // (the plate's rim as a halter's line, run up to the gorget's point at the collar)
       if (id === 'kilnCore') S.trim.geo(shell([[r * 0.62, h * 0.72], [r * 0.7, h * 0.66], [r * 0.62, h * 0.6]], 32).rotateX(PI / 2), { sc: [1, 0.94, 1], c: L.trimM });
       S.core.geo(shell([[r * 0.9, -0.1], [r * 0.8, 0.0]], 24).rotateX(PI / 2), { c: L.core }); // (the gap under the rim)
     },
