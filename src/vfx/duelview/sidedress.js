@@ -11,6 +11,9 @@
 //                the far one slow), a dust plume rising where it lands and a mound of sand under it
 //   THE WISP'S   wiry briars: thin black canes climbing out of the ground at its end, thorned, bending, a lantern hung from each tip and
 //                fork, every flame flickering on its own, guttering as the Wisp's own lantern dims (aberrants/wisp.js `dark`)
+//   THE CLAPPERJAR'S  a festival's corner: two bamboo poles with paper lanterns strung between them in two sagging strings (red and
+//                white, each flickering on its own and flaring on its clap: aberrants/clapper.js `pulse`) and a taiko on its stand that
+//                swells on each clap
 //   STRAWMAN'S   its sparring yard at harvest (aberrants/strawmanyard.js `strawmanYard`): bales, a target on its easel, its fellow
 //                dummies on their posts, bunting over its head, Pip's sewing kit at giant scale, straw blowing across
 //   ANY OTHER    nothing
@@ -25,6 +28,7 @@ import { duelMaterials } from './pieces.js';
 import { WispElite } from './aberrants/wisp.js';
 import { JellyElite } from './aberrants/jelly.js';
 import { StrawmanElite } from './aberrants/strawman.js';
+import { ClapperElite } from './aberrants/clapper.js';
 import { strawmanYard } from './aberrants/strawmanyard.js';
 import { SIDE, tex, chantTexture, scrollMat, scroll, worldIn } from './fxkit.js';
 import { FEELINGS } from '../../npc/neuraleseroots.js';
@@ -45,7 +49,7 @@ export class DuelSideDress {
     const u = _a.copy(V.u).setY(0).normalize().clone(), back = V.face.clone().negate();
     const you = (V.game.player?.pos || V.centre.clone().addScaledVector(u, -2)).clone(), them = (foe?.pos || V.centre.clone().addScaledVector(u, 2)).clone();
     this.yours(you, u.clone().negate(), back);
-    if (StrawmanElite.fits(state, foe)) strawmanYard(this, them, u, back); else if (WispElite.fits(state, foe)) this.briars(them, u, back); else if (JellyElite.fits(state, foe)) this.sandfalls(them, u, back);
+    if (StrawmanElite.fits(state, foe)) strawmanYard(this, them, u, back); else if (WispElite.fits(state, foe)) this.briars(them, u, back); else if (JellyElite.fits(state, foe)) this.sandfalls(them, u, back); else if (ClapperElite.fits(state, foe)) this.festival(them, u, back);
   }
 
   mesh(geo, mat, at) { const m = new THREE.Mesh(geo, mat); if (at) m.position.copy(at); m.frustumCulled = false; this.group.add(m); return m; }
@@ -99,14 +103,38 @@ export class DuelSideDress {
     }
   }
 
+  /** The clapperjar's: two bamboo poles, two strings of paper lanterns between them, a taiko on its stand. */
+  festival(at, out, back) {
+    const M = duelMaterials(), bamboo = M.clay.clone(), wood = M.clay.clone(), skin = M.clay.clone(), rope = M.clay.clone();
+    bamboo.color.setHex(0x9a8a4a); wood.color.setHex(0x6a2a16); skin.color.setHex(0xe6d6b0); rope.color.setHex(0x1a1210);
+    const poles = [at.clone().addScaledVector(out, 1.3).addScaledVector(back, 1.6), at.clone().addScaledVector(out, 4.4).addScaledVector(back, 0.8)], H = 3.4;
+    for (const p of poles) this.mesh(new THREE.CylinderGeometry(0.05, 0.06, H, 8), bamboo, p.clone().addScaledVector(UP, H / 2));
+    for (const [h, sag, n] of [[H - 0.1, 0.55, 7], [H - 0.9, 0.4, 6]]) {
+      const a = poles[0].clone().addScaledVector(UP, h), b = poles[1].clone().addScaledVector(UP, h), pts = [];
+      for (let k = 0; k <= 12; k++) { const t = k / 12; pts.push(a.clone().lerp(b, t).addScaledVector(UP, -sag * 4 * t * (1 - t))); }
+      const curve = new THREE.CatmullRomCurve3(pts); this.mesh(new THREE.TubeGeometry(curve, 24, 0.008, 3, false), rope);
+      for (let k = 0; k < n; k++) { const p = curve.getPoint((k + 0.5) / n).addScaledVector(UP, -0.2), hex = hsh(k, h) < 0.62 ? 0xff4a30 : 0xffe2b0;
+        this.mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.12, 3), rope, p.clone().addScaledVector(UP, 0.2));
+        for (const dy of [0.15, -0.15]) this.mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.03, 10), rope, p.clone().addScaledVector(UP, dy)); // (its black caps)
+        const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 8), new THREE.MeshBasicMaterial({ name: 'duel-glow', color: hex, toneMapped: false })); lamp.scale.y = 1.25; lamp.position.copy(p); this.group.add(lamp);
+        const halo = this.fx(new THREE.PlaneGeometry(0.8, 0.8), tex('ember'), hex === 0xffe2b0 ? LAMP : 0xff6a40, { opacity: 0.5 }, 0, 0, p); halo.userData.face = true;
+        this.lamps.push({ lamp, halo, seed: hsh(k, h + 3) * 9, hex }); }
+    }
+    const drum = new THREE.Group(); drum.position.copy(at.clone().addScaledVector(out, 2.6).addScaledVector(back, 2.4).addScaledVector(UP, 0.75)); drum.quaternion.setFromUnitVectors(UP, out); this.group.add(drum); // (its heads facing along the line of the duel)
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.46, 0.62, 20), wood); drum.add(body);
+    for (const s of [1, -1]) { const h = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.44, 0.02, 20), skin); h.position.y = s * 0.32; drum.add(h); }
+    const stand = this.mesh(new THREE.BoxGeometry(0.9, 0.5, 0.14), wood, drum.position.clone().addScaledVector(UP, -0.5)); stand.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), out);
+    this.ticks.push((dt2, t2) => { const p = this.view.elite?.pulse || 0; drum.scale.setScalar(1 + 0.05 * p); });
+  }
+
   update(dt) {
-    this.t += dt; const t = this.t, cam = this.view.game.camera, dark = this.view.elite?.on && this.view.elite.dark != null ? this.view.elite.dark : 0;
+    this.t += dt; const t = this.t, cam = this.view.game.camera, pulse = this.view.elite?.pulse || 0, dark = this.view.elite?.on && this.view.elite.dark != null ? this.view.elite.dark : 0;
     for (const s of this.spin) { if (s.orbit) { s.a += s.w * dt; s.o.position.copy(s.orbit).add(_a.set(Math.cos(s.a) * s.r, s.y + Math.sin(s.a * 2) * 0.1, Math.sin(s.a) * s.r)); s.o.rotation.x += dt; s.o.rotation.y += dt * 0.7; }
       else s.o.rotateOnAxis(s.ax, s.w * dt); }
     for (const s of this.scrolls) { scroll(s.m.material, dt, s.su, s.sv); if (s.m.userData.breathe) s.m.material.opacity = 0.35 + 0.35 * (0.5 + 0.5 * Math.sin(t * 1.3)); if (s.m.userData.face && cam) s.m.quaternion.copy(cam.quaternion); }
     for (const f of this.ticks) f(dt, t); // (a set's own motion: Strawman's bunting)
     for (const L of this.lamps) { const k = (0.7 + 0.3 * Math.sin(t * SIDE_DRESS.flicker + L.seed) * Math.sin(t * 3.7 + L.seed * 2)) * (1 - 0.8 * dark); // (each flame its own flicker, guttering with the Wisp's own)
-      L.lamp.material.color.setHex(LAMP).multiplyScalar(1.5 * k); L.halo.material.opacity = 0.55 * k; }
+      L.lamp.material.color.setHex(L.hex ?? LAMP).multiplyScalar(1.5 * k * (1 + 0.6 * pulse)); L.halo.material.opacity = 0.55 * k; }
   }
 
   close() {

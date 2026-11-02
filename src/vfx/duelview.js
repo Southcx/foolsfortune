@@ -76,6 +76,7 @@ import { FoeCutIn } from './duelview/cutin.js';
 import { WispElite } from './duelview/aberrants/wisp.js';
 import { JellyElite } from './duelview/aberrants/jelly.js';
 import { StrawmanElite } from './duelview/aberrants/strawman.js';
+import { ClapperElite } from './duelview/aberrants/clapper.js';
 import { FrameDress } from './duelview/framedress.js';
 import { DuelSpoils } from './duelview/spoils.js';
 import { DuelStamps } from './duelview/stamps.js';
@@ -103,7 +104,7 @@ export class DuelView {
     this.board = new DuelBoard(this.frame, this.clash); this.pieces = new DuelPieces(this.frame); this.marks = new DuelMarks(this.frame);
     this.intentDraw = new DuelIntent(this.frame, this.marks); this.bursts = new DuelBursts(this.frame); this.beats = new DuelBeats(this);
     this.flee = new DuelFlee(this); this.folded = false;
-    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.gauges = new SkillGauges(this); this.foeCast = new FoeCast(this); this.cutIn = new FoeCutIn(this); this.jarCut = new FoeCutIn(this, { subject: 'jar' }); this.stamps = new DuelStamps(this); this.show = new DuelShow(this); this.seeding = new DuelSeeding(this); this.auras = new DuelAuras(this); this.sideDress = new DuelSideDress(this); this.elites = [new StrawmanElite(this), new WispElite(this), new JellyElite(this)]; this.elite = PLAIN_ELITE; this.garden = new GardenGround(this); this.dress = new FrameDress(this); this.spoils = new DuelSpoils(this); this.tune = [null, null]; this.pendingKind = null;
+    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.gauges = new SkillGauges(this); this.foeCast = new FoeCast(this); this.cutIn = new FoeCutIn(this); this.jarCut = new FoeCutIn(this, { subject: 'jar' }); this.stamps = new DuelStamps(this); this.show = new DuelShow(this); this.seeding = new DuelSeeding(this); this.auras = new DuelAuras(this); this.sideDress = new DuelSideDress(this); this.elites = [new StrawmanElite(this), new WispElite(this), new JellyElite(this), new ClapperElite(this)]; this.elite = PLAIN_ELITE; this.garden = new GardenGround(this); this.dress = new FrameDress(this); this.spoils = new DuelSpoils(this); this.tune = [null, null]; this.pendingKind = null;
     this.assembly = new DuelAssembly(this); // (the tsuitate built in front of you at the open, before the seeding: assembly.js)
     this.aberrantDrain = new AberrantDrain(this); // (a won PvE duel's end drained into the Pneuka Jar: duelview/aberrantdrain.js)
     this.intentWhole = true; // (the session hands intent() bot.js intentOf's whole: { actions, junk, cells, hits })

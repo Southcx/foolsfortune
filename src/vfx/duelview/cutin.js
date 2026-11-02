@@ -67,6 +67,18 @@ void main() {
     if (uMotif > 0.5 && uMotif < 1.5) { float cr = texture2D(uCrack, px / 240.0 + vec2(uT * 0.02, 0.0)).a; c = mix(c, vec3(1.0, 0.8, 0.42), cr * 0.17); } // (yours: the clay's craze, kintsugi's gold)
     else if (uMotif > 1.5 && uMotif < 2.5) { float col = floor(px.x / 22.0), on = step(0.5, h21(vec2(col, 5.0))); // (the slip jelly's: sand pouring down through the band)
       float g = texture2D(uSand, vec2(fract(px.x / 22.0), px.y / 260.0 - uT * (1.4 + h21(vec2(col, 9.0))))).a; c = mix(c, uFeel * 0.5 + vec3(0.4, 0.32, 0.15), g * on * 0.75); }
+    else if (uMotif > 4.5) { // (the clapperjar's: two festival lantern strings sagging across the band, a lantern on each, confetti blowing through)
+      for (int k = 0; k < 2; k++) { float fk = float(k), S = hh * 1.6, u = fract(px.x / (S * 3.0) + fk * 0.4), yy = (0.62 - fk * 0.9) - 0.22 * (1.0 - pow(2.0 * u - 1.0, 2.0));
+        c = mix(c, vec3(0.03, 0.02, 0.02), smoothstep(0.04, 0.015, abs(by - yy)));
+        float li = floor(px.x / S + fk * 0.5); vec2 lp = vec2((fract(px.x / S + fk * 0.5) - 0.5) * S, (by - yy + 0.17) * hh); float e = length(lp / vec2(0.14 * hh, 0.17 * hh));
+        vec3 lc = h21(vec2(li, fk + 4.0)) < 0.6 ? vec3(0.95, 0.2, 0.12) : vec3(1.0, 0.9, 0.7); float rib = 0.8 + 0.2 * step(0.35, abs(fract(lp.y / (hh * 0.07)) - 0.5));
+        c += vec3(1.0, 0.62, 0.28) * exp(-e * e * 0.5) * 0.35 * (0.85 + 0.15 * sin(uT * 7.0 + li));
+        c = mix(c, lc * rib * (1.0 - 0.35 * e), (1.0 - smoothstep(0.92, 1.0, e)) * 0.95); }
+      for (int k = 0; k < 2; k++) { float fk = float(k), sp = px.x + uT * (700.0 + 400.0 * fk); vec2 cell = vec2(floor(sp / 46.0), floor((px.y + uT * (60.0 + 40.0 * fk)) / 34.0)); // (confetti, right to left and down)
+        vec2 o = vec2(fract(sp / 46.0) * 46.0 - 23.0, fract((px.y + uT * (60.0 + 40.0 * fk)) / 34.0) * 34.0 - 17.0) - vec2((h21(cell + fk) - 0.5) * 24.0, (h21(cell + 3.0) - 0.5) * 12.0);
+        float hc = h21(cell + fk * 7.0), fl = abs(sin(uT * (4.0 + 5.0 * hc) + hc * 30.0)), pk = h21(cell + 11.0);
+        vec3 cf = pk < 0.3 ? uFeel * 1.3 : pk < 0.5 ? vec3(1.0, 0.3, 0.3) : pk < 0.7 ? vec3(1.0, 0.95, 0.85) : pk < 0.85 ? vec3(1.0, 0.4, 0.7) : vec3(0.4, 0.8, 1.0);
+        c = mix(c, cf, step(0.55, hc) * step(abs(o.x), 1.0 + 4.0 * fl) * step(abs(o.y), 3.0) * (0.95 - 0.3 * fk)); } }
     else if (uMotif > 3.5) { // (Strawman's: a burlap band, two seams of cross-stitch along it, straw blown through it, a target behind its head)
       vec2 wv = px / 7.0; float th = max(smoothstep(0.18, 0.5, abs(fract(wv.x) - 0.5)), smoothstep(0.18, 0.5, abs(fract(wv.y) - 0.5)));
       c = mix(c, vec3(0.5, 0.36, 0.2) * (0.72 + 0.32 * th + 0.12 * h21(floor(wv * vec2(1.0, 0.25)))) + uFeel * 0.03, 0.8);
