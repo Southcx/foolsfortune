@@ -70,6 +70,8 @@ export async function bootCourier(game, made) {
   game.combat = new Combat(game); // (are they fighting? one signal for the HUD ring and the rest: combat.js)
   game.ultimate = new Ultimate(game); // (the Lockheart opened with a key: the Courier's ultimate, tools/lockheart/ultimate.js)
   game.death = new Death(game); // (the vessel shatters, and is made whole in the workshop: courier/vessel/death.js)
+  game.systems.add('sim', game.vessel, { clock: 'raw', name: 'vessel', after: 'weather' }); game.systems.add('sim', game.vesselDamage, { name: 'vesselDamage', after: 'toolSkins' }); // (the `sim` phase: core/systems.js)
+  game.systems.add('sim', game.death, { clock: 'raw', name: 'death', after: 'vesselDamage' }); game.systems.add('sim', game.ultimate, { clock: 'raw', name: 'ultimate', after: 'death' }); game.systems.add('sim', game.combat, { name: 'combat', after: 'ultimate' });
 
   const input = new Input(renderer.domElement);
   game.actions = new Actions(game, input); // (an input action read whatever device gave it; a control resolved by the live context: core/actions.js, core/bindings.js)

@@ -86,6 +86,7 @@ export function bootProgress(game, made) {
   game.touchArc = TouchArc; // (the arc's grid, slots and fold as data, for the touch driver and its tiles: progress/toucharc.js, TOUCH-REBUILD.md 3.1.1, 7)
   game.alchemy = new SoulAlchemy(game); // (the spirit press: the soul colour, the attributes: progress/alchemy.js)
   game.weather = new Weather(game); // (emotional weather and the day: progress/weather.js)
+  game.systems.add('sim', game.weather, { name: 'weather', after: 'shops' }); // (the `sim` phase: core/systems.js)
   game.courierMind = new CourierMind(game); // (your mental state and your draught, kept: courier/mind.js; the garden's rain reads it)
   game.rerolls = new Rerolls(game); // (Luck's re-rolls a game day, spent by your own failed throws: progress/dice.js)
   game.palmDie = new PalmDie(game); // (the Pneuka stones in the god hand's form: overflow past the Lockheart condensed into cubes, progress/dice.js)

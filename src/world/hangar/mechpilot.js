@@ -52,6 +52,8 @@ export const PILOT = { cam: { back: 2.3, up: 0.95, look: 0.62, ease: 14 }, swing
  *  and the Courier's own verbs that would otherwise wake under them (the belt's R and X, the emotes' and the god hand's keys). */
 export const CLAIM = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'Space', 'Mouse0', 'Mouse1', 'Mouse2', 'KeyG', 'KeyV', 'KeyF', 'KeyX', 'KeyQ', 'KeyE', 'KeyR', 'KeyC', 'KeyY'];
 const R = stream('world/hangar'), SHAKE_R = stream('world/hangar/shake'); // (the camera's shake its own draw, so a look never moves the berserk's rolls)
+/** A chunk's landing or a collapse felt through the ground: reach (m) and the shake a blow's k gives (camera()). */
+const QUAKE = { reach: 90, k: 0.5 };
 /** The mech's regions as the vessel's (MECHS.md 4.7: the cracks echo into your Pneuka Jar where they land on the frame). */
 const ECHO = { head: 'mask', core: 'torso', back: 'torso', armL: 'armL', armR: 'armR', legs: null };
 /** The joints at the pilot (MECHS.md 9.3): one leg left, the walk's top at `oneLeg` (Dovina's); a frame steps up `step` m of rubble
@@ -128,6 +130,7 @@ export class MechPilot {
 
   /** The launch: the gantry's lift rides up the shaft, then under the seam the mech is set down in the proving ground. */
   lift(dt) {
+    if (this.game.mechMount?.playing) return; // (the lift waits for the Jar to screw in and the frame to wake: Calissa's mount, vfx/mechs/mount.js, `mech.mount { beat: 'power' }`)
     const L = HANGAR.lift; this.liftT += dt;
     this.pos.y += (L.rise / L.t) * dt;
     if (this.liftT >= L.t && !this.liftDone) {
@@ -340,6 +343,12 @@ export class MechPilot {
   /** How well a part works by its joints (joints.js lockOf): 'L' | 'R' an arm, or a part ('back', 'head', 'legL' ...). */
   armLock(side) { return lockOf(this.state.joints, side === 'L' ? 'armL' : side === 'R' ? 'armR' : side); }
 
+  /** The ground's shock felt in the cradle: a chunk landing or a building felled at `at`, its weight `k`, fainter with distance (m). */
+  quake(at, k) {
+    if (this.mode !== 'pilot' || !at) return;
+    const near = Math.max(0, 1 - Math.hypot(at.x - this.pos.x, at.z - this.pos.z) / QUAKE.reach);
+    if (near > 0) this.shake = Math.max(this.shake, Math.min(1, k * QUAKE.k) * near);
+  }
   /** It would fail: the berserk, rolled at high sync, or the cradle's wreck (the Jar thrown clear, cracked). */
   fail(why) {
     const g = this.game; if (this.berserk > 0 || this.mode !== 'pilot') return;

@@ -216,6 +216,7 @@ export class ToyCity {
       if (!rec.felled && (b.fallen || felled(b))) {
         rec.felled = true; out.felled.push(rec);
         g.events?.emit('city.felled', { building: rec.id, lot: rec.i, label: rec.label, topple: broke.length + loose >= SCORE.topple * before, by });
+        this.hangar.pilot?.quake?.({ x: rec.cx, z: rec.cz }, 2); // (a building coming down shakes the cradle hardest)
         if (BUILDINGS[rec.id].frame === MAT.steel) this.onGirder?.(new THREE.Vector3(rec.cx, PROVING.at.y, rec.cz + Math.sign(PROVING.at.z - rec.cz || 1) * (rec.b.d / 2 + 5))); // (a steel frame leaves a girder on its street side)
       }
     }
@@ -281,6 +282,7 @@ export class ToyCity {
     if (on === 'giant') H.giant.blow({ weapon: 'rubble', k, stagger: 20 * k, heavy: k >= 1, region: 'head', by: C.by });
     if (on === 'mech') H.pilot.hurt('head', k, 'environment');
     g.events?.emit('city.land', { mass: C.mass, height: +height.toFixed(1), k: +k.toFixed(2), on, by: C.by });
+    H.pilot?.quake?.(C.mesh.position, k); // (felt in the cradle: the sealed view shakes, world/hangar/mechpilot.js)
     const K = CHUNK.keep;
     if ((on === 'ground' || on === 'building') && C.mass >= K.mass && C.mass <= K.most && height < K.fall && this.onChunk) {
       this.onChunk({ mesh: C.mesh, mass: C.mass, at: C.mesh.position.clone(), half: C.half, bottom: C.bottom }); return; // (a slab that came down softly: a thing to pick up)

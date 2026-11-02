@@ -24,7 +24,7 @@
  *  (the crossing, the open sea, the garden), `world` after the props and the pool (the rooms' and progress's own services: the
  *  Well, the Raceway, the pier, the quests ...), `fx` with the effects (the weather's look, the night, the water, the wipes,
  *  the glitch and the storm warp, the duel's view ...), `marks` after the effects (the world's dressers and each tool's marks). */
-export const PHASES = ['looks', 'minds', 'world', 'fx', 'marks'];
+export const PHASES = ['looks', 'sim', 'minds', 'world', 'fx', 'marks'];
 
 export class Systems {
   constructor() { this.phases = new Map(PHASES.map((p) => [p, []])); }
