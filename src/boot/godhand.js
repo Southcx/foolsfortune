@@ -33,6 +33,7 @@ import { dangerPips } from '../ui/dangerpips.js';
 import { ReadingView } from '../vfx/readingview.js';
 import { installUndersideLook } from '../ui/undersidelook.js';
 import { installKitchenLook } from '../ui/kitchenlook.js';
+import { installCookStage } from '../vfx/cooking/cookstage.js';
 import { Realm } from '../world/garden/realm.js';
 import { ReadingScene } from '../render/readingscene.js';
 import { DuelInstance } from '../render/duelinstance.js';
@@ -54,6 +55,7 @@ export function bootGodHand(game, made) {
   game.readingTable = new ReadingTable(game); // (the Pneuka Box's loadout as a two-card reading: Dovina's window mounts .el and calls draw(state), ui/readingtable.js)
   game.dangerPips = dangerPips; // (a Well's danger mark, its FOE's class as pips: the Index's row puts dangerPips(cls) after its key tag, ui/dangerpips.js)
   game.readingView = new ReadingView(game); // (the Box flipped: the laid Majors orbiting the Courier, the cloth under their feet, the hand; its scene, game.readingScene, sets .group and calls update(dt): vfx/readingview.js)
+  installCookStage(game); // (Spirit Cooking in 3D: the god hand and a soft dough, drawn in place of the world while the hearth's window is open: vfx/cooking/cookstage.js)
   installKitchenLook(); // (the cooking station's window dressed: Dovina's world/garden/kitchen.js, its ck-* classes and drawings, ui/kitchenlook.js)
   installUndersideLook(); // (the Box's underside dressed: Dovina's pneuka/underside.js classes, ui/undersidelook.js)
   game.duelInstance = new DuelInstance(game); // (a puzzle duel drawn alone, its actors and nothing of the world: render/duelinstance.js)
