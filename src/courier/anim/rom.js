@@ -147,6 +147,29 @@ export const PNEUKA_JAR_ROM = {
   belly: { hinge: [1, 0, 0], min: -0.25, max: 0.35, cone: 0.3 },
 };
 
+// A mech's (vfx/mechs/partsbody.js; its joints posed by vfx/mechs/anim/: the Courier's clips retargeted and its own keys), each about
+// the joint's own frame from its rest (+X pitches a limb: a hip's flexion negative, a knee's and an elbow's bend positive and negative;
+// the wrist twists about its forearm's Y). A giant's envelope: a knee never past straight, an elbow never back past it, a hip never
+// kicked behind past what a skater's trailing leg asks, the spine bending a little at each of its three joints.
+export const MECH_ROM = {
+  waist: { hinge: [1, 0, 0], min: -0.5, max: 0.85, cone: 0.55 },
+  chest: { hinge: [1, 0, 0], min: -0.45, max: 0.55, cone: 0.45 },
+  neck: { hinge: [1, 0, 0], min: -0.75, max: 0.6, cone: 0.6 },
+  head: { hinge: [1, 0, 0], min: -0.5, max: 0.5, cone: 0.6 },
+  shoulderL: { hinge: [1, 0, 0], min: -2.7, max: 1.3, cone: 1.4 },
+  shoulderR: { hinge: [1, 0, 0], min: -2.7, max: 1.3, cone: 1.4 },
+  elbowL: { hinge: [1, 0, 0], min: -2.3, max: 0.22, cone: 0.5 },
+  elbowR: { hinge: [1, 0, 0], min: -2.3, max: 0.22, cone: 0.5 },
+  wristL: { hinge: [0, 1, 0], min: -1.3, max: 1.3, cone: 0.9 },
+  wristR: { hinge: [0, 1, 0], min: -1.3, max: 1.3, cone: 0.9 },
+  hipL: { hinge: [1, 0, 0], min: -2.0, max: 0.85, cone: 0.7 },
+  hipR: { hinge: [1, 0, 0], min: -2.0, max: 0.85, cone: 0.7 },
+  kneeL: { hinge: [1, 0, 0], min: -0.4, max: 2.4, cone: 0.25 },
+  kneeR: { hinge: [1, 0, 0], min: -0.4, max: 2.4, cone: 0.25 },
+  ankleL: { hinge: [1, 0, 0], min: -1.1, max: 0.8, cone: 0.45 },
+  ankleR: { hinge: [1, 0, 0], min: -1.1, max: 0.8, cone: 0.45 },
+};
+
 /** A rig's limits from a table keyed by its bones' full names (GODHAND_ROM, PNEUKA_JAR_ROM): `restOf(bone)` its rest quaternion. */
 export function rigLimits(bones, restOf, spec) {
   const rom = new JointLimits();
