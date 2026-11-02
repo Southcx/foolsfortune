@@ -10,11 +10,10 @@
 //   crabLegs    tetrapod: four legs off a broad pelvis plate, their knees raised above the body, tapering to points; a crawl, the
 //               diagonal pairs stepping together
 //   treadLegs   tank: two tread pods under porcelain skirts, gold road wheels turning by the ground covered, a turret ring between
-// In the doll form (kit.js FORMS): a wide rounded pelvis (hips 1.3 times), the limbs slender and long, the biped stood on a heel (a
-// pointed foot and a stiletto under the raised ankle), the tassets a short skirt; the other types the same frames made slender.
+// The feminine forms' legs are their own (femlegs.js FEM_LEGS, every type rebuilt in each).
 // Prior art: Armored Core's four leg types (biped, reverse joint, tetrapod, tank); Medabots' leg parts; ED-209's and the Zoids'
 // reverse joints; the Tachikoma's and the Spider Tank's splayed legs (Ghost in the Shell; Metal Gear's Gekko for the crawl); a Bandai
-// model kit's tread pods; the ō-yoroi's kusazuri and the Gothic sabaton and greave; Haydee's and Elemental Gearbolt's heeled legs.
+// model kit's tread pods; the ō-yoroi's kusazuri and the Gothic sabaton and greave.
 //
 //   LEG_LOOKS[id](ctx) -> { pose({ gait, walk, kneel, travel }), drop(kneel) (m the body sinks) }
 //   ctx = { H, F (the form), pelvis, joint(name, parent, at, rot) -> Object3D, put(joint, build), ballAt(jointId, obj, r, at?), mats, owned }
@@ -32,34 +31,26 @@ const wrap = (P, prof, y0, y1, half, sc, c, k = 1.1, th = 0.09, mid = 0) => P.ge
 /** The biped's and the reverse joint's pelvis: a rounded hip shell with its belt, the codpiece, the kusazuri as a skirt of curved
  *  plates (a groove between each), the hips' cups. */
 function pelvis(S, hipX, F) {
-  const { p, g } = S, w = F.hips, doll = F.id === 'doll';
+  const { p, g } = S, w = F.hips;
   p.lathe([[0.001, -0.62], [0.8, -0.58], [1.22, -0.3], [1.32, 0.05], [1.24, 0.36], [0.9, 0.5], [0.001, 0.52]], { sc: [w, 1, 0.72], c: L.pale }, 32); // (the hip shell)
   S.core.lathe([[1.0, -0.3], [1.0, 0.45]], { sc: [w * 1.0, 1, 0.75], c: L.core }, 28);
   S.trim.geo(curved([[1.3, 0.42], [1.34, 0.52], [1.28, 0.62]], 0.1, 0, PI * 2, 6), { sc: [w, 1, 0.74], c: L.trimM }); // (the belt)
-  if (!doll) p.geo(plate([[-0.34, 0.3], [0.34, 0.3], [0.27, -0.64], [0, -0.78], [-0.27, -0.64]], 0.22, 0.06), { at: [0, 0, 0.92], c: L.mid }); // (the codpiece)
+  p.geo(plate([[-0.34, 0.3], [0.34, 0.3], [0.27, -0.64], [0, -0.78], [-0.27, -0.64]], 0.22, 0.06), { at: [0, 0, 0.92], c: L.mid }); // (the codpiece)
   p.geo(cup(0.5 * F.joint), { at: [0, 0.45, 0], c: L.ivory }); // (the waist's cup)
   for (const [s] of SIDES) p.geo(cup(0.58 * F.joint), { at: [s * hipX, -0.35, 0], c: L.ivory });
-  // the tassets: six curved plates round the hip, flaring as they fall (the doll's shorter, a skirt)
-  const drop = doll ? 0.7 : 1.25, n = 6, gap = 0.06, T = [[1.38, 0.4], [1.5, 0.4 - drop * 0.5], [1.68, 0.4 - drop]];
+  // the tassets: six curved plates round the hip, flaring as they fall
+  const drop = 1.25, n = 6, gap = 0.06, T = [[1.38, 0.4], [1.5, 0.4 - drop * 0.5], [1.68, 0.4 - drop]];
   for (let i = 0; i < n; i++) {
     const a0 = (i / n) * PI * 2 + gap + PI / n, a1 = ((i + 1) / n) * PI * 2 - gap + PI / n;
-    if (!doll && Math.abs(Math.sin((a0 + a1) / 2)) < 0.01) continue; // (the front and back's middle left to the codpiece)
+    if (Math.abs(Math.sin((a0 + a1) / 2)) < 0.01) continue; // (the front and back's middle left to the codpiece)
     S.trim.geo(curved(T, 0.08, a0, a1, 10), { sc: [w, 1, 0.78], c: i % 2 ? L.trimM : L.trimL });
     g.geo(curved([[T[2][0] + 0.02, T[2][1] - 0.02], [T[2][0] + 0.03, T[2][1] + 0.05]], 0.05, a0, a1, 10), { sc: [w, 1, 0.78], c: L.gold });
   }
-  if (!doll) seam(g, [[0.1, 0.28, 1.06], [-0.07, 0.0, 1.06], [0.09, -0.32, 1.05], [-0.03, -0.64, 1.0]], 0.03);
+  seam(g, [[0.1, 0.28, 1.06], [-0.07, 0.0, 1.06], [0.09, -0.32, 1.05], [-0.03, -0.64, 1.0]], 0.03);
 }
-/** A rounded sabaton: a sole, three overlapping lames over the instep and a toe cap, the ankle's guard; or the doll's pointed heel. */
+/** A rounded sabaton: a sole, three overlapping lames over the instep and a toe cap, the ankle's guard. */
 function foot(S, F, fh) {
   const { p, g } = S;
-  if (F.id === 'doll') {
-    p.geo(shell([[0.001, 0], [0.32, 0.05], [0.42, 0.35], [0.36, 0.7], [0.001, 0.82]], 24), { at: [0, -fh * 0.25, 0.08], rot: [1.2, 0, 0], sc: [1, 1.6, 0.9], c: L.pale }); // (the instep, falling to the toe)
-    p.geo(shell([[0.001, 0], [0.2, 0.04], [0.24, 0.25], [0.001, 0.6]], 20), { at: [0, -fh + 0.08, 1.05], rot: [PI / 2 - 0.15, 0, 0], sc: [1.1, 1, 0.6], c: L.mid }); // (the toe)
-    S.trim.cyl(0.05, 0.14, fh * 0.8, { at: [0, -fh * 0.58, -0.32], rot: [-0.08, 0, 0], c: L.trimM }, 12); // (the stiletto)
-    g.ring(0.15, 0.03, { at: [0, -fh * 0.2, -0.3], c: L.gold }, 16, 4);
-    S.trim.geo(curved([[0.42, -0.3], [0.46, 0], [0.42, 0.25]], 0.06, 0, PI * 2, 6), { c: L.trimL }); // (the ankle's band)
-    return;
-  }
   p.geo(shell([[0.001, -0.08], [0.98, -0.06], [1.0, 0.1], [0.82, 0.55], [0.4, 0.86], [0.001, 0.92]], 28), { at: [0, -fh, 0.45], sc: [0.66, 0.6, 1.5], c: L.mid }); // (the sole's shell)
   for (let i = 0; i < 3; i++) p.geo(curved([[0.95, 0], [1.0, 0.25], [0.86, 0.55]], 0.08, -PI / 2 - 0.1, PI / 2 + 0.1, 12), { at: [0, -fh + 0.1 + i * 0.08, 0.5 + i * 0.36], rot: [-0.35 - i * 0.18, 0, 0], sc: [0.68, 0.7, 0.7], c: i % 2 ? L.mid : L.pale }); // (the lames)
   p.geo(shell([[0.001, 0], [0.62, 0.02], [0.66, 0.25], [0.5, 0.5], [0.001, 0.62]], 24), { at: [0, -fh + 0.05, 1.55], rot: [PI / 2 - 0.25, 0, 0], sc: [1.0, 0.9, 0.75], c: L.pale }); // (the toe cap)
@@ -70,14 +61,14 @@ function foot(S, F, fh) {
 
 export const LEG_LOOKS = {
   clayLegs(ctx) {
-    const { H, F, joint, put, ballAt } = ctx, doll = F.id === 'doll', FH = doll ? 1.15 : 0.52, A = doll ? [-0.16, 0.3, -0.14] : [-0.2, 0.38, -0.18], hipX = doll ? 0.9 : 1.0, j = F.joint, r = F.limb;
+    const { H, F, joint, put, ballAt } = ctx, FH = 0.52, A = [-0.2, 0.38, -0.18], hipX = 1.0, j = F.joint, r = F.limb;
     const len = (H - 0.35 - FH - 0.1) / (Math.cos(A[0]) + Math.cos(A[0] + A[1])), T = len, Sh = len;
     const TH = [[0.5, -0.12], [0.84, -0.22], [0.92, -0.42], [0.86, -0.56], [0.76, -0.58], [0.76, -0.62], [0.84, -0.64], [0.74, -0.88], [0.58, -1.0]];
-    const SH = doll ? [[0.46, -0.12], [0.7, -0.2], [0.86, -0.36], [0.78, -0.6], [0.6, -0.8], [0.44, -1.0]] : [[0.46, -0.12], [0.78, -0.22], [0.96, -0.42], [0.9, -0.6], [0.78, -0.62], [0.78, -0.66], [0.84, -0.68], [0.66, -0.9], [0.46, -1.0]];
+    const SH = [[0.46, -0.12], [0.78, -0.22], [0.96, -0.42], [0.9, -0.6], [0.78, -0.62], [0.78, -0.66], [0.84, -0.68], [0.66, -0.9], [0.46, -1.0]];
     put(ctx.pelvis, (S) => pelvis(S, hipX, F));
     const legs = {};
     for (const [s, k] of SIDES) {
-      const hip = joint(`hip${k}`, ctx.pelvis, [s * hipX, -0.35, 0], [A[0], 0, s * (doll ? 0.06 : 0.04)]);
+      const hip = joint(`hip${k}`, ctx.pelvis, [s * hipX, -0.35, 0], [A[0], 0, s * 0.04]);
       const knee = joint(`knee${k}`, hip, [0, -T, 0], [A[1], 0, 0]);
       const ankle = joint(`ankle${k}`, knee, [0, -Sh, 0], [A[2], 0, -s * 0.04]);
       put(hip, (S) => {
@@ -89,7 +80,7 @@ export const LEG_LOOKS = {
         ball(S.g, 0.58 * j);
         S.trim.geo(shell([[0.001, 0.45], [0.42, 0.38], [0.58, 0.05], [0.5, -0.32], [0.001, -0.42]], 20, -1.2, 2.4), { at: [0, 0, 0.16 * r], sc: [r, 1, 0.8 * r], c: L.trimL }); // (the knee cop)
         limb(S.p, SH, L.pale, Sh, 0.46 * j, [r, Sh, r], S.core);
-        wrap(S.p, SH, -0.86, -0.18, doll ? 0.8 : 1.15, [r, Sh, r], L.mid, 1.08, 0.1); // (the greave)
+        wrap(S.p, SH, -0.86, -0.18, 1.15, [r, Sh, r], L.mid, 1.08, 0.1); // (the greave)
         if (F.grooves) wrap(S.trim, SH, -0.84, -0.8, 1.2, [r, Sh, r], L.trimM, 1.12, 0.05);
       });
       put(ankle, (S) => { ball(S.g, 0.46 * j); foot(S, F, FH); });
@@ -111,7 +102,7 @@ export const LEG_LOOKS = {
   },
 
   springLegs(ctx) {
-    const { H, joint, put, ballAt } = ctx, FF = ctx.F, F = 0.36, A = [-0.65, 1.45, -1.05], T = 2.3, M = 1.9, hipX = FF.id === 'doll' ? 0.95 : 1.05, r = FF.limb, j = FF.joint;
+    const { H, joint, put, ballAt } = ctx, FF = ctx.F, F = 0.36, A = [-0.65, 1.45, -1.05], T = 2.3, M = 1.9, hipX = 1.05, r = FF.limb, j = FF.joint;
     const Sh = (H - 0.35 - F - 0.09 - T * Math.cos(A[0]) - M * Math.cos(A[0] + A[1] + A[2])) / Math.cos(A[0] + A[1]);
     put(ctx.pelvis, (S) => pelvis(S, hipX, FF));
     const legs = {};

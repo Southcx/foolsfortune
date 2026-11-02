@@ -10,8 +10,7 @@
 //              side, the abdomen in three wrapped bands narrowing to the waist, a kintsugi crack across the left pectoral
 //   kilnCore   fired twice: deeper and rounder (a bottle kiln's shoulders), banded in trim, its firing holes bricked open on the core
 //   lightCore  bisque thin: slim, its flanks cut to narrow ribs over the lit core, a sternum plate and hoops
-// In the doll form (kit.js FORMS) each is the same core made a doll's: a narrow ribcage pinched to a wasp waist, one smooth shell
-// across the front with a soft bust, fewer grooves; its personality kept in its bands and ribs.
+// The feminine forms' cores are their own (femcores.js, by the same `coreLook`).
 // THE CRADLE (South, 2026-11-02, via the coordinator: Evangelion's entry plug): in the back, between the shoulder blades, a well
 // tilted back 20 degrees from upright, at the Pneuka Jar's own size (vfx/pneukajar/shape.js JAR_ANATOMY: the Jar 1.2 m, its foot
 // 0.257 round), so the Jar goes in base first and screws down until its shoulder line (0.82 up it) is flush with the lip, the head
@@ -20,7 +19,7 @@
 // Prior art: Medabots' tinpet (the frame the parts hang on, the Medal in its back: the Jar is the Medal); Evangelion's entry plug;
 // the Milanese cuirass and the muscle cuirass (the keel and the pectorals); Kunio Okawara's and Hajime Katoki's chest blocks read as
 // sculpted volumes; the bottle kilns of Stoke-on-Trent (the kiln core); bisque ware's openwork (the light core); Elemental
-// Gearbolt's and Haydee's doll torsos; Gundam's panel lines.
+// Gundam's panel lines.
 //
 //   coreLook(id, F) -> { mounts: { neck [y, z], shoulder [x, y], back [y, z], gen [y, z], boost [y, z, x], plug [y, z], cradleZ }, chest(S), waist(S) }
 //   CORE_LOOKS[id] (the cores' numbers)   cradle(S) (the boss, the thread, the floor's glow)   cradleParts(mats) -> { collar, tines, bore }
@@ -29,6 +28,7 @@
 import * as THREE from 'three';
 import { JAR_ANATOMY } from '../../pneukajar/shape.js';
 import { MECH_LOOK as L, FORMS, band, profAt, panel, cup, seam, ball, threadGeometry, shell, sculpt } from './kit.js';
+import { femCoreLook } from './femcores.js';
 
 const PI = Math.PI;
 /** The well: its radius (the Jar's foot and a hand's width of room), its depth (to the Jar's shoulder line), two turns, its tilt back,
@@ -47,13 +47,11 @@ export const CORE_LOOKS = {
   lightCore: { prof: [[0.7, 0], [0.8, 0.5], [1.1, 1.1], [1.48, 1.8], [1.64, 2.35], [1.52, 2.8], [1.08, 3.06], [0.42, 3.2]], w: 1.3, d: 0.62, back: 0.52, keel: 0.24, pec: 0.1, shoulderY: 2.4, cup: 0.52 },
 };
 
-/** A doll's profile: the waist pinched, the ribcage kept. */
-const dollProf = (prof) => prof.map(([r, y]) => [r * (1 - 0.34 * bump(y, -0.6, 1.7)), y]);
 /** The chest's plan as a vertex function (a lathe's x, y, z to the sculpted chest's). */
 function planOf(C, F) {
-  const doll = F.id === 'doll', w = C.w * F.chest[0], d = C.d * F.chest[2], bk = C.back * F.chest[2];
-  const keel = (y) => (doll ? 0.06 : C.keel) * bump(y, 0.5, 3.0), pec = (y) => (doll ? 0.2 : C.pec) * bump(y, doll ? 1.9 : 1.75, doll ? 3.0 : 3.15);
-  const sig = doll ? 0.035 : 0.06, at = doll ? 0.42 : 0.5;
+  const w = C.w * F.chest[0], d = C.d * F.chest[2], bk = C.back * F.chest[2];
+  const keel = (y) => C.keel * bump(y, 0.5, 3.0), pec = (y) => C.pec * bump(y, 1.75, 3.15);
+  const sig = 0.06, at = 0.5;
   return (x, y, z) => {
     const r = Math.hypot(x, z); if (r < 1e-5) return [x, y, z];
     const c = z / r, sx = Math.abs(x) / r, f = Math.max(0, c);
@@ -63,9 +61,10 @@ function planOf(C, F) {
   };
 }
 
-/** A core made for a form: its mounts read off its own sculpted surface, its chest and waist builders. */
+/** A core made for a form: its mounts read off its own sculpted surface, its chest and waist builders (a feminine form's: femcores.js). */
 export function coreLook(id, F = FORMS.hero) {
-  const C = CORE_LOOKS[id] || CORE_LOOKS.clayCore, doll = F.id === 'doll', P = doll ? dollProf(C.prof) : C.prof, W = planOf(C, F);
+  if (F.fem) return femCoreLook(id, F);
+  const C = CORE_LOOKS[id] || CORE_LOOKS.clayCore, P = C.prof, W = planOf(C, F);
   const top = P[P.length - 1][1], depth = (y) => profAt(P, y) * C.back * F.chest[2], wide = (y) => profAt(P, y) * C.w * F.chest[0];
   const gap = Math.asin(Math.min(0.9, 0.5 / (profAt(P, 2.1) * C.w * F.chest[0])));
   const mounts = {
@@ -93,50 +92,42 @@ export function coreLook(id, F = FORMS.hero) {
   const build = {
     clayCore(S) {
       inner(S);
-      if (doll) {
-        panels(S, [[1.0, top - 0.1, -1.5, 1.5, L.pale], [0.06, 0.92, -PI + 0.2, PI - 0.2, L.mid, 1.04]]);
-        backPlates(S, 1.0, top - 0.2, 1.5 + 2 * G);
-        hoop(S, 0.98, 0.04, 1.06);
-      } else {
-        panels(S, [[1.9, top - 0.08, G, 1.0, L.pale], [1.05, 1.82, G, 1.0, L.mid], [1.05, top - 0.2, 1.0 + 2 * G, 1.95, L.mid], // (pectorals, the ribs under them, the flanks)
-          [0.06, 0.34, G, PI - 0.2, L.dark, 1.05], [0.4, 0.68, G, PI - 0.2, L.mid, 1.05], [0.74, 0.99, G, PI - 0.2, L.pale, 1.05]]); // (the abdomen's three bands)
-        backPlates(S, 1.05, top - 0.25, 1.95 + 2 * G);
-        hoop(S, 1.86, 0.035, 1.05, L.trimD); // (a trim rim under the pectorals)
-        S.trim.geo(sculpt(panel(band(P, 0.9, top - 0.1, 1.07, 12), -0.05, 0.05, 6), W), { c: L.trimL }); // (the keel's ridge)
-        seam(S.g, [on(0.12, 3.0), on(0.32, 2.75), on(0.42, 2.4), on(0.7, 2.15), on(0.82, 1.95)]);
-      }
+      panels(S, [[1.9, top - 0.08, G, 1.0, L.pale], [1.05, 1.82, G, 1.0, L.mid], [1.05, top - 0.2, 1.0 + 2 * G, 1.95, L.mid], // (pectorals, the ribs under them, the flanks)
+        [0.06, 0.34, G, PI - 0.2, L.dark, 1.05], [0.4, 0.68, G, PI - 0.2, L.mid, 1.05], [0.74, 0.99, G, PI - 0.2, L.pale, 1.05]]); // (the abdomen's three bands)
+      backPlates(S, 1.05, top - 0.25, 1.95 + 2 * G);
+      hoop(S, 1.86, 0.035, 1.05, L.trimD); // (a trim rim under the pectorals)
+      S.trim.geo(sculpt(panel(band(P, 0.9, top - 0.1, 1.07, 12), -0.05, 0.05, 6), W), { c: L.trimL }); // (the keel's ridge)
+      seam(S.g, [on(0.12, 3.0), on(0.32, 2.75), on(0.42, 2.4), on(0.7, 2.15), on(0.82, 1.95)]);
       gorget(S, top - 0.1); sockets(S);
     },
     kilnCore(S) {
       inner(S);
-      if (doll) panels(S, [[1.0, top - 0.1, -1.6, 1.6, L.mid], [0.06, 0.92, -PI + 0.2, PI - 0.2, L.dark, 1.04]]);
-      else panels(S, [[1.05, 2.0, G, 1.15, L.mid], [2.1, top - 0.1, G, 1.15, L.mid], [1.05, top - 0.2, 1.15 + 2 * G, 2.0, L.dark], [0.06, 0.95, G, PI - 0.2, L.dark, 1.05]]);
-      backPlates(S, doll ? 1.0 : 1.05, top - 0.25, doll ? 1.6 + 2 * G : 2.0 + 2 * G, L.dark);
-      for (const y of doll ? [1.0, 2.05] : [1.0, 2.05, 3.0]) hoop(S, y, doll ? 0.03 : 0.055, 1.07, y === 2.05 ? L.trimL : L.trimD);
-      if (!doll) for (let k = 0; k < 4; k++) { const a = -0.5 + k / 3; S.core.box(0.26, 0.4, 0.3, { at: on(a, 1.5, 1.0), rot: [0, a, 0], c: L.coreD }, 0.06); }
+      panels(S, [[1.05, 2.0, G, 1.15, L.mid], [2.1, top - 0.1, G, 1.15, L.mid], [1.05, top - 0.2, 1.15 + 2 * G, 2.0, L.dark], [0.06, 0.95, G, PI - 0.2, L.dark, 1.05]]);
+      backPlates(S, 1.05, top - 0.25, 2.0 + 2 * G, L.dark);
+      for (const y of [1.0, 2.05, 3.0]) hoop(S, y, 0.055, 1.07, y === 2.05 ? L.trimL : L.trimD);
+      for (let k = 0; k < 4; k++) { const a = -0.5 + k / 3; S.core.box(0.26, 0.4, 0.3, { at: on(a, 1.5, 1.0), rot: [0, a, 0], c: L.coreD }, 0.06); }
       gorget(S, top - 0.1, L.trimD); sockets(S);
       seam(S.g, [on(-0.2, 3.0), on(-0.4, 2.6), on(-0.32, 2.25), on(-0.5, 1.85)]);
     },
     lightCore(S) {
       inner(S);
-      const ribs = doll ? 4 : 7, r0 = doll ? 1.25 : 0.06;
-      if (doll) panels(S, [[1.0, top - 0.1, -1.2, 1.2, L.pale]]);
-      for (let i = 0; i < ribs; i++) { const a = r0 + (i / ribs) * (PI - gap - 0.1 - r0); panels(S, [[1.0, 3.0, a, a + (doll ? 0.08 : 0.12), L.mid]]); } // (the ribs)
-      for (const [y, c] of doll ? [[1.02, L.trimM]] : [[1.05, L.trimL], [2.0, L.trimM], [2.9, L.trimL], [0.5, L.trimM]]) hoop(S, y, 0.07, 1.06, c);
-      if (!doll) panels(S, [[1.6, 2.7, -0.42, 0.42, L.pale, 1.07]]); // (the sternum's one plate)
+      const ribs = 7, r0 = 0.06;
+      for (let i = 0; i < ribs; i++) { const a = r0 + (i / ribs) * (PI - gap - 0.1 - r0); panels(S, [[1.0, 3.0, a, a + 0.12, L.mid]]); } // (the ribs)
+      for (const [y, c] of [[1.05, L.trimL], [2.0, L.trimM], [2.9, L.trimL], [0.5, L.trimM]]) hoop(S, y, 0.07, 1.06, c);
+      panels(S, [[1.6, 2.7, -0.42, 0.42, L.pale, 1.07]]); // (the sternum's one plate)
       panels(S, [[1.0, WIN[0], PI - gap - G, PI - G, L.mid], [WIN[1], top - 0.15, PI - gap - G, PI - G, L.mid]]);
       gorget(S, top - 0.08, L.trimL); sockets(S);
       seam(S.g, [on(0, 1.65, 1.09), on(0, 2.65, 1.09)], 0.03);
     },
   };
-  const tone = id === 'kilnCore' ? L.dark : id === 'lightCore' ? L.mid : L.pale, k = doll ? 0.8 : 1;
+  const tone = id === 'kilnCore' ? L.dark : id === 'lightCore' ? L.mid : L.pale, k = 1;
   return {
     mounts, prof: P, plan: W,
     chest: build[id] || build.clayCore,
     waist(S) {
       ball(S.g, 0.5 * F.joint);
       S.core.cyl(0.5 * k, 0.56 * k, L.chestBase + 0.2, { at: [0, L.chestBase / 2, 0], c: L.core }, 20);
-      for (let i = 0; i < (doll ? 1 : 2); i++) (i ? S.trim : S.p).lathe([[0.66, 0], [0.76, 0.05], [0.76, 0.2], [0.66, 0.25]], { at: [0, 0.12 + i * 0.3, 0], sc: [k, 1, 0.85 * k], c: i ? L.trimM : tone }, 28);
+      for (let i = 0; i < 2; i++) (i ? S.trim : S.p).lathe([[0.66, 0], [0.76, 0.05], [0.76, 0.2], [0.66, 0.25]], { at: [0, 0.12 + i * 0.3, 0], sc: [k, 1, 0.85 * k], c: i ? L.trimM : tone }, 28);
     },
   };
 }

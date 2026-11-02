@@ -9,17 +9,18 @@
 //   clayArms    long arms whose big hands hang to the knee: a dome with two lames and two fins, a trim vambrace
 //   strongArms  bulky: a layered pauldron of three stacked lames, gauntlets swelling to a bronze-ringed cuff, a huge fist
 //   quickArms   slender and longest: a cap with one sleek swept fin, a narrow forearm, long fingers
-// In the doll form the same arms slender (kit.js FORMS: the limbs' radii, the hands smaller, the joints finer), a doll's small
-// rounded cap for the default pauldron.
+// The feminine forms' arms are their own (femlimbs.js, by `armLookOf`), their hands this file's `hand` at their size.
 // Prior art: Medabots' arm parts (each arm its own weapon and its own silhouette); Evangelion's long lean arms (Ikuto Yamashita);
 // Giant Clank's fists; Gurren Lagann's and the Big O's gauntlets (the strong arms); the ball-jointed doll's hand; the gauntlet's
-// knuckle plate (a Gothic gauntlet's gadlings, here gold studs); Elemental Gearbolt's and Haydee's slender arms.
+// knuckle plate (a Gothic gauntlet's gadlings, here gold studs).
 //
 //   ARM_LOOKS[id] = { upper, fore, palm (m), ball (the shoulder's), elbow, wrist (balls), shoulder(S, s), foreArm(S, s), hand(S, s, grip), pauldron(S, s) }
 //   grip: 'open' | 'hold' | 'fist'   gripAt(look) -> [x, y, z] in the hand's frame (the middle of a closed hand, where a haft sits)
+//   armLookOf(id, F) (the look for a form)   hand(S, s, grip, { w, h, d, fl, fw, wr, c }) (a hand at any size)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { MECH_LOOK as L, shell, plate, limb, seam, ball, band, curved } from './kit.js';
+import { femArmLook } from './femlimbs.js';
 
 const PI = Math.PI;
 const CURL = { open: [0.3, 0.75], hold: [1.25, 1.35], fist: [1.55, 1.7] };
@@ -29,7 +30,7 @@ const armPlate = (P, prof, y0, y1, half, s, c, F, k = 1.1, th = 0.09) => P.geo(c
 
 /** A hand, palm to +Z (the hand's joint turns it to face in): its ball, a palm, four fingers of two joints, the thumb; a fist's
  *  knuckle guard. */
-function hand(S, s, grip, { w, h, d, fl, fw, wr, c = L.pale }) {
+export function hand(S, s, grip, { w, h, d, fl, fw, wr, c = L.pale }) {
   const { p, g } = S, F = S.F, curl = CURL[grip] || CURL.open, k = F.hand;
   w *= k; d *= k; fw *= k; fl = fl.map((x) => x * k); wr *= F.joint;
   ball(g, wr);
@@ -137,3 +138,5 @@ export const ARM_LOOKS = {
 
 /** Where a haft sits in a closed hand, in the hand's frame (palm to +Z, before its twist). */
 export const gripAt = (A) => [0, -A.wrist * 0.6 - A.palm - 0.25, 0.42 + A.palm * 0.12];
+/** An arms part's look in a form: the feminine forms' are their own. */
+export const armLookOf = (id, F) => (F?.fem ? femArmLook(id, F) : ARM_LOOKS[id] || ARM_LOOKS.clayArms);

@@ -18,7 +18,9 @@
 //   THE CRADLE   in the back between the shoulder blades (vfx/mechs/parts/cores.js CRADLE, the Jar's own size): `cradle` { frame (at
 //                the well's floor, +Y out along its axis), depth, turns, pitch, collar, tines, bore }; seat(out) is the frame's world
 //                point. The mount's animation is the runtime's (no seal or turn here); sealed lights the eyes and the well's floor
-//   THE FORM     `form` 'hero' | 'doll' (kit.js FORMS: the doll Elemental Gearbolt's and Haydee's), read on build; setForm rebuilds
+//   THE FORM     `form` 'hero' | 'doll' | 'drossel' (kit.js FORMS: the doll Haydee's hourglass android, drossel Fireball's corseted
+//                duchess in her crinoline), read on build; setForm rebuilds. A feminine form builds every slot from its own library
+//                (parts/femcores.js, femlegs.js, femlimbs.js, femheads.js): every part id, every leg type, its own shape
 //   A PAULDRON   setPauldron(id) (vfx/mechs/parts/pauldrons.js PAULDRONS) swaps only the two pauldrons, hung on their own joints off the
 //                chest at the shoulders (pauldronL/R), riding a part of the arm's swing; 'default' the arms part's own
 //   THE RUNTIME  (world/hangar/mech.js's contract) arms[side] { pivot, hand, weapon, held (where a carried prop is parented) };
@@ -43,11 +45,12 @@ import { PARTS } from '../../progress/mechs/parts.js';
 import { assemble } from '../../progress/mechs/frame.js';
 import { past } from '../../progress/mechs/joints.js';
 import { MECH_LOOK as L, seg, bake, mechMaterials, crackNet, formOf } from './parts/kit.js';
-import { HEAD_LOOKS } from './parts/heads.js';
+import { headLookOf } from './parts/heads.js';
 import { coreLook, CRADLE, cradle, cradleParts } from './parts/cores.js';
-import { PAULDRONS, dollCap } from './parts/pauldrons.js';
-import { ARM_LOOKS, gripAt } from './parts/arms.js';
+import { PAULDRONS } from './parts/pauldrons.js';
+import { armLookOf, gripAt } from './parts/arms.js';
 import { LEG_LOOKS } from './parts/legs.js';
+import { FEM_LEGS } from './parts/femlegs.js';
 import { WEAPON_LOOKS } from './parts/weapons.js';
 import { BOOSTER_LOOKS, GENERATOR_LOOKS, BACK_LOOKS } from './parts/backs.js';
 
@@ -125,7 +128,8 @@ export class MechPartsBody {
       const ctx = { H: this.hip, F: this.F, pelvis: j.pelvis, mats: this.mats, owned: (this.owned.legs ||= []),
         joint: (name, parent, at, rot) => { const lj = this.J(name, parent, at, rot); this.legJoints.push(lj); return lj; },
         put: (joint, build) => this.put(joint, 'legs', build), ballAt: (jid, obj, r, at) => this.ballAt('legs', jid, obj, r, at) };
-      this.legs = (LEG_LOOKS[id] || LEG_LOOKS.clayLegs)(ctx);
+      const LEGS = this.F.fem ? FEM_LEGS : LEG_LOOKS;
+      this.legs = (LEGS[id] || LEGS.clayLegs)(ctx);
     } else if (slot === 'core') {
       const C = coreLook(id, this.F), M = C.mounts; this.core = C;
       this.put(j.waist, 'core', (S) => C.waist(S)); this.put(j.chest, 'core', (S) => C.chest(S));
@@ -138,12 +142,12 @@ export class MechPartsBody {
       j.cradle.position.set(0, CRADLE.at[0], M.cradleZ ?? CRADLE.at[1]);
       if (this.sel.arms) this.layoutArms();
     } else if (slot === 'head') {
-      const H = HEAD_LOOKS[id] || HEAD_LOOKS.clayHead;
+      const H = headLookOf(id, this.F);
       this.put(j.neck, 'head', (S) => H.neckSeg(S)); this.put(j.head, 'head', (S) => H.build(S));
       this.rest(j.neck, [0.05, 0, 0]); j.head.position.set(0, H.neck, 0); this.rest(j.head, [0.04, 0, 0]);
       this.ballAt('head', 'neck', j.neck, H.ball * this.F.joint);
     } else if (slot === 'arms') {
-      const A = ARM_LOOKS[id] || ARM_LOOKS.clayArms; this.armLook = A;
+      const A = armLookOf(id, this.F); this.armLook = A;
       for (const [s, k] of SIDES) {
         this.put(j[`shoulder${k}`], 'arms', (S) => A.shoulder(S, s)); this.put(j[`elbow${k}`], 'arms', (S) => A.foreArm(S, s));
         this.ballAt('arms', `shoulder${k}`, j[`shoulder${k}`], A.ball * this.F.joint); this.ballAt('arms', `elbow${k}`, j[`elbow${k}`], A.elbow * this.F.joint);
@@ -152,7 +156,7 @@ export class MechPartsBody {
       this.layoutArms();
       if (this.owned.pauldron) this.buildSlot('pauldron');
     } else if (slot === 'pauldron') {
-      const A = this.armLook, P = PAULDRONS[this.pauldron], fn = P === 'none' ? null : P || (this.F.id === 'doll' ? dollCap : (S, s) => A?.pauldron(S, s));
+      const A = this.armLook, P = PAULDRONS[this.pauldron], fn = P === 'none' ? null : P || ((S, s) => A?.pauldron(S, s));
       for (const [s, k] of SIDES) { j[`pauldron${k}`].scale.setScalar(this.F.pauldron); if (fn) this.put(j[`pauldron${k}`], 'pauldron', (S) => fn(S, s)); }
       this.owned.pauldron ||= [];
     } else if (slot === 'weaponL' || slot === 'weaponR') {
@@ -182,8 +186,8 @@ export class MechPartsBody {
     const over = Math.max(0, reach - (shoulderY - 1.0));
     const tw = new THREE.Euler(0, 0, 0), q = new THREE.Vector3();
     for (const [s, k] of SIDES) {
-      this.rest(j[`shoulder${k}`], [-0.08 - Math.min(0.9, over * 0.35), 0, s * 0.1]); this.rest(j[`pauldron${k}`], [-0.03 - Math.min(0.9, over * 0.35) * 0.35, 0, s * 0.04]);
-      j[`elbow${k}`].position.set(0, -A.upper, 0); this.rest(j[`elbow${k}`], [-0.2 - Math.min(0.8, over * 0.3), 0, -s * 0.04]);
+      this.rest(j[`shoulder${k}`], [-0.08 - Math.min(0.9, over * 0.35), 0, s * (A.splay ?? 0.1)]); this.rest(j[`pauldron${k}`], [-0.03 - Math.min(0.9, over * 0.35) * 0.35, 0, s * 0.04]);
+      j[`elbow${k}`].position.set(0, -A.upper, 0); this.rest(j[`elbow${k}`], [-0.2 - Math.min(0.8, over * 0.3), 0, -s * (A.splay ? A.splay * 0.6 : 0.04)]);
       j[`wrist${k}`].position.set(0, -A.fore, 0); this.rest(j[`wrist${k}`], [0, 0, 0]);
       const twist = s * (-PI / 2 + 0.45); this.rest(j[`hand${k}`], [0, twist, 0]);
       tw.set(0, twist, 0); q.set(...gripAt(A)).applyEuler(tw); j[`grip${k}`].position.copy(q); this.rest(j[`grip${k}`], [0, 0, 0]); this.arms[k]?.held.position.copy(q);
@@ -234,7 +238,7 @@ export class MechPartsBody {
     for (const id of Object.keys(LIMB)) if (this.state[id] !== 'whole') { this.setJoint(id, 'whole'); this.unmark(id, 'mend'); for (const b of this.balls) if (b.id === id) this.craze(b, 'mend'); }
   }
 
-  /** The frame rebuilt in another form ('hero' | 'doll'), its parts, pauldron and fractured joints kept. */
+  /** The frame rebuilt in another form ('hero' | 'doll' | 'drossel'), its parts, pauldron and fractured joints kept. */
   setForm(form) {
     const F = formOf(form); if (F.id === this.form && this.body) return this;
     this.form = F.id; if (this.body) this.rebuild(); return this;

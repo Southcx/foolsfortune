@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // A MECH'S STYLE (plain name; South, 2026-11-02: "add in pauldron variants ... We need to have a feminine mech variant too"): the looks a
-// mech wears beside its parts, chosen and kept: its form (the heroic frame or the doll, vfx/mechs/partsbody.js `setForm`), its pauldrons
+// mech wears beside its parts, chosen and kept: its form (the heroic frame, the doll or Drossel's, vfx/mechs/partsbody.js `setForm`), its pauldrons
 // (`setPauldron`, the parts' `PAULDRONS`) and its helm (vfx/mechs/helms.js `game.mechHelm`). Worn on the hangar's frame whenever it is
 // built or rebuilt; kept in the save (section `mechStyle`, the player's). Looks only: never a part's numbers, which are Dovina's.
 // Prior art: Armored Core's paint and decal page beside its assembly (a look kept apart from the parts), the Pneuka Jar's look
@@ -27,7 +27,7 @@ export function installMechStyle(game) {
   L.set = (slot, id) => {
     if (!(slot in MECH_STYLE)) return false;
     L[slot] = id === 'none' || id === '' ? null : id;
-    if (slot === 'form') L.form = L.form === 'doll' ? 'doll' : 'hero';
+    if (slot === 'form') L.form = ['doll', 'drossel'].includes(L.form) ? L.form : 'hero';
     game.save?.dirty('mechStyle'); L.wear(); said();
     return true;
   };
@@ -36,7 +36,7 @@ export function installMechStyle(game) {
     reset: () => Object.assign(L, MECH_STYLE) });
   // a frame built or rebuilt (the assembly page, the gantry) wears the kept looks
   game.systems?.add?.('looks', () => { const B = body(); if (B && (L.worn !== B || B.form !== L.form)) L.wear(B); }, { clock: 'raw', name: 'mechStyle' });
-  game.chat?.add?.('mechstyle', { help: "a mech's style: /mechstyle form hero|doll, /mechstyle pauldron <id|none>, /mechstyle helm <id|none>", run: ([slot, id]) => { L.set(slot, id ?? null); } });
+  game.chat?.add?.('mechstyle', { help: "a mech's style: /mechstyle form hero|doll|drossel, /mechstyle pauldron <id|none>, /mechstyle helm <id|none>", run: ([slot, id]) => { L.set(slot, id ?? null); } });
   game.mechStyle = L;
   return L;
 }

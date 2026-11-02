@@ -3,7 +3,8 @@
 // chosen apart from the arms part (the parts body's setPauldron), both sides built in their pauldron joint's frame (vfx/mechs/
 // partsbody.js: hung off the chest at the shoulder's socket, riding a part of the arm's swing; +X out for the left, -Y down the arm),
 // big enough to own the silhouette, all in trim (the Courier's trim glaze; authored in neutral tones) with gold edges and studs.
-//   default    the arms part's own (vfx/mechs/parts/arms.js `pauldron`; the doll form's a small rounded cap)
+//   default    the arms part's own (vfx/mechs/parts/arms.js `pauldron`; a feminine form's own, femlimbs.js: Haydee's deltoid cap,
+//              Drossel's puffed sleeve)
 //   none       the bare shoulder ball
 //   osode      the samurai's great sleeve: six lames of lamellar hung flat off the shoulder, laced in gold, its crown plate on top
 //   zaku       Okawara's Zaku: a spiked dome on the left, the flat shoulder shield on the right
@@ -117,6 +118,4 @@ export const PAULDRONS = {
     for (const C of [big, small]) g.geo(new THREE.TorusGeometry(C === big ? 0.5 : 0.32, 0.05, 6, 20).lookAt(C.getTangentAt(0.02)), { at: C.getPointAt(0.02).toArray(), c: L.gold });
   },
 };
-/** The doll form's default: a small rounded cap with a gilt rim. */
-export function dollCap(S, s) { cap(S, s, 0.95, 0.25, L.trimL, 0.75); }
 export const pauldronIds = () => Object.keys(PAULDRONS);
