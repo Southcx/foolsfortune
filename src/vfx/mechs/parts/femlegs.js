@@ -8,6 +8,8 @@
 // vibes, which is all in the hips and thighs. pear shape over hourglass. It needs to read like the complement to the male mecha"):
 // the pelvis about 40% broader than the first pass and widest low, at the thighs' roots; the thighs thick and tapering to the knee,
 // the calves strong; the tetrapod's pelvis and the tank's hulls and gown broad and low. Mass and silhouette, stylised, never detail.
+// Haydee's thighs set closer (South, 2026-11-02: "reduce the thigh gap on the haydee chassis by about 12%": hipX 1.5 to 1.44, the
+// pelvis as broad), and her pelvis seats the waist column's lower ball in an ivory socket (femcores.js `spine`).
 //   haydee (the `doll` form)
 //     clayLegs    a sculpted pelvis (broad rounded hips, a leotard's panel line, the seat's two swells), thick thighs tapering to the knee, a strong calf's
 //                 swell, armoured high-heeled feet: the arch, the foot on its toe, a real heel under the ankle; knees drawn together
@@ -63,8 +65,9 @@ function haydeePelvis(S, sx = 1.72) {
   S.core.geo(sculpt(shell(prof.map(([r, y]) => [r * 0.95, y]), 40), fn), { c: L.core });
   cut(-0.78, 0.78); for (const s of [1, -1]) { const [a, b] = s > 0 ? [0.78 + 2 * G, 2.25] : [-2.25, -0.78 - 2 * G]; cut(a, b); }
   cut(2.25 + 2 * G, PI - G); cut(-PI + G, -2.25 - 2 * G);
-  S.trim.lathe([[0.42, 0.7], [0.48, 0.74], [0.42, 0.78]], { sc: [sx, 1, 0.8], c: L.trimL }, 32);
-  }
+  S.trim.lathe([[0.42, 0.66], [0.48, 0.7], [0.42, 0.74]], { sc: [sx, 1, 0.8], c: L.trimL }, 32);
+  S.p.lathe([[0.34, 0.68], [0.44, 0.72], [0.47, 0.8], [0.42, 0.86], [0.34, 0.88]], { c: L.ivory }, 32); // (the socket the waist column's ball sits in)
+}
 const BELL = { short: [[1.0, 0.5], [1.38, 0.22], [1.98, -0.3], [2.62, -0.9], [3.05, -1.5], [3.25, -1.95]],
   wide: [[1.0, 0.5], [1.38, 0.22], [2.0, -0.3], [2.7, -0.95], [3.2, -1.55], [3.4, -1.95]],
   gown: [[1.0, 0.55], [1.4, 0.28], [2.05, -0.15], [2.75, -0.65], [3.25, -1.3], [3.5, -2.0], [3.6, -2.42]] };
@@ -118,7 +121,7 @@ function pointe(S, h, piece = 'trim') {
 
 // ------------------------------------------------------------------ the bipeds
 const BIPED = {
-  haydee: { hipX: 1.5, A: [-0.14, 0.27, -0.13], toe: -0.1, FH: 1.55, pelvis: (S) => haydeePelvis(S),
+  haydee: { hipX: 1.44, A: [-0.14, 0.27, -0.13], toe: -0.1, FH: 1.55, pelvis: (S) => haydeePelvis(S),
     TH: [[0.66, 0.14], [1.08, 0.04], [1.2, -0.12], [1.12, -0.36], [0.9, -0.62], [0.66, -0.86], [0.5, -1.0], [0.44, -1.04]],
     SH: [[0.42, 0.06], [0.52, -0.04], [0.6, -0.2], [0.63, -0.34], [0.53, -0.56], [0.38, -0.8], [0.29, -0.95], [0.26, -1.03]] },
   drossel: { hipX: 0.95, A: [-0.1, 0.2, -0.1], toe: -0.06, FH: 1.8, pelvis: (S) => drosselPelvis(S),

@@ -17,10 +17,12 @@
 // gigot (leg-of-mutton) sleeve and the opera glove; the ball-jointed doll's arm; the hero arms' hands and layout (arms.js).
 //
 // The arms hang out over the broad hips (the pear, femlegs.js): splayed at the shoulder, the elbow barely turned back in (`bend`).
+// Haydee's (South, 2026-11-02): an exposed ball and socket at each elbow (the house's gold ball, the upper arm's ivory cup over it, the
+// forearm's lip under it, `elbow` its size), and the caps tilted down off a falling shoulder line (`slope`, rad).
 //
-//   femArmLook(id, F) -> { splay (the arms' hang out from the body), bend (the elbow's turn back in), upper, fore, palm, ball, elbow, wrist, shoulder(S, s), foreArm(S, s), hand(S, s, grip), pauldron(S, s) }
+//   femArmLook(id, F) -> { splay (the arms' hang out from the body), slope (the cap's tilt down), bend (the elbow's turn back in), upper, fore, palm, ball, elbow, wrist, shoulder(S, s), foreArm(S, s), hand(S, s, grip), pauldron(S, s) }
 // ---------------------------------------------------------------------------------------
-import { MECH_LOOK as L, shell, plate, sculpt, ball, profAt } from './kit.js';
+import { MECH_LOOK as L, shell, plate, sculpt, ball, profAt, cup } from './kit.js';
 import { lathe } from './femlegs.js';
 import { hand } from './arms.js';
 
@@ -58,19 +60,30 @@ const puff = (k) => (S, s) => {
   S.trim.lathe([[0.4 * k, -0.8 * k], [0.56 * k, -0.95 * k], [0.46 * k, -1.02 * k]], { at: [s * 0.3, -0.15, 0], c: L.trimM }, 28);
 };
 
+/** A forearm's profile begun under its elbow's ball (radius rb): its top a rim that holds the ball from below, the rest the profile. */
+function socketTop(FO, rb, len) {
+  const yr = (-rb * 0.72) / len, rim = rb * 0.72, below = FO.filter(([, y]) => y < yr - 0.08);
+  return [[rim, yr], [Math.max(rim + 0.06, profAt([...FO].reverse(), yr - 0.06)), yr - 0.06], ...below];
+}
+
 export function femArmLook(id, F) {
   const A = ARMS[id] || ARMS.clayArms, D = F.fem === 'drossel', k = D ? 0.8 : 1, UP = sc(A.UP, k), FO = sc(A.FO, k);
   return {
-    splay: D ? 0.46 : 0.48, bend: 0.08, upper: A.upper * (D ? 1.04 : 1), fore: A.fore * (D ? 1.04 : 1), palm: A.palm * (D ? 0.92 : 1), ball: A.ball, elbow: A.elbow, wrist: A.wrist,
+    splay: D ? 0.46 : 0.48, bend: 0.08, slope: D ? 0 : 0.22, upper: A.upper * (D ? 1.04 : 1), fore: A.fore * (D ? 1.04 : 1), palm: A.palm * (D ? 0.92 : 1), ball: A.ball, elbow: A.elbow * (D ? 1 : 1.4), wrist: A.wrist,
     pauldron: D ? puff(id === 'strongArms' ? 1.12 : 1) : deltoid(id === 'strongArms' ? 1.18 : 1),
     shoulder(S, s) {
       ball(S.g, this.ball * F.joint); core(S, 0.2 * k, this.upper);
-      lathe(S.p, UP, this.upper, L.pale);
+      if (D) lathe(S.p, UP, this.upper, L.pale);
+      else { // (Haydee's: the upper arm stops short of the elbow's ball and closes over it in an ivory socket)
+        const rb = this.elbow * F.joint, len = (this.upper - rb * 0.95) / 1.03;
+        lathe(S.p, UP, len, L.pale); S.p.geo(cup(rb), { at: [0, -this.upper, 0], c: L.ivory });
+      }
       if (!D) line(S, profAt([...UP].reverse(), -0.55) * 1.0, -0.55 * this.upper);
     },
     foreArm(S, s) {
       ball(S.g, this.elbow * F.joint); core(S, 0.15 * k, this.fore);
-      lathe(D ? S.trim : S.p, FO, this.fore, D ? L.trimM : L.pale);
+      lathe(D ? S.trim : S.p, D ? FO : socketTop(FO, this.elbow * F.joint, this.fore), this.fore, D ? L.trimM : L.pale);
+      if (!D) { const rb = this.elbow * F.joint; S.p.lathe([[rb * 0.72, -rb * 0.66], [rb * 0.86, -rb * 0.76], [rb * 0.8, -rb * 0.9]], { c: L.ivory }, 28); } // (its lip under the ball)
       const r = (u) => profAt([...FO].reverse(), -u);
       if (D) { // (the opera glove's cuffs, and the gauntlet's lace or the hanging sleeve's ribbon)
         S.g.ring(r(0.08) + 0.02, 0.03, { at: [0, -0.08 * this.fore, 0], c: L.gold }, 28, 4);

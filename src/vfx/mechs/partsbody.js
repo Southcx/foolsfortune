@@ -31,6 +31,9 @@
 //                to call; a fractured joint calls it); underdamped, a beat of overshoot and settle
 //   A PAULDRON   setPauldron(id) (vfx/mechs/parts/pauldrons.js PAULDRONS) swaps only the two pauldrons, hung on their own joints off the
 //                chest at the shoulders (pauldronL/R), riding a part of the arm's swing; 'default' the arms part's own
+//   THE BACK     setCape(id) (vfx/mechs/capes.js CAPES: the drums' ring, the flame halo, Fujin's wind bag, the heavenly sash, the
+//   PIECE        knight's cape) worn at the shoulders and back clear of the cradle, laid out again whenever the frame is rebuilt or a
+//                part swapped; its cloth stepped in pose() with the chest plates' springs (the same frame time)
 //   THE RUNTIME  (world/hangar/mech.js's contract) arms[side] { pivot, hand, weapon, held (where a carried prop is parented) };
 //                partAt(part, out); pose({ ..., joints, holding, lean }) shows Dovina's joint states (progress/mechs/joints.js) by
 //                showJoints: fractured crazed and sagging, snapped HIDDEN with all past it (joints.js past; the runtime throws its own
@@ -43,9 +46,9 @@
 // Sock 'Em Robots for the snap; kintsugi for the mend; secondary motion as a damped spring (the animator's follow-through and
 // overlap, Thomas and Johnston's The Illusion of Life, 1981; the jiggle bones of fighting games' armour) for the chest plates.
 //
-//   const B = new MechPartsBody(game, { form?, pauldron? })   B.build(stats) (progress/mechs/frame.js assemble)   B.group   B.joints   B.mats   B.height
+//   const B = new MechPartsBody(game, { form?, pauldron?, cape? })   B.build(stats) (progress/mechs/frame.js assemble)   B.group   B.joints   B.mats   B.height
 //   B.pose({ pos, yaw, gait, walk, kneel, armL, armR, sealed, barrier, lean, joints, holding, dt? })   B.jiggle(v)   BUST_SPRING   B.seat(out)   B.back(out)   B.hand(side, out)
-//   B.arms[side]   B.partAt(part, out)   B.showJoints(J, holding)   B.limbs (the same)   B.setForm(form)   B.setPauldron(id)   B.form   B.pauldron
+//   B.arms[side]   B.partAt(part, out)   B.showJoints(J, holding)   B.limbs (the same)   B.setForm(form)   B.setPauldron(id)   B.setCape(id)   B.form   B.pauldron   B.capeId   B.cape
 //   B.equip(slot, id)   B.setJoint(id, state) -> { group, joint, slots } | null   B.mend()   B.state { [joint]: state }   B.dispose()
 //   LIMB (what each joint takes off with it)   installMechLooks(game) -> game.makeMechBody(stats? | sel?, { form, pauldron }?) (a MechPartsBody, built if given)
 // ---------------------------------------------------------------------------------------
@@ -63,6 +66,7 @@ import { FEM_LEGS } from './parts/femlegs.js';
 import { WEAPON_LOOKS } from './parts/weapons.js';
 import { BOOSTER_LOOKS, GENERATOR_LOOKS, BACK_LOOKS } from './parts/backs.js';
 import { wearHelm, HELMS } from './helms.js';
+import { wearCape, CAPES } from './capes.js';
 
 const PI = Math.PI, SIDES = [[1, 'L'], [-1, 'R']];
 /** What each joint takes off with it when it snaps (Dovina's joints.js `limb`, as slots). The waist never snaps. */
@@ -80,12 +84,12 @@ export const BUST_SPRING = { stiffness: 140, damping: 3.6, travel: 0.34, gain: 1
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _on = new THREE.Color(L.film), _off = new THREE.Color(L.hollow);
 
 export class MechPartsBody {
-  constructor(game = null, { form = 'hero', pauldron = 'default' } = {}) {
+  constructor(game = null, { form = 'hero', pauldron = 'default', cape = null } = {}) {
     this.game = game;
     this.group = new THREE.Group(); this.group.name = 'mech';
     this.mats = mechMaterials();
     Object.assign(this.mats, { porcelain: this.mats.p, gold: this.mats.g, labradorite: this.mats.l, glow: this.mats.e });
-    this.form = form; this.pauldron = pauldron; this.arms = {}; this.hurt = new Set();
+    this.form = form; this.pauldron = pauldron; this.capeId = CAPES[cape] ? cape : null; this.arms = {}; this.hurt = new Set();
     this.joints = {}; this.owned = {}; this.balls = []; this.state = {}; this.snapped = {}; this.legJoints = [];
     this.sealK = 0; this.travel = 0; this.sparkAt = 0;
     this.bounce = { L: { x: 0, v: 0 }, R: { x: 0, v: 0 } }; this.lastY = null; this.lastVy = 0; this.lastT = null;
@@ -131,7 +135,12 @@ export class MechPartsBody {
     const sg = new THREE.SphereGeometry(this.height * 0.62, 24, 16);
     this.barrierMat = new THREE.MeshBasicMaterial({ name: 'mech-barrier', color: 0xffe39a, transparent: true, opacity: 0.18, depthWrite: false, side: THREE.DoubleSide });
     this.barrier = new THREE.Mesh(sg, this.barrierMat); this.barrier.position.y = this.hip + 2.5; this.barrier.visible = false; this.body.add(this.barrier);
+    if (this.capeId) this.wearCape();
   }
+  /** The back piece worn again on the frame as it now stands (capes.js; laid out by the frame's shoulders, back, Jar and hips). */
+  wearCape() { return this.capeId ? wearCape(this, this.capeId, this.game?.scene || null) : wearCape(this, null); }
+  /** A back piece put on ('renko' | 'kohai' | 'kazebukuro' | 'tenne' | 'knight'; null or 'none' takes it off). */
+  setCape(id) { this.capeId = CAPES[id] ? id : null; if (this.body) this.wearCape(); return this; }
 
   /** One slot's part built from `this.sel` (its old meshes taken down first). */
   buildSlot(slot) {
@@ -148,7 +157,8 @@ export class MechPartsBody {
     } else if (slot === 'core') {
       const C = coreLook(id, this.F), M = C.mounts; this.core = C;
       this.put(j.waist, 'core', (S) => C.waist(S)); this.put(j.chest, 'core', (S) => C.chest(S));
-      this.ballAt('core', 'waist', j.waist, 0.5 * this.F.joint);
+      if (C.spine) { this.ballAt('core', 'waist', j.waist, C.spine.r, [0, C.spine.lo, 0]); this.ballAt('core', 'waist', j.waist, C.spine.rt, [0, C.spine.hi, 0]); }
+      else this.ballAt('core', 'waist', j.waist, 0.5 * this.F.joint);
       for (const [s, k] of SIDES) j[`pauldron${k}`].position.set(s * M.shoulder[0], M.shoulder[1], 0);
       j.neck.position.set(0, M.neck[0], M.neck[1]);
       for (const [s, k] of SIDES) j[`shoulder${k}`].position.set(s * M.shoulder[0], M.shoulder[1], 0);
@@ -216,7 +226,7 @@ export class MechPartsBody {
     const over = Math.max(0, reach - (shoulderY - 1.0));
     const tw = new THREE.Euler(0, 0, 0), q = new THREE.Vector3();
     for (const [s, k] of SIDES) {
-      this.rest(j[`shoulder${k}`], [-0.08 - Math.min(0.9, over * 0.35), 0, s * (A.splay ?? 0.1)]); this.rest(j[`pauldron${k}`], [-0.03 - Math.min(0.9, over * 0.35) * 0.35, 0, s * 0.04]);
+      this.rest(j[`shoulder${k}`], [-0.08 - Math.min(0.9, over * 0.35), 0, s * (A.splay ?? 0.1)]); this.rest(j[`pauldron${k}`], [-0.03 - Math.min(0.9, over * 0.35) * 0.35, 0, s * (0.04 - (A.slope ?? 0))]); // (slope: a shoulder line falling to the cap)
       j[`elbow${k}`].position.set(0, -A.upper, 0); this.rest(j[`elbow${k}`], [-0.2 - Math.min(0.8, over * 0.3), 0, -s * (A.bend ?? (A.splay ? A.splay * 0.6 : 0.04))]);
       j[`wrist${k}`].position.set(0, -A.fore, 0); this.rest(j[`wrist${k}`], [0, 0, 0]);
       const twist = s * (-PI / 2 + 0.45); this.rest(j[`hand${k}`], [0, twist, 0]);
@@ -243,6 +253,7 @@ export class MechPartsBody {
     for (const [jid, slots] of Object.entries(LIMB)) if (this.state[jid] === 'snapped' && slots.includes(slot)) this.setJoint(jid, 'whole');
     this.sel[slot] = id; this.buildSlot(slot);
     if (slot === 'legs') { this.barrier.position.y = this.hip + 2.5; this.group.updateMatrixWorld(true); }
+    if (this.capeId) this.wearCape(); // (the back piece laid out again on the new part)
     return this;
   }
 
@@ -274,7 +285,7 @@ export class MechPartsBody {
     this.form = F.id; if (this.body) this.rebuild(); return this;
   }
   /** Both pauldrons swapped in place (PAULDRONS: 'default', 'none', 'osode', 'zaku', 'wing', 'spaulder', 'disc', 'horn'). */
-  setPauldron(id) { this.pauldron = PAULDRONS[id] !== undefined ? id : 'default'; if (this.body) this.buildSlot('pauldron'); return this; }
+  setPauldron(id) { this.pauldron = PAULDRONS[id] !== undefined ? id : 'default'; if (this.body) { this.buildSlot('pauldron'); if (this.capeId) this.wearCape(); } return this; }
   rebuild() {
     const keep = { ...this.state }, J = this.shownJ, holding = this.holding;
     this.build(assemble(this.sel));
@@ -337,7 +348,10 @@ export class MechPartsBody {
     }
     for (const [id, st] of Object.entries(this.state)) if (st === 'fractured') { const o = j[id], d = SAG[id], sd = id.endsWith('R') ? -1 : 1; o.rotation.x += d[0]; o.rotation.z += d[2] * sd; }
     for (const [o, q] of held) o.quaternion.copy(q);
-    this.bust(dt);
+    const now0 = (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000;
+    const step = dt !== undefined ? dt : this.lastT === null ? 0 : now0 - this.lastT; // (one frame's real time, for the springs and the cloth)
+    this.lastT = now0;
+    this.bust(step);
     // sealed: the eyes and the well's floor lit, eased
     this.sealK += ((sealed ? 1 : 0) - this.sealK) * 0.12;
     this.mats.e.color.copy(_off).lerp(_on, this.sealK);
@@ -345,6 +359,7 @@ export class MechPartsBody {
     this.mats.crack.color.setRGB(1, 0.62 + 0.25 * Math.sin(now * 5.3), 0.3);
     this.barrier.visible = barrier > 0.01; this.barrierMat.opacity = 0.08 + 0.2 * barrier;
     G.updateMatrixWorld(true);
+    this.cape?.update(Math.min(Math.max(step, 0), 1));
     if (now > this.sparkAt) {
       const hurt = Object.keys(this.state).filter((id) => this.state[id] === 'fractured');
       this.sparkAt = now + 1.6 + Math.random() * 2.4;
@@ -355,9 +370,7 @@ export class MechPartsBody {
   /** The chest plates sprung: each lags the frame's vertical acceleration (x'' = -k x - c x' - gain a), clamped to its travel. */
   bust(dt) {
     const j = this.joints, K = BUST_SPRING; if (!j.bustL?.userData.home) return;
-    const now = (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000;
-    if (dt === undefined) dt = this.lastT === null ? 0 : now - this.lastT;
-    this.lastT = now; dt = Math.min(Math.max(dt, 0), 1 / 20);
+    dt = Math.min(Math.max(dt || 0, 0), 1 / 20);
     const y = this.group.position.y + this.body.position.y;
     if (this.lastY === null || dt <= 0) { this.lastY = y; this.lastVy = 0; } else {
       const vy = (y - this.lastY) / dt, acc = Math.max(-K.maxAcc, Math.min(K.maxAcc, (vy - this.lastVy) / dt));
@@ -384,6 +397,7 @@ export class MechPartsBody {
     for (const slot of Object.keys(this.owned)) this.takeDown(slot);
     if (this.cradle) { this.cradle.collar.geometry.dispose(); this.cradle.bore.geometry.dispose(); for (const t of this.cradle.tines) t.geometry.dispose(); this.cradle = null; }
     if (this.barrier) { this.barrier.geometry.dispose(); this.barrierMat.dispose(); this.barrier = null; }
+    this.cape?.dispose(); this.cape = null;
     if (this.body) { this.group.remove(this.body); this.body = null; }
     this.joints = {}; this.legJoints = []; this.balls = []; this.lastPos = null; this.arms = {}; this.hurt.clear();
   }
