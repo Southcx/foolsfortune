@@ -7,12 +7,13 @@
 // Pit's retries and a clear's sting have the room.
 //   TUNE    four bars: the A, the fifths, a last plucked note and the hush before the band
 //   WINGS   sixteen bars, looped: F, the C7 walk, F7 lifting to Bb, its minor's sigh (Bbm), home
-//   ARENA   the same tune as a galop at 138 for the Arena's fights (Dovina's platform-fighter stage): brass on the tune, the snare on
-//           the off, a crash every eight bars; back to the soft-shoe on the bar line when the fight is over
+//   ARENA   the same tune as a galop at 138 for the fighter stages' fights (Dovina's platform fighter): brass on the tune, the snare on
+//           the off, a crash every eight bars; back to the soft-shoe on the bar line when the fight is over; the flat stage's a
+//           fourth higher with a taiko on each downbeat and the brass doubled low (FIGHT_STAGES)
 // Prior art: a pit orchestra tuning before the curtain (every theatre, and Fantasia's opening), the soft-shoe of the music hall and
 // vaudeville, Paper Mario's stage shows, Puppeteer's theatre of the head.
 //
-//   import { WINGS, setWings } from './wings.js'   (music/choose.js: the wings, and the Arena with setWings({ arena: true }))
+//   import { WINGS, setWings, FIGHT_STAGES } from './wings.js'   (music/choose.js: the wings, and a fighter stage with setWings({ stage }))
 // ---------------------------------------------------------------------------------------
 
 const E = (i, b, d, n, v, o) => ({ i, b, d, n, v, o });
@@ -47,19 +48,29 @@ const band = (i) => {
   return ev;
 };
 
-/** The Arena on (Dovina's platform-fighter stage, set by music/choose.js): the band strikes up its galop. */
-const W = { arena: false };
-export function setWings({ arena = false } = {}) { W.arena = !!arena; }
+/** The platform fighter's stages (Dovina's, FIGHTER.md 5), each the galop in its own colour: the Arena's as written; the flat stage's
+ *  (Final Destination's) a fourth higher, a taiko under each downbeat and the brass doubled an octave down, for the bare stage's grandeur.
+ *  A stage not here is left quiet. */
+export const FIGHT_STAGES = { arena: { up: 0 }, flatstage: { up: 5, taiko: true, low: true } };
+/** A fight on (set by music/choose.js with the stage's id): the band strikes up its galop, in that stage's colour. */
+const W = { arena: false, up: 0, taiko: false, low: false };
+export function setWings({ stage = null, arena = false } = {}) {
+  const F = FIGHT_STAGES[stage] || (arena ? FIGHT_STAGES.arena : null);
+  W.arena = !!F; W.up = F?.up ?? 0; W.taiko = !!F?.taiko; W.low = !!F?.low;
+}
 
 // the Arena's galop: the same tune at a fighting pace, two bars of 2/4 a bar of the waltz, the brass on the tune, a snare on the off
 const galop = (i) => {
   const k = Math.floor(i / 2) % 16, half = i % 2, [root, ch] = PROG[k], ev = [];
-  ev.push(E('pizz', 0, 0.5, half ? root + 7 : root, 0.3), E('kick', 0, 1, null, 0.3));
+  const u = W.up;
+  ev.push(E('pizz', 0, 0.5, (half ? root + 7 : root) + u, 0.3), E('kick', 0, 1, null, 0.3));
+  if (W.taiko && !half) ev.push(E('taiko', 0, 1, null, 0.3)); // (the flat stage's downbeat)
   ev.push(E('snare', 1, 1, null, 0.2), E('hat', 0.5, 0.5, null, 0.08), E('hat', 1.5, 0.5, null, 0.08));
-  ch.forEach((n) => ev.push(E('piano', 1, 0.4, n, 0.07)));
+  ch.forEach((n) => ev.push(E('piano', 1, 0.4, n + u, 0.07)));
   for (const [b, d, n] of TUNE[k]) {
     const bb = b * (2 / 3) - half * 2; if (bb < 0 || bb >= 2) continue; // (the waltz's three beats squeezed into two bars of two)
-    ev.push(E('brass', bb, Math.min(d * 0.66, 2 - bb), n, 0.12), E('celesta', bb, 0.4, n + 12, 0.1));
+    ev.push(E('brass', bb, Math.min(d * 0.66, 2 - bb), n + u, 0.12), E('celesta', bb, 0.4, n + 12 + u, 0.1));
+    if (W.low) ev.push(E('brass', bb, Math.min(d * 0.66, 2 - bb), n + u - 12, 0.08)); // (doubled an octave down)
   }
   if (i % 8 === 7) ev.push(E('crash', 0, 1, null, 0.12));
   return ev;
