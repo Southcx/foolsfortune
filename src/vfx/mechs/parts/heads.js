@@ -3,7 +3,9 @@
 // kit.js), its neck's ball first so it seats in any core's neck cup. The head is the frame's face, the first thing read: a head is told
 // apart by its silhouette alone (a Medabot is known by its head).
 //   clayHead     the haniwa: three hollows in a face of the interstitial, lit from inside while sealed, under a beaked helmet with its neck
-//                guard's lames and the mizura at the cheeks; a low blade for a crest
+//                guard's lames and the mizura at the cheeks; a low blade for a crest. The face sculpted (parts/sdf.js; South, 2026-11-02:
+//                the head a focal point): brow ridges falling to a V over the nose, the eyes' hollows sunk under them, convex cheek
+//                planes swelling below and turning back into the jaw, a small nose ridge, the mouth's hollow and a chin
 //   watcherHead  long sight: a tall narrow helm, one great lens in a labradorite bezel where a face would be, a visor's slit over it,
 //                two antenna fins swept back off the crown
 // The feminine forms' heads are their own (femheads.js, by `headLookOf`).
@@ -15,11 +17,27 @@
 //   (on the neck joint: the ball and its column) }   headLookOf(id, F) (the look for a form: the hero's here, a feminine form's femheads.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { MECH_LOOK as L, shell, sidePlate, plate, labTone, ball, seam } from './kit.js';
+import { MECH_LOOK as L, shell, sidePlate, plate, labTone, jointBall, seam } from './kit.js';
+import { blend, carve, meet, ellipsoid, capsule } from './sdf.js';
+import { sideSculpt, aoTone } from './arms.js';
 import { femHeadLook } from './femheads.js';
 
 const PI = Math.PI;
-const neckSeg = (len, r) => (S) => { const k = S.F.joint; ball(S.g, r * k); S.core.cyl(r * 0.6 * k, r * 0.72 * k, len, { at: [0, len / 2, 0], c: L.core }, 14); S.trim.lathe([[r * 0.95 * k, len * 0.35], [r * 1.05 * k, len * 0.5], [r * 0.95 * k, len * 0.65]], { c: L.trimD }, 20); };
+const neckSeg = (len, r) => (S) => { const k = S.F.joint; jointBall(S, r * k); S.core.cyl(r * 0.6 * k, r * 0.72 * k, len, { at: [0, len / 2, 0], c: L.core }, 14); S.trim.lathe([[r * 0.95 * k, len * 0.35], [r * 1.05 * k, len * 0.5], [r * 0.95 * k, len * 0.65]], { c: L.trimD }, 20); };
+
+/** The haniwa's face as one field: a mask's front blended out of the skull, the brows, cheeks, nose and chin swelled on, the eyes'
+ *  sockets and the mouth carved in (the hollows' glow sits at their floors). */
+const FACE = (() => {
+  const mask = meet(0.06, ellipsoid([0, 0.47, 0.18], [0.5, 0.42, 0.42]), (x, y, z) => 0.16 - z);
+  let f = blend(0.07, mask,
+    capsule([0.38, 0.75, 0.47], [0.05, 0.69, 0.56], 0.075), capsule([-0.38, 0.75, 0.47], [-0.05, 0.69, 0.56], 0.075), // (the brows, falling to a V)
+    ellipsoid([0.27, 0.41, 0.44], [0.17, 0.13, 0.13]), ellipsoid([-0.27, 0.41, 0.44], [0.17, 0.13, 0.13]), // (the cheek planes)
+    capsule([0, 0.64, 0.56], [0, 0.48, 0.61], 0.04), // (the nose's ridge)
+    ellipsoid([0, 0.2, 0.4], [0.2, 0.12, 0.15])); // (the chin)
+  f = carve(0.045, f, ellipsoid([0.18, 0.585, 0.62], [0.16, 0.085, 0.11]), ellipsoid([-0.18, 0.585, 0.62], [0.16, 0.085, 0.11]), // (the eyes' sockets)
+    ellipsoid([0, 0.345, 0.62], [0.13, 0.055, 0.085])); // (the mouth)
+  return f;
+})();
 
 export const HEAD_LOOKS = {
   clayHead: {
@@ -27,15 +45,15 @@ export const HEAD_LOOKS = {
     build(S) {
       const { p, e } = S;
       p.lathe([[0.001, -0.05], [0.42, -0.02], [0.52, 0.2], [0.55, 0.55], [0.5, 0.85], [0.3, 1.02], [0.001, 1.08]], { c: L.mid }, 28); // (the skull)
-      S.core.box(0.72, 0.56, 0.2, { at: [0, 0.48, 0.44], c: L.coreD }, 0.08); // (the face's recess, where the hollows are cut)
+      sideSculpt(S.core, FACE, [[-0.56, 0.08, 0.12], [0.56, 0.86, 0.72]], 0.042, { key: 'head.clay.face', tone: aoTone(FACE, L.core, L.coreD, 0.05) }); // (the face)
       p.geo(shell([[0.7, 0.62], [0.76, 0.84], [0.68, 1.12], [0.44, 1.32], [0.18, 1.41], [0.001, 1.43]], 32), { sc: [1, 1, 1.1], c: L.mid }); // (the helmet's bowl)
       S.core.ring(0.72, 0.045, { at: [0, 0.63, 0], sc: [1, 1, 1.1], c: L.coreD }, 32, 4); // (its brim: a groove under the bowl)
       p.geo(sidePlate([[0.42, 0.9], [1.12, 0.98], [1.18, 1.03], [0.48, 1.28]], 0.3, 0.05), { c: L.pale }); // (the beak, ahead)
       for (let i = 0; i < 3; i++) p.geo(new THREE.CylinderGeometry(0.68 + i * 0.08, 0.74 + i * 0.09, 0.2, 28, 1, true, PI * 0.45, PI * 1.1), { at: [0, 0.5 - i * 0.23, -0.02], c: i % 2 ? L.mid : L.pale }); // (the neck guard's lames)
       for (const s of [-1, 1]) { S.trim.cyl(0.1, 0.14, 0.4, { at: [s * 0.6, 0.28, 0.1], c: L.trimM }, 12); S.trim.ball(0.15, { at: [s * 0.62, 0.05, 0.1], sc: [0.8, 1.1, 0.8], c: L.trimM }, 14, 10); } // (the mizura)
       S.trim.geo(sidePlate([[-0.1, 1.3], [0.3, 1.36], [-0.45, 1.95], [-0.62, 1.86]], 0.08, 0.03), { c: L.trimL }); // (the crest: a low blade)
-      for (const s of [-1, 1]) e.box(0.22, 0.07, 0.06, { at: [s * 0.17, 0.58, 0.55], rot: [0, 0, s * -0.14], c: 0xffffff }, 0.03); // (the hollows)
-      e.box(0.2, 0.07, 0.06, { at: [0, 0.36, 0.55], c: 0xffffff }, 0.03);
+      for (const s of [-1, 1]) e.box(0.22, 0.07, 0.04, { at: [s * 0.18, 0.585, 0.515], rot: [0, s * 0.2, s * -0.14], c: 0xffffff }, 0.02); // (the hollows, at the sockets' floors)
+      e.box(0.19, 0.06, 0.04, { at: [0, 0.345, 0.535], c: 0xffffff }, 0.02);
     },
   },
   watcherHead: {

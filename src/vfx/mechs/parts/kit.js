@@ -6,7 +6,8 @@
 //   core   the interstitial under the shell: the core inside a barrel, a groove's floor, the waist, a limb between its plates (the
 //          Courier's skin goes on it: Lachryma's soft lit body showing through the gaps)
 //   trim   the pauldrons and the accent bands and rims (the Courier's trim glaze); authored in neutral tones, never a hue of its own
-//   g      the gold and bronze (the ball joints, the kintsugi seams, a road wheel)
+//   g      the gold and bronze (the hero's joint bands, the kintsugi seams, a road wheel)
+//   j      the joint's clear shell over its skin ball (`jointBall`: high specular, clearcoat, see-through)
 //   l      the labradorite: a small lens or gem only (Lachryma's dark stone, its schiller baked in, vfx/oxidation.js `schillerInk`)
 //   e      the glow (the eyes, a lens, a nozzle's throat: lit while sealed)
 // Porcelain, core and trim are plain MeshStandardMaterials (vertex coloured, no program of their own), so the Courier's finish can
@@ -29,7 +30,7 @@
 //   plate(pts, depth, bev)   sidePlate   mirror   shell(prof, seg, start, len)   sculpt(geo, fn)   curved(prof, th, a0, a1, seg)
 //   cup(r)   limb(p, prof, c, foot, cupR, sc, core)   seam(P, pts, r, c)   labTone(ph, k)   ball(P, r, at)   jointBall(S, r, at) (the form's)   threadGeometry(r, turns, pitch, tube)
 //   crackNet(r, seed, c) -> Piece   aimOf(dy, dz) -> rotation.x pointing a joint's -Y along (dy, dz)   mechMaterials() -> mats
-//   bake(joint, S, mats, owned) -> the meshes added (one a program)   tube(P, pts, r, c) (a smooth rod through points)
+//   bake(joint, S, mats, owned) -> the meshes added (one a program)   (sculpted bodies: parts/sdf.js)   tube(P, pts, r, c) (a smooth rod through points)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Piece } from '../../garden/decorpieces/kit.js';
@@ -59,7 +60,7 @@ export const FORMS = {
 };
 export const formOf = (id) => FORMS[id?.id || id] || FORMS.hero;
 /** One segment's pieces (porcelain, core, trim, gold, labradorite, glow) and the form it is built in. */
-export const seg = (F = FORMS.hero) => ({ p: new Piece(), core: new Piece(), trim: new Piece(), g: new Piece(), l: new Piece(), e: new Piece(), F });
+export const seg = (F = FORMS.hero) => ({ p: new Piece(), core: new Piece(), trim: new Piece(), g: new Piece(), l: new Piece(), e: new Piece(), j: new Piece(), F });
 /** A geometry's every vertex moved by fn(x, y, z) -> [x, y, z], its normals made again (a lathe pressed into a plan's shape). */
 export function sculpt(geo, fn) {
   const P = geo.attributes.position;
@@ -113,9 +114,14 @@ const _s = new THREE.Color();
 export const labTone = (ph, k = 0.14) => new THREE.Color(L.lab).lerp(schillerInk(ph, _s), Math.min(k, 0.2));
 /** A ball joint in gold (the Courier's own make, at giant scale). */
 export const ball = (P, r, at = [0, 0, 0], c = L.gold) => P.ball(r, { at, c }, 24, 16);
-/** A frame's ball joint in its form's material: the doll's in the core program (the Courier's skin, lit; vertex white so the skin
- *  reads at full strength), the hero's gold. */
-export const jointBall = (S, r, at = [0, 0, 0]) => (S.F?.fem ? S.core.ball(r, { at, c: 0xffffff }, 24, 16) : ball(S.g, r, at));
+/** A frame's ball joint as the Courier's skin is drawn (South, 2026-11-02: "the spherical joints ... a higher specularity and
+ *  translucent shell, just like how the courier skin works"): a ball of the core program (the skin, lit from inside; vertex white so it
+ *  reads at full strength) and the Lachryma standing round it (a Lachrymato Bottle made round: vfx/mechs/hydraulics.js) under a clear shell of the joint program (`j`: high specular, clearcoat, a fresnel you see through), the
+ *  hero's with its gold equator band kept (its signature since the first pass). */
+export function jointBall(S, r, at = [0, 0, 0]) {
+  S.core.ball(r * 0.36, { at, c: 0xffffff }, 18, 12); S.j.ball(r, { at, c: 0xffffff }, 28, 18); // (the skin's heart: the Lachryma stands round it, vfx/mechs/hydraulics.js)
+  if (!S.F?.fem) S.g.ring(r * 1.005, r * 0.07, { at, c: L.gold }, 32, 5);
+}
 /** The rotation.x that points a joint's -Y along (0, dy, dz). */
 export const aimOf = (dy, dz) => Math.atan2(-dz, -dy);
 
@@ -157,15 +163,17 @@ export function mechMaterials() {
     glass: new THREE.MeshStandardMaterial({ name: 'mech-glass', color: L.glass, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.35, depthWrite: false }),
     bore: new THREE.MeshStandardMaterial({ name: 'mech-bore', color: L.hollow, roughness: 0.95, side: THREE.BackSide }),
     crack: new THREE.MeshBasicMaterial({ name: 'mech-crack', color: L.ember, toneMapped: false }),
+    j: new THREE.MeshPhysicalMaterial({ name: 'mech-jointshell', color: 0xffffff, roughness: 0.05, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.02,
+      specularIntensity: 1, transparent: true, opacity: 0.26, depthWrite: false, iridescence: 0.18, iridescenceIOR: 1.4, iridescenceThicknessRange: [240, 520] }),
   };
 }
 
 /** A segment's pieces merged one a program and hung on its joint; each mesh pushed to `owned` (what its slot takes down). */
 export function bake(joint, S, mats, owned) {
   const out = {};
-  for (const k of ['p', 'core', 'trim', 'g', 'l', 'e']) {
-    if (!S[k].pos.length) continue;
-    const m = new THREE.Mesh(S[k].done(), mats[k]); m.castShadow = k !== 'e'; m.receiveShadow = k !== 'e'; m.name = `mech.${joint.name}.${k}`;
+  for (const k of ['p', 'core', 'trim', 'g', 'l', 'e', 'j']) {
+    if (!S[k]?.pos.length) continue;
+    const m = new THREE.Mesh(S[k].done(), mats[k]); m.castShadow = k !== 'e' && k !== 'j'; m.receiveShadow = k !== 'e'; if (k === 'j') m.renderOrder = 2; m.name = `mech.${joint.name}.${k}`;
     joint.add(m); owned.push(m); out[k] = m;
   }
   return out;

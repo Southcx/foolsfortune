@@ -10,6 +10,10 @@
 //   crabLegs    tetrapod: four legs off a broad pelvis plate, their knees raised above the body, tapering to points; a crawl, the
 //               diagonal pairs stepping together
 //   treadLegs   tank: two tread pods under porcelain skirts, gold road wheels turning by the ground covered, a turret ring between
+// The refire (South, 2026-11-02): every articulation ball the Courier's skin under a clear shell (kit.js `jointBall`), each registered
+// with the body (`ballAt`) so its Lachryma stands in it (vfx/mechs/hydraulics.js); the waist's cup turned to hold the dantian from
+// below and the belt opened at the front so it shows; the biped's knee cop sculpted (parts/sdf.js: a central ridge between two
+// concave wings, a boss at its heart); the calves (the lower leg's girth) 15% slimmer, so the hero reads top-heavy.
 // The feminine forms' legs are their own (femlegs.js FEM_LEGS, every type rebuilt in each).
 // Prior art: Armored Core's four leg types (biped, reverse joint, tetrapod, tank); Medabots' leg parts; ED-209's and the Zoids'
 // reverse joints; the Tachikoma's and the Spider Tank's splayed legs (Ghost in the Shell; Metal Gear's Gekko for the crawl); a Bandai
@@ -20,10 +24,15 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Piece } from '../../garden/decorpieces/kit.js';
-import { MECH_LOOK as L, plate, sidePlate, shell, cup, limb, seam, ball, aimOf, threadGeometry, band, curved } from './kit.js';
+import { MECH_LOOK as L, plate, sidePlate, shell, cup, limb, seam, ball, jointBall, aimOf, threadGeometry, band, curved } from './kit.js';
+import { blend, carve, ellipsoid, capsule } from './sdf.js';
+import { sideSculpt, aoTone } from './arms.js';
+import { DANTIAN } from './cores.js';
 
 const PI = Math.PI;
 const SIDES = [[1, 'L'], [-1, 'R']];
+/** The calves' girth on the hero (South, 2026-11-02: 15% slimmer, his top-heaviness): the lower leg's radii, never its length. */
+const CALF = 0.85;
 const up = (prof) => [...prof].reverse();
 /** A plate curved round a limb's front (phi 0 +- half), from its own unit profile, between unit heights y0 and y1, scaled sc. */
 const wrap = (P, prof, y0, y1, half, sc, c, k = 1.1, th = 0.09, mid = 0) => P.geo(curved(band(up(prof), y0, y1, k, 8), th, mid - half, mid + half, 14), { sc, c });
@@ -34,9 +43,9 @@ function pelvis(S, hipX, F) {
   const { p, g } = S, w = F.hips;
   p.lathe([[0.001, -0.62], [0.8, -0.58], [1.22, -0.3], [1.32, 0.05], [1.24, 0.36], [0.9, 0.5], [0.001, 0.52]], { sc: [w, 1, 0.72], c: L.pale }, 32); // (the hip shell)
   S.core.lathe([[1.0, -0.3], [1.0, 0.45]], { sc: [w * 1.0, 1, 0.75], c: L.core }, 28);
-  S.trim.geo(curved([[1.3, 0.42], [1.34, 0.52], [1.28, 0.62]], 0.1, 0, PI * 2, 6), { sc: [w, 1, 0.74], c: L.trimM }); // (the belt)
+  S.trim.geo(curved([[1.3, 0.42], [1.34, 0.52], [1.28, 0.62]], 0.1, 0.42, PI * 2 - 0.42, 6), { sc: [w, 1, 0.74], c: L.trimM }); // (the belt, open at the front under the dantian)
   p.geo(plate([[-0.34, 0.3], [0.34, 0.3], [0.27, -0.64], [0, -0.78], [-0.27, -0.64]], 0.22, 0.06), { at: [0, 0, 0.92], c: L.mid }); // (the codpiece)
-  p.geo(cup(0.5 * F.joint), { at: [0, 0.45, 0], c: L.ivory }); // (the waist's cup)
+  p.geo(cup(DANTIAN.r * 0.92 * F.joint).rotateX(PI), { at: [0, 0.45 - DANTIAN.r * 0.42, 0], c: L.ivory }); // (the waist's cup, holding the dantian from below)
   for (const [s] of SIDES) p.geo(cup(0.58 * F.joint), { at: [s * hipX, -0.35, 0], c: L.ivory });
   // the tassets: six curved plates round the hip, flaring as they fall
   const drop = 1.25, n = 6, gap = 0.06, T = [[1.38, 0.4], [1.5, 0.4 - drop * 0.5], [1.68, 0.4 - drop]];
@@ -59,6 +68,15 @@ function foot(S, F, fh) {
   S.core.slab(1.25, 0.1, 2.7, { at: [0, -fh - 0.02, 0.6], c: L.coreD });
 }
 
+/** The biped's knee cop as one sculpt: a shield over the knee's front, a ridge down its middle between two concave wings that turn
+ *  back round the joint, a boss swelling at its heart. */
+const KNEE_COP = (() => {
+  const cop = carve(0.05, ellipsoid([0, 0.0, 0.12], [0.56, 0.48, 0.42]), ellipsoid([0, -0.02, -0.06], [0.5, 0.44, 0.4])); // (a cupped shell)
+  let f = blend(0.06, cop, capsule([0, 0.42, 0.42], [0, -0.42, 0.42], 0.06), ellipsoid([0, 0.02, 0.5], [0.13, 0.15, 0.08]));
+  f = carve(0.06, f, ellipsoid([0.3, 0, 0.62], [0.17, 0.34, 0.14]), ellipsoid([-0.3, 0, 0.62], [0.17, 0.34, 0.14])); // (the wings' hollows)
+  return f;
+})();
+
 export const LEG_LOOKS = {
   clayLegs(ctx) {
     const { H, F, joint, put, ballAt } = ctx, FH = 0.52, A = [-0.2, 0.38, -0.18], hipX = 1.0, j = F.joint, r = F.limb;
@@ -72,19 +90,20 @@ export const LEG_LOOKS = {
       const knee = joint(`knee${k}`, hip, [0, -T, 0], [A[1], 0, 0]);
       const ankle = joint(`ankle${k}`, knee, [0, -Sh, 0], [A[2], 0, -s * 0.04]);
       put(hip, (S) => {
-        ball(S.g, 0.58 * j);
+        jointBall(S, 0.58 * j);
         limb(S.p, TH, L.pale, T, 0.58 * j, [r, T, r], S.core);
         if (F.grooves) { wrap(S.p, TH, -0.86, -0.24, 0.85, [r, T, r], L.mid); seam(S.g, [[s * 0.9 * r, -0.3 * T, 0.12], [s * 0.88 * r, -0.5 * T, -0.12], [s * 0.82 * r, -0.75 * T, 0.05]], 0.028); }
       });
       put(knee, (S) => {
-        ball(S.g, 0.58 * j);
-        S.trim.geo(shell([[0.001, 0.45], [0.42, 0.38], [0.58, 0.05], [0.5, -0.32], [0.001, -0.42]], 20, -1.2, 2.4), { at: [0, 0, 0.16 * r], sc: [r, 1, 0.8 * r], c: L.trimL }); // (the knee cop)
-        limb(S.p, SH, L.pale, Sh, 0.46 * j, [r, Sh, r], S.core);
-        wrap(S.p, SH, -0.86, -0.18, 1.15, [r, Sh, r], L.mid, 1.08, 0.1); // (the greave)
-        if (F.grooves) wrap(S.trim, SH, -0.84, -0.8, 1.2, [r, Sh, r], L.trimM, 1.12, 0.05);
+        jointBall(S, 0.58 * j);
+        sideSculpt(S.trim, KNEE_COP, [[-0.62, -0.5, -0.1], [0.62, 0.55, 0.78]], 0.065, { key: 'legs.clay.kneecop', at: [0, 0, 0.16 * r], tone: aoTone(KNEE_COP, L.trimL, L.trimD, 0.06) }); // (the knee cop)
+        const c = r * CALF;
+        limb(S.p, SH, L.pale, Sh, 0.46 * j, [c, Sh, c], S.core);
+        wrap(S.p, SH, -0.86, -0.18, 1.15, [c, Sh, c], L.mid, 1.08, 0.1); // (the greave)
+        if (F.grooves) wrap(S.trim, SH, -0.84, -0.8, 1.2, [c, Sh, c], L.trimM, 1.12, 0.05);
       });
-      put(ankle, (S) => { ball(S.g, 0.46 * j); foot(S, F, FH); });
-      ballAt(`hip${k}`, hip, 0.58 * j);
+      put(ankle, (S) => { jointBall(S, 0.46 * j); foot(S, F, FH); });
+      ballAt(`hip${k}`, hip, 0.58 * j); ballAt(`knee${k}`, knee, 0.58 * j); ballAt(`ankle${k}`, ankle, 0.46 * j);
       legs[k] = { hip, knee, ankle };
     }
     return {
@@ -112,30 +131,30 @@ export const LEG_LOOKS = {
       const ankle = joint(`ankle${k}`, knee, [0, -Sh, 0], [A[2], 0, 0]);
       const toe = joint(`toe${k}`, ankle, [0, -M, 0], [-(A[0] + A[1] + A[2]), 0, -s * 0.05]);
       put(hip, (S) => {
-        ball(S.g, 0.6 * j);
+        jointBall(S, 0.6 * j);
         const TH = [[0.5, -0.1], [0.92, -0.25], [0.98, -0.5], [0.84, -0.62], [0.84, -0.68], [0.9, -0.72], [0.7, -0.92], [0.56, -1.0]];
         limb(S.p, TH, L.pale, T, 0.55 * j, [1.05 * r, T, 1.1 * r], S.core);
         wrap(S.trim, TH, -0.85, -0.2, 0.9, [1.05 * r, T, 1.1 * r], L.trimM, 1.1, 0.1, PI); // (the haunch's plate, behind)
       });
       put(knee, (S) => {
-        ball(S.g, 0.55 * j);
+        jointBall(S, 0.55 * j);
         S.g.geo(threadGeometry(0.72 * r, 4, 0.22, 0.07).rotateY(PI / 2), { at: [0.44 * r, 0, 0], c: L.bronze }); // (the spring, coiled round the knee's axle)
         S.g.cyl(0.08, 0.08, Sh * 0.65, { at: [0, -Sh * 0.4, -0.62], c: L.gold }, 10); // (its piston)
         S.core.cyl(0.18, 0.2, Sh * 0.35, { at: [0, -Sh * 0.62, -0.62], c: L.coreD }, 14);
         const SH = [[0.44, -0.08], [0.66, -0.2], [0.62, -0.55], [0.5, -0.6], [0.5, -0.65], [0.55, -0.68], [0.44, -0.92], [0.38, -1.0]];
-        limb(S.p, SH, L.pale, Sh, 0.42 * j, [r, Sh, r], S.core);
-        wrap(S.p, SH, -0.88, -0.15, 1.0, [r, Sh, r], L.mid, 1.1, 0.1); // (the greave)
+        limb(S.p, SH, L.pale, Sh, 0.42 * j, [r * CALF, Sh, r * CALF], S.core);
+        wrap(S.p, SH, -0.88, -0.15, 1.0, [r * CALF, Sh, r * CALF], L.mid, 1.1, 0.1); // (the greave)
       });
       put(ankle, (S) => {
-        ball(S.g, 0.42 * j);
+        jointBall(S, 0.42 * j);
         limb(S.p, [[0.36, -0.1], [0.5, -0.3], [0.44, -0.8], [0.32, -1.0]], L.mid, M, 0.36 * j, [r, M, r], S.core);
       });
       put(toe, (S) => {
-        ball(S.g, 0.36 * j);
+        jointBall(S, 0.36 * j);
         for (const a of [-0.45, 0, 0.45]) S.p.geo(sidePlate([[0, -F], [1.5, -F], [1.62, -0.18], [0.2, 0.12]], 0.36 * r, 0.08), { rot: [0, a, 0], c: L.pale });
         S.trim.geo(sidePlate([[0, -F], [-0.9, -F], [-0.4, 0.05]], 0.3 * r, 0.06), { c: L.trimM }); // (the spur)
       });
-      ballAt(`hip${k}`, hip, 0.6 * j);
+      ballAt(`hip${k}`, hip, 0.6 * j); ballAt(`knee${k}`, knee, 0.55 * j); ballAt(`ankle${k}`, ankle, 0.42 * j); ballAt(`toe${k}`, toe, 0.36 * j);
       legs[k] = { hip, knee, ankle, toe };
     }
     return {
@@ -174,18 +193,18 @@ export const LEG_LOOKS = {
         const lower = joint(`lower${k}${f > 0 ? 'F' : 'B'}`, upper, [0, -Lu, 0], [a2 - a1, 0, 0]);
         put(root, (S) => { S.p.geo(cup(0.5).rotateX(-PI / 2), { at: [0, 0, -0.1], c: L.ivory }); });
         put(upper, (S) => {
-          ball(S.g, 0.5 * j);
+          jointBall(S, 0.5 * j);
           const UP = [[0.45, -0.1], [0.7, -0.3], [0.66, -0.7], [0.5, -1.0]];
           limb(S.p, UP, L.pale, Lu, 0.45 * j, [r, Lu, 0.9 * r], S.core);
           wrap(S.trim, UP, -0.8, -0.2, 0.9, [r, Lu, 0.9 * r], L.trimM);
         });
         put(lower, (S) => {
-          ball(S.g, 0.45 * j);
-          S.p.lathe([[0.45, -0.1], [0.62, -0.5], [0.55, -1.4], [0.36, -Ll * 0.75], [0.18, -Ll + 0.3], [0.001, -Ll + 0.05]], { sc: [r, 1, r], c: L.mid }, 28);
-          S.trim.ring(0.6 * r, 0.05, { at: [0, -0.95, 0], c: L.trimD }, 28, 4);
+          jointBall(S, 0.45 * j);
+          S.p.lathe([[0.45, -0.1], [0.62, -0.5], [0.55, -1.4], [0.36, -Ll * 0.75], [0.18, -Ll + 0.3], [0.001, -Ll + 0.05]], { sc: [r * CALF, 1, r * CALF], c: L.mid }, 28);
+          S.trim.ring(0.6 * r * CALF, 0.05, { at: [0, -0.95, 0], c: L.trimD }, 28, 4);
           ball(S.g, 0.22, [0, -Ll + 0.2, 0], L.bronze);
         });
-        ballAt(`hip${k}`, upper, 0.5 * j);
+        ballAt(`hip${k}`, upper, 0.5 * j); ballAt(`knee${k}`, lower, 0.45 * j);
         legs.push({ root, upper, lower, yaw, a1, a2, pair: (s > 0) === (f > 0) ? 0 : 1 });
       }
     }
@@ -229,7 +248,7 @@ export const LEG_LOOKS = {
         p.geo(sidePlate([[-len / 2 + 0.3, 0.1], [len / 2 - 0.1, 0.1], [len / 2 + 0.25, 0.75], [len / 2 - 0.4, 1.45], [-len / 2 + 0.6, 1.45], [-len / 2 - 0.1, 0.8]], 0.16, 0.06), { at: [s * (w / 2 + 0.2), 0, 0], c: L.pale }); // (the skirt)
         p.geo(sidePlate([[-len / 2 + 0.6, 1.3], [len / 2 - 0.4, 1.3], [len / 2 - 0.7, 1.6], [-len / 2 + 0.9, 1.6]], w + 0.5, 0.06), { at: [s * 0.1, 0, 0], c: L.mid }); // (the fender)
         S.trim.slab(0.18, 0.08, len - 1.2, { at: [s * (w / 2 + 0.3), 0.55, 0], c: L.trimM }); // (a trim band along the skirt)
-        ball(g, 0.42, [-s * 0.5, 1.0, 0]); S.core.slab(0.5, 0.5, 1.2, { at: [-s * 0.4, 1.0, 0], c: L.coreD }); // (the axle's block)
+        jointBall(S, 0.42, [-s * 0.5, 1.0, 0]); S.core.slab(0.5, 0.5, 1.2, { at: [-s * 0.4, 1.0, 0], c: L.coreD }); // (the axle's block)
         seam(g, [[s * (w / 2 + 0.29), 1.2, -1.6], [s * (w / 2 + 0.29), 0.9, -1.2], [s * (w / 2 + 0.29), 1.0, -0.7]], 0.03);
       });
       const inst = new THREE.InstancedMesh(wg, mats.g, WZ.length); inst.castShadow = true; inst.name = `mech.wheels${k}`; pod.add(inst); owned.push(inst);

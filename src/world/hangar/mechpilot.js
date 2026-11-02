@@ -289,6 +289,8 @@ export class MechPilot {
     this.netKW = this.stats.draw + (boosting ? this.stats.fire : 0) - (this.cable !== null ? this.stats.output : 0); // (the readout's seconds left)
     if (this.berserk > 0) { this.spentKJ = 0; return; }
     const e = energyStep(this.battery, this.stats, { dt, cable: this.cable !== null, boosting, spentKJ: this.spentKJ, pool: pool?.value ?? 0 });
+    const Hy = this.mech?.hydraulics; // (the joints' Lachryma at the battery's share, the traces' channels: vfx/mechs/hydraulics.js)
+    if (Hy) { Hy.set({ fill: this.battery / Math.max(1, this.stats.capacity), absorb: e.battery > this.battery + 1e-6 }); if (boosting) Hy.channel(0.6); if (this.spentKJ > 0) Hy.channel(Math.min(1, 0.4 + this.spentKJ / 40)); }
     this.spentKJ = 0; this.battery = e.battery;
     if (e.poolKJ > 0 && pool) pool.drain(e.poolKJ / POOL_KJ, 'mech');
     if (e.dry || (e.poolKJ > 0 && (pool?.value ?? 0) <= 0.01)) this.fail('dry');
@@ -318,6 +320,7 @@ export class MechPilot {
     if (this.giant && by === 'creature' && this.hangar.props?.shieldTake(this.giant.pos)) return; // (the slab held up takes it: props.js)
     const kk = k * this.specials.wardK * (S.armour[region] ?? 1) * (this.giant ? this.weapons.blockK(this.giant.pos) : 1);
     this.mech?.jiggle?.(Math.min(2, 1.5 * kk)); // (the doll's chest plates kicked by the blow: partsbody.js BUST_SPRING)
+    this.mech?.hydraulics?.hurt(Math.min(1, kk)); // (the traces flashed, the joints' Lachryma thrown about)
     const was = this.broken(region), r = blowOn(this.state.vessel, { region, k: kk, pool: this.pressing ? null : pool?.available ?? null }, 'mech');
     if (r.shield > 0) pool?.drain(r.shield, 'mech');
     this.state.hurt(r.state);

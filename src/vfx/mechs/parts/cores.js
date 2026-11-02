@@ -6,8 +6,14 @@
 // panels over the interstitial's barrel inside it, so the gaps between the panels are real grooves with the core lit in them. Its
 // sockets (the neck's cup, the shoulders' cups facing out) are ivory, so any head and any arms seat in any core. The back's panels
 // close round the cradle's boss: a narrow window cut only where the boss stands, its trim flange laid over the cut.
-//   clayCore   heroic: broad shoulders, a strong keel, the breastplate split at it into two pectorals, a flank and a shoulder blade a
-//              side, the abdomen in three wrapped bands narrowing to the waist, a kintsugi crack across the left pectoral
+//   clayCore   heroic: broad shoulders; the front one sculpted cuirass (parts/sdf.js, South, 2026-11-02: the chest a focal point):
+//              two pectoral masses undercut at their foot, a sternal valley between them, the costal arch running down from the
+//              sternum's foot as a groove round the abdomen's plastron (two rectus masses, the linea alba and its tendinous lines),
+//              serratus ribs on the flanks; the plastron's foot arched over the waist ball; a flank and a shoulder blade a side and
+//              the abdomen's three bands round the sides and back as plates; a kintsugi crack across the left pectoral
+// THE DANTIAN (South, 2026-11-02: "Think of the waist joint like the dantian. Its a target point!"): the hero's waist ball a little
+// larger than the rest, its heart the glow (lit while sealed, seen through the clear shell), crossed by a gold equator and meridian
+// like a reticle, framed by the waist's corset (a sculpted band opened in a pointed arch at the front) and the plastron's arch above.
 //   kilnCore   fired twice: deeper and rounder (a bottle kiln's shoulders), banded in trim, its firing holes bricked open on the core
 //   lightCore  bisque thin: slim, its flanks cut to narrow ribs over the lit core, a sternum plate and hoops
 // The feminine forms' cores are their own (femcores.js, by the same `coreLook`).
@@ -23,11 +29,13 @@
 //
 //   coreLook(id, F) -> { mounts: { neck [y, z], shoulder [x, y], back [y, z], gen [y, z], boost [y, z, x], plug [y, z], cradleZ }, chest(S), waist(S) }
 //   CORE_LOOKS[id] (the cores' numbers)   cradle(S) (the boss, the thread, the floor's glow)   cradleParts(mats) -> { collar, tines, bore }
-//   CRADLE (the well's sizes: r, depth, turns, pitch, tilt, at [y, z] on the chest)
+//   CRADLE (the well's sizes: r, depth, turns, pitch, tilt, at [y, z] on the chest)   DANTIAN (the hero's waist ball: r)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { JAR_ANATOMY } from '../../pneukajar/shape.js';
 import { MECH_LOOK as L, FORMS, band, profAt, panel, cup, seam, ball, threadGeometry, shell, sculpt } from './kit.js';
+import { blend, carve, meet, ellipsoid, grooves } from './sdf.js';
+import { sideSculpt, aoTone, onto } from './arms.js';
 import { femCoreLook } from './femcores.js';
 
 const PI = Math.PI;
@@ -38,6 +46,72 @@ CRADLE.pitch = CRADLE.depth / CRADLE.turns;
 const WIN = [1.32, 2.82]; // (the back's window round the boss, in the chest's height)
 const G = 0.035; // (a groove's half-width in phi)
 const bump = (y, a, b) => (y <= a || y >= b ? 0 : Math.sin((PI * (y - a)) / (b - a)));
+/** The hero's waist ball, the dantian: a little larger than the shoulders' (0.62). */
+export const DANTIAN = { r: 0.64 };
+const gauss = (t) => Math.exp(-t * t);
+const smooth01 = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
+
+/** The chest's lathed-and-planned surface as a field: for each height a table of its radius by bearing (and the lathe's phi there), so a
+ *  sculpt can sit on the chest the panels are cut from; distance approximate (radial), good near the surface. */
+function chestField(P, W, top) {
+  const NY = Math.ceil(top / 0.04) + 1, NT = 192, rho = new Float32Array(NY * NT), phi = new Float32Array(NY * NT);
+  for (let j = 0; j < NY; j++) {
+    const y = Math.min(top, j * 0.04), r = profAt(P, y), got = new Uint8Array(NT);
+    for (let i = 0; i < 960; i++) {
+      const a = (i / 960) * PI * 2 - PI, [x, , z] = W(Math.sin(a) * r, y, Math.cos(a) * r), t = Math.atan2(x, z), b = Math.min(NT - 1, Math.floor(((t + PI) / (PI * 2)) * NT));
+      const q = Math.hypot(x, z); if (!got[b] || q > rho[j * NT + b]) { rho[j * NT + b] = q; phi[j * NT + b] = a; got[b] = 1; }
+    }
+    for (let b = 0; b < NT; b++) if (!got[b]) { let l = b, h = b; while (!got[(l + NT) % NT]) l--; while (!got[h % NT]) h++; const u = (b - l) / (h - l); rho[j * NT + b] = rho[j * NT + ((l + NT) % NT)] * (1 - u) + rho[j * NT + (h % NT)] * u; phi[j * NT + b] = phi[j * NT + ((l + NT) % NT)]; }
+  }
+  for (let pass = 0; pass < 3; pass++) for (let j = 0; j < NY; j++) { // (the table smoothed round each height, so the sculpt's skin is calm)
+    const row = rho.slice(j * NT, (j + 1) * NT); for (let b = 0; b < NT; b++) rho[j * NT + b] = (row[(b + NT - 1) % NT] + 2 * row[b] + row[(b + 1) % NT]) / 4;
+  }
+  const look = (A, x, y, z) => {
+    const fy = Math.min(NY - 1.001, Math.max(0, y / 0.04)), j = Math.floor(fy), v = fy - j, ft = ((Math.atan2(x, z) + PI) / (PI * 2)) * NT - 0.5, b = Math.floor(ft), u = ft - b;
+    const b0 = (b + NT) % NT, b1 = (b + 1) % NT, a0 = A[j * NT + b0] * (1 - u) + A[j * NT + b1] * u, a1 = A[(j + 1) * NT + b0] * (1 - u) + A[(j + 1) * NT + b1] * u;
+    return a0 * (1 - v) + a1 * v;
+  };
+  return { rho: (x, y, z) => look(rho, x, y, z), phi: (x, y, z) => { const fy = Math.min(NY - 1, Math.max(0, Math.round(y / 0.04))), b = Math.min(NT - 1, Math.floor(((Math.atan2(x, z) + PI) / (PI * 2)) * NT)); return phi[fy * NT + b]; } };
+}
+
+/** The clay core's cuirass: the chest's front (phi within +-PH) sculpted as one plate, 0.14 thick, standing k out of the chest. */
+const PH = 1.0;
+function cuirassField(P, W, top) {
+  const C = chestField(P, W, top), at = (phi, y) => W(Math.sin(phi) * profAt(P, y), y, Math.cos(phi) * profAt(P, y));
+  const [px, py] = at(0.5, 2.45), ARCH = [0, 1.0, 0.86, 0.95]; // (the pectorals' centre; the costal arch: centre x, y, radii)
+  const archE = (x, y) => Math.hypot(x / ARCH[2], (y - ARCH[1]) / ARCH[3]); // (1 on the arch)
+  const front = (z) => smooth01(z / 0.3);
+  const solid = (x, y, z) => {
+    const ax = Math.abs(x), fz = front(z);
+    let d = (Math.hypot(x, z) - C.rho(x, y, z)) * 0.86 - 0.05;
+    if (d > 0.4 || d < -0.6) return d; // (far from the skin: no swell reaches)
+    const pec = gauss((ax - px) / 0.48) * gauss((y - py) / (y > py ? 0.55 : 0.36)); // (the pectoral masses, undercut below)
+    const valley = gauss(ax / 0.13) * smooth01((y - 1.85) / 0.25) * smooth01((3.15 - y) / 0.2); // (the sternal valley)
+    let ribs = 0; for (let i = 0; i < 3; i++) ribs += gauss((y - (1.22 + 0.21 * i) - 0.32 * (ax - 1.05)) / 0.06) * gauss((ax - 1.05) / 0.28); // (the serratus)
+    const e = archE(x, y), inside = e < 1 && y > 0.05 ? 1 : 0;
+    const rectus = inside * gauss((ax - 0.25) / 0.17) * smooth01((y - 0.1) / 0.3) * smooth01((1.75 - y) / 0.3); // (the plastron's two masses)
+    d -= fz * (0.15 * pec - 0.09 * valley + 0.045 * ribs + 0.06 * rectus);
+    return d;
+  };
+  // the plate: the solid's skin, kept to the front and between its heights, its foot arched over the waist ball
+  let plateF = meet(0.05, (x, y, z) => { const d = solid(x, y, z); return Math.max(d, -(d + 0.2)); },
+    (x, y, z) => Math.max((Math.abs(C.phi(x, y, z)) - PH) * 1.4, y - (top - 0.08), 0.06 - y, -z));
+  plateF = carve(0.06, plateF, ellipsoid([0, -0.12, 1.4], [0.5, 0.5, 1.4])); // (the plastron's arch over the dantian)
+  // the lines: the costal arch round the plastron, the linea alba and its tendinous lines inside it, the abdomen's bands outside it
+  const lines = (x, y, z) => {
+    let d = plateF(x, y, z); if (d > 0.06) return d;
+    const e = archE(x, y), inArch = e < 1 && y > 0.05, cuts = [];
+    if (y > 0.05) cuts.push(Math.abs(e - 1) * ARCH[2] - 0.022); // (the costal arch)
+    if (inArch) { cuts.push(Math.abs(x) - 0.018); if (y < 1.75) cuts.push(Math.abs(y - 0.66) - 0.016, Math.abs(y - 1.18) - 0.016); }
+    else if (y < 1.05) cuts.push(Math.abs(y - 0.37) - 0.02, Math.abs(y - 0.71) - 0.02, Math.abs(y - 1.02) - 0.02);
+    if (!inArch) cuts.push(Math.abs(y - 1.86 - 0.12 * Math.max(0, Math.abs(x) - 0.4)) - 0.02); // (under the pectorals)
+    for (const c of cuts) d = Math.max(d, -Math.max(c, -d - 0.035));
+    return d;
+  };
+  const xs = []; for (let y = 0; y <= top; y += 0.2) for (const a of [-PH, PH]) xs.push(Math.abs(at(a, y)[0]));
+  const X = Math.max(...xs) + 0.25, Z = Math.max(...Array.from({ length: 18 }, (_, i) => at(0, i * 0.2)[2])) + 0.3;
+  return { f: lines, solid, bounds: [[-X, 0.02, 0.0], [X, top, Z]] };
+}
 
 /** The cores' numbers: the profile [[r, y], ...], the plan (w across, d ahead, back behind, the keel's and the pectorals' swell), the
  *  shoulder's height, the waist's colour. */
@@ -92,6 +166,17 @@ export function coreLook(id, F = FORMS.hero) {
   const build = {
     clayCore(S) {
       inner(S);
+      if (!F.fem && F.id === 'hero') {
+        const Cu = cuirassField(P, W, top);
+        sideSculpt(S.p, Cu.f, Cu.bounds, 0.05, { key: `core.cuirass|${id}|${F.chest.join(',')}`, tone: aoTone(Cu.f, L.pale, L.dark, 0.12) });
+        panels(S, [[1.05, top - 0.2, PH + 2 * G, 1.95, L.mid], // (the flanks)
+          [0.06, 0.34, PH + 2 * G, PI - 0.2, L.dark, 1.05], [0.4, 0.68, PH + 2 * G, PI - 0.2, L.mid, 1.05], [0.74, 0.99, PH + 2 * G, PI - 0.2, L.pale, 1.05]]); // (the abdomen's bands round the sides)
+        panels(S, [[1.82, 1.9, PH + 2 * G, PI - G, L.trimD, 1.05]], S.trim); // (the trim rim under the pectorals, round the sides and back)
+        backPlates(S, 1.05, top - 0.25, 1.95 + 2 * G);
+        seam(S.g, [on(0.12, 3.0), on(0.32, 2.75), on(0.42, 2.4), on(0.7, 2.15), on(0.82, 1.95)].map((p) => onto(Cu.solid, p, 0.015)));
+        gorget(S, top - 0.1); sockets(S);
+        return;
+      }
       panels(S, [[1.9, top - 0.08, G, 1.0, L.pale], [1.05, 1.82, G, 1.0, L.mid], [1.05, top - 0.2, 1.0 + 2 * G, 1.95, L.mid], // (pectorals, the ribs under them, the flanks)
         [0.06, 0.34, G, PI - 0.2, L.dark, 1.05], [0.4, 0.68, G, PI - 0.2, L.mid, 1.05], [0.74, 0.99, G, PI - 0.2, L.pale, 1.05]]); // (the abdomen's three bands)
       backPlates(S, 1.05, top - 0.25, 1.95 + 2 * G);
@@ -125,11 +210,30 @@ export function coreLook(id, F = FORMS.hero) {
     mounts, prof: P, plan: W,
     chest: build[id] || build.clayCore,
     waist(S) {
+      if (F.id === 'hero') { dantian(S); return; }
       ball(S.g, 0.5 * F.joint);
       S.core.cyl(0.5 * k, 0.56 * k, L.chestBase + 0.2, { at: [0, L.chestBase / 2, 0], c: L.core }, 20);
       for (let i = 0; i < 2; i++) (i ? S.trim : S.p).lathe([[0.66, 0], [0.76, 0.05], [0.76, 0.2], [0.66, 0.25]], { at: [0, 0.12 + i * 0.3, 0], sc: [k, 1, 0.85 * k], c: i ? L.trimM : tone }, 28);
     },
   };
+}
+
+/** The hero's waist: the dantian (its heart the glow under a clear shell, a gold equator and meridian crossing at its front as a
+ *  reticle), the column up into the chest, and the corset framing it: a sculpted band of two oblique masses round the column, opened
+ *  at the front in a pointed arch so the ball shows, a panel line round it. */
+function dantian(S) {
+  const r = DANTIAN.r;
+  S.j.ball(r, { c: 0xffffff }, 32, 22);
+  S.e.ball(r * 0.3, { c: 0xffffff }, 18, 12); S.e.ring(r * 0.42, 0.018, { rot: [PI / 2, 0, 0], at: [0, 0, r * 0.62], c: 0xffffff }, 32, 4); // (the heart lit, a ring before it)
+  S.g.ring(r * 1.006, r * 0.06, { c: L.gold }, 40, 5); S.g.ring(r * 1.006, r * 0.045, { rot: [0, 0, PI / 2], c: L.gold }, 40, 5); // (the equator and the meridian)
+  for (const a of [0, PI / 2, PI, PI * 1.5]) S.g.ball(0.035, { at: [Math.cos(a) * r * 0.5, Math.sin(a) * r * 0.5, Math.sqrt(r * r * 1.02 - r * r * 0.25)], c: L.gold }, 8, 6); // (the reticle's studs)
+  S.core.cyl(0.46, 0.5, 0.42, { at: [0, 0.82, 0], c: L.core }, 20); // (the column up into the chest, clear of the heart)
+  const band = blend(0.14, ellipsoid([0, 0.5, 0], [0.86, 0.34, 0.74]), ellipsoid([0.52, 0.42, 0.16], [0.36, 0.3, 0.42]), ellipsoid([-0.52, 0.42, 0.16], [0.36, 0.3, 0.42]));
+  let corset = meet(0.04, (x, y, z) => { const d = band(x, y, z); return Math.max(d, -(d + 0.2)); }, (x, y, z) => Math.max(0.24 - y, y - 0.84));
+  corset = carve(0.06, corset, (x, y, z) => Math.max(Math.abs(x) + 0.42 * Math.max(0, y - 0.1) - 0.52, -z)); // (the pointed arch at the front)
+  corset = grooves(corset, [[0, 1, 0, 0.56]], 0.016, 0.03);
+  sideSculpt(S.p, corset, [[-1.0, 0.18, -0.9], [1.0, 0.9, 0.9]], 0.07, { key: 'core.corset', tone: aoTone(corset, L.pale, L.dark, 0.08) });
+  S.trim.ring(0.8, 0.035, { at: [0, 0.84, 0], sc: [1, 1, 0.86], c: L.trimM }, 36, 4); // (its top rim)
 }
 
 /** The cradle's porcelain and glow, in the well's frame (its floor at the origin, +Y up the well's axis out of the back): the

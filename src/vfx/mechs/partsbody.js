@@ -69,7 +69,7 @@ import { assemble } from '../../progress/mechs/frame.js';
 import { past } from '../../progress/mechs/joints.js';
 import { MECH_LOOK as L, seg, bake, mechMaterials, crackNet, formOf } from './parts/kit.js';
 import { headLookOf } from './parts/heads.js';
-import { coreLook, CRADLE, cradle, cradleParts } from './parts/cores.js';
+import { coreLook, CRADLE, cradle, cradleParts, DANTIAN } from './parts/cores.js';
 import { PAULDRONS } from './parts/pauldrons.js';
 import { armLookOf, gripAt } from './parts/arms.js';
 import { LEG_LOOKS } from './parts/legs.js';
@@ -79,6 +79,7 @@ import { BOOSTER_LOOKS, GENERATOR_LOOKS, BACK_LOOKS } from './parts/backs.js';
 import { wearHelm, HELMS } from './helms.js';
 import { wearCape, CAPES } from './capes.js';
 import { wearHip, HIPS } from './parts/hips.js';
+import { MechHydraulics } from './hydraulics.js';
 
 const PI = Math.PI, SIDES = [[1, 'L'], [-1, 'R']];
 /** What each joint takes off with it when it snaps (Dovina's joints.js `limb`, as slots). The waist never snaps. */
@@ -114,6 +115,7 @@ export class MechPartsBody {
     this.sealK = 0; this.travel = 0; this.sparkAt = 0;
     this.bounce = { L: { x: 0, v: 0 }, R: { x: 0, v: 0 } }; this.lastY = null; this.lastVy = 0; this.lastT = null;
     this.fadeU = { value: 0 }; this.fadeTo = 0; this.fadeMats = new WeakSet();
+    this.hydraulics = new MechHydraulics(this); // (the joints' Lachryma and the traces' channels: vfx/mechs/hydraulics.js)
   }
 
   // ------------------------------------------------------------------ the frame
@@ -184,7 +186,7 @@ export class MechPartsBody {
       const C = coreLook(id, this.F), M = C.mounts; this.core = C;
       this.put(j.waist, 'core', (S) => C.waist(S)); this.put(j.chest, 'core', (S) => C.chest(S));
       if (C.spine) { this.ballAt('core', 'waist', j.waist, C.spine.r, [0, C.spine.lo, 0]); this.ballAt('core', 'waist', j.waist, C.spine.rt, [0, C.spine.hi, 0]); }
-      else this.ballAt('core', 'waist', j.waist, 0.5 * this.F.joint);
+      else this.ballAt('core', 'waist', j.waist, this.F.id === 'hero' ? DANTIAN.r : 0.5 * this.F.joint); // (the hero's dantian)
       for (const [s, k] of SIDES) j[`pauldron${k}`].position.set(s * M.shoulder[0], M.shoulder[1], 0);
       j.neck.position.set(0, M.neck[0], M.neck[1]);
       for (const [s, k] of SIDES) j[`shoulder${k}`].position.set(s * M.shoulder[0], M.shoulder[1], 0);
@@ -238,11 +240,13 @@ export class MechPartsBody {
     const h = wearHelm(this, id, this.game?.scene || null); this.defaultHelm = chosen ? null : h;
   }
   /** A kick to the chest plates' springs (m/s, up positive): a hit's flinch, the mount's thump, a stomp the runtime knows of. */
-  jiggle(v = 1.5) { for (const k of ['L', 'R']) this.bounce[k].v += v * (k === 'R' ? 0.92 : 1); }
+  jiggle(v = 1.5) { for (const k of ['L', 'R']) this.bounce[k].v += v * (k === 'R' ? 0.92 : 1); this.hydraulics?.kick(v); }
   buildHand(k) {
     const s = k === 'L' ? 1 : -1, slot = `hand${k}`, W = WEAPON_LOOKS[this.sel[`weapon${k}`]];
     this.takeDown(slot);
     this.put(this.joints[`hand${k}`], slot, (S) => this.armLook.hand(S, s, W ? W.grip : 'open'));
+    const A = this.armLook, wr = A.wristBall ?? A.wrist * this.F.joint * (this.F.fem ? 1 : this.F.gauntlet || 1); // (the wrist's bottle, arms.js hand())
+    this.ballAt(slot, `wrist${k}`, this.joints[`hand${k}`], wr);
   }
   /** The arms' joints laid along their lengths, and their hang: a frame whose hands would reach the ground (a low hip) carries them
    *  forward and bent, so they hang clear. */
@@ -293,7 +297,7 @@ export class MechPartsBody {
     this.state[id] = state;
     if (state === 'fractured') { for (const b of this.balls) if (b.id === id) this.craze(b, 'crack'); this.jiggle(-2.2); }
     if (state !== 'snapped') return null;
-    this.group.updateMatrixWorld(true);
+    this.group.updateMatrixWorld(true); this.hydraulics?.spill(id); // (its bottle burst at the socket)
     this.snapped[id] = { parent: obj.parent, pos: obj.position.clone(), quat: obj.quaternion.clone(), scale: obj.scale.clone() };
     const at = obj.getWorldPosition(new THREE.Vector3());
     (this.group.parent || this.group).attach(obj);
@@ -387,6 +391,7 @@ export class MechPartsBody {
     this.barrier.visible = barrier > 0.01; this.barrierMat.opacity = 0.08 + 0.2 * barrier;
     G.updateMatrixWorld(true);
     this.cape?.update(Math.min(Math.max(step, 0), 1), this.sealK);
+    this.hydraulics?.update(step);
     if (this.fadeTo > 0 && now0 - (this.fadeAt ?? 0) > 0.3) this.fadeTo = 0; // (no camera asking any more: unsealed, the lift, a bout)
     this.fadeU.value += (this.fadeTo - this.fadeU.value) * Math.min(1, Math.max(step, 0) * MECH_FADE.ease); if (this.fadeU.value < 0.004) this.fadeU.value = 0;
     if (this.fadeU.value > 0) this.fadeAll(); // (each material given the discard once, the first time the frame fades)
@@ -448,7 +453,7 @@ export class MechPartsBody {
     if (this.body) { this.group.remove(this.body); this.body = null; }
     this.joints = {}; this.legJoints = []; this.balls = []; this.lastPos = null; this.arms = {}; this.hurt.clear();
   }
-  dispose() { this.helm?.dispose(); this.helm = null; this.clear(); this.group.removeFromParent(); for (const m of new Set(Object.values(this.mats))) m.dispose(); }
+  dispose() { this.hydraulics?.dispose(); this.helm?.dispose(); this.helm = null; this.clear(); this.group.removeFromParent(); for (const m of new Set(Object.values(this.mats))) m.dispose(); }
 }
 
 /** The hangar asks here for a mech's body: a parts body, built from its assembly when one is given (frame.js stats, or a selection). */

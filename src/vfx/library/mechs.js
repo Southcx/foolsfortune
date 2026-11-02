@@ -336,6 +336,17 @@ export const MECH_SPECIAL_EFFECTS = {
     L({ type: 'shape', form: 'ring', ramp: 'white', main: 'ripple', tile: [8, 1], dur: 0.8, scale: [[0, 4], [1, 28]], offset: [0, 0.3, 0], edgeV: [0.4, 0.3], erode: OUT, glow: 1.4, back: 0.6 }),
     L({ type: 'shake', at: 0, k: 0.5 }),
   ] },
+  // =============================================================================================== THE JOINT BOTTLES (vfx/mechs/hydraulics.js)
+  'mech.joint.spill': { layers: [ // (a snapped joint's bottle burst: the Courier's Lachryma thrown out of the socket in its colour, the film at its turn)
+    L({ type: 'sprites', count: 1, shape: 'star4', size: 2.2, sizeEnd: 0, life: 0.25, color: 0xffffff, rot: 0.3 }),
+    L({ type: 'sprites', count: [34, 46], shape: 'soft', spawn: 'sphere', r: 0.4, dir: 'sphere', speed: [4, 10], size: [0.22, 0.42], sizeEnd: 0.1, life: [0.8, 1.3], gravity: 14, floor: 'ground', drag: 0.4, color: 'tint', alpha: 0.95 }),
+    L({ type: 'sprites', count: [14, 20], shape: 'streak', spawn: 'sphere', r: 0.3, dir: 'sphere', speed: [6, 13], size: [0.12, 0.2], sizeEnd: 0.02, life: [0.4, 0.7], stretch: 2.4, gravity: 12, color: FIELD }),
+    L({ type: 'shape', form: 'band', rim: -0.6, ramp: 'film', main: 'streaks', mainK: 0.5, tile: [10, 1], scroll: [0, -1.4], dur: 0.5, scale: [[0, 0.4], [1, 2.6]], edgeV: [0.05, 0.7], erode: [[0, 0], [0.3, 0.1], [1, 1]], glow: 1.6, turn: 'random' }),
+    L({ type: 'sprites', pool: 'alpha', count: [6, 9], shape: 'puff', spawn: 'sphere', r: 0.5, dir: 'sphere', speed: [0.6, 1.6], size: [0.9, 1.5], sizeEnd: 2.6, life: [0.9, 1.4], drag: 1.2, color: 'tint', alpha: 0.35 }),
+  ] },
+  'mech.joint.drip': { layers: [ // (a fractured joint leaking: a few drops off the cracked bottle)
+    L({ type: 'sprites', count: [2, 4], shape: 'soft', spawn: 'sphere', r: 0.35, dir: 'cone', axis: 'up', cone: 160, speed: [0.2, 0.8], size: [0.12, 0.2], sizeEnd: 0.08, life: [0.9, 1.4], gravity: 10, floor: 'ground', color: 'tint', alpha: 0.95 }),
+  ] },
   // =============================================================================================== READY (any part's)
   'mech.ready': { layers: [
     L({ type: 'sprites', count: 1, shape: 'star4', size: 2.6, sizeEnd: 0, life: 0.45, color: 0xffe9a8, rot: 0.4 }),
