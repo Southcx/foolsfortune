@@ -56,6 +56,7 @@ export function bootGodHand(game, made) {
   installUndersideLook(); // (the Box's underside dressed: Dovina's pneuka/underside.js classes, ui/undersidelook.js)
   game.duelInstance = new DuelInstance(game); // (a puzzle duel drawn alone, its actors and nothing of the world: render/duelinstance.js)
   game.readingScene = new ReadingScene(game); // (the dark the reading view is drawn in while the Box is turned over: render/readingscene.js)
+  game.systems.add('world', game.readingScene, { clock: 'raw', name: 'readingScene', after: 'laidSpread' });
   game.celestialTargets = new CelestialTargets(game); // (Celestial mode's targets drawn over the paper: the brush hands its list each frame, vfx/celestialtargets.js)
   game.guestJars = new GuestJars(game); // (a guest visiting your garden as their own Pneuka Jar in their glazes; Petra's runtime calls show: vfx/garden/guestjars.js)
   game.gardenMood = new GardenMood(game); // (the Inner Realm's one mood: the hour, the season and the briar every garden look reads: vfx/garden/gardenmood.js)

@@ -112,6 +112,16 @@ export function bootProgress(game, made) {
   game.vantages = new Vantages(game); game.vantageFrames = new VantageFrames(game); game.awakening = new Awakening(game); // (Wonder's lookouts: world/vantages.js; the awakening's glitch and the body's wait: feedback/awakening.js)
   game.lend = new Lend(game); // (the lend panel: what DEBUG unlocks without the ledger, a category at a time: progress/lend.js, DEBUG-MODE.md)
   game.ostraca = new Ostraca(game); // (the inscribed sherds and the stelae: world/ostraca.js)
+  // (progress's own services each frame: core/systems.js, the `world` phase; the recap after the quests, the awakening after the vantages)
+  game.systems.add('world', () => game.ostraca.update(), { name: 'ostraca' });
+  for (const name of ['knacks', 'goals']) game.systems.add('world', game[name], { clock: 'raw', name });
+  for (const name of ['stealth', 'domainArtsRun']) game.systems.add('world', game[name], { name });
+  game.systems.add('world', game.quests, { clock: 'raw', name: 'quests' });
+  game.systems.add('world', game.recap, { clock: 'raw', name: 'recap', after: ['quests', 'questSplash'] });
+  game.systems.add('world', game.harmony, { clock: 'raw', name: 'harmony' });
+  game.systems.add('world', game.spiritLife, { clock: 'raw', name: 'spiritLife', after: 'harmony' });
+  for (const name of ['feelings', 'vantages', 'vantageFrames']) game.systems.add('world', game[name], { clock: 'raw', name });
+  game.systems.add('world', game.awakening, { clock: 'raw', name: 'awakening', after: ['feelings', 'vantages'] });
   { // the stones set the pool's terms (progress/stones.js): fired at the kiln, and by day or night (moonstone)
     const setStones = () => game.lachryma?.addModifier('stones', stoneModifier(game.vessel?.look?.stones, { night: phaseAt() === 'night' }));
     game.lachryma?.addModifier('willpower', { get maxMult() { return game.alchemy?.widen?.('willpower.shield') ?? 1; } }); // (Willpower widens the pool, read live: SOUL-ALCHEMY.md 6)

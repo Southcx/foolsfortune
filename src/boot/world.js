@@ -77,6 +77,9 @@ export async function bootWorld(game, made) {
   game.chips = new Chips(game); game.bazaar = new Bazaar(game); game.bazaarTable = new BazaarTable(game); // (Raku's bazaar, the casino: its hall with the level's static geometry, its chips; world/bazaar/, docs/plans/CASINO.md)
   const treasuryAt = { x: BAZAAR.treasury.x, y: BAZAAR.y, z: BAZAAR.treasury.z, yaw: BAZAAR.treasury.yaw }; buildTreasury(level, treasuryAt); // (the Treasury in its slot on the bazaar's north side: world/treasury.js)
   game.touchstone = new Touchstone(game); // (the Assay's room: the standard trials, world/touchstone/)
+  // (the Well, the dock, the bazaar, the Touchstone and the duels' pull each frame, on the game's clock: core/systems.js, the `world` phase)
+  for (const name of ['margarite', 'bazaar', 'touchstone']) game.systems.add('world', game[name], { name });
+  game.systems.add('world', () => game.duelFoes.update(), { name: 'duelFoes' });
   game.touchstoneLook = new TouchstoneLook(game); // (the Touchstone dressed as a dark assay hall, built and taken down with her area: vfx/touchstonelook.js)
   game.bazaarHall = new BazaarHall(game); // (the bazaar's Gold Saucer dress: dome, mosaic, stalls, neon, lanterns, carnival props; vfx/bazaarhall.js)
   { // (the moonflowers on the pond's far shore: sacred datura is a desert native; vfx/datura.js)
@@ -99,6 +102,7 @@ export async function bootWorld(game, made) {
   mark('dunes');
   game.seam = new Seam(game); // (a place changed under a cover: render/seam.js)
   game.well = new Dunemaw(game); // (the Great Dunemaw: the Well in the Dunes, its mouth out on the sand: world/well/dunemaw.js)
+  game.systems.add('world', game.well, { name: 'well' }); // (core/systems.js)
   // what the environmental movement techs read: water, ladders, slip (built with the level)
   const movers = new Movers(game);
   const env = { water: new Water(scene, game.sky), ladders: new Ladders(scene), movers, rigging: new Rigging(scene, physics), lobbers: new Lobbers(scene, physics) };

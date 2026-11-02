@@ -371,7 +371,7 @@ if (part('crossing')) {
   s = await st();
   const lines = await S.ev((mm) => __em.logSince(mm), mt), evs = await events(mt);
   const beat = (await events(m0)).find((e) => e.name === 'rail.beat' && e.d.beat === 'boil'), stage = evs.find((e) => e.name === 'emocean.stage');
-  S.check('crossing: the shoal\'s first beat is said', !!beat && (await S.ev((mm) => __em.logSince(mm), m0)).some((t) => /The crude boils/.test(t)), { beat: beat ? beat.bar : null });
+  S.check('crossing: the shoal\'s first beat is said', !!beat && (await S.ev((mm) => __em.logSince(mm), m0)).some((t) => /The shoal surfaces under the hull/.test(t)), { beat: beat ? beat.bar : null });
   const iTally = lines.findIndex((t) => /^The crossing: /.test(t)), iPort = lines.findIndex((t) => /make port/i.test(t));
   S.check('crossing: the tally is said before "You make port"', iTally >= 0 && (iPort < 0 || iTally < iPort), { tally: lines[iTally] || null, port: lines[iPort] || null });
   S.check('crossing: the stage result carries rank, medal and where you came to', stage && stage.d.rank && 'medal' in stage.d && stage.d.at === 'margarite' && stage.by === 'courier', stage?.d && { rank: stage.d.rank, medal: stage.d.medal, at: stage.d.at, passed: stage.d.passed, score: stage.d.score, end: stage.d.end });
@@ -472,7 +472,7 @@ if (part('back')) {
     s = await sailTo(sp.from + 2);
     await S.ev(() => { __em.hull = false; });
     const said = await S.ev((mm) => __em.logSince(mm), mt);
-    S.check('back: the Wreckers\' first beat is said', said.some((t) => /Sails astern/.test(t)), said.slice(-4));
+    S.check('back: the Wreckers\' first beat is said', said.some((t) => /the Wreckers' brig, appears astern/.test(t)), said.slice(-4));
     await S.common('back: the pirates', { courier: false });
     // the ship borne all it can: the continue
     const mc = await em('mark()');
@@ -527,7 +527,7 @@ if (part('leviathan')) {
     await S.ev(() => { __em.hull = false; });
     s = await st();
     const said = await S.ev((mm) => __em.logSince(mm), mt), evs = await events(mt);
-    S.check('leviathan: its first beat is said', said.some((t) => /The sea heaves/.test(t)), said.slice(0, 4));
+    S.check('leviathan: its first beat is said', said.some((t) => /Old Nobody surfaces under the ship/.test(t)), said.slice(0, 4));
     const end = evs.find((e) => e.name === 'rail.end'), stg = evs.find((e) => e.name === 'emocean.stage');
     S.check('leviathan: how it ended is an event with by', !end || end.by != null, end ? { end: end.d } : 'no rail.end (the set piece ran out)');
     S.note('leviathan: the stage', stg?.d && { end: stg.d.end, score: stg.d.score, rank: stg.d.rank, shards: stg.d.shards });
