@@ -281,7 +281,8 @@ the commit).
 - **Chunks.** What comes away falls as chunks. Each has a mass and lands as an Impact blow (`fallBlow`: m g h over 900 kJ, capped at
   3). Chunks can be picked up.
 - **Measured** (clay fist 0.6 on one wall's foot):
-  - a house falls in about 17 blows, a shop row 22, a block 43, a kiln 36;
+  - a house falls in 16 or 17 blows, a shop row 20 to 22, a kiln 36 to 39, a block 43 to 93 (by where along its wall they land:
+    `node scripts/mechs.mjs`);
   - a glass tower stands on steel: fists cannot fell it, so it takes the Ground Pound or the beam;
   - one charge cuts a tunnel through anything;
   - a collapse costs under 6 ms on the tower.
@@ -364,7 +365,7 @@ the commit).
   - `mech.grab { prop }`, `mech.prop.hit { prop, n, own? }`, `mech.prop.throw { prop, hit, javelin?, own? }`,
     `mech.prop.break { prop, shield? }`;
   - `mech.joint { who: 'mech' | 'giant' | 'rival', joint, to, label }`;
-  - the ring's `ring.*` with `rival` and `label`, plus `ring.enter`;
+  - the boxing ring's `bout.*` (ring.js) with `rival` and `label`, plus `bout.enter`;
   - `giant.down { weapon: 'rubble' }` when a chunk fells it.
 - Every event carries `by`.
 - **Ledger:** `tracking/mechs.js` (its header lists the keys).

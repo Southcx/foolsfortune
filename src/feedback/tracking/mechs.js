@@ -8,8 +8,8 @@
 // v2 (MECHS.md 9): mech.step, mech.jump, mech.blow, mech.blow.head, mech.crit, mech.stagger.both (a giant staggered by both arms inside
 // a real second), mech.technique.<id>, mech.through, mech.pound.fell, mech.drop.high, mech.roof, mech.destroy.cells / .chunks /
 // .buildings / .topple, mech.prop.grab.<prop>, mech.prop.hit, mech.prop.spin3, mech.prop.throw, mech.javelin.giant, mech.shield.broke,
-// mech.limb.own, mech.joint.snap.<who>, giant.down.weapon.rubble (by giant.down), the ring's mech.ring.bout, mech.ring.won,
-// mech.ring.won.<rival>, mech.ring.how.<how>, mech.ring.perfect, mech.ring.chargebreak, mech.ring.stars (hi).
+// mech.limb.own, mech.joint.snap.<who>, giant.down.weapon.rubble (by giant.down), the boxing ring's mech.bout, mech.bout.won,
+// mech.bout.won.<rival>, mech.bout.how.<how>, mech.bout.perfect, mech.bout.chargebreak, mech.bout.stars (hi).
 //
 // Prior art: Armored Core's mission debrief (what broke, what it cost), Evangelion's sync test readouts (a ratio, a record kept).
 //
@@ -76,16 +76,16 @@ export function mechRules({ on, L, log }) {
     log.say(e.who === 'mech' ? 'warn' : 'gain', e.who === 'mech' ? `Your mech's ${part} tears off.` : `The ${e.label || e.who}'s ${part} tears off.`, { key: `mech.joint.${e.who}.${e.joint}`, throttle: 1 });
   });
   // ---- the ring (ring.js events, carried by the runtime with `by` and the rival's id) ----
-  on('ring.enter', (e) => { if (mine(e)) log.say('info', `You square up to the ${(e.label || 'rival').toLowerCase()}.`, { key: 'ring.enter', throttle: 2 }); });
-  on('ring.star', (e) => { if (mine(e) && e.stars) L.hi('mech.ring.stars', e.stars); });
-  on('ring.punch', (e) => { if (mine(e) && e.broke) L.inc('mech.ring.chargebreak'); });
-  on('ring.down', (e) => { log.say(e.who === 'me' ? 'warn' : 'gain', e.who === 'me' ? 'You are down.' : `The ${(e.label || 'rival').toLowerCase()} is down.`, { key: 'ring.down', throttle: 1 }); });
-  on('ring.round', (e) => log.say('info', `Round ${e.round}.`, { key: 'ring.round', throttle: 2 }));
-  on('ring.over', (e) => {
-    if (e.practice) return; L.inc('mech.ring.bout');
+  on('bout.enter', (e) => { if (mine(e)) log.say('info', `You square up to the ${(e.label || 'rival').toLowerCase()}.`, { key: 'bout.enter', throttle: 2 }); });
+  on('bout.star', (e) => { if (mine(e) && e.stars) L.hi('mech.bout.stars', e.stars); });
+  on('bout.punch', (e) => { if (mine(e) && e.broke) L.inc('mech.bout.chargebreak'); });
+  on('bout.down', (e) => { log.say(e.who === 'me' ? 'warn' : 'gain', e.who === 'me' ? 'You are down.' : `The ${(e.label || 'rival').toLowerCase()} is down.`, { key: 'bout.down', throttle: 1 }); });
+  on('bout.round', (e) => log.say('info', `Round ${e.round}.`, { key: 'bout.round', throttle: 2 }));
+  on('bout.over', (e) => {
+    if (e.practice) return; L.inc('mech.bout');
     const HOW = { ko: 'by knockout', tko: 'by a technical knockout', head: 'with its head knocked clean off', arms: 'with both its arms torn off', decision: 'on points' };
-    if (e.winner === 'me') { L.inc('mech.ring.won'); L.inc(`mech.ring.won.${e.rival}`); L.inc(`mech.ring.how.${e.how}`); if (e.perfect) L.inc('mech.ring.perfect'); }
-    log.say(e.winner === 'me' ? 'gain' : 'warn', e.winner === 'me' ? `You beat the ${(e.label || 'rival').toLowerCase()} ${HOW[e.how] || ''}.`.replace(' .', '.') : e.how === 'head' ? 'Your mech\'s head pops off its neck. The bout is lost.' : `The ${(e.label || 'rival').toLowerCase()} beats you ${HOW[e.how] || ''}.`.replace(' .', '.'), { key: 'ring.over', throttle: 2 });
+    if (e.winner === 'me') { L.inc('mech.bout.won'); L.inc(`mech.bout.won.${e.rival}`); L.inc(`mech.bout.how.${e.how}`); if (e.perfect) L.inc('mech.bout.perfect'); }
+    log.say(e.winner === 'me' ? 'gain' : 'warn', e.winner === 'me' ? `You beat the ${(e.label || 'rival').toLowerCase()} ${HOW[e.how] || ''}.`.replace(' .', '.') : e.how === 'head' ? 'Your mech\'s head pops off its neck. The bout is lost.' : `The ${(e.label || 'rival').toLowerCase()} beats you ${HOW[e.how] || ''}.`.replace(' .', '.'), { key: 'bout.over', throttle: 2 });
   });
   on('giant.down', (e) => {
     if (!mine(e)) return;

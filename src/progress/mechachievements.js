@@ -22,11 +22,11 @@ export function mechAchievements({ C, H, F }) {
   F('mk6', 'hand', 'The Hangar', 5, 'collect', 'Every Leg', 'Fell a giant on each leg type: biped, reverse joint, tetrapod and tank.', (L) => MECH_LEGS.filter((t) => L.get(`giant.down.leg.${t}`) >= 1).length, MECH_LEGS.length);
   C('mk7', 'hand', 'The Hangar', 5, 'mechanic', 'Unit Zero', 'Live through a berserk.', 'mech.berserk', 1, { hidden: true });
   // v2 (MECHS.md 9): the ring, the toy city, what you pick up (words placeholders, Espada's)
-  C('mk8', 'hand', 'The Hangar', 2, 'mechanic', 'First Bout', 'Win a bout in the ring.', 'mech.ring.won', 1);
-  C('mk9', 'hand', 'The Hangar', 3, 'mechanic', 'Charge Breaker', 'Put the heavy frame down on its charge with one body blow.', 'mech.ring.chargebreak', 1);
-  C('mk10', 'hand', 'The Hangar', 4, 'mechanic', 'Knock Its Block Off', 'Win a bout with your rival\'s head popped off.', 'mech.ring.how.head', 1);
-  C('mk11', 'hand', 'The Hangar', 5, 'mechanic', 'Champion', 'Beat the champion frame.', 'mech.ring.won.champion', 1);
-  C('mk12', 'hand', 'The Hangar', 5, 'mechanic', 'Perfect Bout', 'Win a bout without taking a blow.', 'mech.ring.perfect', 1);
+  C('mk8', 'hand', 'The Hangar', 2, 'mechanic', 'First Bout', 'Win a bout in the ring.', 'mech.bout.won', 1);
+  C('mk9', 'hand', 'The Hangar', 3, 'mechanic', 'Charge Breaker', 'Put the heavy frame down on its charge with one body blow.', 'mech.bout.chargebreak', 1);
+  C('mk10', 'hand', 'The Hangar', 4, 'mechanic', 'Knock Its Block Off', 'Win a bout with your rival\'s head popped off.', 'mech.bout.how.head', 1);
+  C('mk11', 'hand', 'The Hangar', 5, 'mechanic', 'Champion', 'Beat the champion frame.', 'mech.bout.won.champion', 1);
+  C('mk12', 'hand', 'The Hangar', 5, 'mechanic', 'Perfect Bout', 'Win a bout without taking a blow.', 'mech.bout.perfect', 1);
   C('mk13', 'hand', 'The Hangar', 3, 'endure', 'Wrecking Crew', 'Break 10,000 cells of the toy city.', 'mech.destroy.cells', 10000);
   C('mk14', 'hand', 'The Hangar', 3, 'mechanic', 'Bring It Down', 'Bring a building down with one blow.', 'mech.destroy.topple', 1);
   C('mk15', 'hand', 'The Hangar', 4, 'mechanic', 'Under the Rubble', 'Fell a giant with a falling building.', 'giant.down.weapon.rubble', 1);

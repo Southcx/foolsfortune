@@ -21,9 +21,9 @@
 //   PUNCH, STAR, HEARTS, COUNT, RING, RIVALS[id] = { label, line, stamina, guard, speed[round], getUp[down], gap, pattern, moves }
 //   CIRCUIT [ids in order]   rivalOpen(id, L)   newBout(rivalId, { punchK, armour, seed, joints }) -> B   boutStep(B, dt, press) -> events
 //   press = { punch: 'L' | 'R' | null, high: bool, dodge: 'L' | 'R' | null, duck: bool, block: bool, star: bool, mash: bool }
-//   events: ring.tell { move, tell }, ring.strike { move, answered: 'dodge' | 'duck' | 'block' | null, k }, ring.punch { side, high,
-//   landed, blocked, counter, k, star? }, ring.star { stars }, ring.hearts { hearts, winded }, ring.down { who, count, downs },
-//   ring.count { who, n }, ring.up { who }, ring.joint { who, joint, to }, ring.round { round }, ring.over { winner, how ('ko' | 'tko' | 'head' | 'arms' | 'decision'), rounds, perfect }
+//   events: bout.tell { move, tell }, bout.strike { move, answered: 'dodge' | 'duck' | 'block' | null, k }, bout.punch { side, high,
+//   landed, blocked, counter, k, star? }, bout.star { stars }, bout.hearts { hearts, winded }, bout.down { who, count, downs },
+//   bout.count { who, n }, bout.up { who }, bout.joint { who, joint, to }, bout.round { round }, bout.over { winner, how ('ko' | 'tko' | 'head' | 'arms' | 'decision'), rounds, perfect }
 // ---------------------------------------------------------------------------------------
 import { newJoints, strainBlow, lockOf, headOff, armOK } from './joints.js';
 
@@ -84,7 +84,7 @@ export const RIVALS = {
 };
 export const CIRCUIT = ['sparring', 'heavy', 'champion'];
 /** Is a rival open: the first always, each next once the one before it is beaten (the circuit's ladder, a ledger predicate). */
-export const rivalOpen = (id, L) => { const i = CIRCUIT.indexOf(id); return i === 0 || (i > 0 && (L?.get?.(`mech.ring.won.${CIRCUIT[i - 1]}`) || 0) >= 1); };
+export const rivalOpen = (id, L) => { const i = CIRCUIT.indexOf(id); return i === 0 || (i > 0 && (L?.get?.(`mech.bout.won.${CIRCUIT[i - 1]}`) || 0) >= 1); };
 
 const side0 = () => ({ stamina: 100, max: 100, joints: newJoints(), downs: 0, downsAll: 0, state: 'ready', t: 0, landed: 0, taken: 0, points: 0 });
 
@@ -114,7 +114,7 @@ function nextMove(B) {
 function blowOn(B, who, k, region, out) {
   const S = B[who], arm = who === 'me' ? (B.armour[region] ?? 1) : 1;
   S.stamina = Math.max(0, S.stamina - k * PUNCH.DMG * arm);
-  for (const c of strainBlow(S.joints, region, k, arm)) ev(out, 'ring.joint', { who, ...c });
+  for (const c of strainBlow(S.joints, region, k, arm)) ev(out, 'bout.joint', { who, ...c });
   if (headOff(S.joints)) return end(B, who === 'me' ? 'foe' : 'me', 'head', out);
   if (!armOK(S.joints, 'L') && !armOK(S.joints, 'R')) return end(B, who === 'me' ? 'foe' : 'me', 'arms', out); // (both arms off: nothing left to box with, Toribash's)
   if (S.stamina <= 0) down(B, who, out);
@@ -122,13 +122,13 @@ function blowOn(B, who, k, region, out) {
 function down(B, who, out) {
   const S = B[who]; S.state = 'down'; S.t = 0; S.mash = 0; S.downs++; S.downsAll++; S.count = 0;
   if (who === 'me') { B.perfect = false; B.me.stars = 0; } else B.me.points += 10;
-  ev(out, 'ring.down', { who, downs: S.downs });
+  ev(out, 'bout.down', { who, downs: S.downs });
   if (S.downs >= COUNT.tko) end(B, who === 'me' ? 'foe' : 'me', 'tko', out);
 }
 function end(B, winner, how, out) {
   if (B.over) return;
   B.over = { winner, how, rounds: B.round, perfect: winner === 'me' && B.perfect };
-  ev(out, 'ring.over', { ...B.over, rival: B.id });
+  ev(out, 'bout.over', { ...B.over, rival: B.id });
 }
 
 /** One step of the bout: real s `dt`, what was pressed this frame. */
@@ -142,16 +142,16 @@ export function boutStep(B, dt, press = {}) {
     B.round++; B.t = 0; me.downs = 0; F.downs = 0;
     for (const S of [me, F]) { S.stamina += (S.max - S.stamina) * RING.rest; S.state = 'ready'; S.t = 0; }
     F.move = null; F.pat = 0; me.hearts = HEARTS.start; me.winded = false;
-    ev(out, 'ring.round', { round: B.round }); return out;
+    ev(out, 'bout.round', { round: B.round }); return out;
   }
   // a side down: the count, and rising
   for (const who of ['me', 'foe']) {
     const S = B[who]; if (S.state !== 'down') continue;
     S.t += dt; const n = Math.floor(S.t / COUNT.tick);
-    if (n > S.count) { S.count = n; ev(out, 'ring.count', { who, n }); if (n >= COUNT.out) { end(B, who === 'me' ? 'foe' : 'me', 'ko', out); return out; } }
+    if (n > S.count) { S.count = n; ev(out, 'bout.count', { who, n }); if (n >= COUNT.out) { end(B, who === 'me' ? 'foe' : 'me', 'ko', out); return out; } }
     if (who === 'me' && press.mash) S.mash += COUNT.mash;
     const up = who === 'me' ? S.mash >= COUNT.rise + COUNT.per * (S.downs - 1) : R.getUp[S.downs - 1] != null && S.count >= R.getUp[S.downs - 1];
-    if (up) { S.state = 'ready'; S.t = 0; S.stamina = S.max * COUNT.back[Math.min(S.downs, COUNT.back.length) - 1]; if (who === 'foe') { F.move = null; F.gap = R.gap; } ev(out, 'ring.up', { who }); }
+    if (up) { S.state = 'ready'; S.t = 0; S.stamina = S.max * COUNT.back[Math.min(S.downs, COUNT.back.length) - 1]; if (who === 'foe') { F.move = null; F.gap = R.gap; } ev(out, 'bout.up', { who }); }
   }
   if (me.state === 'down' || F.state === 'down') return out;
 
@@ -173,7 +173,7 @@ export function boutStep(B, dt, press = {}) {
   }
 
   // the rival: a gap, a tell and windup, the strike, open or recovering
-  if (!F.move) { F.gap -= dt * speed; if (F.gap <= 0) { const id = nextMove(B); if (id === 'wait') F.gap = R.gap; else { F.move = id; F.phase = 'windup'; F.t = 0; F.hit = 0; F.taunting = !!R.moves[id].taunt; ev(out, 'ring.tell', { move: id, tell: R.moves[id].tell }); } } return out; }
+  if (!F.move) { F.gap -= dt * speed; if (F.gap <= 0) { const id = nextMove(B); if (id === 'wait') F.gap = R.gap; else { F.move = id; F.phase = 'windup'; F.t = 0; F.hit = 0; F.taunting = !!R.moves[id].taunt; ev(out, 'bout.tell', { move: id, tell: R.moves[id].tell }); } } return out; }
   const m = R.moves[F.move]; F.t += dt * speed;
   if (F.phase === 'windup' && F.t >= m.windup) {
     if (m.taunt || m.feint) { F.taunting = false; endMove(B, m.recover, 'recover'); return out; } // (a feint lands nothing: a dodge spent on it is a dodge cooling when the real one comes)
@@ -192,20 +192,20 @@ function strike(B, m, out) {
   const me = B.me, F = B.foe;
   const answered = me.state === 'dodge' && m.answers.includes('dodge') ? 'dodge' : me.state === 'duck' && m.answers.includes('duck') ? 'duck' : me.state === 'block' && m.answers.includes('block') ? 'block' : null;
   const k = m.k * (lockOf(F.joints, m.side === 'L' ? 'armL' : 'armR') || 1);
-  ev(out, 'ring.strike', { move: F.move, answered, k: +k.toFixed(2) });
+  ev(out, 'bout.strike', { move: F.move, answered, k: +k.toFixed(2) });
   if (answered === 'dodge' || answered === 'duck') {
-    if (me.winded) { me.winded = false; me.hearts = HEARTS.back; ev(out, 'ring.hearts', { hearts: me.hearts, winded: false }); }
+    if (me.winded) { me.winded = false; me.hearts = HEARTS.back; ev(out, 'bout.hearts', { hearts: me.hearts, winded: false }); }
     F.phase = 'open'; F.t = 0; F.until = m.counter; F.starOpen = !!m.star; F.breakable = null; return;
   }
   if (answered === 'block') {
     blowOn(B, 'me', k * RING.blockChip, m.region, out);
-    for (const c of strainBlow(me.joints, B.r() < 0.5 ? 'armL' : 'armR', k * RING.blockStrain, 1, 0)) ev(out, 'ring.joint', { who: 'me', ...c }); // (the block's cost is your arms' joints, no threshold)
+    for (const c of strainBlow(me.joints, B.r() < 0.5 ? 'armL' : 'armR', k * RING.blockStrain, 1, 0)) ev(out, 'bout.joint', { who: 'me', ...c }); // (the block's cost is your arms' joints, no threshold)
     return;
   }
   B.perfect = false; me.taken++;
-  me.hearts = Math.max(0, me.hearts - HEARTS.hit); if (me.stars) { me.stars = Math.max(0, me.stars - STAR.lose); ev(out, 'ring.star', { stars: me.stars }); }
+  me.hearts = Math.max(0, me.hearts - HEARTS.hit); if (me.stars) { me.stars = Math.max(0, me.stars - STAR.lose); ev(out, 'bout.star', { stars: me.stars }); }
   if (me.state === 'punch' && me.starring) { me.state = 'ready'; me.starring = false; me.stars = 0; } // (hit out of the star punch: its stars with it)
-  if (!me.hearts && !me.winded) { me.winded = true; ev(out, 'ring.hearts', { hearts: 0, winded: true }); }
+  if (!me.hearts && !me.winded) { me.winded = true; ev(out, 'bout.hearts', { hearts: 0, winded: true }); }
   blowOn(B, 'me', k, m.region, out);
 }
 
@@ -216,23 +216,23 @@ function myPunchLands(B, out) {
   const me = B.me, F = B.foe, R = B.R, m = F.move && R.moves[F.move];
   const high = me.punchHigh, region = high ? 'head' : 'core', star = me.starring;
   let k = B.punchK * (high ? PUNCH.high : 1) * (lockOf(me.joints, me.punchSide === 'L' ? 'armL' : 'armR') || 0);
-  if (star) { k *= STAR.k[me.stars]; me.stars = 0; ev(out, 'ring.star', { stars: 0 }); }
+  if (star) { k *= STAR.k[me.stars]; me.stars = 0; ev(out, 'bout.star', { stars: 0 }); }
   const open = F.phase === 'open' || F.taunting; // (only answered moves open it: a rival that just hit you is not waiting for you)
   const breaks = m?.breakOn && F.phase === 'windup' && !high && m.windup - F.t <= m.breakOn.window;
   const guarded = !open && !breaks && (R.guard === 'both' || (R.guard === 'high' ? high : !high));
   if (guarded) {
-    me.hearts = Math.max(0, me.hearts - HEARTS.blocked); ev(out, 'ring.punch', { side: me.punchSide, high, landed: false, blocked: true, k: 0 });
-    if (!me.hearts && !me.winded) { me.winded = true; ev(out, 'ring.hearts', { hearts: 0, winded: true }); }
+    me.hearts = Math.max(0, me.hearts - HEARTS.blocked); ev(out, 'bout.punch', { side: me.punchSide, high, landed: false, blocked: true, k: 0 });
+    if (!me.hearts && !me.winded) { me.winded = true; ev(out, 'bout.hearts', { hearts: 0, winded: true }); }
     F.stamina = Math.max(1, F.stamina - k * PUNCH.DMG * PUNCH.chip);
-    for (const c of strainBlow(F.joints, B.r() < 0.5 ? 'armL' : 'armR', k * RING.blockStrain, 1, 0)) ev(out, 'ring.joint', { who: 'foe', ...c }); // (its guard pounded on: its arms' joints)
+    for (const c of strainBlow(F.joints, B.r() < 0.5 ? 'armL' : 'armR', k * RING.blockStrain, 1, 0)) ev(out, 'bout.joint', { who: 'foe', ...c }); // (its guard pounded on: its arms' joints)
     if (!armOK(F.joints, 'L') && !armOK(F.joints, 'R')) end(B, 'me', 'arms', out);
     return;
   }
   const counter = F.phase === 'open';
   if (counter) k *= PUNCH.counter;
-  if ((F.taunting && high) || (counter && F.starOpen)) { F.starOpen = false; if (me.stars < STAR.max) { me.stars++; ev(out, 'ring.star', { stars: me.stars }); } }
+  if ((F.taunting && high) || (counter && F.starOpen)) { F.starOpen = false; if (me.stars < STAR.max) { me.stars++; ev(out, 'bout.star', { stars: me.stars }); } }
   me.landed++; me.points += 1;
-  ev(out, 'ring.punch', { side: me.punchSide, high, landed: true, blocked: false, counter, k: +k.toFixed(2), star, broke: !!breaks });
+  ev(out, 'bout.punch', { side: me.punchSide, high, landed: true, blocked: false, counter, k: +k.toFixed(2), star, broke: !!breaks });
   if (breaks) { F.move = null; F.phase = null; F.stamina = 0; blowOn(B, 'foe', 0, 'core', out); if (B.foe.state !== 'down') down(B, 'foe', out); return; } // (Bald Bull's: the charge broken by one body blow)
   if (F.taunting) { F.taunting = false; F.move = null; F.gap = R.gap; }
   blowOn(B, 'foe', k, region, out);
