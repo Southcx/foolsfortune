@@ -83,6 +83,8 @@ import { MechHydraulics } from './hydraulics.js';
 
 const PI = Math.PI, SIDES = [[1, 'L'], [-1, 'R']];
 /** What each joint takes off with it when it snaps (Dovina's joints.js `limb`, as slots). The waist never snaps. */
+/** How far (m, at a head's scale) the head stands up off its neck ball: a gap that implies the neck (South, 2026-11-02). */
+export const HEAD_LIFT = 0.22;
 export const LIMB = { neck: ['head'], shoulderL: ['arms', 'weaponL'], shoulderR: ['arms', 'weaponR'], elbowL: ['weaponL'], elbowR: ['weaponR'],
   waist: [], hipL: ['legs'], hipR: ['legs'], backMount: ['back'] };
 /** How a fractured joint sags (radians added to its pose; x by side on z). */
@@ -202,7 +204,7 @@ export class MechPartsBody {
     } else if (slot === 'head') {
       const H = headLookOf(id, this.F);
       this.put(j.neck, 'head', (S) => H.neckSeg(S)); this.put(j.head, 'head', (S) => H.build(S));
-      this.rest(j.neck, [0.05, 0, 0]); j.head.position.set(0, H.neck, 0); this.rest(j.head, [0.04, 0, 0]);
+      this.rest(j.neck, [0.05, 0, 0]); j.head.position.set(0, H.neck + HEAD_LIFT * this.F.head, 0); this.rest(j.head, [0.04, 0, 0]); // (the head raised a little off the collar: the gap implies a neck, South, 2026-11-02)
       this.ballAt('head', 'neck', j.neck, H.ball * this.F.joint);
       this.dressHead();
     } else if (slot === 'arms') {

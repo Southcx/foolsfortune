@@ -148,6 +148,20 @@ export function crackNet(r, seed = 1, c = L.gold, tube = 0.035) {
   return P;
 }
 
+/** The joint's clear shell: glass whose edge reads (a fresnel: thin and clear face-on, a bright rim at the turn, as a glass ball
+ *  does), specular and clearcoated, with a faint film. */
+function jointShell() {
+  const m = new THREE.MeshPhysicalMaterial({ name: 'mech-jointshell', color: 0xffffff, roughness: 0.04, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.02,
+    specularIntensity: 1, transparent: true, opacity: 0.14, depthWrite: false, iridescence: 0.22, iridescenceIOR: 1.4, iridescenceThicknessRange: [240, 520] });
+  m.onBeforeCompile = (sh) => {
+    sh.fragmentShader = sh.fragmentShader.replace('#include <opaque_fragment>', `#include <opaque_fragment>
+  { float jr = pow(1.0 - abs(dot(normalize(normal), normalize(vViewPosition))), 2.2);
+    gl_FragColor.rgb += vec3(0.9, 0.95, 1.0) * jr * 0.35; gl_FragColor.a = mix(gl_FragColor.a, 0.78, jr); }`);
+  };
+  m.customProgramCacheKey = () => 'mech-jointshell-rim';
+  return m;
+}
+
 /** The programs every part shares (a mech is a few draws a segment): porcelain, core and trim (plain standard materials, vertex
  *  coloured: the Courier's glaze, skin and trim are chained onto them after the build; their own colours until then are the earth
  *  tones of the first pass), gold, labradorite, the glow, the glass, the bore's dark, the crazing's lit gold. */
@@ -163,8 +177,7 @@ export function mechMaterials() {
     glass: new THREE.MeshStandardMaterial({ name: 'mech-glass', color: L.glass, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.35, depthWrite: false }),
     bore: new THREE.MeshStandardMaterial({ name: 'mech-bore', color: L.hollow, roughness: 0.95, side: THREE.BackSide }),
     crack: new THREE.MeshBasicMaterial({ name: 'mech-crack', color: L.ember, toneMapped: false }),
-    j: new THREE.MeshPhysicalMaterial({ name: 'mech-jointshell', color: 0xffffff, roughness: 0.05, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.02,
-      specularIntensity: 1, transparent: true, opacity: 0.26, depthWrite: false, iridescence: 0.18, iridescenceIOR: 1.4, iridescenceThicknessRange: [240, 520] }),
+    j: jointShell(),
   };
 }
 
