@@ -4,22 +4,25 @@
 // partsbody.js: hung off the chest at the shoulder's socket, riding a part of the arm's swing; +X out for the left, -Y down the arm),
 // big enough to own the silhouette, all in trim (the Courier's trim glaze; authored in neutral tones) with gold edges and studs.
 //   default    the arms part's own (vfx/mechs/parts/arms.js `pauldron`; a feminine form's own, femlimbs.js: Haydee's deltoid cap,
-//              Drossel's puffed sleeve)
+//              the doll's deltoid cap)
 //   none       the bare shoulder ball
 //   osode      the samurai's great sleeve: six lames of lamellar hung flat off the shoulder, laced in gold, its crown plate on top
 //   zaku       Okawara's Zaku: a spiked dome on the left, the flat shoulder shield on the right
 //   wing       a winged sweep: four long blades fanned up and back off a cap, gilt along their leading edges
 //   spaulder   the knight's: a domed cap over four stacked lames, the haute-piece standing on the neck side
 //   disc       a round shield-disc facing out, its rings and a gold boss
+//   puff       Drossel's puffed sleeve, folded in from her retired form (South, 2026-11-02): a leg-of-mutton puff, ribbed, its band gilt,
+//              a ruffle at its foot
 //   horn       a dome cap with a great horn curving up and back and a lesser one under it, as a stag beetle's crest or a crab's claw
 // Prior art: the ōsode of the ō-yoroi (the Heian and Kamakura great armour); Kunio Okawara's MS-06 Zaku II (spiked left pauldron,
 // right shield); the Gothic and Maximilian spaulder and its haute-piece; Warhammer's and Gundam Wing's winged shoulders; the
+// Victorian gigot (leg-of-mutton) sleeve and Drossel von Flügel's of Fireball (Jinni's Animation Studios for Disney Japan, 2008); the
 // Kabutomushi and the Kuwagata's horns (Sengoku kabuto crests, the Zeong's and Gouf's horns); a parade shield's boss.
 //
 //   PAULDRONS[id] = (S, s) | null (default) | 'none'   pauldronIds()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { MECH_LOOK as L, shell, plate, curved, seam } from './kit.js';
+import { MECH_LOOK as L, shell, plate, curved, seam, sculpt } from './kit.js';
 
 const PI = Math.PI;
 /** A tube along a curve tapering from r0 to r1 (a horn): three's TubeGeometry with each ring scaled about its centre. */
@@ -117,5 +120,12 @@ export const PAULDRONS = {
     trim.geo(taper(small, 0.3, 0.03, 20, 10), { c: L.trimL });
     for (const C of [big, small]) g.geo(new THREE.TorusGeometry(C === big ? 0.5 : 0.32, 0.05, 6, 20).lookAt(C.getTangentAt(0.02)), { at: C.getPointAt(0.02).toArray(), c: L.gold });
   },
+};
+/** Drossel's puffed sleeve, at the pauldron joint's scale (built 1.45x her old size: the joint scales it by the form's `pauldron`). */
+PAULDRONS.puff = (S, s) => {
+  const k = 1.45, ribs = (x, y, z) => { const a = Math.atan2(x, z), q = 1 + 0.07 * Math.cos(a * 10) * Math.sin(PI * Math.min(1, Math.max(0, (0.75 - y) / 1.5))); return [x * q, y, z * q]; };
+  S.trim.geo(sculpt(shell([[0.001, 0.82], [0.62, 0.72], [0.96, 0.38], [1.04, 0.0], [0.9, -0.42], [0.58, -0.7], [0.4, -0.78]], 40), ribs), { at: [s * 0.3 * k, -0.15 * k, 0], sc: [k, k, k], c: L.trimL });
+  S.g.ring(0.42 * k, 0.045 * k, { at: [s * 0.3 * k, (-0.15 - 0.76) * k, 0], c: L.gold }, 28, 4);
+  S.trim.lathe([[0.4, -0.8], [0.56, -0.95], [0.46, -1.02]], { at: [s * 0.3 * k, -0.15 * k, 0], sc: [k, k, k], c: L.trimM }, 28);
 };
 export const pauldronIds = () => Object.keys(PAULDRONS);

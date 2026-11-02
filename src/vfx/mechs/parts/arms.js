@@ -6,6 +6,7 @@
 // tapered (a swell under the shoulder and at the forearm, narrowing to each joint) over the interstitial's column, their outer plates
 // curved round them, so they read round at 480 lines. Each arms part also has its own pauldron (`pauldron`), worn when the frame's
 // pauldron is `default` (vfx/mechs/parts/pauldrons.js, the body's setPauldron): in trim, the colour the Courier's trim glaze.
+// On the hero the gauntlets (forearms and hands) are 12% larger (kit.js FORMS `gauntlet`; South, 2026-11-02), their lengths kept.
 //   clayArms    long arms whose big hands hang to the knee: a dome with two lames and two fins, a trim vambrace
 //   strongArms  bulky: a layered pauldron of three stacked lames, gauntlets swelling to a bronze-ringed cuff, a huge fist
 //   quickArms   slender and longest: a cap with one sleek swept fin, a narrow forearm, long fingers
@@ -15,25 +16,28 @@
 // knuckle plate (a Gothic gauntlet's gadlings, here gold studs).
 //
 //   ARM_LOOKS[id] = { upper, fore, palm (m), ball (the shoulder's), elbow, wrist (balls), shoulder(S, s), foreArm(S, s), hand(S, s, grip), pauldron(S, s) }
-//   grip: 'open' | 'hold' | 'fist'   gripAt(look) -> [x, y, z] in the hand's frame (the middle of a closed hand, where a haft sits)
+//   grip: 'open' | 'hold' | 'fist'   gripAt(look, F?) -> [x, y, z] in the hand's frame (the middle of a closed hand, where a haft sits)
 //   armLookOf(id, F) (the look for a form)   hand(S, s, grip, { w, h, d, fl, fw, wr, c }) (a hand at any size)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { MECH_LOOK as L, shell, plate, limb, seam, ball, band, curved } from './kit.js';
+import { MECH_LOOK as L, shell, plate, limb, seam, ball, jointBall, band, curved } from './kit.js';
 import { femArmLook } from './femlimbs.js';
 
 const PI = Math.PI;
 const CURL = { open: [0.3, 0.75], hold: [1.25, 1.35], fist: [1.55, 1.7] };
 const up = (prof) => [...prof].reverse(); // (a limb's profile runs down -Y: band() wants it up)
+/** The form a forearm is built in: its limbs' girth times the gauntlets' scale (the hero's 1.12; the forearm's length kept, so the
+ *  layout and the grip stand). */
+const gauntlet = (F) => (F.gauntlet && F.gauntlet !== 1 ? { ...F, limb: F.limb * F.gauntlet } : F);
 /** A plate curved round a limb on its outer side (phi s*PI/2), between heights y0 and y1, k out from the limb's own profile. */
 const armPlate = (P, prof, y0, y1, half, s, c, F, k = 1.1, th = 0.09) => P.geo(curved(band(up(prof), y0, y1, k, 6), th, s * PI / 2 - half, s * PI / 2 + half, 12), { sc: [F.limb, 1, F.limb], c });
 
 /** A hand, palm to +Z (the hand's joint turns it to face in): its ball, a palm, four fingers of two joints, the thumb; a fist's
  *  knuckle guard. */
 export function hand(S, s, grip, { w, h, d, fl, fw, wr, c = L.pale }) {
-  const { p, g } = S, F = S.F, curl = CURL[grip] || CURL.open, k = F.hand;
-  w *= k; d *= k; fw *= k; fl = fl.map((x) => x * k); wr *= F.joint;
-  ball(g, wr);
+  const { p, g } = S, F = S.F, curl = CURL[grip] || CURL.open, G = F.gauntlet || 1, k = F.hand * G;
+  w *= k; d *= k; fw *= k; h *= G; fl = fl.map((x) => x * k); wr *= F.joint * G;
+  jointBall(S, wr);
   p.box(w, h, d, { at: [0, -wr * 0.6 - h / 2, 0], c }, Math.min(w, h, d) * 0.3);
   S.core.box(w * 0.9, 0.12, d * 0.9, { at: [0, -wr * 0.6 - h * 0.22, 0], c: L.core }, 0.04); // (the palm's heel, in its groove)
   p.box(w * 1.03, h * 0.18, d * 1.04, { at: [0, -wr * 0.6 - h * 0.1, 0], c: L.mid }, 0.05); // (the cuff of the palm)
@@ -77,11 +81,11 @@ export const ARM_LOOKS = {
       if (F.grooves) armPlate(p, this.UP, -2.15, -0.75, 0.75, s, L.mid, F);
     },
     foreArm(S, s) {
-      const F = S.F;
+      const F = gauntlet(S.F), G = F.gauntlet || 1;
       ball(S.g, this.elbow * F.joint);
-      limb(S.p, this.FO, L.pale, this.fore, this.wrist * F.joint, [F.limb, 1, F.limb], S.core);
+      limb(S.p, this.FO, L.pale, this.fore, this.wrist * F.joint * G, [F.limb, 1, F.limb], S.core);
       armPlate(S.trim, this.FO, -1.85, -0.7, F.grooves ? 0.9 : 0.6, s, L.trimM, F, 1.08); // (the vambrace)
-      if (F.grooves) seam(S.g, [[s * 0.77, -0.9, 0.24], [s * 0.78, -1.2, 0.04], [s * 0.79, -1.45, 0.16], [s * 0.77, -1.7, -0.08]], 0.028);
+      if (F.grooves) seam(S.g, [[s * 0.77 * G, -0.9, 0.24 * G], [s * 0.78 * G, -1.2, 0.04], [s * 0.79 * G, -1.45, 0.16 * G], [s * 0.77 * G, -1.7, -0.08 * G]], 0.028);
     },
     hand(S, s, grip) { hand(S, s, grip, { w: 1.35, h: this.palm, d: 0.64, fl: [0.8, 0.62], fw: 0.3, wr: this.wrist }); },
   },
@@ -102,12 +106,12 @@ export const ARM_LOOKS = {
       if (F.grooves) armPlate(p, this.UP, -1.95, -0.7, 0.85, s, L.mid, F);
     },
     foreArm(S, s) {
-      const F = S.F;
+      const F = gauntlet(S.F), G = F.gauntlet || 1;
       ball(S.g, this.elbow * F.joint);
-      limb(S.p, this.FO, L.mid, this.fore, this.wrist * F.joint, [F.limb, 1, F.limb], S.core);
+      limb(S.p, this.FO, L.mid, this.fore, this.wrist * F.joint * G, [F.limb, 1, F.limb], S.core);
       S.trim.geo(curved([[1.04, -1.72], [1.1, -1.5], [1.04, -1.18]], 0.1, 0, PI * 2, 6), { sc: [F.limb, 1, F.limb], c: L.trimM }); // (the gauntlet's band)
       S.g.ring(1.05, 0.06, { at: [0, -1.96, 0], sc: [F.limb, 1, F.limb], c: L.bronze }, 36, 5); // (the cuff)
-      if (F.grooves) seam(S.g, [[s * 0.9, -1.85, 0.3], [s * 1.0, -1.55, 0.12], [s * 1.02, -1.3, 0.3]], 0.03);
+      if (F.grooves) seam(S.g, [[s * 0.9 * G, -1.85, 0.3 * G], [s * 1.0 * G, -1.55, 0.12 * G], [s * 1.02 * G, -1.3, 0.3 * G]], 0.03);
     },
     hand(S, s, grip) { hand(S, s, grip, { w: 1.65, h: this.palm, d: 0.82, fl: [0.82, 0.64], fw: 0.4, wr: this.wrist, c: L.mid }); },
   },
@@ -127,16 +131,16 @@ export const ARM_LOOKS = {
       limb(p, this.UP, L.pale, this.upper, this.elbow * F.joint, [F.limb, 1, F.limb], S.core);
     },
     foreArm(S, s) {
-      const F = S.F;
+      const F = gauntlet(S.F), G = F.gauntlet || 1;
       ball(S.g, this.elbow * F.joint);
-      limb(S.p, this.FO, L.pale, this.fore, this.wrist * F.joint, [F.limb, 1, F.limb], S.core);
+      limb(S.p, this.FO, L.pale, this.fore, this.wrist * F.joint * G, [F.limb, 1, F.limb], S.core);
       armPlate(S.trim, this.FO, -2.3, -0.6, 0.35, s, L.trimM, F, 1.1, 0.07); // (a narrow vane down its outside)
     },
     hand(S, s, grip) { hand(S, s, grip, { w: 1.1, h: this.palm, d: 0.5, fl: [0.9, 0.74], fw: 0.24, wr: this.wrist }); },
   },
 };
 
-/** Where a haft sits in a closed hand, in the hand's frame (palm to +Z, before its twist). */
-export const gripAt = (A) => [0, -A.wrist * 0.6 - A.palm - 0.25, 0.42 + A.palm * 0.12];
+/** Where a haft sits in a closed hand, in the hand's frame (palm to +Z, before its twist), at the form's gauntlet scale. */
+export const gripAt = (A, F = null) => { const G = F?.gauntlet || 1, j = F?.joint ?? 1; return [0, -A.wrist * j * 0.6 * G - A.palm * G - 0.25 * G, (0.42 + A.palm * 0.12) * G]; };
 /** An arms part's look in a form: the feminine forms' are their own. */
 export const armLookOf = (id, F) => (F?.fem ? femArmLook(id, F) : ARM_LOOKS[id] || ARM_LOOKS.clayArms);

@@ -10,26 +10,21 @@
 // built in its own joint's frame (bustL/R off the chest, +Z out of the plate), so the parts body can bounce them on a damped spring
 // (partsbody.js BUST_SPRING); plates and a gold rim, no anatomical detail.
 //   haydee   (the `doll` form) Haydee's white android: the ribcage broad but still well inside the hips, the chest plates full, the
-//            shoulder line falling to the caps, a low collar ring; under the ribcage the waist column, a jointed spine piece (a gold ball
+//            shoulder line falling to the caps, a low collar ring; under the ribcage the waist column, a jointed spine piece (a skin ball
 //            in an ivory socket at each end, a porcelain drum between: `spine`)
 //      clayCore   the plain shell: the chest, the ribs, the abdomen, a flank and a shoulder blade a side
 //      kilnCore   a darker underbust band and the abdomen cut into three corset bands, a trim rim at the collar
 //      lightCore  the flanks opened into four ribs over the lit core, a sternum strip
-//   drossel  Drossel von Flügel's: narrow and corseted, small chest plates, sloping shoulders, a high Medici collar standing at the
-//            collar (no neck under it), a stepped stomacher down the front to a point, fine gold bands, a brooch at the throat
-//      clayCore   the corset's panels and its stomacher in trim, two gold bands
-//      kilnCore   the corset boned: eight trim bones round it, three gold bands, its lacing up the back in gold
-//      lightCore  a birdcage: the flanks openwork, thin ribs over the lit core, the stomacher and the collar kept
+// (Drossel's corseted torso went with her form, 2026-11-02: her crinoline is a hip piece now, parts/hips.js, her sleeve a pauldron.)
+// The waist column's two balls are the skin's (kit.js `jointBall`), a little larger, in their ivory sockets.
 // Prior art: Haydee (Haydee Interactive, 2016: the white android's sparse panel lines); Elemental Gearbolt (Alfa System, 1997: the
-// mechanical girls' smooth porcelain torsos); Drossel von Flügel of Fireball (Jinni's Animation Studios for Disney Japan, 2008: the
-// robot duchess's corseted white body); the Venus of Willendorf and the Jomon dogu (the narrow top over the low weight); the
-// Victorian corset's busk, boning and stomacher, the Medici collar, the cameo brooch; the ball-jointed doll's torso shell; the hero
-// cores' sculpt (cores.js).
+// mechanical girls' smooth porcelain torsos); the Venus of Willendorf and the Jomon dogu (the narrow top over the low weight); the
+// ball-jointed doll's torso shell; the hero cores' sculpt (cores.js).
 //
 //   femCoreLook(id, F) -> the same contract as cores.js coreLook: { mounts, prof, plan, chest(S), waist(S), spine, bust: { at(s), rot(s), build(S, s) } }
-//   (spine: Haydee's waist column's two balls { lo, hi, r, rt } in the waist's frame, for the parts body's crazing; null for Drossel)
+//   (spine: Haydee's waist column's two balls { lo, hi, r, rt } in the waist's frame, for the parts body's crazing)
 // ---------------------------------------------------------------------------------------
-import { MECH_LOOK as L, band, profAt, panel, cup, ball, shell, sculpt, labTone, tube } from './kit.js';
+import { MECH_LOOK as L, band, profAt, panel, cup, jointBall, shell, sculpt, tube } from './kit.js';
 
 const PI = Math.PI;
 const WIN = [1.32, 2.82]; // (the back's window round the cradle's boss: cores.js's own)
@@ -43,9 +38,7 @@ const TORSO = {
   // (`spine`), the ribcage ~15% broader (`wide`, eased in up the ribs), the chest plates 1.25x, the shoulder line falling to the caps
   haydee: { prof: [[0.3, 0.5], [0.42, 0.6], [0.58, 0.86], [0.78, 1.25], [0.92, 1.65], [0.97, 2.05], [0.95, 2.28], [0.85, 2.56], [0.66, 2.82], [0.46, 2.99], [0.3, 3.08]],
     d: 0.78, back: 0.68, wide: 1.15, bust: { x: 0.52, y: 2.02, s: 0.2, amp: 0.27, r: 0.62, h: 0.62 }, under: 1.68, shoulderY: 2.38, cup: 0.42,
-    spine: { lo: 0.35, hi: 1.22, r: 0.3, rt: 0.27 } },
-  drossel: { prof: [[0.44, -0.55], [0.34, -0.25], [0.33, 0.1], [0.42, 0.5], [0.6, 1.0], [0.75, 1.5], [0.85, 1.95], [0.86, 2.3], [0.78, 2.56], [0.62, 2.8], [0.4, 2.96], [0.26, 3.02]],
-    d: 0.74, back: 0.7, bust: { x: 0.33, y: 2.04, s: 0.08, amp: 0.1, r: 0.37, h: 0.3 }, under: 1.68, shoulderY: 2.44, cup: 0.34 },
+    spine: { lo: 0.35, hi: 1.22, r: 0.33, rt: 0.3 } },
 };
 
 /** How much broader the ribcage is drawn than its profile at height y (T.wide eased in over the ribs, 1 at the waist). */
@@ -63,7 +56,7 @@ function planOf(T) {
 }
 
 export function femCoreLook(id, F) {
-  const T = TORSO[F.fem] || TORSO.haydee, D = F.fem === 'drossel', P = band(T.prof, T.prof[0][1], T.prof[T.prof.length - 1][1], 1, 40), W = planOf(T);
+  const T = TORSO[F.fem] || TORSO.haydee, P = band(T.prof, T.prof[0][1], T.prof[T.prof.length - 1][1], 1, 40), W = planOf(T);
   const top = P[P.length - 1][1], depth = (y) => profAt(P, y) * T.back, wide = (y) => profAt(P, y);
   const gap = Math.asin(Math.min(0.9, 0.5 / profAt(P, 2.1)));
   const mounts = {
@@ -111,52 +104,7 @@ export function femCoreLook(id, F) {
       panels(S, [[B0 + 0.06, U + 0.5, -0.06, 0.06, L.trimL, 1.07]], S.trim); // (the sternum strip)
     },
   };
-  /** Drossel's stomacher: a stepped V of trim down the front to a point, a gold line on each step's foot. */
-  const stomacher = (S, n = 7) => {
-    for (let i = 0; i < n; i++) {
-      const y0 = -0.5 + i * ((U + 0.3) / n), y1 = y0 + (U + 0.3) / n - 0.02, h = 0.1 + 0.07 * i;
-      panels(S, [[y0, y1, -h, h, i % 2 ? L.trimM : L.trimL, 1.045]], S.trim);
-      if (i) S.g.geo(sculpt(panel(band(P, y0 - 0.025, y0, 1.05, 1), -h, h, 22), W), { c: L.gold });
-    }
-  };
-  /** The Medici collar: a fan of trim standing up and out behind the neck, its edge gilt. */
-  const collar = (S) => {
-    const y = top - 0.12, prof = [[0.42, y], [0.5, y + 0.25], [0.72, y + 0.62], [0.98, y + 0.9]];
-    S.trim.geo(shell(prof, 28, PI / 2 + 0.25, PI - 0.5), { c: L.trimL });
-    S.g.geo(shell([[0.98, y + 0.88], [1.02, y + 0.93]], 28, PI / 2 + 0.25, PI - 0.5), { c: L.gold });
-    S.trim.geo(shell([[0.44, y - 0.04], [0.48, y + 0.06], [0.44, y + 0.14]], 28), { c: L.trimM }); // (the choker round the neck's foot)
-    const at = on(0, top - 0.25, 1.05);
-    S.g.ring(0.15, 0.035, { at, rot: [PI / 2 - 0.5, 0, 0], c: L.gold }, 20, 4); // (the brooch)
-    S.l.ball(0.12, { at: [at[0], at[1], at[2] + 0.03], sc: [1, 1, 0.5], c: labTone(0.3, 0.2) }, 16, 10);
-  };
-  const drossel = {
-    clayCore(S) {
-      inner(S);
-      panels(S, [[U, top - 0.1, -1.45, 1.45, L.pale], [-0.5, U - 0.04, -1.3, 1.3, L.pale]]);
-      backPlates(S, -0.3, top - 0.2, 1.45 + 2 * G);
-      stomacher(S); collar(S);
-      hoop(S, U + 0.02, 0.025, 1.06, L.gold, S.g); hoop(S, -0.32, 0.03, 1.07, L.gold, S.g);
-    },
-    kilnCore(S) {
-      inner(S);
-      panels(S, [[U, top - 0.1, -1.45, 1.45, L.pale], [-0.5, U - 0.04, -1.3, 1.3, L.mid]]);
-      backPlates(S, -0.3, top - 0.2, 1.45 + 2 * G, L.mid);
-      for (let i = 0; i < 8; i++) { const a = 0.45 + i * 0.32; if (a < PI - gap - 0.1) panels(S, [[-0.45, U + 0.2, a, a + 0.05, L.trimM, 1.05]], S.trim); } // (the boning)
-      for (const y of [-0.3, 0.55, U + 0.02]) hoop(S, y, 0.025, 1.06, L.gold, S.g);
-      for (let i = 0; i < 6; i++) { const y = 0.0 + i * 0.22; for (const s of [-1, 1]) S.g.ball(0.04, { at: on(PI - gap - 0.05 * s - 0.02, y, 1.06), c: L.gold }, 8, 6); } // (the lacing's eyelets up the back)
-      stomacher(S, 6); collar(S);
-    },
-    lightCore(S) {
-      inner(S);
-      panels(S, [[U, top - 0.1, -1.0, 1.0, L.pale], [-0.5, U - 0.04, -0.5, 0.5, L.pale]]);
-      for (let i = 0; i < 6; i++) { const a = 0.6 + i * 0.3; if (a < PI - gap - 0.1) panels(S, [[-0.4, top - 0.4, a, a + 0.06, L.mid, 1.03]]); } // (the birdcage's bars)
-      for (const y of [0.0, 0.8, 1.6]) hoop(S, y, 0.03, 1.04, L.trimM);
-      panels(S, [[1.0, top - 0.2, PI - gap - G - 0.35, PI - gap - G, L.pale]]);
-      panels(S, [[1.0, WIN[0], PI - gap - G, PI - G, L.pale], [WIN[1], top - 0.15, PI - gap - G, PI - G, L.pale]]);
-      stomacher(S, 5); collar(S);
-    },
-  };
-  const build = (D ? drossel : haydee)[id] || (D ? drossel : haydee).clayCore;
+  const build = haydee[id] || haydee.clayCore;
   /** The chest plates: a dome each in its joint's frame (+Z out), seated on the shell's front at the plate's height. */
   const B = T.bust, front = (x) => T.d * Math.sqrt(Math.max(0.05, profAt(P, B.y) ** 2 - (x / wideAt(T, B.y)) ** 2)) + B.amp * 0.8;
   const bust = {
@@ -165,9 +113,8 @@ export function femCoreLook(id, F) {
     build(S, s) {
       const r = B.r, h = B.h, dome = shell([[0.001, h], [r * 0.45, h * 0.9], [r * 0.8, h * 0.6], [r * 0.98, h * 0.22], [r, 0.0], [r * 0.9, -0.12]], 32).rotateX(PI / 2);
       S.p.geo(dome, { sc: [1, 0.94, 1], c: L.pale });
-      S.g.ring(r * 0.99, D ? 0.03 : 0.035, { at: [0, 0, 0.02], sc: [1, 0.94, 1], c: L.gold }, 36, 4); // (the plate's rim)
+      S.g.ring(r * 0.99, 0.035, { at: [0, 0, 0.02], sc: [1, 0.94, 1], c: L.gold }, 36, 4); // (the plate's rim)
       if (id === 'kilnCore') S.trim.geo(shell([[r * 0.62, h * 0.72], [r * 0.7, h * 0.66], [r * 0.62, h * 0.6]], 32).rotateX(PI / 2), { sc: [1, 0.94, 1], c: L.trimM });
-      if (D) S.trim.geo(shell([[0.001, h * 1.02], [r * 0.25, h * 0.98], [r * 0.3, h * 0.9]], 20).rotateX(PI / 2), { c: L.trimL }); // (a lace boss)
       S.core.geo(shell([[r * 0.9, -0.1], [r * 0.8, 0.0]], 24).rotateX(PI / 2), { c: L.coreD }); // (the gap under the rim)
     },
   };
@@ -175,29 +122,25 @@ export function femCoreLook(id, F) {
     mounts, prof: P, plan: W, bust,
     chest(S) {
       build(S); sockets(S);
-      if (!D) { // Haydee's collar ring and the panel line from the underbust round to the blade
+      { // Haydee's collar ring and the panel line from the underbust round to the blade
         S.trim.geo(sculpt(shell([[0.32, top - 0.1], [profAt(P, top - 0.1) * 0.92, top - 0.09], [profAt(P, top - 0.1) * 0.96, top + 0.02], [0.36, top + 0.1]], 32), W), { c: L.trimL });
         for (const s of [-1, 1]) tube(S.core, [on(s * 0.2, B0 + 0.12, 1.045), on(s * 0.8, 1.0, 1.045), on(s * 1.25, 1.6, 1.04)], 0.022, L.coreD, 16);
         S.p.geo(cup(T.spine.rt), { at: [0, T.spine.hi - L.chestBase, 0], c: L.ivory }); // (the ribcage's socket over the column's top ball)
       }
     },
-    /** The waist column (in the waist's frame). Haydee's: a jointed spine piece, a gold ball at each end in its ivory socket (the
-     *  pelvis's below, the ribcage's above), a porcelain drum between with a trim band; Drossel's the wasp waist under her corset. */
-    spine: T.spine || null,
+    /** The waist column (in the waist's frame). Haydee's: a jointed spine piece, a skin ball at each end in its ivory socket (the
+     *  pelvis's below, the ribcage's above), a porcelain drum between with a trim band. */
+    spine: T.spine,
     waist(S) {
       const Sp = T.spine;
-      if (Sp) {
-        ball(S.g, Sp.r, [0, Sp.lo, 0]); ball(S.g, Sp.rt, [0, Sp.hi, 0]);
+      {
+        jointBall(S, Sp.r, [0, Sp.lo, 0]); jointBall(S, Sp.rt, [0, Sp.hi, 0]);
         S.core.lathe([[0.19, Sp.lo], [0.19, Sp.hi]], { c: L.core }, 18);
         const a = Sp.lo + Sp.r * 0.7, b = Sp.hi - Sp.rt * 0.75, m = (a + b) / 2;
         S.p.lathe([[0.2, a], [0.29, a + 0.05], [0.33, m - 0.08], [0.33, m + 0.08], [0.29, b - 0.05], [0.2, b]], { c: L.pale }, 32); // (the drum)
         S.trim.lathe([[0.335, m - 0.045], [0.36, m], [0.335, m + 0.045]], { c: L.trimM }, 32);
         for (const y of [a + 0.02, b - 0.02]) S.p.lathe([[0.22, y - 0.03], [0.25, y], [0.22, y + 0.03]], { c: L.ivory }, 24); // (the drum's lips)
-        return;
       }
-      ball(S.g, 0.5 * F.joint);
-      S.core.lathe([[0.36, -0.05], [0.33, 0.4], [0.36, L.chestBase + 0.1]], { c: L.core }, 24);
-      S.trim.lathe([[0.4, 0.18], [0.44, 0.24], [0.4, 0.3]], { c: L.trimM }, 28); // (a thin ring at the wasp waist)
     },
   };
 }
