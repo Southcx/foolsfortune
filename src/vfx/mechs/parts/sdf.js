@@ -27,7 +27,7 @@
 import * as THREE from 'three';
 
 /** The grid (m a cell at a part's default), the relaxation's share, the cache's size. */
-export const SDF_LOOK = { cell: 0.045, relax: 0.35, cache: 96 };
+export const SDF_LOOK = { cell: 0.045, relax: 0.35, cache: 96, band: 1.6 };
 
 const len3 = (x, y, z) => Math.sqrt(x * x + y * y + z * z);
 const clamp01 = (t) => (t < 0 ? 0 : t > 1 ? 1 : t);
@@ -101,7 +101,7 @@ export function mesh(f, [[x0, y0, z0], [x1, y1, z1]], cell = SDF_LOOK.cell, { ke
   const V = new Float32Array(nx * ny * nz), I = (i, j, k) => i + nx * (j + ny * k);
   // the narrow band: the field asked once a block of B cells at its centre; a block the surface cannot reach (its distance past the
   // block's half diagonal, with a margin for the smooth operators' loose bounds) is filled with that one value, only the rest sampled
-  const B = 4, hb = (B * cell) / 2, reach = (hb * 1.732 + cell) * 1.6;
+  const B = 4, hb = (B * cell) / 2, reach = SDF_LOOK.band > 0 ? (hb * 1.732 + cell) * SDF_LOOK.band : Infinity;
   for (let bk = 0; bk < nz; bk += B) for (let bj = 0; bj < ny; bj += B) for (let bi = 0; bi < nx; bi += B) {
     const ek = Math.min(nz, bk + B), ej = Math.min(ny, bj + B), ei = Math.min(nx, bi + B);
     const d = f(x0 + (bi + hb / cell) * cell, y0 + (bj + hb / cell) * cell, z0 + (bk + hb / cell) * cell);
