@@ -160,7 +160,7 @@ export function railCluster(g) {
 const inArena = (g) => !!g.actions?.live?.()?.has('arena');
 export function arenaCluster(g) {
   if (!inArena(g)) return [];
-  return [E('attack', null, 'ATTACK'), E('special', null, 'SPECIAL'), E('jump', 'jump'), E('shield', null, 'SHIELD')];
+  return [E('attack', 'cuattack', 'ATTACK'), E('special', 'cuspecial'), E('jump', 'jump'), E('shield', 'parry')]; // (glyphs on the small three: their words widened them over each other at 896 x 414)
 }
 
 /** The broadside's side now (seafight.js `broadside`'s own test: the camera's look on port's normal, past SEA_FIGHT.broadside.beam), and
@@ -252,7 +252,7 @@ export function artTile(g) {
  *  ground, as the foot cluster's) and JUMP (the hook's third is JUMP already); at the helm, BROADSIDE and the mounts. */
 export function nearOf(g) {
   if (g.duel?.active) return [];
-  if (inArena(g)) return [E('grab', null, 'GRAB')];
+  if (inArena(g)) return [E('grab', 'grab')];
   if (atHelm(g)) { const B = broadsideOf(g); return [B ? E('broadside', 'broadside', 'BROADSIDE', { charge: B.charge, dim: !B.bears }) : null, ...mountsOf(g)].filter(Boolean).slice(0, 3); }
   if (!onFoot(g)) return [];
   const ctx = inHandCtx(g); if (!ctx) return [];
