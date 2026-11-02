@@ -23,18 +23,18 @@ export const IN_STEP = 0.9;
 export function mechRules({ on, L, log }) {
   let cable = false, run = 0, lastT = null;
   const mine = (e) => e.by === 'courier';
-  on('mech.seal', (e) => { if (!mine(e)) return; cable = false; run = 0; L.inc('mech.seal'); log.say('info', "Your Pneuka Jar turns home in the mech's cradle.", { key: 'mech.seal', throttle: 2 }); });
-  on('mech.launch', (e) => { if (!mine(e)) return; L.inc('mech.launch'); log.say('info', 'The lift carries the mech up to the proving ground.', { key: 'mech.launch', throttle: 2 }); });
-  on('mech.unseal', (e) => { if (!mine(e)) return; L.inc('mech.unseal'); if (e.why !== 'wrecked') log.say('info', 'Your Pneuka Jar lifts out of the mech.', { key: 'mech.unseal', throttle: 2 }); });
+  on('mech.seal', (e) => { if (!mine(e)) return; cable = false; run = 0; L.inc('mech.seal'); log.say('info', 'Your Pneuka Jar is sealed into the mech.', { key: 'mech.seal', throttle: 2 }); });
+  on('mech.launch', (e) => { if (!mine(e)) return; L.inc('mech.launch'); log.say('info', 'Mech launched to the proving ground.', { key: 'mech.launch', throttle: 2 }); });
+  on('mech.unseal', (e) => { if (!mine(e)) return; L.inc('mech.unseal'); if (e.why !== 'wrecked') log.say('info', 'Your Pneuka Jar is out of the mech.', { key: 'mech.unseal', throttle: 2 }); });
   on('mech.fail', (e) => {
     L.inc('mech.fail'); if (e.why) L.inc(`mech.fail.${e.why}`);
-    log.say('warn', e.why === 'core' ? "The mech's core breaks. It kneels and throws your Pneuka Jar clear." : "The mech's battery and your pool are spent. It kneels and throws your Pneuka Jar clear.", { key: 'mech.fail', throttle: 2 });
+    log.say('warn', e.why === 'core' ? 'Mech core broken. Your Pneuka Jar is thrown clear.' : 'Mech battery and pool empty. Your Pneuka Jar is thrown clear.', { key: 'mech.fail', throttle: 2 });
   });
   on('mech.step', (e) => { if (mine(e) && e.beat === 'beat') L.inc('mech.step.beat'); });
   on('mech.boost', (e) => { if (mine(e)) L.inc('mech.boost'); });
   on('mech.cable', (e) => {
     if (!mine(e)) return; cable = !!e.plugged;
-    log.say('info', cable ? 'The cable is in: the battery fills.' : 'Off the cable: the battery is all there is.', { key: 'mech.cable', throttle: 1 });
+    log.say('info', cable ? 'Cable connected. The battery is refilling.' : 'Cable disconnected. The battery no longer refills.', { key: 'mech.cable', throttle: 1 });
   });
   on('mech.sync', (e) => {
     if (!mine(e)) return;
@@ -42,10 +42,10 @@ export function mechRules({ on, L, log }) {
     const now = performance.now() / 1000, dt = lastT == null ? 0 : Math.min(2, now - lastT); lastT = now;
     run = (e.v || 0) >= IN_STEP ? run + dt : 0; L.hi('mech.sync.run', Math.floor(run));
   });
-  on('mech.barrier', (e) => { if (mine(e) && e.neutralised) { L.inc('mech.barrier'); log.say('gain', "The giant's barrier falls.", { key: 'mech.barrier', throttle: 2 }); } });
-  on('mech.hurt', (e) => { if (e.broke) { L.inc('mech.region.break'); log.say('warn', `The mech's ${e.region === 'armL' ? 'left arm' : e.region === 'armR' ? 'right arm' : e.region} breaks.`, { key: `mech.break.${e.region}`, throttle: 2 }); } });
-  on('mech.berserk', () => { L.inc('mech.berserk'); log.say('warn', 'The mech moves on its own.', { key: 'mech.berserk', throttle: 4 }); });
-  on('giant.wake', (e) => log.say('info', `The ${(giantOf(e.id)?.label || 'giant').toLowerCase()} stirs.`, { key: 'giant.wake', throttle: 4 }));
+  on('mech.barrier', (e) => { if (mine(e) && e.neutralised) { L.inc('mech.barrier'); log.say('gain', "Giant's barrier broken.", { key: 'mech.barrier', throttle: 2 }); } });
+  on('mech.hurt', (e) => { if (e.broke) { L.inc('mech.region.break'); log.say('warn', `Mech's ${e.region === 'armL' ? 'left arm' : e.region === 'armR' ? 'right arm' : e.region} broken.`, { key: `mech.break.${e.region}`, throttle: 2 }); } });
+  on('mech.berserk', () => { L.inc('mech.berserk'); log.say('warn', 'Mech berserk. It is out of your control.', { key: 'mech.berserk', throttle: 4 }); });
+  on('giant.wake', (e) => log.say('info', `The ${(giantOf(e.id)?.label || 'giant').toLowerCase()} wakes.`, { key: 'giant.wake', throttle: 4 }));
   on('giant.stagger', (e) => { if (e.by && !mine(e)) return; L.inc('giant.stagger'); log.say('gain', 'The giant staggers.', { key: 'giant.stagger', throttle: 1.5 }); });
   // ---- v2: techniques, the toy city, props, joints (MECHS.md 9) ----
   let lastArm = { L: -9, R: -9 };
@@ -65,7 +65,7 @@ export function mechRules({ on, L, log }) {
   on('city.break', (e) => { if (!mine(e)) return; L.inc('mech.destroy.cells', e.cells || 0); if (e.chunks) L.inc('mech.destroy.chunks', e.chunks); });
   on('city.felled', (e) => {
     if (!mine(e)) return; L.inc('mech.destroy.buildings'); if (e.topple) L.inc('mech.destroy.topple');
-    log.say('gain', e.topple ? `The ${(e.label || 'building').toLowerCase()} comes down in one.` : `The ${(e.label || 'building').toLowerCase()} comes down.`, { key: 'city.felled', throttle: 1.5 });
+    log.say('gain', e.topple ? `The ${(e.label || 'building').toLowerCase()} collapses in one piece.` : `The ${(e.label || 'building').toLowerCase()} collapses.`, { key: 'city.felled', throttle: 1.5 });
   });
   on('mech.grab', (e) => { if (mine(e)) L.inc(`mech.prop.grab.${e.prop}`); });
   on('mech.prop.hit', (e) => { if (!mine(e)) return; L.inc('mech.prop.hit'); if ((e.n || 0) >= 3) L.inc('mech.prop.spin3'); if (e.prop === 'limb' && e.own) L.inc('mech.limb.own'); });
@@ -77,7 +77,7 @@ export function mechRules({ on, L, log }) {
     log.say(e.who === 'mech' ? 'warn' : 'gain', e.who === 'mech' ? `Your mech's ${part} tears off.` : `The ${(e.label || e.who).toLowerCase()}'s ${part} tears off.`, { key: `mech.joint.${e.who}.${e.joint}`, throttle: 1 });
   });
   // ---- the ring (ring.js events, carried by the runtime with `by` and the rival's id) ----
-  on('bout.enter', (e) => { if (mine(e)) log.say('info', `You square up to the ${(e.label || 'rival').toLowerCase()}.`, { key: 'bout.enter', throttle: 2 }); });
+  on('bout.enter', (e) => { if (mine(e)) log.say('info', `Bout against the ${(e.label || 'rival').toLowerCase()}. Fight!`, { key: 'bout.enter', throttle: 2 }); });
   on('bout.star', (e) => { if (mine(e) && e.stars) L.hi('mech.bout.stars', e.stars); });
   on('bout.punch', (e) => { if (mine(e) && e.broke) L.inc('mech.bout.chargebreak'); });
   on('bout.down', (e) => { log.say(e.who === 'me' ? 'warn' : 'gain', e.who === 'me' ? 'You are down.' : `The ${(e.label || 'rival').toLowerCase()} is down.`, { key: 'bout.down', throttle: 1 }); });
@@ -86,7 +86,7 @@ export function mechRules({ on, L, log }) {
     if (e.practice) return; L.inc('mech.bout');
     const HOW = { ko: 'by knockout', tko: 'by a technical knockout', head: 'with its head knocked clean off', arms: 'with both its arms torn off', decision: 'on points' };
     if (e.winner === 'me') { L.inc('mech.bout.won'); L.inc(`mech.bout.won.${e.rival}`); L.inc(`mech.bout.how.${e.how}`); if (e.perfect) L.inc('mech.bout.perfect'); }
-    log.say(e.winner === 'me' ? 'gain' : 'warn', e.winner === 'me' ? `You beat the ${(e.label || 'rival').toLowerCase()} ${HOW[e.how] || ''}.`.replace(' .', '.') : e.how === 'head' ? 'Your mech\'s head pops off its neck. The bout is lost.' : `The ${(e.label || 'rival').toLowerCase()} beats you ${HOW[e.how] || ''}.`.replace(' .', '.'), { key: 'bout.over', throttle: 2 });
+    log.say(e.winner === 'me' ? 'gain' : 'warn', e.winner === 'me' ? `You beat the ${(e.label || 'rival').toLowerCase()} ${HOW[e.how] || ''}.`.replace(' .', '.') : e.how === 'head' ? 'Your mech\'s head is knocked off. Bout lost.' : `The ${(e.label || 'rival').toLowerCase()} beats you ${HOW[e.how] || ''}.`.replace(' .', '.'), { key: 'bout.over', throttle: 2 });
   });
   on('giant.down', (e) => {
     if (!mine(e)) return;

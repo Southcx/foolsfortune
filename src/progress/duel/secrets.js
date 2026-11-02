@@ -73,7 +73,7 @@ export const SECRETS = {
   // The mechanic is the lesson (DESIGN.md 22): keeping time, then syncopation, as a drummer learns them.
   // Prior art: Rhythm Heaven (a lenient window on a heard beat, the off-beat turned on you), Crypt of the NecroDancer (every move on the
   // beat), Parappa's call and response, Patapon's drums, a busker's crowd clapping along.
-  clapback: { of: 'The clapperjar', label: 'Clap back', line: 'Let your drag go on its clap, and clear, three turns running: it loses its own time and claps itself to pieces', need: 3,
+  clapback: { of: 'The clapperjar', label: 'Clap back', line: 'Release your drag on its clap and clear, three turns in a row; it loses its rhythm and claps itself to pieces', need: 3,
     start: () => ({ id: 'clapback', k: 0, streak: 0, off: false, last: -9, half: false }),
     step: (s, side, events) => {
       const S = s.secret, def = SECRETS.clapback; if (side !== 0 || s.beatLast == null || S.last === s.ply) return []; // (only a drag of yours counts, the turn's first: s.beatLast is set by act for a drag; an Encore's second keeps no extra time)

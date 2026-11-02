@@ -452,8 +452,8 @@ paid bronze, silver and gold (`medalOf`). A challenge lays out its own targets a
 
 | challenge | what | limit | scored by | medals |
 |---|---|---|---|---|
-| Javelin | a post or girder thrown from the line | 3 throws | best distance (m) | 60 / 100 / 140 |
-| Bullseye | rings on the ground 110 m down the lane | 3 throws | ring points (100, 50, 25, 10) | 100 / 175 / 250 |
+| Javelin | a post or girder thrown from the line | 3 throws | best distance (m) | 100 / 140 / 170 |
+| Bullseye | rings on the ground 70 m down the lane | 3 throws | ring points (100, 50, 25, 10) | 100 / 175 / 250 |
 | Bowling | the water tower thrown at ten clay pins | 2 throws | pins down; a strike, a spare | 7 / 9 / 10 |
 | Demolition | the toy city | 60 real s | cells broken | 400 / 900 / 1600 |
 | Wrecking Crew | the toy city | 120 real s | buildings felled | 2 / 4 / 6 |
@@ -476,6 +476,15 @@ Events: `challenge.start { id }`, `challenge.score { id, add, total, what }`, `c
   or slammed down with LMB. Only legs that hold three tonnes a metre of the giant's height can lift it: every frame lifts the straw giant,
   only the crab legs and the tread lift the colossus.
 - Events: `giant.grab { id }`, `giant.throw { id, hit, cells }`, `giant.slam { id }`, `giant.slip { id, why }`. Achievements mk22 to mk24.
+
+### 11.4 The shadow frame (`ring.js`; Punch-Out!!'s dream fight)
+
+A secret fourth rival on the circuit: every move of the three before it in one frame, quicker (the jab, the hook, a five-punch flurry,
+the uppercut, the hopping charge, the champion's blink and its feint, and one taunt). It is offered only once the champion is beaten and
+you have won a bout untouched (`secret: ['mech.bout.perfect', 1]`, read by `rivalOpen`). Its charge has no break: it learned from the
+heavy frame. Measured (scripts/mechs.mjs, 12 bouts a stand-in): the expert wins every bout in about 93 s, the decent 8 of 12 in about
+106 s, the novice and the masher none (the champion: 104 s, 8 of 12). Its body is the sparring frame's placeholder until Calissa's.
+Achievement mk25 (hidden, the title Dreamer).
 
 ### 11.3 Who builds what (the night)
 

@@ -42,6 +42,7 @@ export class MechReadout {
       st.giant = { word: Gi.down > 0 ? `DOWN ${Math.ceil(Gi.down)}` : Gi.awake ? 'AWAKE' : 'WAITING', barrier: B.downT > 0 ? 0 : B.up,
         barrierDown: Number.isFinite(B.downT) ? B.downT : 0, stagger: Math.min(1, s.v / STAGGER.full), staggered: s.staggerT > 0 };
     }
+    st.challenge = H.challenges?.lines?.() || null; // (the smash challenge under way, or the lectern's offer: Dovina's challenges.js)
     return st;
   }
 }

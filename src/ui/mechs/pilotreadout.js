@@ -184,6 +184,9 @@ export class PilotReadout {
     this.drawDoll(s.regions, d, dpr);
     const broke = s.regions.filter((r) => r.broke).map((r) => r.id);
     this.broke.textContent = broke.length ? `${broke.length > 1 ? `${broke.length} ` : ''}BROKE` : '';
+    // the smash challenge's lines (Dovina's challenges.js, plain text in the counts face under the panel)
+    if (!this.chal) { this.chal = mk('div', 'mkp-chal', ''); Object.assign(this.chal.style, { whiteSpace: 'pre', font: 'calc(var(--d) * 9) / 1.3 ui-monospace, monospace', color: '#f2e2c8', marginTop: 'calc(var(--d) * 4)' }); el.appendChild(this.chal); }
+    this.chal.hidden = !s.challenge?.length; if (s.challenge?.length) this.chal.textContent = s.challenge.join('\n');
     // the giant's line
     const G = s.giant; this.gcol.hidden = !G;
     if (G) {
