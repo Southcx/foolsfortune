@@ -17,3 +17,12 @@ The secret needs three things from your files:
    the cue.
 
 Delete this note when done.
+
+## Also this round (G13, G51)
+- **Bite Sense** (`KNACKS.biteSense`, `progress/knacks.js`): the hook's window stays open 1.3 times as long while `game.knacks.on('biteSense')` is on. That means `f.window` × 1.3 in `angler.js`, around line 453, with the !!! held for the same time. The switch is yours, as every knack's is. The knack opens at 200 hooks set or 25 set perfect.
+- **This round's presets** (`debug/presets.js`), for the Brief to name:
+  - `clapperjarDuel`: the lectern's CLAP pick;
+  - `encoreLearned`: all three learned skills;
+  - `hangarOpen`: every technique and the ring's circuit, now Calissa's module;
+  - `biteSense`.
+- `DUE_EVERY` (`worldshells.js`) is now 3, down from 12. It was measured: the Shore grows at most 2 full-grown blots a real hour (`scripts/economy.mjs`).

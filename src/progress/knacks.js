@@ -62,6 +62,9 @@ export const KNACKS = {
   wideSights: { name: 'Wide Sights', does: "On a crossing, your sights find a foe further from the reticle, and the lock-on reaches wider", // (plain name until Espada's; the Game Accessibility Guidelines' "assist modes such as auto-aim": RAIL-STANDARDS.md 6)
     opens: (L) => G(L, 'rail.broken') >= 2 || G(L, 'rail.leg.medal') >= 3, // (two crossings the ship could not bear, Super Guide's offer after failing; or three legs medalled)
     switch: "courier/ship/ship.js (the aim's foe snap, max(0.8, radius), and lock.reach 0.14: Petra's)", number: 'the snap x1.75, the lock-on reach x1.5' },
+  biteSense: { name: 'Bite Sense', does: 'Holds the hook\'s window a third longer when a fish takes the lure', // (ANGLING.md 6; the plan's name, Espada's to rule)
+    opens: (L) => G(L, 'angle.hookset') >= 200 || G(L, 'angle.hookset.perfect') >= 25, // (200 hooks set, or 25 set in the window's sweet middle: angler.js quality 'perfect')
+    switch: "tools/sondelass/angling/angler.js (the bite's window: f.window x1.3 while game.knacks.on('biteSense'), the !!! held with it: Petra's)", number: 'the window x1.3' },
   // Two-Tone (an agate's two colours on a creature's body) waits for the agate named at appraisal (`appraise.mood`), which it counts.
 };
 
