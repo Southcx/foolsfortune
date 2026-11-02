@@ -26,7 +26,7 @@
 import { TouchTile, TILE } from './tile.js';
 import { touchTiles } from './presses.js';
 import { placeOf, windowOpen } from './areas.js';
-import { footCluster, toolCluster, helmCluster, inHandCtx } from './actioncontext.js';
+import { footCluster, toolCluster, helmCluster, railCluster, arenaCluster, inHandCtx } from './actioncontext.js';
 
 /** The numbers (CSS px): the gap between tiles, the margin off the area's corner; the Jar's least speed for JUMP (m/s); the room kept
  *  clear of the art bar's edge (its side strip stands there). */
@@ -63,7 +63,9 @@ export function clusterContext(game) {
   }
   if (g.duel?.active) return []; // (the duel's phone screen holds its tiles: duelscreen.js)
   if (g.opensea?.sailing) return helmCluster(g).filter(Boolean); // (the open sea's helm: its own verbs, the stick the rudder alone)
-  if (T?.active || g.god?.controlling || g.duel?.pending || g.rail?.stage?.active) return [];
+  if (g.actions?.live?.()?.has('arena')) return arenaCluster(g); // (the Arena: ATTACK, SPECIAL, JUMP, SHIELD; GRAB on the near shelf)
+  if (g.rail?.stage?.active) return railCluster(g).filter(Boolean); // (the crossing: FIRE, ROLL, FORM, SURGE; the sweep is the lock)
+  if (T?.active || g.god?.controlling || g.duel?.pending) return [];
   const ctx = inHandCtx(g), tool = ctx && toolCluster(g, ctx);
   return (tool || footCluster(g, use)).filter(Boolean); // (on foot: DASH always, the Shift press, Dovina's ruling 2026-10-24: the air dash is the core movement's)
 }
@@ -148,7 +150,7 @@ export class TouchCluster {
       else if (id === 'boost') t.set({ pips: Math.min(3, T?.combo?.stocks || 0) });
       else if (id === 'use') { const L = useLabel(g); if (L) { const before = t.w; t.label(L.word, L.corner); if (t.widthFor(t.size) !== before) this.layout(); } }
       const e = this.entries?.find((x) => x.id === id);
-      t.set({ lit: held || !!e?.lit }); if (id !== 'flare') t.set({ dim: !!e?.dim }); // (FLARE's dim is the luffed sail's, above)
+      t.set({ lit: held || !!e?.lit }); if (id !== 'flare') t.set({ dim: !!e?.dim }); if (e?.pips !== undefined) t.set({ pips: e.pips }); // (the roll's charges on the crossing) // (FLARE's dim is the luffed sail's, above)
       t.update(now);
     }
   }

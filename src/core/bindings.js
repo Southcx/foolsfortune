@@ -128,6 +128,13 @@ export const ACTIONS = [
   { id: 'raBoost',  keys: ['ShiftLeft'],  pad: 'RB',    touch: 'boost',      ctx: 'rail', how: 'hold' },
   { id: 'raBrake',  keys: ['KeyC'],       pad: 'LB',    touch: 'brake',      ctx: 'rail', how: 'hold' },
   // ---- the free helm (M4: the open sea; Petra's ctx `helm`). The rudder on the move area's stick (A / D); the throttle a notch a tap
+  // the Arena (ctx `arena`: while the fighter kit holds its keys, world/strawmanwell/fighter/keys.js; Dovina's touch audit, 2026-11-01:
+  // bare hands had no attack on touch). Slots and pad buttons as TOUCH-REBUILD.md 4's table: A attack, B shield, C jump, D special, E grab.
+  { id: 'arAttack', mouse: 'Mouse0',      pad: 'X',     touch: 'attack',     ctx: 'arena', how: 'hold' },  // (LMB: the jab and tilts by the stick; after a stick flick, the smash)
+  { id: 'arSpecial', mouse: 'Mouse2',     pad: 'Y',     touch: 'special',    ctx: 'arena', how: 'hold' },  // (RMB: the special by the stick, the back special against the facing)
+  { id: 'arJump',   keys: ['Space'],      pad: 'A',     touch: 'jump',       ctx: 'arena', how: 'hold' },
+  { id: 'arShield', keys: ['ShiftLeft'],  pad: 'B',     touch: 'shield',     ctx: 'arena', how: 'hold' },  // (held; with the stick, the dodge)
+  { id: 'arGrab',   keys: ['KeyR'],       pad: 'RB',    touch: 'grab',       ctx: 'arena', how: 'tap' },
   { id: 'heUp',     keys: ['KeyW'],       pad: 'Up',    touch: 'throttle.up',   ctx: 'helm', how: 'tap' },
   { id: 'heDown',   keys: ['KeyS'],       pad: 'Down',  touch: 'throttle.down', ctx: 'helm', how: 'tap' },
   { id: 'heMoor',   keys: ['KeyF'],       pad: 'A',     touch: 'use',        ctx: 'helm', how: 'tap' },   // (moor, dock or board: USE names its thing)
@@ -204,7 +211,7 @@ export const ACTIONS = [
 ];
 
 /** The precedence: the first live ctx in this order that binds a pad button or a touch control wins it (MOBILE.md 6.1.1). */
-export const CTX_ORDER = ['race', 'skiff.rail', 'skiff.air', 'skiff', 'rhythm', 'duel', 'godhand', 'garden', 'rail', 'helm', 'tool.psygun', 'tool.cutlass', 'tool.rod', 'tool.hook', 'tool.brush', 'tool.veritome', 'tool.dreamvane', 'tool.crucibelle', 'tool.lockheart', 'foot.ground', 'foot', 'any'];
+export const CTX_ORDER = ['race', 'skiff.rail', 'skiff.air', 'skiff', 'rhythm', 'duel', 'godhand', 'garden', 'arena', 'rail', 'helm', 'tool.psygun', 'tool.cutlass', 'tool.rod', 'tool.hook', 'tool.brush', 'tool.veritome', 'tool.dreamvane', 'tool.crucibelle', 'tool.lockheart', 'foot.ground', 'foot', 'any'];
 /** The Gamepad API's standard mapping, by the table's names. */
 export const PAD_BUTTONS = { A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, Back: 8, Start: 9, LS: 10, RS: 11, Up: 12, Down: 13, Left: 14, Right: 15 };
 
