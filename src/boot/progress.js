@@ -14,6 +14,7 @@ import { CourierMind } from '../courier/mind.js';
 import { PalmDie, Rerolls } from '../progress/dice.js';
 import { WorldShellFinds } from '../progress/combat/worldshells.js';
 import { HandPose } from '../progress/mudras.js';
+import * as TouchArc from '../progress/toucharc.js';
 import { installBracelets } from '../vfx/braceletwear.js';
 import { Daylight } from '../render/daylight.js';
 import { Flash } from '../tools/veritome/flash.js';
@@ -82,6 +83,7 @@ export function bootProgress(game, made) {
   if (game.realm) { game.gardenMycelium = new GardenMycelium(game.realm); game.hearth = new Hearth(game.realm); } // (the mycelium in the Inner Realm: Myggdrasil's planetoid, the spore beds, the pots: world/garden/mycelium.js; Spirit Cooking's hearth on the Athanor: world/garden/hearth.js)
   game.cooking = new Cooking(game); // (Spirit Cooking kept: practice, recipes, the proof, a dish's held draught: progress/cooking/cooking.js)
   game.creatureDrops = new CreatureDrops(game); game.systems?.add('looks', game.creatureDrops, { name: 'creatureDrops' }); // (what a creature you brought down drops, on the ground: world/drops/creaturedrops.js)
+  game.touchArc = TouchArc; // (the arc's grid, slots and fold as data, for the touch driver and its tiles: progress/toucharc.js, TOUCH-REBUILD.md 3.1.1, 7)
   game.alchemy = new SoulAlchemy(game); // (the spirit press: the soul colour, the attributes: progress/alchemy.js)
   game.weather = new Weather(game); // (emotional weather and the day: progress/weather.js)
   game.courierMind = new CourierMind(game); // (your mental state and your draught, kept: courier/mind.js; the garden's rain reads it)
