@@ -17,7 +17,7 @@
 // Toribash (joints past a threshold, the limb left in play).
 //
 //   const S = new StrawGiant(game)   S.spawn(into)   S.remove()   S.update(dt, mech)   (mech: { pos, radius, pressing, hurt(region, k) } or null)
-//   S.blow({ weapon, k, stagger, heavy, pierce, region, from? (the striker's place: a body blow from its side lands on that arm), by }) -> { blocked, pierced, staggered, felled, crit }   S.slow(k, secs)   S.pos   S.awake
+//   S.blow({ weapon, k, stagger, heavy, pierce, region, from? (the striker's place: a body blow from its side lands on that arm), by }) -> { blocked, pierced, staggered, felled, crit }   S.pos   S.awake
 //   S.barrier { up, downT }   S.stagger { v, quietT, staggerT }   S.vessel   S.down (real s left down, 0 standing)   S.dispose()   GIANT_LOOK   DOWN_FOR
 //   S.joints (joints.js newJoints: strained by every blow, a snapped one's part hidden and handed to S.onLimb(part, at, joint))   GIANT_PARTS   GIANT_JOINTS
 //   events: giant.wake { id }, giant.windup { id, move }, giant.stagger { id }, giant.down { id, weapon, leg }, mech.barrier { neutralised },
@@ -66,7 +66,7 @@ export class StrawGiant {
   stand() {
     this.unregister();
     this.pos.copy(this.home); this.yaw = this.homeYaw;
-    this.awake = false; this.down = 0; this.windup = null; this.timers = {}; this.slowT = 0; this.slowK = 1; this.anim = 0; this.lastWeapon = null;
+    this.awake = false; this.down = 0; this.windup = null; this.timers = {}; this.anim = 0; this.lastWeapon = null;
     this.barrier = { up: this.G.barrier ? 1 : 0, downT: this.G.barrier ? 0 : Infinity };
     this.stagger = { v: 0, quietT: 0, staggerT: 0 };
     this.vessel = newVessel('giant'); this.joints = newJoints();
@@ -110,7 +110,6 @@ export class StrawGiant {
   }
 
   get barrierHolds() { return this.barrier.downT <= 0; }
-  slow(k, secs) { this.slowK = Math.min(this.slowK, k); this.slowT = Math.max(this.slowT, secs); }
   cancel() { if (this.windup && this.c) this.game.creatures?.unwind?.(this.c, 'cancel'); this.windup = null; }
   emit(n, p) { this.game.events?.emit(n, { id: this.G.id, ...p }); }
 
@@ -181,7 +180,6 @@ export class StrawGiant {
     if (b.rose) this.game.events?.emit('mech.barrier', { neutralised: false, giant: this.G.id, by: 'creature' });
     this.barrier = { up: b.up, downT: b.downT };
     this.stagger = staggerStep(this.stagger, { dt });
-    if (this.slowT > 0) { this.slowT -= dt; if (this.slowT <= 0) this.slowK = 1; }
     if (this.awake && mech && this.stagger.staggerT <= 0) this.act(dt, mech, d);
     this.pose(dt);
   }
@@ -193,7 +191,7 @@ export class StrawGiant {
     this.yaw += Math.sign(dy) * Math.min(Math.abs(dy), GIANT_LOOK.turn * dt);
     const gap = d - mech.radius - GIANT_LOOK.radius;
     const legs = legsLeft(this.joints), legK = legs === 2 ? 1 : legs === 1 ? GIANT_JOINTS.oneLeg : 0; // (a leg gone: it drags itself; none, it stays)
-    if (!this.windup && gap > G.reach * GIANT_LOOK.closeK) { _v.set(Math.sin(this.yaw), 0, Math.cos(this.yaw)); this.pos.addScaledVector(_v, G.speed * this.slowK * legK * dt); }
+    if (!this.windup && gap > G.reach * GIANT_LOOK.closeK) { _v.set(Math.sin(this.yaw), 0, Math.cos(this.yaw)); this.pos.addScaledVector(_v, G.speed * legK * dt); }
     if (this.windup) {
       const W = this.windup; W.t -= dt;
       if (W.t <= 0) {

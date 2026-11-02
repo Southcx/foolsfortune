@@ -96,9 +96,6 @@ export class MechBody {
   weapon(P, hand) {
     if (!P || !P.mass) { this.box(2.2, 2.2, 2.2, 'joint', 0, -0.6, 0.2, hand); return hand; } // (the bare fist)
     if (P.charge) { this.cyl(0.45, 6.5, 'steel', hand, { y: -0.6, z: 2.6 }); this.box(1.2, 1.6, 2.4, 'joint', 0, -0.6, 0, hand); return hand; } // (the big gun)
-    if (P.paint) { this.cyl(0.25, 7, 'joint', hand, { y: -0.6, z: 2.5 }); this.cyl(1.1, 2.2, 'gold', hand, { y: -0.6, z: 6.5, r2: 0.3 }); return hand; } // (the great brush)
-    if (P.cone) { this.cyl(1.6, 2.6, 'gold', hand, { y: -1.8, axis: 'y', r2: 0.6 }); return hand; } // (the great bell)
-    if (P.momentum) { this.box(0.2, 3, 0.2, 'steel', 0, -1.5, 0, hand); this.box(2, 3.6, 1.2, 'joint', 0, -4.6, 0, hand); return hand; } // (the flail's coffin on its chain)
     this.box(0.5, 0.8, 8, 'steel', 0, -0.6, 3.6, hand); return hand; // (the great blade)
   }
 
