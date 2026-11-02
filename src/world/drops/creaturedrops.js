@@ -10,6 +10,10 @@
 // module is edited for it. Events (with `by`): drop.fall { item, cat, kind, rare, by } as each is thrown, drop.take { item, cat, by } as
 // it reaches the Box.
 //
+// In a Well a drop is the run's haul (Dovina's ruling, 2026-11-02, on Petra's question: the glossary's haul "comes home only up the way
+// up"): taken, it goes into the run's haul (game.well.run.haul), so it comes home up the way up or by the Wake Whistle and is lost with a
+// shatter, as a floor's material is. A drop is a thing of its place: leaving the render zone it fell in clears what is still lying there.
+//
 // Prior art: Kingdom Hearts and Diablo (loot bursts out and the walk takes it), Old School RuneScape (a full inventory leaves it on the
 // floor), Doom and Minecraft's billboard pickups (a sprite turned to the eye reads from any angle, at a few pixels' cost).
 //
@@ -23,6 +27,7 @@ import { luckOf } from '../../progress/luck.js';
 import { itemOf } from '../../pneuka/items.js';
 import { stream } from '../../core/rng.js';
 import { RAPIER } from '../../core/physics.js';
+import { zoneOf } from '../../render/zonemap.js';
 
 const rand = stream('world/creaturedrops');
 
@@ -67,7 +72,7 @@ export class CreatureDrops {
       const ring = new THREE.Mesh(this.ringGeo, new THREE.MeshBasicMaterial({ color: d.rare ? 0xffd36a : 0xd9c8ff, transparent: true, opacity: 0, depthWrite: false }));
       this.group.add(sp, ring);
       const e = { ...d, sp, ring, pos: at.clone(), vel: new THREE.Vector3(Math.cos(a) * o, DROPS.up[0] + rand() * (DROPS.up[1] - DROPS.up[0]), Math.sin(a) * o), rest: false, floor: (P?.pos?.y ?? at.y) - 0.0, t: 0, fly: false };
-      e.floor = this.floorAt(at, e.floor);
+      e.floor = this.floorAt(at, e.floor); e.zone = zoneOf(at);
       this.list.push(e);
       g.events?.emit('drop.fall', { item: d.id, cat: d.cat, kind, ...(d.rare ? { rare: true } : {}), by: 'courier' });
     }
@@ -102,10 +107,10 @@ export class CreatureDrops {
   update(dt) {
     if (!this.game.creatures) return;
     this.watch();
-    const P = this.game.player, me = P?.pos, cam = this.game.camera;
+    const P = this.game.player, me = P?.pos, cam = this.game.camera, zone = me ? zoneOf(me) : null;
     for (let i = this.list.length - 1; i >= 0; i--) {
       const e = this.list[i]; e.t += dt;
-      if (e.t > DROPS.life) { this.remove(i); continue; }
+      if (e.t > DROPS.life || (zone && e.zone && zone !== e.zone)) { this.remove(i); continue; } // (faded, or its place left behind)
       const d = me ? Math.hypot(e.pos.x - me.x, e.pos.z - me.z) + Math.abs(e.pos.y - (me.y + 0.6)) * 0.5 : Infinity;
       if (e.rest && me && d < DROPS.magnet) e.fly = true;
       if (e.fly && me) { // (drawn to the chest; taken on arrival)
@@ -130,6 +135,8 @@ export class CreatureDrops {
   take(i) {
     const e = this.list[i], g = this.game; this.remove(i);
     const data = e.mat ? makeMaterial(e.mat, Math.floor(rand() * 1e9), e.tier || 0, g.weather?.here?.(g.player?.pos)) : null;
+    const run = g.well?.active ? g.well.run : null;
+    if (run?.haul) { run.haul.push({ id: e.id, data }); g.events?.emit('drop.take', { item: e.id, cat: e.cat, haul: true, by: 'courier' }); return; } // (a Well's: the haul's)
     const slot = g.pneuka?.add(e.id, 'drop', 0, data);
     if (slot != null && slot >= 0) g.events?.emit('drop.take', { item: e.id, cat: e.cat, by: 'courier' });
   }

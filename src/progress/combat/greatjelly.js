@@ -120,6 +120,6 @@ export const DROPS = [
  *  - a title (`give.title`) is the achievement's own title (`achievements.js` `{ title }`), as FFXIV's.
  *  - the mount (`give.mount`) is open: a slip jelly ridden in the Dunes is a feature of its own (its body, its controls, its place
  *    beside the Solar Skiff); until it is built, the achievement and the drop's line in the log stand, and nothing is put in the box.
- *  The log says each as it drops (`tracking/dunemaw.js`: "It drops <name>."). */
+ *  The log says each as it drops (`tracking/dunemaw.js`: "Dropped: <name>."). */
 /** The cosmetics this fight drops: every one whose criteria the run met (the boss drops them, directly). */
 export const dropsFor = (run = {}) => DROPS.filter((d) => d.met({ win: run.how === 'burst' || run.how === 'reprogram', ...run })).map((d) => d.id);
