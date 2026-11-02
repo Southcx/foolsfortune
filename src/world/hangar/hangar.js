@@ -100,6 +100,7 @@ export class Hangar {
     const P = PROVING.at, Gs = PROVING.giant;
     this.giant.spawn(this.field.group, new THREE.Vector3(P.x + Gs.x, P.y, P.z + Gs.z), Gs.yaw); this.post.build(this.field.group);
     this.addCradle();
+    g.hangarDress?.build(this); // (Calissa's dress over these boxes: vfx/mechs/hangardress/)
     this.built = true;
   }
 
@@ -130,6 +131,7 @@ export class Hangar {
   teardown() {
     if (!this.built) return;
     const g = this.game;
+    g.hangarDress?.teardown();
     if (this.cradle) { g.cradles?.remove(this.cradle); this.cradle = null; }
     this.readout.hide(); this.assembly.close();
     this.challenges.teardown(); this.bout.teardown(); this.props.teardown(); this.city.teardown(); this.post.dispose(); this.giant.dispose(); this.pilot.dispose(); this.field.teardown();

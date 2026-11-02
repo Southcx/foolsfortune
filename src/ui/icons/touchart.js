@@ -32,12 +32,14 @@
 // universal glyphs every phone already teaches (the gear, the balloon, the hooked undo, the two bars of pause).
 //
 //   the action modes  on foot, the tools in hand and the puzzle duel: touchactionart.js (spread in at the end)
+//   a mech            the arc's tiles while sealed in a frame: touchmechart.js (spread in at the end)
 //
 //   TOUCH_ART[id] -> rows (14 x 14)
 // ---------------------------------------------------------------------------------------
 import { grid } from './hand.js';
 import { TOUCH_ACTION_ART } from './touchactionart.js';
 import { TOUCH_MOUNT_ART } from './touchmountart.js';
+import { TOUCH_MECH_ART } from './touchmechart.js';
 
 const R = (x, y, cx, cy) => Math.hypot(x + 0.5 - cx, y + 0.5 - cy);
 
@@ -617,4 +619,5 @@ export const TOUCH_ART = {
   ],
   ...TOUCH_ACTION_ART, // (on foot, the tools in hand, the puzzle duel: MOBILE.md 8.5, 8.8, 8.9)
   ...TOUCH_MOUNT_ART, // (the mounts at the free helm: OPEN-SEA.md 14.2)
+  ...TOUCH_MECH_ART, // (sealed in a mech: the arms by their weapons, the press, the back unit, the boost, the cable, stepping out; MECHS.md 4.9)
 };

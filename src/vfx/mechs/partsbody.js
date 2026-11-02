@@ -33,7 +33,8 @@
 //                chest at the shoulders (pauldronL/R), riding a part of the arm's swing; 'default' the arms part's own
 //   A HIP PIECE  setHip(id) (vfx/mechs/parts/hips.js HIPS: the crinoline, tassets, kusazuri, pteruges) hung from a belt round the
 //                pelvis as pauldrons hang from the shoulders, each plate a hinge on a spring the thighs push open (stepped in pose(),
-//                after the legs); built again with the legs
+//                after the legs, the forearms and what the hands hold pushing too); built again with the legs; a bell (the crinoline)
+//                splays the arms' hang out clear of it (its `splay`)
 //   THE BACK     setCape(id) (vfx/mechs/capes.js CAPES: the drums' ring, the flame halo, Fujin's wind bag, the heavenly sash, the
 //   PIECE        knight's cape) worn at the shoulders and back clear of the cradle, laid out again whenever the frame is rebuilt or a
 //                part swapped; its cloth stepped in pose() with the chest plates' springs (the same frame time)
@@ -41,6 +42,11 @@
 //                partAt(part, out); pose({ ..., joints, holding, lean }) shows Dovina's joint states (progress/mechs/joints.js) by
 //                showJoints: fractured crazed and sagging, snapped HIDDEN with all past it (joints.js past; the runtime throws its own
 //                prop), mended once all are whole; `holding` hides that hand's weapon, `lean` tilts the body to a side
+//   THE FADE     the camera pulled in by a building (mechpilot.js clearCity) would fill the screen with the frame: below MECH_FADE.at
+//                of its arm's rest length the frame is dithered away (a screen-door discard by a 4 x 4 Bayer matrix on every one of its
+//                materials, its helm, cape and Jar's well included: one uniform, never transparent sorting), to MECH_FADE.max at
+//                MECH_FADE.full; the third-person camera's fade of a character it has pushed in on (Unreal's dithered opacity mask,
+//                Mario Odyssey's and Uncharted's screen-door)
 // The programs are shared by every part, one each: mats.porcelain (the plates: the Courier's body glaze), mats.core (the
 // interstitial: the Courier's skin), mats.trim (pauldrons and bands: the trim glaze), all plain MeshStandardMaterials so a runtime may
 // chain its finish onto them; mats.gold, mats.labradorite (small gems only), mats.glow. A mech is a few draws a segment.
@@ -54,6 +60,7 @@
 //   B.arms[side]   B.partAt(part, out)   B.showJoints(J, holding)   B.limbs (the same)   B.setForm(form)   B.setPauldron(id)   B.setHip(id)   B.setCape(id)
 //   B.form   B.pauldron   B.hipId   B.capeId   B.cape
 //   B.equip(slot, id)   B.setJoint(id, state) -> { group, joint, slots } | null   B.mend()   B.state { [joint]: state }   B.dispose()
+//   B.fade(ratio) (the frame's fade: the camera's arm over its rest length, mechpilot.js camera; MECH_FADE)
 //   LIMB (what each joint takes off with it)   installMechLooks(game) -> game.makeMechBody(stats? | sel?, { form, pauldron }?) (a MechPartsBody, built if given)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -86,6 +93,14 @@ const hipFor = (P) => (P?.leg > 0 ? P.leg : 3);
  *  travel from its rest, how much of the frame's vertical acceleration it feels, the cap on that acceleration (a teleport is not a
  *  landing), the right plate's stiffness against the left's (out of step, for the gag), and its tilt a metre of travel (rad). */
 export const BUST_SPRING = { stiffness: 140, damping: 3.6, travel: 0.34, gain: 1.0, maxAcc: 200, skew: 1.09, tilt: 0.9 };
+/** The frame's fade (m share of the camera arm's rest length): none above `at`, `max` of its pixels dropped at `full` and under, eased
+ *  at `ease` a real second. */
+export const MECH_FADE = { at: 0.42, full: 0.18, max: 0.8, ease: 8 };
+const FADE_GLSL = `uniform float uMechFade;
+float mechFadeB2(vec2 a) { a = floor(a); return fract(a.x / 2.0 + a.y * a.y * 0.75); }
+float mechFadeB4(vec2 a) { return mechFadeB2(0.5 * a) * 0.25 + mechFadeB2(a); }
+void main() {
+  if (uMechFade > 0.0 && mechFadeB4(gl_FragCoord.xy) + 0.03 < uMechFade) discard;`;
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _on = new THREE.Color(L.film), _off = new THREE.Color(L.hollow);
 
 export class MechPartsBody {
@@ -98,6 +113,7 @@ export class MechPartsBody {
     this.joints = {}; this.owned = {}; this.balls = []; this.state = {}; this.snapped = {}; this.legJoints = [];
     this.sealK = 0; this.travel = 0; this.sparkAt = 0;
     this.bounce = { L: { x: 0, v: 0 }, R: { x: 0, v: 0 } }; this.lastY = null; this.lastVy = 0; this.lastT = null;
+    this.fadeU = { value: 0 }; this.fadeTo = 0; this.fadeMats = new WeakSet();
   }
 
   // ------------------------------------------------------------------ the frame
@@ -145,7 +161,7 @@ export class MechPartsBody {
   /** The back piece worn again on the frame as it now stands (capes.js; laid out by the frame's shoulders, back, Jar and hips). */
   wearCape() { return this.capeId ? wearCape(this, this.capeId, this.game?.scene || null) : wearCape(this, null); }
   /** A hip piece put on ('crinoline' | 'tassets' | 'kusazuri' | 'pteruges'; null or 'none' takes it off). */
-  setHip(id) { this.hipId = HIPS[id] ? id : null; if (this.body) { this.buildSlot('hip'); if (this.capeId) this.wearCape(); } return this; }
+  setHip(id) { this.hipId = HIPS[id] ? id : null; if (this.body) { this.buildSlot('hip'); this.layoutArms(); if (this.capeId) this.wearCape(); } return this; } // (the arms laid out again: a bell's piece splays them clear of it)
   /** A back piece put on ('renko' | 'kohai' | 'kazebukuro' | 'tenne' | 'knight'; null or 'none' takes it off). */
   setCape(id) { this.capeId = CAPES[id] ? id : null; if (this.body) this.wearCape(); return this; }
 
@@ -236,7 +252,7 @@ export class MechPartsBody {
     const over = Math.max(0, reach - (shoulderY - 1.0));
     const tw = new THREE.Euler(0, 0, 0), q = new THREE.Vector3();
     for (const [s, k] of SIDES) {
-      this.rest(j[`shoulder${k}`], [-0.08 - Math.min(0.9, over * 0.35), 0, s * (A.splay ?? 0.1)]); this.rest(j[`pauldron${k}`], [-0.03 - Math.min(0.9, over * 0.35) * 0.35, 0, s * (0.04 - (A.slope ?? 0))]); // (slope: a shoulder line falling to the cap)
+      this.rest(j[`shoulder${k}`], [-0.08 - Math.min(0.9, over * 0.35), 0, s * ((A.splay ?? 0.1) + (this.hipPiece?.splay ?? 0))]); this.rest(j[`pauldron${k}`], [-0.03 - Math.min(0.9, over * 0.35) * 0.35, 0, s * (0.04 - (A.slope ?? 0))]); // (slope: a shoulder line falling to the cap)
       j[`elbow${k}`].position.set(0, -A.upper, 0); this.rest(j[`elbow${k}`], [-0.2 - Math.min(0.8, over * 0.3), 0, -s * (A.bend ?? (A.splay ? A.splay * 0.6 : 0.04))]);
       j[`wrist${k}`].position.set(0, -A.fore, 0); this.rest(j[`wrist${k}`], [0, 0, 0]);
       const twist = s * (-PI / 2 + 0.45); this.rest(j[`hand${k}`], [0, twist, 0]);
@@ -371,11 +387,31 @@ export class MechPartsBody {
     this.barrier.visible = barrier > 0.01; this.barrierMat.opacity = 0.08 + 0.2 * barrier;
     G.updateMatrixWorld(true);
     this.cape?.update(Math.min(Math.max(step, 0), 1), this.sealK);
+    if (this.fadeTo > 0 && now0 - (this.fadeAt ?? 0) > 0.3) this.fadeTo = 0; // (no camera asking any more: unsealed, the lift, a bout)
+    this.fadeU.value += (this.fadeTo - this.fadeU.value) * Math.min(1, Math.max(step, 0) * MECH_FADE.ease); if (this.fadeU.value < 0.004) this.fadeU.value = 0;
+    if (this.fadeU.value > 0) this.fadeAll(); // (each material given the discard once, the first time the frame fades)
     if (now > this.sparkAt) {
       const hurt = Object.keys(this.state).filter((id) => this.state[id] === 'fractured');
       this.sparkAt = now + 1.6 + Math.random() * 2.4;
       if (hurt.length) { const id = hurt[(Math.random() * hurt.length) | 0]; try { this.game?.vfx?.play('hit.shot.metal', { pos: j[id].getWorldPosition(_v), scale: 1.4 }); } catch { /* (headless) */ } }
     }
+  }
+
+  /** The camera's arm over its rest length (mechpilot.js camera): below MECH_FADE.at the frame dithers away (eased in pose()). */
+  fade(ratio) { const F = MECH_FADE; this.fadeAt = this.lastT ?? 0; this.fadeTo = F.max * Math.min(1, Math.max(0, (F.at - ratio) / (F.at - F.full))); }
+  /** Every material on the frame given the fade's discard once (chained after whatever it already does), sharing one uniform. */
+  fadeAll() {
+    const U = this.fadeU, seen = this.fadeMats;
+    this.group.traverse((o) => {
+      if (!o.isMesh) return;
+      for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+        if (!m || seen.has(m) || m.isShaderMaterial) continue; seen.add(m);
+        const prev = m.onBeforeCompile, prevText = String(prev || ''), h = [...prevText].reduce((a, c) => (a * 33 + c.charCodeAt(0)) >>> 0, 5381), own = m.customProgramCacheKey !== THREE.Material.prototype.customProgramCacheKey ? m.customProgramCacheKey : null;
+        m.onBeforeCompile = (sh, r) => { prev?.call(m, sh, r); sh.uniforms.uMechFade = U; sh.fragmentShader = sh.fragmentShader.replace('void main() {', FADE_GLSL); };
+        m.customProgramCacheKey = () => `${own ? own.call(m) : ''}|${h}|mechFade`;
+        m.needsUpdate = true;
+      }
+    });
   }
 
   /** The chest plates sprung: each lags the frame's vertical acceleration (x'' = -k x - c x' - gain a), clamped to its travel. */

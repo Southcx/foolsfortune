@@ -9,14 +9,15 @@
 // are drawn in the program `part(c, r)` names (0 the first of `mats`: a band of gold along a sash's edge, a stripe of the body glaze
 // round a bag). With `thick` (m) it is a cloth with weight: the outer face, a lining `thick` behind it in `mats[1]` (the body glaze
 // under the trim), and an edge joining the two all round in `mats[2]` (a gilt hem), the foot's edge `hem` times as thick (a rolled
-// hem). The constraints are relaxed forward and back in turn, so a cloth at rest hangs square, never drifting to one side.
+// hem), and with `border` (m) a band of the edge's program that wide laid on the outer face all round (a gilt border that reads from
+// afar). The constraints are relaxed forward and back in turn, so a cloth at rest hangs square, never drifting to one side.
 // Prior art: Jakobsen's "Advanced Character Physics" (2001: position verlet, constraints relaxed in turn, collision by projection);
 // Müller et al.'s position-based dynamics (2007: the shape pull as a goal-position constraint, as in shape matching; symmetric
 // Gauss-Seidel sweeps against the one-sided drift); the helms' plumes (vfx/mechs/helms.js: the same verlet, chained to a bone's rest);
 // VRM's spring bones' sphere colliders; a lined cloak's turned and rolled hem.
 //
 //   new Cloth({ cols, rows, rest: [[x, y, z], ...] (chest frame, row by row), pins: [index, ...], wrap?, shape?, lift?, wind?, bend?,
-//               colour(c, r) -> hex, part?(c, r) -> index, thick?, hem?, mats | mat })   C.attach(parent)   C.step(dt, chestMatrix, spheres)
+//               colour(c, r) -> hex, part?(c, r) -> index, thick?, hem?, lining?, edge?, border?, mats | mat })   C.attach(parent)   C.step(dt, chestMatrix, spheres)
 //   C.mesh   C.dispose()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -26,8 +27,8 @@ const _t = new THREE.Vector3(), _d = new THREE.Vector3(), _w = new THREE.Vector3
 
 export class Cloth {
   constructor({ cols, rows, rest, pins = [], wrap = false, shape = 0, lift = 0, wind = 0, bend = 0.15, damping = CAPE_CLOTH.damping, colour = () => 0xffffff,
-    part = () => 0, thick = 0, hem = 1, lining = 0xffffff, edge = 0xffffff, mat, mats }) {
-    Object.assign(this, { cols, rows, wrap, shape, lift, wind, bend, damping, thick, hem });
+    part = () => 0, thick = 0, hem = 1, lining = 0xffffff, edge = 0xffffff, border = 0, mat, mats }) {
+    Object.assign(this, { cols, rows, wrap, shape, lift, wind, bend, damping, thick, hem, border });
     const n = cols * rows;
     this.rest = rest.map((p) => new THREE.Vector3(...p));
     this.p = this.rest.map((v) => v.clone()); this.q = this.rest.map((v) => v.clone()); this.prevPin = this.rest.map((v) => v.clone());
@@ -59,7 +60,7 @@ export class Cloth {
     }
     const out = this.side > 0 ? (a, b, d, e) => [a, d, b, b, d, e] : (a, b, d, e) => [a, b, d, b, e, d];
     // the mesh: the outer face (grouped by part), a lining and the edge when thick; vertex coloured
-    const nv = thick > 0 ? n * 2 + ring.length * 2 : n, pos = new Float32Array(nv * 3), nor = new Float32Array(nv * 3), col = new Float32Array(nv * 3), cc = new THREE.Color();
+    const nb = thick > 0 && border > 0 ? ring.length * 2 : 0, nv = (thick > 0 ? n * 2 + ring.length * 2 : n) + nb, pos = new Float32Array(nv * 3), nor = new Float32Array(nv * 3), col = new Float32Array(nv * 3), cc = new THREE.Color();
     for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) cc.set(colour(c, r)).toArray(col, (r * cols + c) * 3);
     const groups = new Map();
     for (let r = 0; r < rows - 1; r++) for (let c = 0; c < cmax; c++) {
@@ -76,6 +77,12 @@ export class Cloth {
       for (let k = 0; k < m * 2; k++) cc.toArray(col, (base + k) * 3);
       for (let k = 0; k < m; k++) { const o0 = base + k * 2, o1 = base + ((k + 1) % m) * 2; rim.push(o0, o1, o0 + 1, o1, o1 + 1, o0 + 1); }
       geo.addGroup(idx.length, rim.length, 2); idx.push(...rim);
+      if (nb) { // (the border: a band `border` m wide laid on the outer face all round its edge, in the edge's program, its own vertices)
+        const b0 = base + m * 2, band = [];
+        for (let k = 0; k < m * 2; k++) cc.toArray(col, (b0 + k) * 3);
+        for (let k = 0; k < m; k++) { const o0 = b0 + k * 2, o1 = b0 + ((k + 1) % m) * 2; band.push(o0, o0 + 1, o1, o1, o0 + 1, o1 + 1, o0, o1, o0 + 1, o1, o1 + 1, o0 + 1); } // (both ways round: the gold is one-sided)
+        geo.addGroup(idx.length, band.length, 2); idx.push(...band);
+      }
     }
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage));
     geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3).setUsage(THREE.DynamicDrawUsage));
@@ -160,6 +167,15 @@ export class Cloth {
         _t.copy(this.p[i]).addScaledVector(this.N[i], -sd * th(i)).applyMatrix4(_inv).toArray(A.array, (base + k * 2 + 1) * 3);
         _d.toArray(B.array, (base + k * 2) * 3); _d.toArray(B.array, (base + k * 2 + 1) * 3);
       });
+      if (this.border > 0) { // (the border's band: from the edge in toward its inward neighbour, a hair off the outer face)
+        const b0 = base + this.ring.length * 2, lift = 0.03;
+        this.ring.forEach(([i, inn], k) => {
+          _a.subVectors(this.p[inn], this.p[i]); const l = _a.length() || 1;
+          _t.copy(this.p[i]).addScaledVector(this.N[i], sd * lift).applyMatrix4(_inv).toArray(A.array, (b0 + k * 2) * 3);
+          _t.copy(this.p[i]).addScaledVector(_a, Math.min(0.9, this.border / l)).addScaledVector(this.N[i], sd * lift).applyMatrix4(_inv).toArray(A.array, (b0 + k * 2 + 1) * 3);
+          _d.copy(this.N[i]).multiplyScalar(sd).applyMatrix3(nrm).normalize(); _d.toArray(B.array, (b0 + k * 2) * 3); _d.toArray(B.array, (b0 + k * 2 + 1) * 3);
+        });
+      }
     }
     A.needsUpdate = true; B.needsUpdate = true; G.computeBoundingSphere();
   }

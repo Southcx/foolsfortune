@@ -12,8 +12,9 @@
 //               body glaze, its cuffs gilt
 //   tenne       the heavenly sash (ten'e, 天衣): a stiffened loop of sash standing behind the helm, its two ends falling from the
 //               shoulders, both edged in gold
-//   knight      a mecha knight's cape: heavy lined cloth (the trim glaze over the body glaze, a gilt rolled hem) hung from a gold yoke
-//               that runs from clasp to clasp under the cradle, to the knees
+//   knight      a mecha knight's cape: heavy lined cloth with its thickness seen (the trim glaze over a dark lining in the body glaze, a
+//               rolled hem three times as thick, a gilt border all round wide enough to read from afar, its front edges turned back at
+//               the clasps as lapels showing the lining) hung from a gold yoke that runs from clasp to clasp under the cradle, to the knees
 // The halos are rigid rings close behind the shoulders, in the chest's frame, framing the shoulders and the Jar, alive in the frame's
 // time and brighter while the Jar is sealed in (capes/halos.js); the cloths are small verlet grids
 // in the world (capes/cloth.js), pinned in the chest's frame and swung by the frame's own motion, kept off the back, the Jar, the
@@ -47,8 +48,9 @@ export const CAPES = {
 };
 /** The heavenly sash's columns across its width (shares of it: a narrow band each side, gilt). */
 const SASH = [-0.5, -0.38, 0, 0.38, 0.5];
-/** The knight's cape's lining, a vertex tone under the body glaze (a shade deeper than the plates). */
-const LINING = 0xb5ada1;
+/** The knight's cape's lining, a vertex tone under the body glaze (well deeper than the plates: the inside of heavy cloth in shadow,
+ *  read at the turned-back lapels and the hem). */
+const LINING = 0x7a6f63;
 const smooth = (x) => { const t = Math.min(1, Math.max(0, x)); return t * t * (3 - 2 * t); };
 const _m = new THREE.Matrix4(), _b = new THREE.Box3(), _v = new THREE.Vector3();
 
@@ -106,6 +108,14 @@ function ribbon(pts, w, about) {
   }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals(); return { g, edges };
 }
+/** A thin prism on the triangle a, b, c (chest frame), `th` thick toward -Z (a flap of cloth stiffened with its lining). */
+function prism(a, b, c, th) {
+  const P = [a, b, c].map((p) => new THREE.Vector3(...p)), Q = P.map((p) => p.clone().setZ(p.z - th)), v = [];
+  const tri = (x, y, z) => v.push(...x.toArray(), ...y.toArray(), ...z.toArray());
+  tri(P[0], P[1], P[2]); tri(Q[0], Q[2], Q[1]);
+  for (let i = 0; i < 3; i++) { const j = (i + 1) % 3; tri(P[i], Q[i], P[j]); tri(P[j], Q[i], Q[j]); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3)); g.computeVertexNormals(); return g;
+}
 /** A gold knot (a ring round a ball) at a cloth's pin. */
 const knot = (S, at, r) => { S.g.ball(r, { at, c: L.gold }, 14, 10); S.g.geo(new THREE.TorusGeometry(r * 1.25, r * 0.28, 8, 20), { at, c: L.bronze }); };
 
@@ -125,7 +135,12 @@ const DRAPES = {
     }
     tube(S.g, yoke.map(([x, y, z]) => [x, y + 0.05, z]), 0.07 * fr.scl + 0.03, L.gold, 32); // (the yoke's rail, clasp to clasp under the cradle)
     for (const s of [-1, 1]) { const [x, y, z] = yoke[s < 0 ? 0 : C - 1]; S.g.ring(0.26 * fr.scl + 0.08, 0.06 * fr.scl + 0.02, { at: [x, y + 0.08, z + 0.05], c: L.gold }, 24, 6); S.l.ball(0.17 * fr.scl + 0.05, { at: [x, y + 0.12, z + 0.05], sc: [1, 0.6, 1], c: labTone(0.4, 0.2) }, 16, 10); } // (the clasps)
-    return [{ ...K, rest: out, pins: [...Array(C).keys()], lining: LINING, colour: (c, r) => (c === 0 || c === C - 1 ? L.trimM : r % 4 === 3 ? L.trimM : L.trimL) }];
+    for (const s of [-1, 1]) { // (the lapels: the cape's front edge turned back at each clasp, its lining out, gilt along its fold)
+      const [x, y, z] = yoke[s < 0 ? 0 : C - 1], k = fr.scl, h = 2.4 * k + 0.6, w = 0.95 * k + 0.25, zz = z - K.thick - 0.06;
+      const A = [x, y - 0.05, zz], B = [x + s * 0.12, y - h, zz - 0.12], D = [x - s * w, y - 0.35 * k, zz - 0.08];
+      S.p.geo(prism(A, B, D, 0.07), { c: LINING }); tube(S.g, [A, B], 0.05 * k + 0.03, L.gold, 8); tube(S.g, [A, D], 0.04 * k + 0.02, L.gold, 8); tube(S.g, [D, B], 0.035 * k + 0.02, L.gold, 8);
+    }
+    return [{ ...K, rest: out, pins: [...Array(C).keys()], lining: LINING, edge: L.gold, colour: (c, r) => (r % 4 === 3 ? L.trimM : L.trimL) }];
   },
   tenne(fr, S) {
     const K = CAPE_CLOTH.tenne, top = fr.sy + fr.cap, k = fr.scl, z0 = -fr.depthAt(fr.sy) * 0.85 - 0.12, zb = fr.jar.z - 0.95 - 0.3 * k;

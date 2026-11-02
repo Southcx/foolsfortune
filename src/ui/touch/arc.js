@@ -34,6 +34,7 @@ import { touchTiles } from './presses.js';
 import { placeOf, windowOpen } from './areas.js';
 import { openRadial } from './radial.js';
 import { specialsOf } from '../../progress/mechs/specials.js';
+import { mechFace, MECH_BELT } from '../mechs/mechfaces.js';
 
 /** A mech's parts' specials as PICK's items (the arms' first: a tap is it), each its move's name, dim while it rests. */
 function mechPicks(g) {
@@ -53,11 +54,8 @@ const learned = (g, id) => { const t = techs(g)?.get?.(id); return !!t && (t.usa
 
 /** Sealed in the hangar's frame, its seal's beat done and the mount's shot over (world/hangar/mechpilot.js reads the keys then). */
 const mechSealed = (g) => { const H = g?.hangar, C = g?.cradles; return !!H?.cradle && C?.sealed === H.cradle && C.phase === 'on' && !g.mechMount?.playing; };
-/** The frame's faces (MECHS.md 4.9; the words placeholders, Espada's to rule): the arms on A and D, the boost, the jump, the barrier pressed
- *  on E, the back unit on F; BELT tapped the cable (or a prop in reach), held the cable or stepping out (X). */
-const MECH_FACE = { A: { glyph: null, word: 'L ARM' }, B: { glyph: 'dash', word: 'BOOST' }, C: { glyph: 'jump', word: null }, D: { glyph: null, word: 'R ARM' },
-  E: { glyph: 'parry', word: 'PRESS' }, F: { glyph: null, word: 'UNIT' } }; // (F: the back unit; 'BACK' read as going back)
-const MECH_BELT = [{ id: 'use', glyph: null, word: 'CABLE' }, { id: 'tool', glyph: null, word: 'EXIT' }];
+// (the frame's faces, MECHS.md 4.9: the arms by their weapons, the boost, the jump, the barrier pressed, the back unit; BELT the cable or
+//  stepping out. Their glyphs read from the frame worn: Calissa's ui/mechs/mechfaces.js)
 
 /** Which of the arc's contexts the moment is, or null (the cluster's then). */
 export function arcContext(g) {
@@ -177,7 +175,7 @@ export class TouchArc {
       PICK: this.picks[0] ? { glyph: this.picks[0].glyph ?? 'more', word: this.picks[0].word ?? null, corner: this.picks[0].corner ?? null, tint: this.picks[0].tint ?? null } : null,
       BELT: this.beltTap ? { glyph: this.beltTap.glyph, word: this.beltTap.word, lit: !!this.beltTap.lit } : null,
     };
-    if (ctx === 'mech') Object.assign(face, MECH_FACE);
+    if (ctx === 'mech') Object.assign(face, mechFace(g));
     this.control = Object.fromEntries(slots.map((s) => [s.slot, typeof s.action === 'string' ? CONTROL.get(s.action) : null]));
     return { slots, face };
   }

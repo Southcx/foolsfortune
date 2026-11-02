@@ -409,6 +409,7 @@ export class MechPilot {
     _c.set(this.pos.x - Math.sin(a) * back * Math.cos(this.camPitch), this.pos.y + h * C.up + Math.sin(this.camPitch) * back, this.pos.z - Math.cos(a) * back * Math.cos(this.camPitch));
     _l.copy(this.pos).setY(this.pos.y + h * C.look);
     this.clearCity(_l, _c, C.clear);
+    this.mech?.fade?.(_l.distanceTo(_c) / back); // (the frame dithered away as the arm shortens: Calissa's, vfx/mechs/partsbody.js fade)
     if (this.shake > 0) { // (a blow felt in the cradle: the view knocked by its weight, scaled by the setting visual.shake)
       const m = this.shake * this.shake * h * 0.035 * shakeOf();
       _c.x += (SHAKE_R() - 0.5) * m; _c.y += (SHAKE_R() - 0.5) * m; _c.z += (SHAKE_R() - 0.5) * m;
