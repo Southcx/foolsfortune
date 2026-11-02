@@ -17,6 +17,9 @@
 //   strawMat     the Chimney's mat: a round straw mat, its weave in rings, a vermilion rim
 //   kilnChamber  one chamber of the climbing kiln: a vault across the slope on a stepped plinth, an ash glaze run over its crown, its
 //                stoking ports glowing; `firebox` the mouth at its foot
+//   hearth       Spirit Cooking's cooking station (world/garden/hearth.js): a kamado of polished red clay on a stone step, its two fire
+//                mouths glowing under an iron rice pot with a wooden lid and an amber donabe, a clay flue behind it smoking, a
+//                bread board on a stump beside it with a scored loaf, a flour sack, a water tub and a peel leaning on it (2.9 m to the flue's cap)
 //   stack        the kiln's chimney stack on the needle's summit: square brick, tapering, banded, corbelled, its mouth glowing (7 m)
 //
 // Prior art: the kura (dozō) of Kawagoe and Kurashiki (namako-kabe, the heavy kawara roof and its oni-gawara), the Chinese garden's moon
@@ -39,7 +42,7 @@ export const FC = {
   verdigris: 0x4fa59a, iron: 0x3a383e, ash: 0x7d7440, kiln: 0xb06a3a, kilnD: 0x8a4e2c, straw: 0xd9c189, strawD: 0xb39a5c,
   silk: 0xf7f1e4, silkD: 0xe2d8c2, coal: 0x5a1c0c, lamp: 0xf6d27a,
 };
-export const FACILITY_KINDS = ['kura', 'moonGate', 'athanor', 'silkLantern', 'strawMat', 'kilnChamber', 'firebox', 'stack'];
+export const FACILITY_KINDS = ['kura', 'moonGate', 'athanor', 'silkLantern', 'strawMat', 'kilnChamber', 'firebox', 'stack', 'hearth'];
 const FLICKER = [4, 0, 0, 0]; // (the kit's FLICKER motion: a fire's glow wavers)
 const PI = Math.PI;
 
@@ -229,7 +232,51 @@ function stack(p, f) {
   p.box(2.2, 0.5, 2.2, { at: [0, 0.05, 0], c: FC.stoneD }, 0.05); // (its footing on the summit's platform)
 }
 
-const BUILD = { kura, moonGate, athanor, silkLantern, strawMat, kilnChamber, firebox, stack };
+/** Spirit Cooking's hearth: a two-mouthed kamado (a Japanese clay cooking stove) facing +Z, the pots on it, the flue behind, the bread's
+ *  things to its right (+X). The kamado's top stands 0.85 m; the flue's cap 2.9 m (its smoke: facilitylooks.js HEARTH_SMOKE). */
+function hearth(p, f) {
+  const W = 1.7, D = 0.95, H = 0.85;
+  p.box(W + 0.5, 0.3, D + 0.45, { at: [0, -0.05, 0.05], c: FC.stoneD }, 0.05); // (the stone step it stands on)
+  p.box(W, H, D, { at: [0, H / 2 + 0.1, 0], c: FC.brick }, 0.12); // (the body: polished red clay, rounded)
+  p.slab(W + 0.08, 0.07, D + 0.08, { at: [0, H + 0.1, 0], c: FC.brickD }); // (its lip)
+  p.slab(W - 0.1, 0.32, 0.04, { at: [0, 0.32, D / 2 + 0.01], c: FC.lacquer }); // (the dark tiled front band the mouths open in)
+  for (const x of [-0.42, 0.42]) {
+    p.geo(new THREE.CircleGeometry(0.2, 12, 0, PI), { at: [x, 0.24, D / 2 + 0.035], c: 0x140c0a }); // (each mouth an arch of dark)
+    p.slab(0.48, 0.05, 0.08, { at: [x, 0.2, D / 2 + 0.03], c: FC.stone }); // (its stone sill)
+    f.geo(new THREE.CircleGeometry(0.13, 10, 0, PI), { at: [x, 0.23, D / 2 + 0.04], sc: [1.1, 0.8, 1], c: FC.coal, g: 1, m: FLICKER }); // (the fire low in it)
+    f.cyl(0.25, 0.25, 0.02, { at: [x, H + 0.14, 0], c: FC.coal, g: 0.7, m: FLICKER }, 12); // (the glow round the pot's foot)
+  }
+  // the rice pot (kama): iron, a flange, a thick wooden lid with two bars
+  p.lathe([[0, 0], [0.2, 0.02], [0.28, 0.12], [0.3, 0.22], [0.36, 0.24], [0.36, 0.27], [0.27, 0.29], [0.26, 0.34]], { at: [-0.42, H + 0.13, 0], c: FC.iron }, 14);
+  p.cyl(0.31, 0.31, 0.07, { at: [-0.42, H + 0.5, 0], c: FC.woodL }, 14);
+  for (const z of [-0.1, 0.1]) p.slab(0.5, 0.05, 0.06, { at: [-0.42, H + 0.56, z], c: FC.wood });
+  // the donabe: an amber glaze over an unglazed foot, a domed lid, its knob and a steam hole
+  p.lathe([[0, 0], [0.2, 0.01], [0.3, 0.08], [0.33, 0.17], [0.3, 0.25]], { at: [0.42, H + 0.13, 0], c: FC.kiln }, 14);
+  p.lathe([[0.31, 0], [0.3, 0.06], [0.24, 0.13], [0.12, 0.18], [0, 0.19]], { at: [0.42, H + 0.38, 0], c: 0xb8742a }, 14);
+  p.ball(0.06, { at: [0.42, H + 0.59, 0], sc: [1, 0.7, 1], c: FC.lacquer });
+  p.ring(0.28, 0.03, { at: [0.42, H + 0.38, 0], c: FC.gold }, 14, 3);
+  // the flue: a clay pipe up the back, banded, a little roof on it
+  p.cyl(0.16, 0.2, 2.0, { at: [0, H + 1.0, -D / 2 + 0.12], c: FC.kilnD }, 10);
+  for (const y of [H + 0.4, H + 1.2]) p.ring(0.19, 0.03, { at: [0, y, -D / 2 + 0.12], c: FC.iron }, 10, 3);
+  p.cone(0.36, 0.22, { at: [0, H + 2.15, -D / 2 + 0.12], c: FC.tile }, 8);
+  f.cyl(0.11, 0.11, 0.03, { at: [0, H + 2.0, -D / 2 + 0.12], c: FC.coal, g: 0.6, m: FLICKER }, 8);
+  // the bread's things, to the right: a stump with a board and a scored loaf, a flour sack, a water tub, a peel leaning on the stump
+  const bx = W / 2 + 0.6;
+  p.cyl(0.32, 0.36, 0.6, { at: [bx, 0.3, 0.1], c: FC.woodD }, 10);
+  p.ring(0.3, 0.02, { at: [bx, 0.6, 0.1], c: FC.wood }, 10, 3);
+  p.box(0.62, 0.05, 0.42, { at: [bx, 0.63, 0.1], c: FC.woodL }, 0.02);
+  p.ball(0.17, { at: [bx, 0.7, 0.1], sc: [1.3, 0.6, 0.9], c: 0xc07a34 }, 10, 6);
+  for (const k of [-1, 0, 1]) p.slab(0.03, 0.02, 0.18, { at: [bx + k * 0.08, 0.79, 0.1], rot: [0, 0.5, 0], c: 0xe8cfa0 }); // (the score)
+  p.box(0.36, 0.5, 0.3, { at: [bx + 0.15, 0.25, -0.45], c: FC.silk }, 0.12); // (the flour sack)
+  p.ring(0.11, 0.025, { at: [bx + 0.15, 0.47, -0.45], c: FC.strawD }, 8, 3);
+  p.cyl(0.24, 0.2, 0.36, { at: [-W / 2 - 0.4, 0.18, 0.3], c: FC.wood }, 10); // (the water tub)
+  for (const y of [0.08, 0.28]) p.ring(0.23, 0.02, { at: [-W / 2 - 0.4, y, 0.3], c: FC.brass }, 10, 3);
+  p.cyl(0.21, 0.21, 0.01, { at: [-W / 2 - 0.4, 0.33, 0.3], c: 0x4f8c96 }, 10);
+  p.slab(0.08, 1.05, 0.03, { at: [bx + 0.36, 0.55, 0.36], rot: [0.12, 0, -0.25], c: FC.wood }); // (the peel's handle)
+  p.box(0.3, 0.3, 0.03, { at: [bx + 0.5, 0.15, 0.4], rot: [0.12, 0, -0.25], c: FC.woodL }, 0.02); // (its blade)
+}
+
+const BUILD = { kura, moonGate, athanor, silkLantern, strawMat, kilnChamber, firebox, stack, hearth };
 
 /** One facility's two pieces (its body and its fire), built afresh: merge them where they stand (facilitylooks.js). */
 export function facilityPieces(kind, opts = {}) {
