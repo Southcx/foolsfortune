@@ -11,8 +11,8 @@
 //               diagonal pairs stepping together
 //   treadLegs   tank: two tread pods under porcelain skirts, gold road wheels turning by the ground covered, a turret ring between
 // The refire (South, 2026-11-02): every articulation ball the Courier's skin under a clear shell (kit.js `jointBall`), each registered
-// with the body (`ballAt`) so its Lachryma stands in it (vfx/mechs/hydraulics.js); the waist's cup turned to hold the dantian from
-// below and the belt opened at the front so it shows; the biped's knee cop sculpted (parts/sdf.js: a central ridge between two
+// with the body (`ballAt`) so its Lachryma stands in it (vfx/mechs/hydraulics.js); the pelvis's top a socket with a gold lip the dantian
+// sits in, seen whole from the front, the belt lowered and opened under it; the biped's knee cop sculpted (parts/sdf.js: a central ridge between two
 // concave wings, a boss at its heart); the calves (the lower leg's girth) 15% slimmer, so the hero reads top-heavy.
 // The feminine forms' legs are their own (femlegs.js FEM_LEGS, every type rebuilt in each).
 // Prior art: Armored Core's four leg types (biped, reverse joint, tetrapod, tank); Medabots' leg parts; ED-209's and the Zoids'
@@ -41,11 +41,11 @@ const wrap = (P, prof, y0, y1, half, sc, c, k = 1.1, th = 0.09, mid = 0) => P.ge
  *  plates (a groove between each), the hips' cups. */
 function pelvis(S, hipX, F) {
   const { p, g } = S, w = F.hips;
-  p.lathe([[0.001, -0.62], [0.8, -0.58], [1.22, -0.3], [1.32, 0.05], [1.24, 0.36], [0.9, 0.5], [0.001, 0.52]], { sc: [w, 1, 0.72], c: L.pale }, 32); // (the hip shell)
+  p.lathe([[0.001, -0.62], [0.8, -0.58], [1.22, -0.3], [1.32, 0.05], [1.24, 0.3], [1.12, 0.4], [1.02, 0.37], [0.88, 0.2], [0.62, -0.05], [0.001, -0.12]], { sc: [w, 1, 0.72], c: L.pale }, 32); // (the hip shell, its top a socket the dantian sits in)
+  g.ring(1.08, 0.04, { at: [0, 0.4, 0], sc: [w, 1, 0.73], c: L.gold }, 40, 5); // (the socket's lip, framing it)
   S.core.lathe([[1.0, -0.3], [1.0, 0.45]], { sc: [w * 1.0, 1, 0.75], c: L.core }, 28);
-  S.trim.geo(curved([[1.3, 0.42], [1.34, 0.52], [1.28, 0.62]], 0.1, 0.42, PI * 2 - 0.42, 6), { sc: [w, 1, 0.74], c: L.trimM }); // (the belt, open at the front under the dantian)
+  S.trim.geo(curved([[1.3, 0.14], [1.34, 0.24], [1.28, 0.34]], 0.1, 0.42, PI * 2 - 0.42, 6), { sc: [w, 1, 0.74], c: L.trimM }); // (the belt, open at the front under the dantian)
   p.geo(plate([[-0.34, 0.3], [0.34, 0.3], [0.27, -0.64], [0, -0.78], [-0.27, -0.64]], 0.22, 0.06), { at: [0, 0, 0.92], c: L.mid }); // (the codpiece)
-  p.geo(cup(DANTIAN.r * 0.92 * F.joint).rotateX(PI), { at: [0, 0.45 - DANTIAN.r * 0.42, 0], c: L.ivory }); // (the waist's cup, holding the dantian from below)
   for (const [s] of SIDES) p.geo(cup(0.58 * F.joint), { at: [s * hipX, -0.35, 0], c: L.ivory });
   // the tassets: six curved plates round the hip, flaring as they fall
   const drop = 1.25, n = 6, gap = 0.06, T = [[1.38, 0.4], [1.5, 0.4 - drop * 0.5], [1.68, 0.4 - drop]];
@@ -178,7 +178,7 @@ export const LEG_LOOKS = {
       const { p, g } = S;
       p.lathe([[0.001, -0.55], [1.2, -0.5], [1.7, -0.25], [1.75, 0.1], [1.4, 0.4], [0.6, 0.55], [0.001, 0.58]], { sc: [ctx.F.hips ** 0.5, 1, 0.85], c: L.pale }, 32); // (the pelvis's shell)
       S.core.ring(1.74, 0.06, { at: [0, -0.08, 0], sc: [ctx.F.hips ** 0.5, 1, 0.85], c: L.coreD }, 36, 4);
-      p.geo(cup(0.5), { at: [0, 0.45, 0], c: L.ivory });
+      p.geo(cup(DANTIAN.r * 0.95).rotateX(PI), { at: [0, 0.45 - DANTIAN.r * 0.42, 0], c: L.ivory }); // (the dantian's socket)
       g.ring(1.0, 0.05, { at: [0, 0.5, 0], sc: [1, 1, 0.85], c: L.gold }, 32, 4);
     });
     const legs = [];
@@ -228,7 +228,7 @@ export const LEG_LOOKS = {
       const { p, g } = S;
       p.lathe([[0.001, -0.6], [1.5, -0.55], [1.7, -0.3], [1.6, 0.25], [0.8, 0.45], [0.001, 0.5]], { c: L.pale }, 32); // (the turret's base)
       g.ring(1.62, 0.07, { at: [0, -0.05, 0], c: L.gold }, 40, 5); // (the turret ring)
-      p.geo(cup(0.5), { at: [0, 0.45, 0], c: L.ivory });
+      p.geo(cup(DANTIAN.r * 0.95).rotateX(PI), { at: [0, 0.45 - DANTIAN.r * 0.42, 0], c: L.ivory }); // (the dantian's socket)
       for (const [s] of SIDES) { S.core.geo(plate([[-0.5, 0.2], [0.5, 0.2], [0.4, -0.3], [-0.4, -0.3]], 1.4, 0.08), { at: [s * 1.5, -0.6, 0], rot: [0, PI / 2, 0], c: L.coreD }); p.geo(cup(0.42).rotateZ(-s * PI / 2), { at: [s * 1.7, -0.75, 0], c: L.ivory }); }
     });
     const wheel = new Piece();

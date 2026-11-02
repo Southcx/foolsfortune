@@ -128,7 +128,7 @@ export function hand(S, s, grip, { w, h, d, fl, fw, wr, c = L.pale }) {
   w *= k; d *= k; fw *= k; h *= G; fl = fl.map((x) => x * k); wr *= F.joint * G;
   jointBall(S, wr);
   const yb = -wr * 0.6, y0 = yb - h, xs = [-0.375, -0.125, 0.125, 0.375].map((q) => q * w), key = [w, h, d, fw, wr].map(r3).join(',') + `|${c}`;
-  const cell = Math.max(0.04, fw * 0.18);
+  const cell = Math.max(0.034, fw * 0.105);
   // the thumb (on +X, the side built): its root, its knuckle, its tip, along the first pass's pose so a grip still closes on the haft
   const ta = grip === 'open' ? 0.6 : 1.1, rz = grip === 'open' ? 0.25 : 0.9, Lt = fl[0] * 1.15;
   const tu = new THREE.Vector3(0, -1, 0).applyEuler(new THREE.Euler(-ta, 0, rz)), tc = new THREE.Vector3(w * (grip === 'open' ? 0.56 : 0.3), yb - h * 0.62, d * 0.62);
@@ -154,7 +154,7 @@ export function hand(S, s, grip, { w, h, d, fl, fw, wr, c = L.pale }) {
   palm = grooves(palm, [[0, 1, 0, yb - h * 0.15], [0, 0.6, -0.8, (yb - h * 0.5) * 0.6 + d * 0.28]], 0.014, 0.03);
   const rootF = swells[3];
   const palmF = (x, y, z) => { const q = Math.min(narrow(x, y, z), rootF(x, y, z)); return q > 0.22 ? q : palm(x, y, z); }; // (far from it all: the cheap shapes only)
-  sideSculpt(S.p, palmF, boundsOf([[-w / 2, yb, -d / 2], [w / 2, y0, d / 2], TR], fw * 0.6), Math.max(0.045, fw * 0.19), { key: `hand.palm|${key}`, s, tone: aoTone(palmF, c, L.dark, 0.07) });
+  sideSculpt(S.p, palmF, boundsOf([[-w / 2, yb, -d / 2], [w / 2, y0, d / 2], TR], fw * 0.6), Math.max(0.045, fw * 0.165), { key: `hand.palm|${key}`, s, tone: aoTone(palmF, c, L.dark, 0.07) });
   // the thumb's two segments: the root's to its knuckle, then the tip along the pose
   const tp = [TJ[0] - T0[0], TJ[1] - T0[1], TJ[2] - T0[2]], tl = Math.hypot(...tp), tN = [0, Math.sin(ta), Math.cos(ta)];
   placePhalanx(S.p, T0, tp.map((v) => v / tl), tN, tl, fw * 0.56, fw * 0.52, 0.12, s, cell, L.mid, L.dark);
@@ -165,7 +165,7 @@ export function hand(S, s, grip, { w, h, d, fl, fw, wr, c = L.pale }) {
     let at = new THREE.Vector3(x, y0, 0.04); joints.push([at.toArray(), fw * 0.5]);
     for (let n = 0; n < 2; n++) {
       const a = curl[n] * (n ? 1 : 0.95) + (n ? curl[0] : 0), D = [0, -Math.cos(a), Math.sin(a)], N = [0, Math.sin(a), Math.cos(a)], len = fl[n] * LEN[i][n];
-      placePhalanx(S.p, at.clone().addScaledVector(new THREE.Vector3(...D), fw * 0.3).toArray(), D, N, len, fw * 0.5, fw * 0.55, n ? 0.28 : 0.1, s, cell, L.mid, L.dark);
+      placePhalanx(S.p, at.clone().addScaledVector(new THREE.Vector3(...D), fw * 0.3).toArray(), D, N, len, fw * 0.42, fw * 0.52, n ? 0.28 : 0.1, s, cell, L.mid, L.dark); // (narrower than their spacing: a real gap between fingers)
       at = at.clone().addScaledVector(new THREE.Vector3(...D), len + fw * 0.55); if (n === 0) joints.push([at.toArray(), fw * 0.42]);
     }
   });

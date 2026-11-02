@@ -13,6 +13,10 @@
 // violin's lower bout (South, 2026-11-02: "a bit more of a bottom half of a violin-shape with high hipbones"): its widest round and
 // full, its shoulder convex, then the C-bout's concave curve in to the waist column; the iliac crests (`CREST`) raised plates high on
 // its sides just under the waist, flaring out over the curve, gilt on their lip. Every ball the skin's (kit.js `jointBall`).
+// THE SCULPT (South, 2026-11-02: "the geometry doesn't feature pieces with novel multiple concave and convex surfaces"): the pelvis
+// (PELVIS) and the feet (FOOT) are signed distance sculpts (parts/sdf.js) with the hip, waist and ankle sockets cut into them; the
+// limbs stay lathed, the panel lines interstitial tubes laid on the sculpt's surface (`surfAt`), the crests' lips gilt: a mix.
+// The helpers here (aoTone, surfAt, ringCut, halfSpace, bounded, sculptSide) are shared by femcores.js and femlimbs.js.
 //   haydee (the `doll` form)
 //     clayLegs    a sculpted pelvis (the bout, the crests, a leotard's panel line, the seat's two swells), thick thighs tapering to the
 //                 knee, a strong calf's swell, armoured high-heeled feet: the arch, the foot on its toe, a real heel under the ankle
@@ -33,6 +37,7 @@
 import * as THREE from 'three';
 import { Piece } from '../../garden/decorpieces/kit.js';
 import { MECH_LOOK as L, sidePlate, shell, cup, ball, jointBall, band, profAt, curved, panel, sculpt, aimOf, tube } from './kit.js';
+import { sphere, ellipsoid, cone, blend, carve, meet, mirrorX, mesh } from './sdf.js';
 
 const PI = Math.PI, SIDES = [[1, 'L'], [-1, 'R']];
 const bump = (y, a, b) => (y <= a || y >= b ? 0 : Math.sin((PI * (y - a)) / (b - a)));
@@ -47,72 +52,221 @@ export function lathe(P, prof, len, c, fn = null, seg = 36) {
 const line = (S, r, y) => S.core.ring(r, 0.022, { at: [0, y, 0], c: L.coreD }, 36, 4);
 const coreOf = (S, r, len) => S.core.lathe([[r, 0.05], [r, -len]], { c: L.core }, 20);
 
-// ------------------------------------------------------------------ the pelvises
-/** The pelvis's profile (r m, y m): a violin's lower bout, round and full at its widest, its shoulder convex, then the C-bout's concave
- *  curve in to the waist column's socket. */
-const BOUT = [[0.001, -0.94], [0.55, -0.92], [1.1, -0.76], [1.42, -0.5], [1.5, -0.2], [1.47, 0.06], [1.37, 0.26], [1.15, 0.43], [0.82, 0.53],
-  [0.58, 0.61], [0.47, 0.71], [0.44, 0.79], [0.001, 0.82]];
-/** The iliac crests: a raised plate each side, high on the bout just under the waist (y0..y1), round the side from the front (a0) to
- *  the back (a1, rad off the side), standing `lift` m off the bout at its foot and `flare` at its lip; its lip gilt. */
-const CREST = { y0: 0.16, y1: 0.46, a0: -0.95, a1: 0.55, lift: 0.04, flare: 0.2, th: 0.08 };
-/** Haydee's pelvis: the violin's lower bout pressed in at the crotch, the seat's two swells behind, cut as a leotard (a front panel, the
- *  hips, the seat), the iliac crests high on its sides, its waist ring in trim; the panel lines are real grooves over the core. */
-function haydeePelvis(S, sx = 1.72) {
-  const prof = band(BOUT, -0.94, 0.82, 1, 40);
-  const fn = (x, y, z) => {
-    const r = Math.hypot(x, z) || 1, f = Math.max(0, -z / r), ax = Math.abs(x) * sx;
-    const nip = 1 - 0.42 * clamp((-y - 0.25) / 0.55) * Math.max(0, z / r + 0.2); // (the crotch drawn in at the front)
-    let zz = z * (z > 0 ? 0.8 : 0.86) - f * 0.3 * bump(y, -0.9, 0.2) * Math.exp(-((ax - 0.8) ** 2) / 0.3); // (the seat)
-    return [x * sx * nip, y, zz];
+// ------------------------------------------------------------------ the sculpt's helpers (shared by femcores.js and femlimbs.js)
+const _tc = new THREE.Color(), _ta = new THREE.Color(), _tb = new THREE.Color();
+/** A sculpt's tone: its porcelain shade baked by how open the surface is (a cheap ambient occlusion, the field sampled a small and a
+ *  larger step out along the normal: a groove's floor and a crease go dark, a swell stays pale), `pick(x, y, z)` choosing the light
+ *  tone by region where one is given. */
+export function aoTone(f, lo = L.dark, hi = L.pale, pick = null) {
+  _ta.set(lo);
+  return (x, y, z, nx, ny, nz) => {
+    const a = Math.min(1, Math.max(0, f(x + nx * 0.05, y + ny * 0.05, z + nz * 0.05) / 0.05)), b = Math.min(1, Math.max(0, f(x + nx * 0.2, y + ny * 0.2, z + nz * 0.2) / 0.2));
+    _tb.set(pick ? pick(x, y, z) : hi); return _tc.copy(_ta).lerp(_tb, Math.min(1, 0.15 + 0.85 * (a * 0.55 + b * 0.45) ** 1.3));
   };
-  const G = 0.03, cut = (a0, a1, c = L.pale) => S.p.geo(sculpt(panel(prof, a0, a1, 24), fn), { c });
-  S.core.geo(sculpt(shell(prof.map(([r, y]) => [r * 0.95, y]), 40), fn), { c: L.core });
-  cut(-0.78, 0.78); for (const s of [1, -1]) { const [a, b] = s > 0 ? [0.78 + 2 * G, 2.25] : [-2.25, -0.78 - 2 * G]; cut(a, b); }
-  cut(2.25 + 2 * G, PI - G); cut(-PI + G, -2.25 - 2 * G);
-  S.trim.lathe([[0.42, 0.66], [0.48, 0.7], [0.42, 0.74]], { sc: [sx, 1, 0.8], c: L.trimL }, 32);
-  S.p.lathe([[0.37, 0.68], [0.46, 0.72], [0.49, 0.8], [0.44, 0.86], [0.37, 0.89]], { c: L.ivory }, 32); // (the socket the waist column's ball sits in)
-  const C = CREST, base = (y) => profAt(BOUT, y), ym = (C.y0 + C.y1) / 2;
-  const cr = [[base(C.y0) + C.lift, C.y0], [base(ym) + C.lift + C.flare * 0.35, ym], [base(C.y1 - 0.05) + C.flare, C.y1]];
+}
+/** Where a field's outer surface is along a ray from a point (marched in from `max` m out, then bisected): the point, or null if the
+ *  ray never meets the body within `max`. */
+export function surfAt(f, [x, y, z], [dx, dy, dz], max = 3) {
+  const l = Math.hypot(dx, dy, dz); dx /= l; dy /= l; dz /= l;
+  let b = max, a = max - 0.025; while (a > 0 && f(x + dx * a, y + dy * a, z + dz * a) >= 0) { b = a; a -= 0.025; }
+  if (a <= 0) return null;
+  for (let i = 0; i < 16; i++) { const m = (a + b) / 2; if (f(x + dx * m, y + dy * m, z + dz * m) < 0) a = m; else b = m; }
+  return [x + dx * a, y + dy * a, z + dz * a];
+}
+/** A ring round an axis `dir` through c (radius R, tube r): a groove's cutter round a finger's joint or a limb. */
+export function ringCut([cx, cy, cz], [dx, dy, dz], R, r) {
+  const l = Math.hypot(dx, dy, dz); dx /= l; dy /= l; dz /= l;
+  return (x, y, z) => { const px = x - cx, py = y - cy, pz = z - cz, h = px * dx + py * dy + pz * dz, q = Math.hypot(px - h * dx, py - h * dy, pz - h * dz) - R; return Math.hypot(q, h) - r; };
+}
+/** A sub-field skipped where it cannot matter: far outside its bound (a field never above the sub-field's own, a sphere round it)
+ *  by more than m (past every blend's or carve's reach) only the bound is read. The sculpts' speed (South's budget: a frame's first
+ *  build under ~700 ms). */
+export const bounded = (f, bound, m = 0.2) => (x, y, z) => { const b = bound(x, y, z); return b > m ? b : f(x, y, z); };
+const FLIPS = new Map();
+/** sculptPiece made cheap (its arrays appended straight into the piece) with an optional mirror (`flip`: the field's x negated read from the one mesh, its winding reversed), so a left and a
+ *  right hand are meshed once between them. */
+export function sculptSide(P, f, bounds, cell, o) {
+  const g0 = mesh(f, bounds, cell, o); let g = g0;
+  if (o.flip) {
+    g = FLIPS.get(g0);
+    if (!g) {
+      g = g0.clone(); const pos = g.attributes.position.array, nor = g.attributes.normal.array, col = g.attributes.color.array;
+      for (let i = 0; i < pos.length; i += 3) { pos[i] = -pos[i]; nor[i] = -nor[i]; }
+      for (let t = 0; t < pos.length; t += 9) for (const A of [pos, nor, col]) for (let c = 0; c < 3; c++) { const a = A[t + 3 + c]; A[t + 3 + c] = A[t + 6 + c]; A[t + 6 + c] = a; }
+      FLIPS.set(g0, g); if (FLIPS.size > 32) FLIPS.delete(FLIPS.keys().next().value);
+    }
+  }
+  // appended straight into the piece (no clone, no matrix: a sculpt is meshed in its piece's own frame), pressed by `sc` if given
+  const pos = g.attributes.position.array, nor = g.attributes.normal.array, col = g.attributes.color.array, n = pos.length, [sx, sy, sz] = o.sc || [1, 1, 1];
+  const p0 = P.pos.length, t0 = P.tint.length, m0 = P.mot.length; P.pos.length += n; P.nor.length += n; P.col.length += n; P.tint.length += n / 3; P.glow.length += n / 3; P.mot.length += (n / 3) * 4;
+  for (let i = 0; i < n; i += 3) {
+    P.pos[p0 + i] = pos[i] * sx; P.pos[p0 + i + 1] = pos[i + 1] * sy; P.pos[p0 + i + 2] = pos[i + 2] * sz;
+    let a = nor[i] / sx, b = nor[i + 1] / sy, c = nor[i + 2] / sz; const l = Math.hypot(a, b, c) || 1;
+    P.nor[p0 + i] = a / l; P.nor[p0 + i + 1] = b / l; P.nor[p0 + i + 2] = c / l;
+    P.col[p0 + i] = col[i]; P.col[p0 + i + 1] = col[i + 1]; P.col[p0 + i + 2] = col[i + 2];
+  }
+  P.tint.fill(0, t0); P.glow.fill(0, t0); P.mot.fill(0, m0);
+  return g;
+}
+/** The solid side of a plane: n . p > o is outside (a sole's floor, a cut). */
+export const halfSpace = ([nx, ny, nz], o) => { const l = Math.hypot(nx, ny, nz); return (x, y, z) => (nx * x + ny * y + nz * z) / l - o; };
+
+// ------------------------------------------------------------------ the pelvises
+/** The sculpted pelvis (South, 2026-11-02: "reshape the feminine mech's hip joint ... making the sockets for the thighs and waist
+ *  sphere joints a part of the geometry ... that galatea-tier rump"): one body in the signed distance field, never a stack. The lower
+ *  bout broad and low (`bout`), the C-bout's waist drawn up out of it by a wide fillet, a soft belly under the navel; the iliac crests
+ *  ridges blended out of the sides (`crest`, gilt on their lips); behind, the two gluteal masses full and lifted (`glute`), the cleft
+ *  between them, the lumbar's hollow over them and the two sacral dimples; under each, the thigh's own shape carved out a hand clear
+ *  of it (`thigh`), which is the gluteal fold where the rump meets the thigh's back; at each hip a spherical socket cut into the body
+ *  over the ball, its front let open low (`scoop`), a crescent of the ball under the socket's rounded lip; under the flank the pelvis ending
+ *  in a thick round rim over the thigh's root (`thigh.exit`, `rim`); on top the
+ *  waist column's socket (`navel`) with its front let down so the dantian shows. The leotard's panel lines are the interstitial laid
+ *  on its surface. Sizes in m, the pelvis's frame. */
+const PELVIS = {
+  bout: { at: [0, -0.3, 0.02], r: [2.4, 0.9, 1.12] }, waist: { at: [0, 0.5, -0.05], r: [1.04, 0.58, 0.76] }, belly: { at: [0, 0.02, 0.5], r: [0.82, 0.48, 0.58] },
+  glute: { at: [0.78, -0.42, -0.86], r: [0.92, 0.8, 0.72] }, crest: { y0: 0.18, y1: 0.44, a0: -1.0, a1: 0.6, r0: 0.05, r1: 0.1 },
+  scoop: { at: [-0.08, -0.28, 0.72], r: [0.5, 0.48, 0.55] }, thigh: { gap: 0.05, back: 0.86, top: 0.25, exit: 0.25, rim: 0.45 },
+  navel: { y: 0.87, r: 0.42, front: [0, 1.02, 0.56], fr: 0.3 },
+  k: { body: 0.34, glute: 0.3, crest: 0.12, scoop: 0.12, thigh: 0.15, socket: 0.07 }, cell: 0.07, far: 0.3,
+};
+/** The thigh's axis down from the hip at its rest rotation [x, 0, z] (Euler XYZ of -Y). */
+const axisOf = (rx, rz) => [Math.sin(rz), -Math.cos(rz) * Math.cos(rx), -Math.cos(rz) * Math.sin(rx)];
+/** The pelvis's field (its +X half: mirrored). o: { hip: [x, y, z], axis, R (the hip ball), thighR(t) (the thigh's radius t m down its
+ *  axis), holes (the legs' sockets and openings: a biped's) }. */
+function pelvisField(o) {
+  const P = PELVIS, k = P.k;
+  const glute = ellipsoid(P.glute.at, P.glute.r);
+  let body = blend(k.body, ellipsoid(P.bout.at, P.bout.r), ellipsoid(P.waist.at, P.waist.r), ellipsoid(P.belly.at, P.belly.r));
+  body = blend(k.glute, body, glute);
+  // the iliac crest: a ridge run round the side on the bout's surface, its middle highest and proudest
+  const C = P.crest, ridge = [];
+  for (let i = 0; i <= 8; i++) {
+    const u = i / 8, a = Math.PI / 2 + C.a0 + (C.a1 - C.a0) * u, y = C.y0 + (C.y1 - C.y0) * Math.sin(Math.PI * Math.min(1, u * 1.25)) ** 0.8;
+    const q = surfAt(body, [0, y, 0], [Math.sin(a), 0, Math.cos(a)]); if (q) ridge.push({ q, a, r: C.r0 + (C.r1 - C.r0) * Math.sin(Math.PI * u) });
+  }
+  const bars = []; for (let i = 1; i < ridge.length; i++) bars.push(cone(ridge[i - 1].q, ridge[i].q, ridge[i - 1].r, ridge[i].r));
+  const crestBound = (x, y, z) => Math.max(Math.abs(y - (C.y0 + C.y1) / 2) - 0.32, Math.abs(Math.hypot(x, z) - 1.4) - 0.95); // (a ring round the crests' height)
+  body = blend(k.crest, body, bounded(blend(0, ...bars), crestBound, P.far)); // (exact: past P.far the bars are past every blend's reach)
+  // behind: the cleft between the cheeks, the two sacral dimples over them
+  const cleft = ellipsoid([0, -0.48, -1.5], [0.05, 0.62, 0.42]);
+  const dimple = surfAt(body, [0.33, 0.24, 0], [0, -0.05, -1]), dimples = dimple ? [sphere([dimple[0], dimple[1], dimple[2] - 0.05], 0.1)] : [];
+  body = carve(0.08, body, cleft, ...dimples);
+  // the waist column's socket, its front let down so the ball shows
+  const N = P.navel; body = carve(k.socket, body, sphere([0, N.y, 0], N.r), sphere(N.front, N.fr));
+  if (o.holes) {
+    const [hx, hy, hz] = o.hip, [ax, ay, az] = o.axis, T = P.thigh, ss = (e0, e1, v) => { const u = Math.min(1, Math.max(0, (v - e0) / (e1 - e0))); return u * u * (3 - 2 * u); };
+    const socket = sphere(o.hip, o.R + 0.05);
+    // the thigh's room: its own shape a hand clear of it (`gap`) up into the socket, and below the rim's height (`exit`) widened by `rim`
+    // in front, at the side and inside, so the pelvis ends there in a thick round rim over the thigh's root (never a sliver along it);
+    // behind, only the hand's gap, so the rump's underside turns in over the thigh's back as the gluteal fold
+    const thigh = (x, y, z) => {
+      const qx = x - hx, qy = y - hy, qz = z - hz, t = qx * ax + qy * ay + qz * az;
+      const px = qx - t * ax, py = qy - t * ay; let pz = qz - t * az; if (pz < 0) pz /= T.back;
+      const rr = Math.hypot(px, py, pz), rc = t < 0 ? o.R + 0.06 : o.thighR(t) + T.gap, w = T.rim * ss(-0.35, 0.25, pz / (rr || 1));
+      return Math.min(Math.max(rr - rc, -(t + T.top)), Math.max(rr - rc - w, T.exit - t)) * T.back;
+    };
+    // the socket's front let open, low and a little inside: a crescent of the ball under the socket's lip
+    const S0 = P.scoop, scoop = ellipsoid([hx + S0.at[0], hy + S0.at[1], hz + S0.at[2]], S0.r);
+    body = carve(k.socket, carve(k.thigh, carve(k.scoop, body, scoop), thigh), socket);
+  }
+  const env = blend(0, ...[P.bout, P.waist, P.glute, P.belly].map((e) => ellipsoid(e.at, e.r.map((r) => r + 0.12))), (x, y, z) => crestBound(x, y, z) + 0.05);
+  return mirrorX(bounded(body, env, P.far)); // (exact: the body never stands past the envelope, so past P.far only its sign is read)
+}
+/** Haydee's pelvis sculpted (PELVIS): a biped's with its legs' sockets and openings, any other leg type's closed and pressed out to its
+ *  width (sx against the biped's), the waistband in trim and the crests' gilt lips laid on its surface. */
+function haydeePelvis(S, o = {}) {
+  const holes = !!o.hip, sx = o.sx || 1, key = holes ? `fem.pelvis.${o.hip.map((v) => v.toFixed(2))}.${o.axis.map((v) => v.toFixed(3))}.${o.R.toFixed(2)}.${o.key || ''}` : 'fem.pelvis.closed';
+  const f = pelvisField({ ...o, holes });
+  sculptSide(S.p, f, [[-2.6, -1.24, -1.62], [2.6, 1.14, 1.18]], PELVIS.cell, { key, tone: aoTone(f), sc: [sx, 1, 1] });
+  // the waistband (trim) round the surface just over the waist groove, and the crests' gilt lips
+  const at = (q) => [q[0] * sx, q[1], q[2]], band = [];
+  for (let i = 0; i <= 40; i++) { const a = (i / 40) * Math.PI * 2, q = surfAt(f, [0, 0.68, 0], [Math.sin(a), 0, Math.cos(a)]); if (q) band.push(at([q[0] * 1.004, q[1], q[2] * 1.004])); }
+  if (band.length > 20) tube(S.trim, band, 0.032, L.trimL, 80);
+  // the leotard's panel lines, sunk in the interstitial: the front panel's two edges, the seat's
+  for (const phi of [0.6, 2.42]) for (const s of [1, -1]) {
+    const line = []; let last = null;
+    for (let y = 0.56; y > -1.1; y -= 0.08) {
+      const q = surfAt(f, [0, y, 0], [Math.sin(phi), 0, Math.cos(phi)]); if (!q) break;
+      const r = Math.hypot(q[0], q[2]); if (last != null && Math.abs(r - last) > 0.22) break; last = r;
+      line.push(at([s * q[0] * 0.997, q[1], q[2] * 0.997]));
+    }
+    if (line.length > 3) tube(S.core, line, 0.022, L.coreD, line.length * 3);
+  }
+  const C = PELVIS.crest;
   for (const s of [1, -1]) {
-    const a0 = s > 0 ? PI / 2 + C.a0 : -PI / 2 - C.a1, a1 = s > 0 ? PI / 2 + C.a1 : -PI / 2 - C.a0, span = a1 - a0;
-    const taper = (x, y, z) => { const e = Math.sin(PI * Math.min(1, Math.max(0, (Math.atan2(x, z) - a0) / span))) ** 0.55; return fn(x, ym + (y - ym) * e, z); };
-    S.p.geo(sculpt(curved(cr, C.th, a0, a1, 22), taper), { c: L.pale }); // (the crest)
-    const lip = []; for (let i = 1; i < 12; i++) { const a = a0 + (span * i) / 12, e = Math.sin((PI * i) / 12) ** 0.55, r = cr[2][0] + 0.02; lip.push(fn(Math.sin(a) * r, ym + (C.y1 - ym) * e, Math.cos(a) * r)); }
-    tube(S.g, lip, 0.03, L.gold, 24); // (its gilt lip)
+    const lip = [];
+    for (let i = 1; i < 12; i++) {
+      const u = i / 12, a = Math.PI / 2 + C.a0 + (C.a1 - C.a0) * u, y = C.y0 + (C.y1 - C.y0) * Math.sin(Math.PI * Math.min(1, u * 1.25)) ** 0.8;
+      const q = surfAt(f, [0, y + 0.06, 0], [Math.sin(a), 0.55, Math.cos(a)]); if (q) lip.push(at([s * q[0], q[1], q[2]]));
+    }
+    if (lip.length > 4) tube(S.g, lip, 0.026, L.gold, 24);
   }
 }
 // ------------------------------------------------------------------ the feet
-/** Haydee's armoured high-heeled foot: the instep's arch falling to the toe on the ground, a real heel under the ankle, the cuff. */
-function haydeeFoot(S, fh) {
-  const narrow = (x, y, z) => [x * (1 - 0.42 * clamp(z / 1.7)), y, z];
-  S.p.geo(sculpt(sidePlate([[-0.3, 0.12], [0.24, 0.14], [0.46, -0.3], [0.8, -0.86], [1.1, -fh + 0.28], [1.52, -fh + 0.12], [1.66, -fh], [0.96, -fh], [0.66, -fh + 0.38], [0.18, -0.74], [-0.24, -0.44]], 0.4, 0.1), narrow), { c: L.pale });
-  S.p.geo(sculpt(sidePlate([[-0.3, -0.36], [0.06, -0.5], [-0.1, -fh + 0.06], [-0.26, -fh + 0.06]], 0.26, 0.05), narrow), { c: L.mid }); // (the heel)
-  S.trim.geo(sidePlate([[-0.11, -fh + 0.08], [-0.25, -fh + 0.08], [-0.24, -fh], [-0.1, -fh]], 0.2, 0.02), { c: L.trimD }); // (its tip)
-  for (const x of [1, -1]) tube(S.core, [[x * 0.29, -0.05, 0.3], [x * 0.27, -0.6, 0.62], [x * 0.22, -fh + 0.3, 1.15]], 0.022, L.coreD, 12); // (a panel line down each side of the arch)
-  S.p.lathe([[0.3, 0.16], [0.34, 0.0], [0.3, -0.16]], { c: L.pale }, 28); // (the ankle's cuff)
+/** Haydee's armoured high-heeled foot, sculpted (South, 2026-11-02: "15% smaller feet and large spherical ankle joints"): drawn at
+ *  `FOOT.k` of its first size, the ankle's ball sitting in a seat cut into the foot's top (its rim under the ball's equator), the
+ *  instep falling from it to a pointed toe on the ground, the arch's hollow under it, a stiletto heel under the seat; a strap's groove
+ *  over the instep. In the ankle's frame (+Z the toe), its size unscaled (the field read at p / k). */
+const FOOT = { k: 0.85, fh: 1.55, ball: 0.6, cell: 0.045 };
+function footField(R) {
+  const fh = FOOT.fh;
+  let f = blend(0.16,
+    ellipsoid([0, -0.26, 0.02], [0.7, 0.5, 0.72]), // (the seat round the ball)
+    cone([0, -0.42, 0.22], [0, -fh + 0.36, 0.98], 0.25, 0.15), // (the instep)
+    ellipsoid([0, -fh + 0.13, 1.2], [0.18, 0.14, 0.44])); // (the toe)
+  f = blend(0.08, f, cone([0, -0.52, -0.12], [0, -fh + 0.04, -0.2], 0.14, 0.05)); // (the stiletto)
+  const narrow = (g) => (x, y, z) => g(x / (1 - 0.4 * Math.min(1, Math.max(0, z / 1.7))), y, z);
+  f = narrow(f);
+  f = meet(0.02, f, (x, y, z) => -fh - y); // (the sole on the ground)
+  f = meet(0.08, f, (x, y, z) => y + 0.2); // (the seat's rim a flat annulus under the ball's equator: a thick lip, never a sliver)
+  f = carve(0.1, f, ellipsoid([0, -fh - 0.22, 0.48], [0.5, 0.42, 0.42]), sphere([0, 0, 0], R + 0.04)); // (the arch's hollow; the seat)
+  return f;
 }
+function haydeeFoot(S, R) {
+  const k = FOOT.k, f0 = footField(R / k), f = (x, y, z) => k * f0(x / k, y / k, z / k);
+  const heel = (x, y, z) => (z < 0.02 && y < -0.5 ? L.mid : L.pale);
+  for (const sx of [1, -1]) { // (a panel line down each side of the arch)
+    const line = [[0, -0.5, 0.3], [0, -0.85, 0.62], [0, -1.15, 0.98]].map(([x, y, z]) => surfAt(f, [0, y * k, z * k], [sx, 0, 0])).filter(Boolean);
+    if (line.length === 3) tube(S.core, line.map(([x, y, z]) => [x * 0.99, y, z]), 0.018, L.coreD, 12);
+  }
+  sculptSide(S.p, f, [[-0.62, -FOOT.fh * k, -0.6], [0.62, 0.02, 1.42]], FOOT.cell, { key: `fem.foot.${R.toFixed(3)}`, tone: aoTone(f, L.dark, L.pale, heel) });
+}
+/** The shin's foot flared into a cup over the ankle's ball (its lip just over the equator, the ball showing in the gap to the foot's seat). */
+const shinCup = (S, R, len) => S.p.lathe([[R * 0.9, -len + R * 0.7], [R * 1.12, -len + R * 0.38], [R * 1.17, -len + R * 0.17], [R * 1.12, -len + R * 0.07], [R * 1.04, -len + R * 0.1]], { c: L.pale }, 36);
 // ------------------------------------------------------------------ the bipeds
+/** Haydee's legs: the thigh's top a cup holding the hip's ball from below (`TH`, its lip at the equator, flaring to the thigh's root),
+ *  its back flattened under the rump (`flat`); the shin narrowing to the ankle and flaring into its cup (`SH`, shinCup). Balls: the
+ *  hip's 0.88, the knee's 0.44, the ankle's 0.6 (x the form's `joint`). */
 const BIPED = {
-  haydee: { hipX: 1.3, A: [-0.14, 0.27, -0.13], toe: -0.1, FH: 1.55, pelvis: (S) => haydeePelvis(S),
-    TH: [[0.66, 0.14], [1.08, 0.04], [1.2, -0.12], [1.12, -0.36], [0.9, -0.62], [0.66, -0.86], [0.5, -1.0], [0.44, -1.04]],
-    SH: [[0.42, 0.06], [0.52, -0.04], [0.6, -0.2], [0.63, -0.34], [0.53, -0.56], [0.38, -0.8], [0.29, -0.95], [0.26, -1.03]] },
+  haydee: { hipX: 1.3, A: [-0.14, 0.27, -0.13], toe: -0.1, FH: FOOT.fh * FOOT.k, hipBall: 0.88, ankleBall: FOOT.ball,
+    TH: [[0.66, 0.01], [0.7, -0.05], [0.78, -0.15], [0.9, -0.27], [1.05, -0.39], [1.13, -0.49], [1.08, -0.62], [0.9, -0.74], [0.66, -0.86], [0.5, -1.0], [0.44, -1.04]],
+    SH: [[0.42, 0.06], [0.52, -0.04], [0.6, -0.2], [0.63, -0.34], [0.53, -0.56], [0.4, -0.78], [0.36, -0.86]] },
 };
+/** The thigh's back pressed in under the rump near its top (the pelvis carves it the same, PELVIS.thigh.back). */
+const flat = (x, y, z, u) => [x, y, z < 0 ? z * (1 - (1 - PELVIS.thigh.back) * bump(u, -0.05, 0.5)) : z];
+/** The thigh's radius t m down its axis (for the pelvis's carve). */
+const thighROf = (TH, T) => { const P = TH.map(([r, y]) => [r, y * T]).reverse(); return (t) => profAt(P, -t); };
 /** The kneecap: a rounded plate over the knee's ball. */
 const kneecap = (S) => S.p.geo(shell([[0.001, 0.22], [0.24, 0.17], [0.32, 0.0], [0.26, -0.2], [0.001, -0.26]], 20, -1.0, 2.0), { at: [0, 0, 0.3], sc: [1.1, 1, 0.8], c: L.pale });
 function bipedLegs(ctx) {
   const { H, F, joint, put, ballAt } = ctx, B = BIPED[F.fem] || BIPED.haydee, { A, FH, hipX } = B, j = F.joint;
   const len = (H - 0.35 - FH - 0.1) / (Math.cos(A[0]) + Math.cos(A[0] + A[1])), T = len, Sh = len;
   const calf = (x, y, z, u) => [x, y, z * (z < 0 ? 1 + 0.35 * bump(u, 0.04, 0.62) : 0.92)];
-  put(ctx.pelvis, B.pelvis);
+  const RH = B.hipBall * j, RA = B.ankleBall * j;
+  put(ctx.pelvis, (S) => haydeePelvis(S, { hip: [hipX, -0.35, 0], axis: axisOf(A[0], B.toe), R: RH, thighR: thighROf(B.TH, T), key: T.toFixed(2) }));
   const legs = {};
   for (const [s, k] of SIDES) {
     const hip = joint(`hip${k}`, ctx.pelvis, [s * hipX, -0.35, 0], [A[0], 0, s * B.toe]);
     const knee = joint(`knee${k}`, hip, [0, -T, 0], [A[1], 0, 0]);
     const ankle = joint(`ankle${k}`, knee, [0, -Sh, 0], [A[2], 0, -s * B.toe]);
-    put(hip, (S) => { jointBall(S, 0.52 * j); coreOf(S, 0.3, T); lathe(S.p, B.TH, T, L.pale); line(S, 1.12, -0.36 * T); tube(S.core, [[s * 1.2, -0.05 * T, -0.15], [s * 1.12, -0.38 * T, 0.05], [s * 0.85, -0.7 * T, 0.32]], 0.02, L.coreD, 14); });
-    put(knee, (S) => { jointBall(S, 0.44 * j); coreOf(S, 0.18, Sh); lathe(S.p, B.SH, Sh, L.pale, calf); kneecap(S); line(S, 0.56, -0.5 * Sh); });
-    put(ankle, (S) => { jointBall(S, 0.38 * j); haydeeFoot(S, FH); });
-    ballAt(`hip${k}`, hip, 0.52 * j);
+    put(hip, (S) => {
+      jointBall(S, RH); coreOf(S, 0.3, T); lathe(S.p, B.TH, T, L.pale, flat); line(S, 1.12, -0.36 * T);
+      S.p.lathe([[0.66, 0.01 * T], [0.63, -0.05 * T]], { c: L.ivory }, 36); // (the cup's lip turned in under the ball)
+      tube(S.core, [[s * 1.2, -0.08 * T, -0.15], [s * 1.12, -0.38 * T, 0.05], [s * 0.85, -0.7 * T, 0.32]], 0.02, L.coreD, 14);
+    });
+    put(knee, (S) => { jointBall(S, 0.44 * j); coreOf(S, 0.18, Sh - RA); lathe(S.p, B.SH, Sh, L.pale, calf); shinCup(S, RA, Sh); kneecap(S); line(S, 0.56, -0.5 * Sh); });
+    put(ankle, (S) => { jointBall(S, RA); haydeeFoot(S, RA); });
+    ballAt(`hip${k}`, hip, RH); ballAt(`knee${k}`, knee, 0.44 * j); ballAt(`ankle${k}`, ankle, RA);
     legs[k] = { hip, knee, ankle };
   }
   return {
@@ -131,17 +285,17 @@ function bipedLegs(ctx) {
 
 // ------------------------------------------------------------------ the reverse joint
 function springLegs(ctx) {
-  const { H, F: FF, joint, put, ballAt } = ctx, F = 0.36, A = [-0.65, 1.45, -1.05], T = 2.3, M = 1.9, hipX = 1.35, j = FF.joint;
+  const { H, F: FF, joint, put, ballAt } = ctx, F = 0.36 * FOOT.k, A = [-0.65, 1.45, -1.05], T = 2.3, M = 1.9, hipX = 1.35, j = FF.joint;
   const Sh = (H - 0.35 - F - 0.09 - T * Math.cos(A[0]) - M * Math.cos(A[0] + A[1] + A[2])) / Math.cos(A[0] + A[1]);
-  const { TH, SH } = BIPED.haydee;
-  put(ctx.pelvis, (S) => haydeePelvis(S));
+  const { TH, SH, hipBall } = BIPED.haydee, RH = hipBall * j, RT = 0.44 * j;
+  put(ctx.pelvis, (S) => haydeePelvis(S, { hip: [hipX, -0.35, 0], axis: axisOf(A[0], 0.02), R: RH, thighR: thighROf(TH, T), key: 'spring' }));
   const legs = {};
   for (const [s, k] of SIDES) {
     const hip = joint(`hip${k}`, ctx.pelvis, [s * hipX, -0.35, 0], [A[0], 0, s * 0.02]);
     const knee = joint(`knee${k}`, hip, [0, -T, 0], [A[1], 0, 0]);
     const ankle = joint(`ankle${k}`, knee, [0, -Sh, 0], [A[2], 0, 0]);
     const toe = joint(`toe${k}`, ankle, [0, -M, 0], [-(A[0] + A[1] + A[2]), 0, -s * 0.02]);
-    put(hip, (S) => { jointBall(S, 0.52 * j); coreOf(S, 0.3, T); lathe(S.p, TH, T, L.pale); line(S, 1.1, -0.4 * T); });
+    put(hip, (S) => { jointBall(S, RH); coreOf(S, 0.3, T); lathe(S.p, TH, T, L.pale, flat); S.p.lathe([[0.66, 0.01 * T], [0.63, -0.05 * T]], { c: L.ivory }, 36); line(S, 1.1, -0.4 * T); });
     put(knee, (S) => {
       jointBall(S, 0.44 * j); coreOf(S, 0.18, Sh);
       lathe(S.p, SH, Sh, L.pale, (x, y, z, u) => [x, y, z * (z > 0 ? 1 + 0.3 * bump(u, 0.04, 0.6) : 0.95)]); // (the calf's swell faces forward: the shin runs back)
@@ -154,12 +308,13 @@ function springLegs(ctx) {
       line(S, 0.34, -0.4 * M);
     });
     put(toe, (S) => {
-      jointBall(S, 0.3 * j);
-      const narrow = (x, y, z) => [x * (1 - 0.45 * clamp(z / 1.3)), y, z];
-      S.p.geo(sculpt(sidePlate([[-0.32, 0.18], [0.22, 0.2], [0.8, -0.12], [1.28, -F + 0.04], [1.36, -F], [-0.1, -F], [-0.34, -0.12]], 0.44, 0.1), narrow), { c: L.pale }); // (the pointed shoe)
-      S.p.geo(sidePlate([[-0.2, -0.05], [-0.62, -F + 0.02], [-0.5, -F], [-0.06, -0.2]], 0.16, 0.04), { c: L.mid }); // (the spur, a heel's tip)
+      jointBall(S, RT); // (the toe's ball, large, in a seat lathed into the shoe's top: South, 2026-11-02)
+      const q = FOOT.k, narrow = (x, y, z) => [x * (1 - 0.45 * clamp(z / (1.3 * q))), y, z], sc = (pts) => pts.map(([z, y]) => [z * q, y * q]);
+      S.p.geo(sculpt(sidePlate(sc([[-0.34, -0.22], [0.26, -0.2], [0.8, -0.3], [1.28, -0.36 + 0.04], [1.36, -0.36], [-0.1, -0.36], [-0.36, -0.3]]), 0.44 * q, 0.08), narrow), { c: L.pale }); // (the pointed shoe)
+      S.p.lathe([[0.001, -RT - 0.04], [RT * 0.7, -RT * 0.92], [RT * 1.08, -RT * 0.45], [RT * 1.12, -RT * 0.1], [RT * 1.04, -RT * 0.06]], { c: L.ivory }, 32); // (the seat)
+      S.p.geo(sidePlate(sc([[-0.2, -0.05], [-0.62, -0.36 + 0.02], [-0.5, -0.36], [-0.06, -0.2]]), 0.16 * q, 0.04), { c: L.mid }); // (the spur, a heel's tip)
     });
-    ballAt(`hip${k}`, hip, 0.52 * j);
+    ballAt(`hip${k}`, hip, RH); ballAt(`knee${k}`, knee, 0.44 * j); ballAt(`ankle${k}`, ankle, 0.36 * j); ballAt(`toe${k}`, toe, RT);
     legs[k] = { hip, knee, ankle, toe };
   }
   return {
@@ -182,7 +337,7 @@ function crabLegs(ctx) {
   const { H, F, joint, put, ballAt } = ctx, j = F.joint;
   const hy = -0.3, up = [0.9, 1.7], out = 2.75, rr = 0.46;
   put(ctx.pelvis, (S) => {
-    haydeePelvis(S, 1.95);
+    haydeePelvis(S, { sx: 1.95 / 1.72 });
     S.g.ring(1.1, 0.04, { at: [0, 0.5, 0], sc: [1.2, 1, 0.85], c: L.gold }, 36, 4);
   });
   const legs = [];
@@ -207,7 +362,7 @@ function crabLegs(ctx) {
         lathe(S.p, pr, Ll, L.pale, (x, y, z, u) => [x, y, z * (z < 0 ? 1 + 0.3 * bump(u, 0.05, 0.5) : 1)]);
         line(S, rr * 1.12, -0.32 * Ll); S.p.geo(sidePlate([[-0.05, 0], [-0.45, -0.55], [-0.12, -0.5]], 0.12, 0.03), { at: [0, -Ll + 0.75, -0.1], c: L.mid }); // (the stiletto's spur)
       });
-      ballAt(`hip${k}`, upper, 0.42 * j);
+      ballAt(`hip${k}`, upper, 0.42 * j); ballAt(`knee${nm}`, lower, 0.38 * j);
       legs.push({ root, upper, lower, yaw, a1, a2, pair: (s > 0) === (f > 0) ? 0 : 1 });
     }
   }
@@ -230,7 +385,7 @@ function treadLegs(ctx) {
   const { H, joint, put, ballAt, mats, owned } = ctx;
   const len = 5.4, R = 1.15, w = 1.3, podX = 2.45, podY = R + 0.05 - H, wy = -R * 0.46, wr = R * 0.42;
   put(ctx.pelvis, (S) => {
-    haydeePelvis(S, 1.9);
+    haydeePelvis(S, { sx: 1.9 / 1.72 });
     S.g.ring(1.95, 0.06, { at: [0, -0.62, 0], c: L.gold }, 40, 5); // (the turret ring)
     S.p.lathe([[0.001, -1.05], [1.75, -0.95], [2.05, -0.72], [1.85, -0.5]], { c: L.mid }, 36);
   });
