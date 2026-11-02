@@ -231,6 +231,7 @@ const RULES = {
   'foe.sink': (s) => s.foeSink?.(),
   'foe.rise': (s) => s.foeRise?.(),
   'foe.surface': (s) => s.foeSurface?.(),
+  'touch.fold': (s, e) => s.touchFold?.(e.state, e.tiles),
   'strawman.string': (s, e) => s.strawString?.(e.string),
   'strawman.windup': (s, e, g) => s.strawWindup?.(e.move, e.blow ?? 0, e.eta, g.time?.scale ?? 1),
   'strawman.strike': (s, e) => s.strawStrike?.(!!e.landed, !!e.cleared),
