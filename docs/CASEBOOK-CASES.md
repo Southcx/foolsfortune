@@ -4956,3 +4956,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `requestLock` stamps `lockAskedAt`; an unlock within 500 ms of the game's own request is not a pause. `lockError` counts one
   refusal once (calls within 120 ms are one). After the fix: 6 runs in 6, 20 shots fired, the lock on the canvas.
 - **Rule:** 398
+
+### 2026-11-02 · The log said "You absorb 0 Lachryma." (feedback/tracking/pool.js; found by Petra's look at the proving ground's shot)
+- **Seen:** in the mech, after a run of blows, the log said "You absorb 0 Lachryma." and then "You absorb 12 Lachryma."
+- **Cause, as measured:** a pool gain under half a unit (a drop's sliver) began a new fold of the absorb line, and its sum rounded to 0.
+- **Fix:** the line is not said until its folded sum rounds to 1 or more; the sliver keeps folding into the next gain. The ledger still
+  counts every gain.
+- **Rule:** 399
+
