@@ -86,6 +86,9 @@ import { DuelAuras } from './duelview/auras.js';
 import { DuelSideDress } from './duelview/sidedress.js';
 import { GardenGround } from './duelview/gardenground.js';
 import { SkillGauges } from './duelview/skillgauges.js';
+/** The elite an aberrant without one of its own wears: nothing dressed, no death of its own (the data drain still runs); never another's
+ *  (Petra, 2026-11-02: a clapperjar dressed as the Lantern Wisp threw at its close). */
+const PLAIN_ELITE = { on: false, open() {}, close() {}, update() {}, death() { return null; } };
 import { AberrantDrain } from './duelview/aberrantdrain.js';
 
 const TEAR = 0x7fdcff, COURIER_HEX = '#9fd8ff', UP = new THREE.Vector3(0, 1, 0);
@@ -100,7 +103,7 @@ export class DuelView {
     this.board = new DuelBoard(this.frame, this.clash); this.pieces = new DuelPieces(this.frame); this.marks = new DuelMarks(this.frame);
     this.intentDraw = new DuelIntent(this.frame, this.marks); this.bursts = new DuelBursts(this.frame); this.beats = new DuelBeats(this);
     this.flee = new DuelFlee(this); this.folded = false;
-    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.gauges = new SkillGauges(this); this.foeCast = new FoeCast(this); this.cutIn = new FoeCutIn(this); this.jarCut = new FoeCutIn(this, { subject: 'jar' }); this.stamps = new DuelStamps(this); this.show = new DuelShow(this); this.seeding = new DuelSeeding(this); this.auras = new DuelAuras(this); this.sideDress = new DuelSideDress(this); this.elites = [new StrawmanElite(this), new WispElite(this), new JellyElite(this)]; this.elite = this.elites[1]; this.garden = new GardenGround(this); this.dress = new FrameDress(this); this.spoils = new DuelSpoils(this); this.tune = [null, null]; this.pendingKind = null;
+    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.gauges = new SkillGauges(this); this.foeCast = new FoeCast(this); this.cutIn = new FoeCutIn(this); this.jarCut = new FoeCutIn(this, { subject: 'jar' }); this.stamps = new DuelStamps(this); this.show = new DuelShow(this); this.seeding = new DuelSeeding(this); this.auras = new DuelAuras(this); this.sideDress = new DuelSideDress(this); this.elites = [new StrawmanElite(this), new WispElite(this), new JellyElite(this)]; this.elite = PLAIN_ELITE; this.garden = new GardenGround(this); this.dress = new FrameDress(this); this.spoils = new DuelSpoils(this); this.tune = [null, null]; this.pendingKind = null;
     this.assembly = new DuelAssembly(this); // (the tsuitate built in front of you at the open, before the seeding: assembly.js)
     this.aberrantDrain = new AberrantDrain(this); // (a won PvE duel's end drained into the Pneuka Jar: duelview/aberrantdrain.js)
     this.intentWhole = true; // (the session hands intent() bot.js intentOf's whole: { actions, junk, cells, hits })
@@ -137,7 +140,7 @@ export class DuelView {
     oc.y += 1; of.y += 1; this.clash.unfold(oc, of);
     this.game.spiritualLink?.attach(this, this.linkEnd);
     // (the elites: Strawman's first, so a practice duel on any board is its own; an aberrant with none of its own wears the Lantern Wisp's, never Strawman's)
-    this.gauges.layout(this.board3); this.stage.open(); this.dive.open(); this.cutIn.warm(); this.jarCut.warm(); this.stamps.warm(); this.show.open(state, foe); this.elite = this.elites.find((E) => E.constructor.fits(state, foe)) || this.elites[1]; this.elite.open(state, foe); this.garden.open(at.clone().addScaledVector(this.u, -((B.w * DUEL_VIEW.cs) / 2 + 2)), this.u); this.dress.open(state, foe); this.spoils.open(state, foe); this.auras.warm(); this.sideDress.open(state, foe); this.seeding.hold(); this.assembly.open(); // (the tsuitate built, then the first board dealt in: assembly.js, seeding.js; a PvE duel's under the VS open, duelshow.js) // (your half as your Spirit Garden: gardenground.js; the aberrant's own layers: its ground, its lantern, its deaths: duelview/aberrants/) // (the gauges: skillgauges.js; the arena first, the Jar at your spot: stage.js, formdive.js)
+    this.gauges.layout(this.board3); this.stage.open(); this.dive.open(); this.cutIn.warm(); this.jarCut.warm(); this.stamps.warm(); this.show.open(state, foe); this.elite = this.elites.find((E) => E.constructor.fits(state, foe)) || PLAIN_ELITE; this.elite.open(state, foe); this.garden.open(at.clone().addScaledVector(this.u, -((B.w * DUEL_VIEW.cs) / 2 + 2)), this.u); this.dress.open(state, foe); this.spoils.open(state, foe); this.auras.warm(); this.sideDress.open(state, foe); this.seeding.hold(); this.assembly.open(); // (the tsuitate built, then the first board dealt in: assembly.js, seeding.js; a PvE duel's under the VS open, duelshow.js) // (your half as your Spirit Garden: gardenground.js; the aberrant's own layers: its ground, its lantern, its deaths: duelview/aberrants/) // (the gauges: skillgauges.js; the arena first, the Jar at your spot: stage.js, formdive.js)
   }
 
   /** Fold the domains away and take the board down (at once, with `now`). */
