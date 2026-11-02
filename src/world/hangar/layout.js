@@ -7,7 +7,7 @@
 // as one object of spots, read by its builder and its runtime alike.
 //
 //   HANGAR { at, w, d, h, gantry, walkY, walk, ramp, lectern, door, arrive, lift, hole }
-//   PROVING { at, half, wall, launch, sockets, giant, door, blocks [{ x, z, w, d }] }   SOCKET_REACH   inProving(p)   clampProving(p, r)
+//   PROVING { at, half, wall, launch, sockets, giant, door, blocks [{ x, z, w, d }], ring { x, z, half } }   SOCKET_REACH   inProving(p)   clampProving(p, r)
 // ---------------------------------------------------------------------------------------
 
 /** The hangar: a tall hall (60 x 60 m, a 40 m roof) far east of the Sandbox (x 3080), Strawman's Well (x 3350 .. 3700) and the Touchstone
@@ -38,9 +38,10 @@ export const PROVING = {
   blocks: [ // (the knee-high blocks, 3 m tall: things a 14 m frame steps round, or jumps onto)
     { x: -90, z: -50, w: 14, d: 10 }, { x: -70, z: 45, w: 10, d: 18 }, { x: -30, z: -20, w: 8, d: 8 }, { x: -20, z: 95, w: 18, d: 10 },
     { x: 10, z: -90, w: 12, d: 12 }, { x: 20, z: 40, w: 8, d: 14 }, { x: 120, z: -60, w: 16, d: 8 }, { x: 130, z: 70, w: 10, d: 10 },
-    { x: 150, z: -130, w: 20, d: 12 }, { x: -120, z: 120, w: 12, d: 16 }, { x: 90, z: 140, w: 14, d: 10 }, { x: -150, z: -120, w: 10, d: 10 },
+    { x: 150, z: -130, w: 20, d: 12 }, { x: -120, z: 120, w: 12, d: 16 }, { x: -150, z: -120, w: 10, d: 10 }, // (the block at 90, 140 gone: the boxing ring stands there)
   ],
   blockH: 3,
+  ring: { x: 90, z: 130, half: 18 }, // (the ring's square, reserved (MECHS.md 9.4): no lot of the toy city stands in it)
 };
 /** Metres from a socket (to the mech's middle) within which F plugs the cable. */
 export const SOCKET_REACH = 14;

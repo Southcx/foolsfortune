@@ -32,6 +32,8 @@ export const DROPS = {
   wisp: { kinds: ['arcane', 'eldritch'], line: { rolls: 2, tiers: PLAIN }, secret: { rolls: 2, tiers: RICH } },
   // the slip jelly: what it swallowed and kept (provisions) and the pigment of its slime (finery)
   slipjelly: { kinds: ['provision', 'finery'], line: { rolls: 2, tiers: PLAIN }, secret: { rolls: 2, tiers: RICH } },
+  // the clapperjar: its fired clay and its glaze (art: ware; finery: pigment)
+  clapper: { kinds: ['art', 'finery'], line: { rolls: 2, tiers: PLAIN }, secret: { rolls: 2, tiers: RICH } },
 };
 /** The plain table for an aberrant with none of its own: any of the seven kinds. */
 const ANY = { kinds: ['eldritch', 'arcane', 'finery', 'mechanism', 'edge', 'art', 'provision'], line: { rolls: 2, tiers: PLAIN }, secret: { rolls: 2, tiers: RICH } };

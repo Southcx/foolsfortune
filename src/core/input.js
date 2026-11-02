@@ -80,6 +80,7 @@ export class Input {
   // never worked. Once it has, a failure is the browser's cooldown after Esc (it refuses a new
   // lock for a moment): try again shortly, and never give up for good.
   lockError() {
+    const now = performance.now(); if (now - (this.errAt ?? -1e9) < 120) return; this.errAt = now; // (one refusal, one count: a request is told twice, the document's pointerlockerror and its promise, and the plain retry a third time; counted thrice it ran out of tries at once and never took the 1.4 s retry)
     if (!this.everLocked) { this.lockFailed = true; this.onLockChange?.(false); return; }
     if (this.tries++ < 2) {
       setTimeout(() => { if (!this.locked && this.enabled && (this.wantLock?.() ?? true)) this.requestLock(true); }, 1400); // (asking the game first: the garden's cursor is free, GARDEN-SWEEP #10)
@@ -91,6 +92,7 @@ export class Input {
 
   requestLock(retry = false) {
     if (this.device === 'touch') return; // (a phone has no pointer lock: the thumbs are the look, and losing a lock is never the pause)
+    this.lockAskedAt = performance.now(); // (the game wants the mouse: an unlock that lands just after is the tail of its own release, not you leaving: boot/title.js)
     if (!retry) this.tries = 0;
     try {
       const p = this.el.requestPointerLock?.({ unadjustedMovement: true });

@@ -57,6 +57,7 @@ import { notAwakened } from '../../progress/feelings.js';
 import { learnedOf } from '../../progress/duel/learned.js';
 import { lessonDue } from '../../progress/duel/lesson.js';
 import { rulesetOf, KIND_RULESETS } from '../../progress/duel/rulesets.js';
+import { clapOf } from '../../progress/duel/secrets.js';
 import { DUEL_VIEW, cellLocal } from '../../vfx/duelview/layout.js';
 import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
@@ -361,6 +362,7 @@ export class DuelSession {
   /** One of your actions: refused (a dry tick) or played, then the forecast drawn again. */
   take(a) {
     this.picked = null;
+    if (a.kind === 'drag' || a.kind === 'swap') a.beat = clapOf(this.game.music?.clock?.()); // (where it was let go against the cue's beat as heard, 'on', 'off' or 'miss': the clapperjar's secret keeps time by it, progress/duel/secrets.js)
     const S = this.state, A = this.game.classArtsRun, lucky = a.kind === 'flee' && S?.rerolls && !this.practice && (A?.lucky?.() || A?.secondChance?.('flee')); // (Beginner's Luck, Second Chance: the throw thrown again if it fails, courier/classarts/body.js)
     if (lucky) S.rerolls[0]++;
     this.luckyFlee = !!lucky; // (the art's throw is spent first: duel.flee says lucky, and the game day's re-roll is kept, progress/dice.js)

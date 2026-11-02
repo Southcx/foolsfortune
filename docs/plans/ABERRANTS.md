@@ -124,8 +124,27 @@ The secret's need: 9 (played for: 13 of 16 at 12 x 9; at 8, 15 of 16 but found b
 The pile tops out near 10: slime breaks beside every clear, which is what "easy to clear" means here. A random player loses every duel:
 the flood is the jelly's threat.
 
-### 5.2 The next (parked until South picks)
-- **Clapperjar (Mirth).** It claps on the beat. Secret: clear on its rhythm, three turns in a row, keeping the Crucibelle's time.
+### 5.2 The third: the aberrant clapperjar (Mirth; South picked it, 2026-11-02)
+The clay folk's lowest, gone wrong in Mirth (`KIND_RULESETS.clapper`, `RULESETS.clapperjar`; the lectern's `PRACTICE.clap`).
+- **Board.** The Wisp's 12 x 9 and rules, no fog or embers. Mirth's colours with Grief (its weakness, Mirth's opposite): Wonder, Mirth,
+  Desire, Fury, Grief.
+- **Its foe skills: mischief, not weight.** Hurl 3 every 2nd turn; Shuffle (its own: up to 6 of your gems' colours turned one along,
+  the board you read undone) every 3rd; Reclaim every 5th. Desperate at 2 columns: Shuffle 10, Hurl 4.
+- **Secret: clap back** (`secrets.js` `clapback`). It claps on the beat of the duel's cue, and so must you: let your turn's drag go on
+  its clap (`clapOf`, within 0.06 real s heard: 26% of a beat at 132 bpm, so three running by chance is under 2 in 100) and have it
+  clear, three turns running. It loses its own time and claps itself to pieces. A turn without a drag, or a drag off the clap, starts it
+  over; an Encore's second drag keeps no extra time.
+- **The tell:** the clap itself, on its body and over the cue. **The cost:** a drag let go on the music's time, not the board's best.
+- **The answer:** once two turns have kept time, Syncopate wakes (every 2nd turn): its clap moves to the off-beat (the "and" between)
+  and back, so the third must be found by ear. The mechanic is the lesson (DESIGN.md 22): keeping time, then syncopation.
+- **Learned: Encore** (Ouranurgy, 20, rest 4; `powers.js`): cast before the drag, you may drag twice this turn. Its secret once, or 5
+  clapperjars beaten at the Line. **Drops:** art and finery (its fired clay and its glaze). **Achievement:** du14 Applause.
+- **Measured** (scratchpad `duel/clap.mjs`, 16 duels, a greedy stand-in with no powers): keeping time it wins 11 by the secret in 6.7
+  turns; ignoring it, none in 16 (the same stand-in wins none against the Wisp and 1 against the jelly: the powers are what win the Line,
+  24.3). The secret is a skill of the hands and the ear no stand-in measures: South's play is its test.
+- **Wiring** (Petra): the drag's `beat` from `clapOf(game.music.clock())` at its release; where clapperjars go wrong in the world.
+
+### 5.3 The next (parked until South picks)
 - **Strawman (practice).** A plain secret that teaches the idea, "clear every colour once", shown plainly from the start.
 
 ## 7. Your half: the Spirit Garden (South, 2026-10-28)

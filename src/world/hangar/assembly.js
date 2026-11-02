@@ -3,7 +3,7 @@
 // own (mechstate.js owns); choosing one assembles the frame again (progress/mechs/frame.js) and shows its numbers beside the kept frame's
 // (mass and the legs' load, the weapons' mass and the arms' load, the draw and the generator's output, minutes at rest off the cable, the
 // walk's top, the acceleration, a step's time) and the checks' refusals in their own words (`checks[].why`). DONE keeps it (the save's
-// `mech` section, `mech.assemble { frame }`) and builds the body again in the gantry; MEND clears the mech's cracks.
+// `mech` section, `mech.assemble { frame }`) and builds the body again in the gantry; MEND clears the mech's cracks and mends its joints.
 // A placeholder on the index window's page (feedback/indexmenu.js showPage), plain DOM, its classes `mk-*` for Calissa's dress (AC's
 // garage: the slots as a slot row, the parts as choice cards, compare arrows); it draws only on a click, so it needs no clock of its own.
 //
@@ -75,12 +75,12 @@ export class MechAssembly {
       }
       side.append(el('div', 'grp', 'THE FRAME: KEPT, CHOSEN'), nums);
       for (const c of draft.checks) side.appendChild(el('div', 'mk-refuse', c.why));
-      const cracks = crackSum(St.vessel);
-      side.appendChild(el('div', 'mk-line', cracks > 0 ? `Cracks on the mech: ${Math.round(cracks * 100)}% summed. MEND fires them whole, in gold.` : 'The mech is whole.'));
+      const cracks = crackSum(St.vessel), strained = St.strained; // (the joints mend with the cracks: MECHS.md 9.3)
+      side.appendChild(el('div', 'mk-line', cracks > 0 || strained ? `Cracks on the mech: ${Math.round(cracks * 100)}% summed${strained ? ', its joints strained' : ''}. MEND fires them whole, in gold.` : 'The mech is whole.'));
       const btns = el('div', 'mk-row'); side.appendChild(btns);
       const btn = (t, run) => { const b = el('button', 'mk-btn', t); b.onclick = (e) => { e.stopPropagation(); run(); }; btns.appendChild(b); };
       btn('DONE', () => this.keep());
-      if (cracks > 0) btn('MEND', () => { St.mend(); this.game.events?.emit('mech.mend', { by: 'courier' }); this.show(); });
+      if (cracks > 0 || strained) btn('MEND', () => { St.mend(); this.game.events?.emit('mech.mend', { by: 'courier' }); this.show(); });
     }, { title: 'THE GANTRY', sub: 'click a part · F closes' });
   }
 

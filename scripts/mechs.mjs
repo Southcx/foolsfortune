@@ -3,7 +3,8 @@
 // top, the boosts, the battery's minutes, the checks), then the straw giant fought by each arm weapon on a simple duel model: how many
 // blows and real seconds to fell it with and without stagger, how much battery that costs, and what the giant's swipes do to the mech.
 // Read it to judge: a fight should take one to three real minutes, the battery should matter off the cable, and no weapon should win alone
-// on every count.
+// on every count. v2 (MECHS.md 9): the toy city's buildings under fists and a charge, and the ring's three rivals against four stand-ins
+// (a bout should run a minute or two; the sparring frame won by anyone, the champion only by a player who reads it).
 //
 //   node scripts/mechs.mjs
 // ---------------------------------------------------------------------------------------
@@ -57,3 +58,41 @@ const toCore = REGION_BREAK / (swipe.k * mech.crack * clay.armour.core);
 console.log(`\nTHE GIANT ON THE CLAY FRAME: a swipe k ${swipe.k} cracks the core ${f(swipe.k * mech.crack, 3)} (unshielded): ${f(toCore, 1)} swipes to break it, about ${f(toCore * swipe.every, 0)} real s at one every ${swipe.every} s; a slam k ${slam.k} on the head`);
 console.log(`a charge at the clay frame's boost top (${f(clay.boostTop)} m/s) lands k ${f(chargeK(clay.mass, clay.boostTop), 2)}; the tank frame's (${f(assemble(FRAMES['tank, flail']).boostTop)} m/s) k ${f(chargeK(assemble(FRAMES['tank, flail']).mass, assemble(FRAMES['tank, flail']).boostTop), 2)}`);
 console.log(`the cable reaches ${ENERGY.cable} m; off it the clay frame has ${f(clay.minutesIdle)} real minutes at rest, ${f(clay.capacity / (clay.draw + clay.fire) / 60, 2)} boosting flat out`);
+
+// ---- v2 (MECHS.md 9): the toy city's buildings under the fist and the charge, and the ring's bouts against four stand-ins ----
+import { newBuilding, carve, collapse, cellsLeft, footLeft, BUILDINGS } from '../src/progress/mechs/destruction.js';
+import { newBout, boutStep, CIRCUIT } from '../src/progress/mechs/ring.js';
+console.log('\nTHE TOY CITY (a fist of 0.6 on one wall\'s foot until it falls; one charge of 1.7 through, a capsule r 4 at 1.5 m and 8 m)');
+for (const id of Object.keys(BUILDINGS)) {
+  const b = newBuilding(id, 3), n0 = cellsLeft(b); let blows = 0, fell = 0, s = 1;
+  const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+  while (blows < 120 && !b.fallen) { blows++; carve(b, { kind: 'ball', at: [b.w * r(), 2, 0], r: 2.5 }, 0.6); fell += collapse(b).reduce((a, q) => a + q.cells.length, 0); } // (until its foot gives way: destruction.js FOOT)
+  const c = newBuilding(id, 3); let broke = 0; for (const y of [1.5, 8]) broke += carve(c, { kind: 'capsule', at: [-4, y, c.d / 2], to: [c.w + 4, y, c.d / 2], r: 4 }, 1.7).broke.length;
+  console.log(`${pad(BUILDINGS[id].label, 12)}${pad(n0 + ' cells', 12)}${b.fallen ? `falls in ${blows} fists (${fell} cells come down)` : `stands after ${blows} fists (foot ${f(footLeft(b), 2)})`}; a charge breaks ${broke}`);
+}
+console.log('\nTHE RING (12 bouts a rival a stand-in: reads a tell at react s with read odds; a masher punches the head and never answers)');
+const STANDINS = { expert: { react: 0.15, read: 0.95, starAt: 3, breaker: true }, decent: { react: 0.3, read: 0.75, starAt: 1 }, novice: { react: 0.45, read: 0.5, starAt: 1 }, masher: { masher: true } };
+function bout(id, P, seed) {
+  const B = newBout(id, { punchK: 0.55, seed }), dt = 1 / 30; let t = 0, last = 0, plan = null, z = seed;
+  const r = () => (z = (z * 9301 + 49297) % 233280) / 233280;
+  while (!B.over && t < 700) {
+    t += dt; const F = B.foe, m = F.move && B.R.moves[F.move], press = { mash: B.me.state === 'down' && r() < 0.5 };
+    if (P.masher) { if (t - last > 0.4) { press.punch = r() < 0.5 ? 'L' : 'R'; press.high = true; last = t; } } else {
+      if (m && F.phase === 'windup' && !plan) plan = { at: B.t + P.react, ok: r() < P.read };
+      if (plan && F.phase !== 'windup') plan = null;
+      if (plan && m && B.t >= plan.at && (m.windup - F.t) / B.R.speed[B.round - 1] < 0.3) {
+        if (plan.ok) { const a = m.answers[0]; if (a === 'dodge') press.dodge = 'L'; else if (a === 'duck') press.duck = true; else press.block = true; }
+        if (m.breakOn && P.breaker) { press.punch = 'R'; press.high = false; press.dodge = null; }
+      }
+      if ((F.phase === 'open' || F.taunting) && t - last > 0.36) { if (B.me.stars >= P.starAt) press.star = true; else { press.punch = 'R'; press.high = true; } last = t; }
+      if (!F.move && B.R.guard === 'low' && t - last > 0.5) { press.punch = 'R'; press.high = true; last = t; }
+    }
+    boutStep(B, dt, press);
+  }
+  return { ...B.over, t };
+}
+for (const id of CIRCUIT) {
+  const row = Object.entries(STANDINS).map(([n, P]) => { const R = Array.from({ length: 12 }, (_, i) => bout(id, P, i + 1)), won = R.filter((x) => x.winner === 'me');
+    return `${n} ${won.length}/12${won.length ? ` ${f(won.reduce((a, x) => a + x.t, 0) / won.length, 0)} s` : ''}`; });
+  console.log(`${pad(id, 10)}${row.join('   ')}`);
+}

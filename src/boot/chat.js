@@ -36,6 +36,7 @@ export function bootChat(game, made) {
   // the chat line in the log: words said aloud, /commands, emotes (chat.js, emotes.js)
   game.chat = new Chat(game);
   game.toolSkins = new ToolSkins(game); // (a tool's skin, looks only, kept in the save and /toolskin: vfx/toolskinwear.js, vfx/toolskins.js)
+  game.systems.add('sim', game.toolSkins, { clock: 'raw', name: 'toolSkins', after: 'vessel' }); // (the `sim` phase: core/systems.js)
   game.cardBacks = new CardBackChoice(game); // (the back each deck wears, kept in the settings, and /cardback: ui/cardbackchoice.js)
   game.flourishes = new Flourishes(game); // (the Courier's flourishes: prints, dash trail, shatter, aura, arrival; /flourish: vfx/flourishes.js)
   game.systems.add('fx', game.flourishes, { clock: 'raw', name: 'flourishes' }); // (the `fx` phase: core/systems.js)

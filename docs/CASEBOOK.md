@@ -1105,3 +1105,7 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 397. **A thing that falls in a place belongs to that place's rules.** A creature's drop in a Well is the run's
   haul (lost with a shatter, home up the way up); a drop left lying is cleared when its render zone is left. A pickup that skips the
   place's own economy is a leak of value; one that outlives its place is a leak of objects.
+
+398. **A release the game asked for can land after the window that asked has closed.** An event answering the game's
+  own request (an unlock, a refusal) is read against the request still in flight, never as the player's act; and one refusal is one
+  count, however many ways the browser tells it.

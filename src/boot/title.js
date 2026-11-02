@@ -94,6 +94,7 @@ export async function bootTitle(game, made) {
     if (locked && (modalOpen() || game.kilnUI?.open || game.dialogue?.open || (title.active && game.codex?.open))) { selfRelease = true; document.exitPointerLock?.(); return; }
     if (!locked && selfRelease) { selfRelease = false; return; } // (a release the game made itself is not you leaving: no pause, the kiln sweep's F and Esc spam)
     if (!locked && performance.now() - (input.escSpentAt ?? -1e9) < 500) return; // (an Esc a window spent closing itself is not you leaving either: casebook 125)
+    if (!locked && performance.now() - (input.lockAskedAt ?? -1e9) < 500) return; // (nor a release the game made opening a window that lands after the window has closed and asked the lock back: its request is still answering: casebook 398)
     if (!locked && why === 'refused') { game.log?.say('system', 'Click to take the mouse back.', { key: 'lock.refused', throttle: 5 }); return; } // (the browser would not give the mouse back after a window closed on Esc, which is no user action to it: that is not a pause, R12/T10 v133)
     if (title.active) return; // (the title owns the screen: no pause menu over it)
     if (input.lockFailed) {
