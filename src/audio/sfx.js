@@ -27,6 +27,7 @@ import { SentinelSounds } from './sentinel.js';
 import { DomainLadderSounds } from './domainladder.js';
 import { ShrineSounds } from './shrines.js';
 import { BowlSounds } from './bowl.js';
+import { GreatJellyFightSounds } from './greatjellyfight.js';
 import { VeritomeSounds } from './veritome.js';
 import { ShopSounds } from './shop.js';
 import { CrystalSounds } from './crystal.js';
@@ -79,7 +80,7 @@ import { GodPowerSounds } from './godpowers.js';
 import { SealSounds } from './seals.js';
 
 const BANK_OF = (Sfx.bankOf ||= {}); // (which bank each sound came from, kept on the class so a reloaded audio/sfx.js sees it)
-for (const Bank of [WeaponSounds, WorldSounds, UiSounds, MoveSounds, JellySounds, GodHandSounds, SondelassSounds, ToolSounds, AnglingSounds, TreasureSounds, BrushSounds, VeritomeSounds, ShopSounds, CrystalSounds, VesselSounds, DamageSounds, RailSounds, CatchSounds, SpiritSounds, PositionalSounds, SeaChartSounds, MyceliumSounds, ShellPartSounds, WispSounds, RacewaySounds, RacewayStuntSounds, RacewayModeSounds, CasinoSounds, PsygunCylinderSounds, PuzzleDuelSounds, OpenSeaSounds, SeaSafariSounds, GardenSounds, SpreadSounds, SeaSerpentSounds, SeaBattleSounds, DuelCastSounds, DuelSecretSounds, PalmDieSounds, AnglingSongSounds, SealSounds, GodPowerSounds, GodMatterSounds, ShoalSilhouetteSounds, ClassArtSounds, TouchstoneSounds, PairSpecialSounds, AcousticSounds, GardenLifeSounds, RacewayBuildSounds, DunemawSounds, WorldMomentSounds, TradeSounds, GardenGrowthSounds, DuelEndingSounds, SandboxSounds, MimicrySounds, QuestSounds, StrawmansWellSounds, WellTargetSounds, WellTheatreSounds, BrushJetSounds, SentinelSounds, DomainLadderSounds, ShrineSounds, BowlSounds]) {
+for (const Bank of [WeaponSounds, WorldSounds, UiSounds, MoveSounds, JellySounds, GodHandSounds, SondelassSounds, ToolSounds, AnglingSounds, TreasureSounds, BrushSounds, VeritomeSounds, ShopSounds, CrystalSounds, VesselSounds, DamageSounds, RailSounds, CatchSounds, SpiritSounds, PositionalSounds, SeaChartSounds, MyceliumSounds, ShellPartSounds, WispSounds, RacewaySounds, RacewayStuntSounds, RacewayModeSounds, CasinoSounds, PsygunCylinderSounds, PuzzleDuelSounds, OpenSeaSounds, SeaSafariSounds, GardenSounds, SpreadSounds, SeaSerpentSounds, SeaBattleSounds, DuelCastSounds, DuelSecretSounds, PalmDieSounds, AnglingSongSounds, SealSounds, GodPowerSounds, GodMatterSounds, ShoalSilhouetteSounds, ClassArtSounds, TouchstoneSounds, PairSpecialSounds, AcousticSounds, GardenLifeSounds, RacewayBuildSounds, DunemawSounds, WorldMomentSounds, TradeSounds, GardenGrowthSounds, DuelEndingSounds, SandboxSounds, MimicrySounds, QuestSounds, StrawmansWellSounds, WellTargetSounds, WellTheatreSounds, BrushJetSounds, SentinelSounds, DomainLadderSounds, ShrineSounds, BowlSounds, GreatJellyFightSounds]) {
   for (const key of Object.getOwnPropertyNames(Bank.prototype)) {
     if (key === 'constructor') continue;
     const had = BANK_OF[key]; // (the same bank again is a reload, not a clash)
