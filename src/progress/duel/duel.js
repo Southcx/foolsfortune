@@ -192,7 +192,7 @@ export function undo(s) {
 export function act(s, a) {
   if (s.winner !== null) return null;
   if (LEGACY[a.kind]) a = { ...a, kind: LEGACY[a.kind] };
-  if (s.style === 'drag' || s.style === 'pve') { if (a.kind === 'swap' && a.at && DIRS[a.dir]) a = { kind: 'drag', path: [a.at, [a.at[0] + DIRS[a.dir][0], a.at[1] + DIRS[a.dir][1]]] }; if (!(s.style === 'pve' ? PVE_VERBS : DRAG_VERBS).has(a.kind)) return null; } // (a swap is a one-step drag)
+  if (s.style === 'drag' || s.style === 'pve') { if (a.kind === 'swap' && a.at && DIRS[a.dir]) a = { kind: 'drag', path: [a.at, [a.at[0] + DIRS[a.dir][0], a.at[1] + DIRS[a.dir][1]]], beat: a.beat }; if (!(s.style === 'pve' ? PVE_VERBS : DRAG_VERBS).has(a.kind)) return null; } // (a swap is a one-step drag)
   const side = s.toMove, A = ACTIONS[a.kind]; if (!A) return null;
   if (A.form && A.form !== s.sides[side].form) return null;
   const pve = s.style === 'pve' && side === 0, S0 = s.sides[side];
@@ -207,14 +207,16 @@ export function act(s, a) {
   events.push(...settle(s).events);
   events.push(...chargeFrom(s, events, weaknessOf(s)));
   events.push(...bonusOf(s, side, events));
+  s.beatLast = a.kind === 'drag' ? a.beat || 'miss' : null; // (where a drag was let go against the cue's beat, the session's: the clapperjar's secret)
   events.push(...secretStep(s, side, events)); // (an aberrant's secret win: secrets.js)
+  s.beatLast = null;
   if (a.kind === 'flee' || s.winner !== null) s.undo = []; // (a die thrown, or the duel decided: no taking it back)
   if (s.winner !== null) s.log.push(...events.filter((e) => e.type.startsWith('duel.'))); // (an end made by an action, not a turn's end (a secret won by a drag), kept in the log the session's finish reads: endTurn logs its own)
   if (pve) { for (const e of events) if (e.type === 'chain' && e.side === 0) S0.turnStep = Math.max(S0.turnStep || 0, e.step);
     const sip = Math.round(drinkOf(s, events)); if (sip) { S0.pool = Math.min(capOf(S0), S0.pool + sip); events.push({ type: 'drink', side, n: sip, pool: S0.pool }); } // (your clears fill the pool the powers spend, deeper steps more)
     if (PVE.restCut && (S0.turnStep || 0) >= 2 && a.kind !== 'power') events.push(...cutRests(s, 0, S0.turnStep - 1)); // (a chain's steps take turns off the resting powers)
     if (a.kind === 'power') { let n = 0; for (const e of events) if (e.type === 'clear' && e.side === 0 && e.colour) n++; events[0].cleared = n; } // (what the cast cleared: its domain's experience, domains.js)
-    if (a.kind !== 'skill' && a.kind !== 'power') { S0.dragged = true; s.undo = []; } } // (the drag, or a flee's throw, is the turn: what is left is the skills', and they come first)
+    if (a.kind !== 'skill' && a.kind !== 'power') { if (a.kind === 'drag' && S0.encore > 0) S0.encore--; else S0.dragged = true; s.undo = []; } } // (Encore, the clapperjar's learned skill: a second drag this turn) // (the drag, or a flee's throw, is the turn: what is left is the skills', and they come first)
   if (s.lesson) events.push(...lessonAct(s, side, a, events));
   return events;
 }
@@ -256,7 +258,7 @@ export function endTurn(s) {
     S.push = (S.push || 0) + sent; let moved = 0; while (S.push >= s.perColumn && s.winner === null && moved < PVE.columns) { S.push -= s.perColumn; moved++; events.push(...moveLine(s, 1)); }
     if (moved >= PVE.columns) S.push = Math.min(S.push, s.perColumn - 1); // (overkill lost)
     if (s.winner === null && ((S.turnStep || 0) >= PVE.stagger.step || sent >= PVE.stagger.sent)) events.push(...stagger(s));
-    S.turnStep = 0; S.dragged = false; S.sealed = null;
+    S.turnStep = 0; S.dragged = false; S.sealed = null; S.encore = 0;
   } else if (pve) { /* (the aberrant sends nothing: its skills did their work in its turn) */ S.sent = 0; } else {
   F.pending += S.sent; S.total += S.sent; if (S.sent) events.push({ type: 'send', side, n: S.sent }); S.sent = 0; }
   if (S.pending) { const n = Math.min(S.pending, s.landCap); events.push(...land(s, side, n)); S.pending -= n; } // (the rest waits: it can still be offset)
