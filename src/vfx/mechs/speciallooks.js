@@ -13,6 +13,8 @@
 //   blink    the caster's Portal eyes at both ends (vfx/godhand/portalpair.js, reused whole), the frame's after-image left at the first
 //   pull     Psychokinesis's tether from the right hand to where the thing was drawn from
 // And a part's special rested (pilot.specials.ready(slot) reaching 1): a gold glint on that part (`mech.ready`).
+// At a distance (40 m on bright sand) the scan, the gust, the blade and the pull each carry a dark core under their light and a mark
+// on the ground where they touch (mech.scan.ground under the marked giant, mech.gust.ground, mech.sunder.scar).
 // Prior art: the house's split of rules from looks (game.domainLooks, game.sentinelLook); Evangelion's AT Field (the barrier seen only
 // as it rings); the after-images of a hasted body (Chrono Trigger's Haste, Dragon Ball's afterimage technique); the portal pair of the
 // god hand's Portal; Shadow of the Colossus's dust off a giant's step.
@@ -30,7 +32,7 @@ import { portalPair } from '../godhand/portalpair.js';
 export const MECH_SPECIAL_LOOK = {
   ward: { r: 0.62, in: 0.25, out: 0.45, tint: 0x6f8fe0, rim: 0xeaf0ff },
   ghost: { every: 0.09, life: 0.38, colour: 0xb9d8ff, joints: ['elbowL', 'elbowR', 'kneeL', 'kneeR', 'lowerLF', 'lowerRF', 'lowerLB', 'lowerRB'] },
-  blade: { grow: 0.12, hold: 0.45, crumble: 0.5, w: 1.5, h: 0.5, clay: 0xb5653a },
+  blade: { grow: 0.12, hold: 0.45, crumble: 0.5, w: 4, h: 1.3, clay: 0xb5653a }, // (2.7 times its first width: a thin line at 40 m on bright sand did not read)
   blink: { r: 9, life: 2.2, ghost: 0.8 },
   headUp: 1.2,
 };
@@ -67,7 +69,8 @@ export class MechSpecialLooks {
     const d = tgt.distanceTo(hd); if (d > 1) this.play('mech.scan.sweep', { pos: tgt, dir: _b.subVectors(hd, tgt).normalize(), scale: d });
     if (!G) return;
     const h = this.play('mech.scan.mark', { pos: tgt, scale: Math.min(1.3, a), follow: (h2) => { const g = this.giant(); if (!g) return false; h2.pos.copy(g.c.head()); return true; } });
-    this.hold((S.for || 6) * a, null, () => h?.stop?.());
+    const gr = this.play('mech.scan.ground', { pos: G.pos.clone(), scale: Math.min(1.3, a), follow: (h2) => { const g = this.giant(); if (!g) return false; h2.pos.copy(g.pos); return true; } }); // (its ring on the ground under it)
+    this.hold((S.for || 6) * a, null, () => { h?.stop?.(); gr?.stop?.(); });
   }
   k_ward(p, S, a) {
     const B = p.mech, K = MECH_SPECIAL_LOOK.ward, R = (B.height || 15) * K.r, T = (S.for || 6) * a;
@@ -107,6 +110,7 @@ export class MechSpecialLooks {
     const m = new THREE.Mesh(this.blade(), this.bladeMaterial()); m.name = 'mech-special.sunder'; m.castShadow = true;
     m.position.copy(from); m.quaternion.setFromUnitVectors(_a.set(0, 0, 1), f); m.scale.set(K.w * Math.sqrt(a), K.h, 0.001); this.game.scene.add(m);
     this.play('mech.sunder.edge', { pos: from, dir: f, scale: reach });
+    this.play('mech.sunder.scar', { pos: _b.copy(from).setY(p.pos.y + 0.1), dir: _a.copy(f).setY(0).normalize(), scale: reach, from: from.clone().setY(p.pos.y + 0.3), to: to.clone().setY(p.pos.y + 0.3) }); // (the line cut in the ground under it)
     let crumbled = false; const T = K.grow + K.hold + K.crumble;
     this.hold(T, (dt, t) => {
       const g = Math.min(1, t / K.grow), c = Math.max(0, (t - K.grow - K.hold) / K.crumble);
@@ -119,6 +123,7 @@ export class MechSpecialLooks {
     const reach = (S.reach || 45) * a, c = this.chest(new THREE.Vector3()), f = p.forward(new THREE.Vector3());
     this.play('mech.gust.cone', { pos: c.clone().addScaledVector(f, reach), dir: f.clone().negate(), scale: reach });
     this.play('mech.gust', { pos: c.clone().addScaledVector(f, 6), dir: f, scale: 1 });
+    this.play('mech.gust.ground', { pos: p.pos.clone().addScaledVector(f, 4).setY(p.pos.y + 0.1), dir: f.clone().setY(0).normalize(), scale: reach }); // (its track scoured on the ground)
   }
   k_quake(p, S, a) { this.play('mech.quake', { pos: p.pos.clone(), scale: ((S.r || 12) * a) / 12, floor: p.pos.y }); }
   k_blink(p) {
