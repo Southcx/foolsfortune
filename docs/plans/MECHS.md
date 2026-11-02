@@ -493,3 +493,66 @@ Achievement mk25 (hidden, the title Dreamer).
 - **Calissa:** the colossus's body, the lane's lectern, the rings, the pins and the finish line's looks, over the placeholders
   (handoff in `docs/handoffs/calissa/`).
 - **Wanda:** a pin's clatter, a strike's roar, a medal's sting, the colossus's sand.
+
+## 12. Fire, and the city breaking better (South, 2026-11-02: "I notice we have a veritable lack of fire as a mechanic")
+
+South asked the three of us to work it out; Calissa proposed, and the rules are cut here (`progress/mechs/fire.js`, `destruction.js`),
+the runtime `world/hangar/cityfire.js`, the looks Calissa's (from the events and `rec.b.fire.state`), the sounds Wanda's.
+
+**Prior art.** Far Cry 2 (fire that spreads by material and is a weapon you start), Breath of the Wild (fire climbs, wood burns, an
+updraft), Noita and the falling-sand games (fire as a cell rule on the same grid as everything else), Minecraft's fire tick (a burning
+block lights flammable neighbours by chance and burns away), Red Faction Guerrilla (a weakened structure falls under its own weight),
+SimCity's fires (building to building), the water tower as a fire bucket.
+
+### 12.1 The rule
+Fire lives on the toy city's own 1 m cells, stepped at 4 Hz. A burning cell spends its fuel and lights its neighbours by chance: up
+x2.5, sideways x1, down x0.3 (fire climbs), and through open air up to three cells above it and two beside it (fire crosses a room to the
+furniture and climbs to the floor over it, never through a wall). When its fuel is gone it **burns away**: the cell is emptied and the
+collapse runs, so floors burn through and the building comes down under its own weight. What does not burn answers the heat: glass
+bursts in about 2 s (the shower before the flames), steel heated 15 s goes **soft** (half its span and hits: the frame sags), brick and
+stone sat beside fire 5 s are **scorched** (half their hits: a burned-out shell crumbles at a fist). Water leaves a cell **wet** for
+30 s (it cannot catch).
+
+| material | burn | fuel | |
+| --- | --- | --- | --- |
+| paper (new: a lantern stall's walls) | 1 | 5 s | gone in a breath |
+| timber | 0.8 | 20 s | floors, roofs, frames |
+| furnishing (new: the rooms' shelves, beds, crates) | 0.9 | 12 s | a brick house burns from within; a carved facade shows them |
+| glass, steel, brick, stone | 0 | | burst, go soft, scorch |
+
+Measured (`node scripts/mechs.mjs`, lit at the ground floor's front, 8 seeds): a lantern stall burns down in 8 s and is out at 20; a
+house out at 35 s with 70% standing (its timber gone, its brick shell scorched to half its hits); a shop row out at 56 s, about 22 windows
+burst; a steel block and a glass tower barely catch from one shot (they are for the fist and the flamer); a bottle kiln never.
+
+### 12.2 What lights it, what puts it out
+- **Lit by** the blaster's shot on a burnable cell (0.35 x its burn), the charged beam along its whole ray (0.8), the **flamer** (a new
+  back unit: G held, a 30 m cone, 400 kJ a real second, opened by your first fire, mk26), a burning chunk landing, a burning straw giant
+  against a building.
+- **Put out by** a water tower burst (12 m), the Ground Pound (a 5 m smother), and itself when nothing is left. No crude, rain or
+  lightning in the yard yet: `stepFire`'s `quench` is ready for Grief's rain where the hangar gets weather.
+
+### 12.3 Bodies
+- **The mech's heat** (0..1): up 0.5 a real second within 3 m of a burning cell, down 0.25 out of it; it drains 400 kW x heat (a real
+  minute at full heat is half the clay battery) and at full heat cracks the legs 0.15 every 2 real s. Walk through fire; never stand in it.
+- **The straw giant burns**: alight 30 real s, its barrier held down, its stagger rising 6 a real second, 0.04 of a full blow a real
+  second to its body (about 1.2 blows: fire is a setup for the throw, not a kill). A water tower puts it out.
+- **The dune colossus does not burn**: fire vitrifies its sand, firing it to glass (0.25 a real second), and at full it is glass for 12 real s, taking blows
+  x1.5 and unable to burrow. The flamer is the answer to its burrow.
+- Smoke is a look only for now: no rule hides a tell behind it.
+
+### 12.4 The city breaking better (Calissa's asks)
+- A steel-framed building's glass within 4 cells of a blow's reach shatters with it (`shatterGlass`).
+- A chunk that lands from 8 m or more with 24 cells or more splits across its longest axis into up to 3 slabs (`splitChunk`), the ones of
+  a slab's mass kept as props.
+- Interiors: `FURNISH` fills a share of each floor's cells with furnishing (a house 12%, a shop 14%, a block 6%, a tower 4%, a stall 18%),
+  so a carved facade shows rooms, and they burn.
+- Four lantern stalls stand either side of the launch street (x -112 and -100, z +-17): the first thing a blaster sets alight.
+- Dust that hangs is Calissa's (a look).
+
+### 12.5 Events and the ledger
+`city.ignite { building, lot, at, cause, by }`, `city.burn { building, lot, cells, k, at, by }` (about 1 Hz), `city.char { building, lot,
+cells, at, by }`, `city.douse { building, lot, cells, cause, by }`, `city.out { building, lot }`, `city.felled { ..., cause: 'fire' }`,
+`city.break { ..., cause: 'heat' }`, `mech.flame { on, by }`, `mech.heat { k }`, `giant.burn { id, k, by }`, `giant.vitrify { id, on, by }`.
+Ledger (`tracking/mechfire.js`): city.ignite(.cause), city.burned.cells, city.felled.fire, city.douse(.cause), mech.heat.full,
+giant.burn.<id>, giant.vitrify. Achievements: mk26 Kindling (opens the flamer), mk27 Burnt Down, mk28 Bucket Brigade, mk29 Bonfire,
+mk30 Glassed.
