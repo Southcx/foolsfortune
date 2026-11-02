@@ -7,7 +7,7 @@
 // Prior art: a keyboard's or a tile wall's one gutter (equal padding); Brawlhalla's and Brawl Stars' fixed slots relabelled by context;
 // the Jacob's ladder toy (in Mexico, the tablitas) for the fold; Breath of the Wild's Pro HUD for HIDDEN.
 //
-//   ARC_GRID { cell, gutter, edge }   ARC_CELLS { A..G, PICK, BELT }   ARC_FOLD   TOUCH_ARC[ctx]   ARC_SETTING
+//   game.touchArc (this module)   ARC_GRID { cell, gutter, edge }   ARC_CELLS { A..G, PICK, BELT }   ARC_FOLD   TOUCH_ARC[ctx]   ARC_SETTING
 //   arcRect(slot, safe) -> { x, y, w, h }   arcOf(ctx, hasAction?) -> [{ slot, action, rect? }]   foldOf(ctx) -> [slot]
 // ---------------------------------------------------------------------------------------
 
