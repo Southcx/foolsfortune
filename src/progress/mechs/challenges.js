@@ -29,14 +29,14 @@ export const LANE = { z: -155, line: -150, east: 1, lectern: { x: -162, z: -140 
 export const RINGS = [{ r: 4, pts: 100 }, { r: 10, pts: 50 }, { r: 18, pts: 25 }, { r: 28, pts: 10 }];
 
 /** The pins: ten in a triangle (4-3-2-1 from the back), `gap` m apart, the head pin `at` m down the lane from the line (45 m past
- *  Bowling's own line at `from` 70: the water tower at 22 m/s carries 54 m at the throw's own angle and 60 at most, so it lands short and
+ *  Bowling's own line at `from` 70: the water tower at 22 m/s landed 30 m out aimed level in play (52 at most from the 3 m hand), so it lands short and
  *  rolls in); a pin is struck
  *  when a thrown thing passes within `r` of it, and a falling pin knocks those within `reach` beyond it (pinChain). Sized to the water
  *  tower (about 8 m across in flight): a straight throw at the head pin takes the pocket, a wide one a corner. */
 export const PINS = { at: 115, gap: 6, h: 8, r: 3, reach: 7.5, cone: 0.85 }; // (cone: the cosine of the angle off its fall a pin still takes another: 32 degrees, a row's diagonal)
 
 export const CHALLENGES = {
-  javelin: { label: 'Javelin', line: 'Throw a post or girder from the line: your best of three, in metres.', kind: 'throw', props: ['post', 'girder'], tries: 3, unit: 'm', medals: [100, 140, 170] },
+  javelin: { label: 'Javelin', line: 'Throw a post or girder from the line: your best of three, in metres.', kind: 'throw', props: ['post', 'girder'], tries: 3, unit: 'm', medals: [80, 120, 155] },
   bullseye: { label: 'Bullseye', line: 'Three throws at the rings. The middle is worth the most.', kind: 'throw', props: ['chunk', 'tower'], tries: 3, unit: 'points', medals: [100, 175, 250], target: 70 },
   bowling: { label: 'Bowling', line: 'Throw the water tower at the pins. Two throws: knock all ten.', kind: 'throw', props: ['tower'], tries: 2, unit: 'pins', medals: [7, 9, 10], from: 70 },
   demolition: { label: 'Demolition', line: 'Sixty seconds: break as much of the city as you can.', kind: 'timed', secs: 60, unit: 'cells', medals: [400, 900, 1600] },
@@ -45,9 +45,11 @@ export const CHALLENGES = {
 export const CHALLENGE_IDS = Object.keys(CHALLENGES);
 
 /** The medals' bars, each with its reason (to be measured at the gate's play and retuned: MECHS.md 11.3):
- *  javelin   measured (scripts/mechs.mjs, from the hand's 12 m): a post at 40 m/s lands 141 m off at the throw's own 23 degrees and 174 at
- *            45; a girder (32 m/s) 97 and 115. So 100 is a girder well thrown, 140 a post as it comes, 170 a post aimed high or thrown running.
- *  bullseye  the bull 70 m out: a chunk (28 m/s) carries 78 m at the throw's own angle and 91 at most, so it is aimed a little low;
+ *  javelin   measured in play (a headless throw, 2026-11-02): a post aimed level leaves the hand 2.9 m up and lands 84 m off (the throw's
+ *            own lift, about 13 degrees); from 3 m (scripts/mechs.mjs) it carries 124 m at 23 degrees and 166 at 45, a girder 107 at most.
+ *            So 80 is a post as it comes, 120 one aimed a little up, 155 one aimed high or thrown running. (Was 100 / 140 / 170 from a
+ *            12 m hand the frame does not throw from: a level throw was no medal.)
+ *  bullseye  the bull 70 m out: a chunk (28 m/s) carries 64 m at 23 degrees and 83 at most from the 3 m hand, so it is aimed a little up;
  *            three throws: 100 is one bull or two greens, 175 a bull and a 50 and a 25, 250 two bulls and a 50.
  *  bowling   7 a fair frame, 9 a near thing, 10 every pin (a strike or a spare: both count all ten; the strike is its own achievement).
  *  demolition a fist breaks about 30 cells of brick, a Ground Pound about 120, a felled house 600: 400 is steady work, 1600 a tower down.
