@@ -11,7 +11,7 @@
 //               diagonal pairs stepping together
 //   treadLegs   tank: two tread pods under porcelain skirts, gold road wheels turning by the ground covered, a turret ring between
 // The refire (South, 2026-11-02): every articulation ball the Courier's skin under a clear shell (kit.js `jointBall`), each registered
-// with the body (`ballAt`) so its Lachryma stands in it (vfx/mechs/hydraulics.js); the pelvis's top a socket with a gold lip the dantian
+// with the body (`ballAt`) so its Lachryma stands in it (vfx/mechs/hydraulics.js); the pelvis's top a socket with a trim lip the dantian
 // sits in, seen whole from the front, the belt lowered and opened under it; the biped's knee cop sculpted (parts/sdf.js: a central ridge between two
 // concave wings, a boss at its heart); the calves (the lower leg's girth) 15% slimmer, so the hero reads top-heavy.
 // The feminine forms' legs are their own (femlegs.js FEM_LEGS, every type rebuilt in each).
@@ -42,7 +42,7 @@ const wrap = (P, prof, y0, y1, half, sc, c, k = 1.1, th = 0.09, mid = 0) => P.ge
 function pelvis(S, hipX, F) {
   const { p, g } = S, w = F.hips;
   p.lathe([[0.001, -0.62], [0.8, -0.58], [1.22, -0.3], [1.32, 0.05], [1.24, 0.3], [1.12, 0.4], [1.02, 0.37], [0.88, 0.2], [0.62, -0.05], [0.001, -0.12]], { sc: [w, 1, 0.72], c: L.pale }, 32); // (the hip shell, its top a socket the dantian sits in)
-  g.ring(1.08, 0.04, { at: [0, 0.4, 0], sc: [w, 1, 0.73], c: L.gold }, 40, 5); // (the socket's lip, framing it)
+  S.trim.ring(1.08, 0.04, { at: [0, 0.4, 0], sc: [w, 1, 0.73], c: L.trimM }, 40, 5); // (the socket's lip, in trim: no gold wire round the dantian)
   S.trim.geo(curved([[1.3, 0.14], [1.34, 0.24], [1.28, 0.34]], 0.1, 0.42, PI * 2 - 0.42, 6), { sc: [w, 1, 0.74], c: L.trimM }); // (the belt, open at the front under the dantian)
   p.geo(plate([[-0.34, 0.3], [0.34, 0.3], [0.27, -0.64], [0, -0.78], [-0.27, -0.64]], 0.22, 0.06), { at: [0, 0, 0.92], c: L.mid }); // (the codpiece)
   for (const [s] of SIDES) socket(p, 0.58 * F.joint, { at: [s * hipX, -0.35, 0] });

@@ -171,11 +171,10 @@ export function femCoreLook(id, F) {
     sculptSide(S.trim, f, [[-1.15, T.shoulderY + 0.1, -0.6], [1.15, top + 0.12, 0.62]], 0.04, { key: `fem.collar.${F.fem}.2`, tone: aoTone(f, L.trimD, L.trimL) });
   };
   /** The waist column's lower ball made the dantian, a target point (South, 2026-11-02: "Think of the waist joint like the dantian.
-   *  Its a target point!"): larger than the other balls, a heart of the glow (lit while sealed) round the skin's, and a gold reticle
-   *  on its shell (its equator and its meridian, a crosshair seen from the front). */
+   *  Its a target point!"): larger than the other balls, a heart of the glow (lit while sealed) round the skin's, its shell bare glass
+   *  (no gold wire on it: South, 2026-11-02). */
   const dantian = (S, r, at) => {
     jointBall(S, r, at); S.e.ball(r * 0.42, { at, c: 0xffffff }, 20, 14);
-    S.g.ring(r * 1.01, 0.012, { at, c: L.gold }, 48, 4); S.g.geo(new THREE.TorusGeometry(r * 1.01, 0.012, 4, 48), { at, rot: [0, PI / 2, 0], c: L.gold });
   };
   const build = haydee[id] || haydee.clayCore;
   /** The chest plates: a dome each in its joint's frame (+Z out), seated on the shell's front at the plate's height. */

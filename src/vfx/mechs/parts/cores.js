@@ -13,8 +13,8 @@
 //              the abdomen's three bands round the sides and back as plates; a kintsugi crack across the left pectoral. Its base is
 //              analytic (an elliptic section through the chest's own profile, as splines), the forms few and strong
 // THE DANTIAN (South, 2026-11-02: "Think of the waist joint like the dantian. Its a target point!"): the hero's waist ball a little
-// larger than the rest, its heart the glow (lit while sealed, seen through the clear shell), crossed by a gold equator and meridian
-// like a reticle, sitting in the pelvis's socket (its lip a gold ring) under the plastron's arch, seen whole from the front.
+// larger than the rest, its heart the glow (lit while sealed, seen through the clear shell), bare glass with no gold wire on it
+// (South, 2026-11-02), sitting in the pelvis's socket under the plastron's arch, seen whole from the front.
 //   kilnCore   fired twice: deeper and rounder (a bottle kiln's shoulders), banded in trim, its firing holes bricked open on the core
 //   lightCore  bisque thin: slim, its flanks cut to narrow ribs over the lit core, a sternum plate and hoops
 // The feminine forms' cores are their own (femcores.js, by the same `coreLook`).
@@ -209,15 +209,13 @@ export function coreLook(id, F = FORMS.hero) {
   };
 }
 
-/** The hero's waist: the dantian (a glass ball, its Lachryma standing round a heart that glows while sealed, a gold equator and
- *  meridian crossing at its front as a reticle), the column up into the chest and a trim collar where it meets the ball's crown; the
+/** The hero's waist: the dantian (a bare glass ball, its Lachryma standing round a heart that glows while sealed; no gold wire on
+ *  it, South, 2026-11-02), the column up into the chest and a trim collar where it meets the ball's crown; the
  *  pelvis's socket below is its lip (legs.js), the plastron's arch above. */
 function dantian(S) {
   const r = DANTIAN.r;
   S.j.ball(r, { c: 0xffffff }, 32, 22);
   S.e.ball(r * 0.3, { c: 0xffffff }, 18, 12); S.e.ring(r * 0.42, 0.018, { rot: [PI / 2, 0, 0], at: [0, 0, r * 0.62], c: 0xffffff }, 32, 4); // (the heart lit, a ring before it)
-  S.g.ring(r * 1.006, r * 0.06, { c: L.gold }, 40, 5); S.g.ring(r * 1.006, r * 0.045, { rot: [0, 0, PI / 2], c: L.gold }, 40, 5); // (the equator and the meridian)
-  for (const a of [0, PI / 2, PI, PI * 1.5]) S.g.ball(0.035, { at: [Math.cos(a) * r * 0.5, Math.sin(a) * r * 0.5, Math.sqrt(r * r * 1.02 - r * r * 0.25)], c: L.gold }, 8, 6); // (the reticle's studs)
   S.p.cyl(0.46, 0.5, 0.42, { at: [0, 0.82, 0], c: L.dark }, 20); // (the column up into the chest, clear of the heart)
   S.trim.lathe([[0.44, 0.6], [0.58, 0.64], [0.6, 0.72], [0.5, 0.78]], { c: L.trimM }, 32); // (a collar where the column meets the ball's crown)
 }
