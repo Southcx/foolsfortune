@@ -29,6 +29,8 @@ export function duelRules({ on: onAny, L: ledger, log }) {
   let L = ledger;
   const on = (type, fn) => onAny(type, (e) => { L = e?.practice ? quiet : ledger; try { fn(e); } finally { L = ledger; } });
   // the pull (world/duel/duelfoes.js): its look and sound say it; the log says only an escape (a plain placeholder line, Espada's to word)
+  // clapper.wrong { at, by: 'environment' }: a clapperjar goes aberrant in Mirth's weather (world/duel/duelfoes.js clapperWrong; the Lantern Wisp's line is tracking/wisps.js)
+  on('clapper.wrong', () => log.say('other', 'A clapperjar caught the mirth in the air and went aberrant.', { key: 'cwrong', throttle: 4 })); // (a placeholder line, Espada's to word)
   on('duel.slip', (e) => { if (e.by !== 'courier') return; L.inc('duel.slip'); log.say('battle', 'Escaped the aberrant\'s pull.', { key: 'duel.slip', throttle: 2 }); });
   on('duel.open', (e) => { L.inc('duel.open'); log.say('battle', e.practice ? 'Strawman turns aberrant. Practice duel started. Nothing counts.' : 'An aberrant Figment seizes your mind. Duel started.'); }); // (the practice line Espada's, 2026-10-27)
   on('duel.break', (e) => { if (e.by !== 'courier') return; L.inc('duel.break'); log.say('battle', 'Figment broken.', { key: 'duel.break', throttle: 1 }); });
