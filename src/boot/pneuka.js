@@ -86,13 +86,16 @@ export function bootPneuka(game, made) {
   game.windowOpen = windowOpen; // (the chat line does not pause: the world goes on while you type, as in an MMO; the keys typed are the field's, input.js)
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
-  if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in them)
+  if (character.filigree) { game.filigree = new Filigree(game, character.filigree); game.systems.add('fx', game.filigree, { name: 'filigree' }); } // (the armour's lines show the Lachryma in them; the `fx` phase: core/systems.js)
   game.hudRing = new HudRing(game); // (their Lachryma and what has noticed them, on the ground at their feet)
   game.releaseCrack = new ReleaseCrack(game); // (a release cracks the vessel from inside: vessel.release, vfx/releasecrack.js)
   game.hookMark = new HookMark(game); // (the hook's mark: vfx/hookmark.js)
   game.blobShadow = new BlobShadow(game); // (the Courier's blob shadow straight down, beside the sun's: vfx/blobshadow.js)
+  game.systems.add('fx', () => game.blobShadow.update(), { name: 'blobShadow' }); // (the `fx` phase: core/systems.js)
   game.classArtLooks = new ClassArtLooks(game); // (the class arts drawn on the body and the ground: vfx/classartlooks.js)
+  game.systems.add('fx', game.classArtLooks, { clock: 'raw', name: 'classArtLooks' }); // (the `fx` phase: core/systems.js)
   game.pairSpecialLooks = new PairSpecialLooks(game); // (a pair's special drawn, its two tools' grammars braided: vfx/pairspeciallooks.js)
+  game.systems.add('fx', game.pairSpecialLooks, { clock: 'raw', name: 'pairSpecialLooks' }); // (the `fx` phase: core/systems.js)
   game.feelingLooks = new FeelingLooks(game); // (a feeling's Lachryma drunk, drawn into the Courier: vfx/feelinglooks.js)
   game.lockheartReach = new LockheartReach(game); game.carryThrowMark = new CarryThrowMark(game); game.lobArcMark = new LobArcMark(game); game.flareReveal = new FlareReveal(game); // (the hoover's reach on the ground; where a carried thing would land; the Bombardier's lob previewed, a flare's finds marked: vfx/lockheartreach.js, vfx/carrythrowmark.js, vfx/lobarcmark.js, vfx/flarereveal.js)
   for (const name of ['hookMark', 'lockheartReach', 'carryThrowMark', 'lobArcMark', 'flareReveal']) game.systems.add('marks', game[name], { clock: 'raw', name }); // (core/systems.js)

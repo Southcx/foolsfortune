@@ -346,6 +346,7 @@ export const DEFAULTS = {
     landDip: 0.09,
   },
   visual: {
+    keyPoses: false, // the key poses' trial (KEY-POSES.md 7): the kick's guard string and the jump, landing, air dash and turnaround held as keys (courier/anim/keylocomotion.js); off: as before
     outline: 0.006,
     exposure: 1.2,
     sun: 3.2,

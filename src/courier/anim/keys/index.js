@@ -16,9 +16,13 @@ import { KEYS as VERITOME } from './veritome.js';
 import { KEYS as SOULBRUSH } from './soulbrush.js';
 import { KEYS as DREAMVANE } from './dreamvane.js';
 import { KEYS as CRUCIBELLE } from './crucibelle.js';
+import { KEYS as KICK } from './kick.js';
+import { T } from '../../../core/config.js';
 
 export const KEY_TABLES = { cutlass: CUTLASS, lockheart: LOCKHEART, psygun: PSYGUN, veritome: VERITOME, club: SOULBRUSH, dreamvane: DREAMVANE, crucibelle: CRUCIBELLE }; // (keyed by the moveset's id: the Soul Brush's is 'club')
 for (const [tool, KEYS] of Object.entries(KEY_TABLES)) registerKeys(tool, KEYS);
+/** The kick's guard string (keys/kick.js): a trial, played only while the setting `visual.keyPoses` is on (KEY-POSES.md 7). */
+registerKeys('kick', KICK, (m, raw) => (T.visual.keyPoses ? raw : null));
 
 export { KEYS as FIGHTER_KEYS } from './fighter.js';
 export { FIGHTER as FIGHTER_LOCKHEART_KEYS } from './lockheart.js';

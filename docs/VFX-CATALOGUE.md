@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-30). 622 effects in 39 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-11-02). 629 effects in 41 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -447,8 +447,8 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `hit` | one-shot | sprites:core, shape:disc, sprites:streak, sprites:soft | what every blow shows, whatever struck what: the 0.1 s white core, a star of rays, sparks thrown along the blow, motes left hanging | audio/cues.js, audio/godpowers.js, audio/seaserpent.js +32 |
-| `hit.blunt` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff | a blunt blow: a ring of rays knocked out flat, and dust lifting off | vfx/blowfeeleffects.js |
+| `hit` | one-shot | sprites:core, shape:disc, sprites:streak, sprites:soft | what every blow shows, whatever struck what: the 0.1 s white core, a star of rays, sparks thrown along the blow, motes left hanging | audio/cues.js, audio/godpowers.js, audio/seaserpent.js +37 |
+| `hit.blunt` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff | a blunt blow: a ring of rays knocked out flat, and dust lifting off | vfx/blowfeeleffects.js, world/strawmanwell/fighter/kit.js |
 | `hit.blunt.clay` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff, sprites:chip | extends `hit.blunt`. what clay gives up: chips of it, falling, and a puff of its dust | vfx/vfx.js |
 | `hit.blunt.clay.kill` | one-shot | sprites:core, shape:ring×2, sprites:streak, sprites:soft, sprites:puff, sprites:chip, sprites:star4 | extends `hit.blunt.clay`. a kill: what it was made of bursts in a pop of its colour (a second shape), and a few stars of it go up (a finishing beat on top of its own death) |  |
 | `hit.blunt.crystal` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff, sprites:shard, sprites:sparkle | extends `hit.blunt`. crystal rings and splinters: shards and glints in the stone's colours |  |
@@ -456,9 +456,9 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `hit.blunt.jelly.kill` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft×2, sprites:puff, sprites:bubble×2, shape:sphere | extends `hit.blunt.jelly`.  |  |
 | `hit.blunt.metal` | one-shot | sprites:core, shape:ring, sprites:streak×2, sprites:soft, sprites:puff, sprites:ringthin | extends `hit.blunt`.  |  |
 | `hit.blunt.stone` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff×2, sprites:chip | extends `hit.blunt`.  |  |
-| `hit.blunt.straw` | one-shot | sprites:core, shape:ring, sprites:streak×2, sprites:soft, sprites:puff | extends `hit.blunt`. straw: Strawman's sack (its kind's look, vfx.js materialOf): stalks of straw thrown and drifting down, a breath of burlap dust; never clay chips off a dummy of straw (its own puffs of straw at the seams are its body'... |  |
+| `hit.blunt.straw` | one-shot | sprites:core, shape:ring, sprites:streak×2, sprites:soft, sprites:puff | extends `hit.blunt`. straw: Strawman's sack (its kind's look, vfx.js materialOf): stalks of straw thrown and drifting down, a breath of burlap dust; never clay chips off a dummy of straw (its own puffs of straw at the seams are its body'... | vfx/strawmanwell/dummies.js, world/strawmanwell/fighter/kit.js, world/strawmanwell/stages/troupewalkers.js +1 |
 | `hit.blunt.wood` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff×2, sprites:shard | extends `hit.blunt`. wood: splinters and sawdust; stone: grey chips and a dust cloud; metal: a shower of hot sparks and a clang ring |  |
-| `hit.shot` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft | a shot: smaller, a ring stood along the shot, sparks back off the surface | vfx/blowfeeleffects.js |
+| `hit.shot` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft | a shot: smaller, a ring stood along the shot, sparks back off the surface | vfx/blowfeeleffects.js, world/strawmanwell/fighter/kit.js |
 | `hit.shot.clay` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:chip, sprites:puff | extends `hit.shot`.  |  |
 | `hit.shot.clay.kill` | one-shot | sprites:core, shape:ring×2, sprites:streak, sprites:soft, sprites:chip, sprites:puff, sprites:star4 | extends `hit.shot.clay`.  |  |
 | `hit.shot.crystal` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:shard | extends `hit.shot`.  |  |
@@ -515,33 +515,33 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `domain.alteration.cast` | one-shot | shape:crescent×4, shape:band, shape:sphere, sprites:petal, shape:disc, sprites:soft | turned: a band swept up the body through the flambe, crescents turning, flakes changing colour as they fall |  |
-| `domain.alteration.hit` | one-shot | shape:band, shape:sphere, shape:crescent, sprites:petal | a short band wiped up across the point, a crescent flicked round it |  |
+| `domain.alteration.cast` | one-shot | shape:crescent×4, shape:band, shape:sphere, sprites:petal, shape:disc, sprites:soft | turned: a band swept up the body through the flambe, crescents turning, flakes changing colour as they fall | courier/domainarts/depth.js, courier/domainarts/run.js |
+| `domain.alteration.hit` | one-shot | shape:band, shape:sphere, shape:crescent, sprites:petal | a short band wiped up across the point, a crescent flicked round it | courier/domainarts/depth.js, courier/domainarts/run.js |
 | `domain.alteration.hold` | held | shape:band, shape:crescent×2, sprites:petal, shape:disc | held: the band swept up every 2.4 real s, two crescents turning against each other |  |
 | `domain.alteration.level` | one-shot | shape:crescent×5, shape:band×2, shape:sphere, shape:ring, flash, light, shake, sprites:petal, shape:disc, sprites:soft | the level-up: the band swept past the head, crescents at three heights, a ring of the ramp run out |  |
-| `domain.divination.cast` | one-shot | shape:hoop×3, shape:sphere, shape:ring, shape:disc×2, shape:band, sprites:star4, sprites:sparkle | seeing: thin sonar rings swept out flat, an iris narrowing then opening, a scan line climbing |  |
-| `domain.divination.hit` | one-shot | shape:hoop, shape:sphere, shape:ring, shape:disc, sprites:star4, sprites:sparkle | a thin ring pinged out flat round the point, an iris snapping open over it |  |
-| `domain.divination.hold` | held | shape:hoop×2, shape:band, shape:ring, shape:disc, sprites:sparkle | held: a sonar sweep every 2.4 real s, a scan line, a small iris, specks hanging |  |
+| `domain.divination.cast` | one-shot | shape:hoop×3, shape:sphere, shape:ring, shape:disc×2, shape:band, sprites:star4, sprites:sparkle | seeing: thin sonar rings swept out flat, an iris narrowing then opening, a scan line climbing | courier/domainarts/run.js |
+| `domain.divination.hit` | one-shot | shape:hoop, shape:sphere, shape:ring, shape:disc, sprites:star4, sprites:sparkle | a thin ring pinged out flat round the point, an iris snapping open over it | courier/domainarts/run.js |
+| `domain.divination.hold` | held | shape:hoop×2, shape:band, shape:ring, shape:disc, sprites:sparkle | held: a sonar sweep every 2.4 real s, a scan line, a small iris, specks hanging | courier/domainarts/run.js |
 | `domain.divination.level` | one-shot | shape:hoop×4, shape:sphere, shape:ring, shape:disc×2, shape:band×2, flash, light, sprites:star4, sprites:sparkle | the level-up: four sonar rings to seven metres, the iris opened over the head, two scan lines |  |
-| `domain.manifestation.cast` | one-shot | sprites:shard, shape:disc, shape:spikes, shape:cone, shape:sphere, shape:ring, sprites:glint, sprites:facet, sprites:puff, sprites:soft | made: shards drawn in, spikes and a cone crystallising up out of the ground, the kiln's orange flash, dust settling |  |
-| `domain.manifestation.hit` | one-shot | sprites:shard, shape:spikes, shape:sphere, shape:ring, sprites:soft | a cluster of crystal punched out of the struck point along the blow |  |
-| `domain.manifestation.hold` | held | shape:spikes, sprites:facet, shape:disc, sprites:soft, sprites:puff | held: a low stand of crystal breathing, shards orbiting it, grains rising and settling |  |
+| `domain.manifestation.cast` | one-shot | sprites:shard, shape:disc, shape:spikes, shape:cone, shape:sphere, shape:ring, sprites:glint, sprites:facet, sprites:puff, sprites:soft | made: shards drawn in, spikes and a cone crystallising up out of the ground, the kiln's orange flash, dust settling | courier/domainarts/run.js |
+| `domain.manifestation.hit` | one-shot | sprites:shard, shape:spikes, shape:sphere, shape:ring, sprites:soft | a cluster of crystal punched out of the struck point along the blow | courier/domainarts/depth.js, courier/domainarts/run.js |
+| `domain.manifestation.hold` | held | shape:spikes, sprites:facet, shape:disc, sprites:soft, sprites:puff | held: a low stand of crystal breathing, shards orbiting it, grains rising and settling | courier/domainarts/run.js |
 | `domain.manifestation.level` | one-shot | sprites:shard, shape:disc, shape:spikes×2, shape:sphere, shape:ring×2, flash, light, shake, sprites:glint, sprites:facet, sprites:puff, sprites:soft | the level-up: two rings of crystal crystallising up round the Courier and fired in the kiln's orange |  |
-| `domain.ouranurgy.cast` | one-shot | shape:ring×4, shape:pillar×2, shape:sphere, sprites:star4 | the sky's act: a ring closes, a pillar falls on the spot under two turning hoops, stars fall after it |  |
-| `domain.ouranurgy.hit` | one-shot | shape:pillar, shape:sphere, shape:ring×2, sprites:star4 | a thin shaft dropped on the point, a graduated ring knocked out and one hoop turning |  |
-| `domain.ouranurgy.hold` | held | shape:ring×3, sprites:star4, shape:pillar | held: the armillary turning over a graduated ground ring, stars falling through a cool column |  |
+| `domain.ouranurgy.cast` | one-shot | shape:ring×4, shape:pillar×2, shape:sphere, sprites:star4 | the sky's act: a ring closes, a pillar falls on the spot under two turning hoops, stars fall after it | courier/domainarts/depth.js, courier/domainarts/run.js |
+| `domain.ouranurgy.hit` | one-shot | shape:pillar, shape:sphere, shape:ring×2, sprites:star4 | a thin shaft dropped on the point, a graduated ring knocked out and one hoop turning | courier/domainarts/depth.js, courier/domainarts/run.js |
+| `domain.ouranurgy.hold` | held | shape:ring×3, sprites:star4, shape:pillar | held: the armillary turning over a graduated ground ring, stars falling through a cool column | courier/domainarts/depth.js, courier/domainarts/run.js |
 | `domain.ouranurgy.level` | one-shot | shape:ring×5, shape:pillar×2, shape:sphere, flash, light, shake, shape:disc, sprites:star4 | the level-up: a pillar from twelve metres, three hoops opening out round the Courier, the sky laid at the feet |  |
-| `domain.possession.cast` | one-shot | sprites:streak, shape:spiral, shape:dome, shape:sphere×2, shape:band, sprites:soft | reaching in: tethers reeled in, a spiral wound tight, a shell closing, a collar tightening |  |
-| `domain.possession.hit` | one-shot | sprites:streak, shape:dome, shape:sphere, shape:spiral, sprites:soft | a small shell snapping shut on the point, tethers and a spiral drawn in |  |
-| `domain.possession.hold` | held | shape:spiral, shape:band, shape:dome, sprites:soft, shape:sphere | held: a spiral drawn in over and over, a collar breathing, a faint shell, motes drawn in |  |
+| `domain.possession.cast` | one-shot | sprites:streak, shape:spiral, shape:dome, shape:sphere×2, shape:band, sprites:soft | reaching in: tethers reeled in, a spiral wound tight, a shell closing, a collar tightening | courier/domainarts/depth.js |
+| `domain.possession.hit` | one-shot | sprites:streak, shape:dome, shape:sphere, shape:spiral, sprites:soft | a small shell snapping shut on the point, tethers and a spiral drawn in | courier/domainarts/run.js |
+| `domain.possession.hold` | held | shape:spiral, shape:band, shape:dome, sprites:soft, shape:sphere | held: a spiral drawn in over and over, a collar breathing, a faint shell, motes drawn in | courier/domainarts/run.js |
 | `domain.possession.level` | one-shot | sprites:streak, shape:spiral×2, shape:dome, shape:sphere×2, shape:band, flash, light, shake, sprites:soft | the level-up: two spirals wound against each other, a shell closing over the Courier |  |
-| `domain.psychokinesis.cast` | one-shot | shape:ring×3, shape:band×2, shape:sphere, sprites:chip, sprites:streak, sprites:puff | the push: a shockwave wall thrown out all round, debris lifted and swirled, a dust curtain |  |
-| `domain.psychokinesis.hit` | one-shot | shape:wave, shape:sphere, shape:ring, sprites:chip, sprites:puff | a wave of force thrown along the blow, chips knocked off |  |
-| `domain.psychokinesis.hold` | held | shape:band, shape:ring×2, sprites:chip, sprites:puff | held: the lift: warped air round the body, a push breathing out, debris orbiting |  |
+| `domain.psychokinesis.cast` | one-shot | shape:ring×3, shape:band×2, shape:sphere, sprites:chip, sprites:streak, sprites:puff | the push: a shockwave wall thrown out all round, debris lifted and swirled, a dust curtain | courier/domainarts/depth.js, courier/domainarts/run.js |
+| `domain.psychokinesis.hit` | one-shot | shape:wave, shape:sphere, shape:ring, sprites:chip, sprites:puff | a wave of force thrown along the blow, chips knocked off | courier/domainarts/run.js |
+| `domain.psychokinesis.hold` | held | shape:band, shape:ring×2, sprites:chip, sprites:puff | held: the lift: warped air round the body, a push breathing out, debris orbiting | courier/domainarts/run.js |
 | `domain.psychokinesis.level` | one-shot | shape:ring×3, shape:band×3, shape:sphere, flash, light, shake, sprites:chip, sprites:streak, sprites:puff | the level-up: two shockwave walls, debris lifted high, a dust curtain, a shake |  |
-| `domain.spellscription.cast` | one-shot | shape:crescent×4, shape:ring×3, shape:quad, shape:sphere, shape:band, sprites:talisman, sprites:soft | written: strokes in the air, a circle drawn by a racing brush, a seal stamped at its heart, ink left |  |
-| `domain.spellscription.hit` | one-shot | shape:ring, shape:quad, shape:sphere, sprites:crescent, sprites:soft | a seal stamped on the point in the camera's plane, a circle written round it |  |
-| `domain.spellscription.hold` | held | shape:ring×2, shape:crescent, shape:band, sprites:soft, sprites:sparkle | held: the written circle turning, a brush tracing it, a band of script at the chest |  |
+| `domain.spellscription.cast` | one-shot | shape:crescent×4, shape:ring×3, shape:quad, shape:sphere, shape:band, sprites:talisman, sprites:soft | written: strokes in the air, a circle drawn by a racing brush, a seal stamped at its heart, ink left | courier/domainarts/depth.js, courier/domainarts/run.js |
+| `domain.spellscription.hit` | one-shot | shape:ring, shape:quad, shape:sphere, sprites:crescent, sprites:soft | a seal stamped on the point in the camera's plane, a circle written round it | courier/domainarts/depth.js, courier/domainarts/run.js |
+| `domain.spellscription.hold` | held | shape:ring×2, shape:crescent, shape:band, sprites:soft, sprites:sparkle | held: the written circle turning, a brush tracing it, a band of script at the chest | courier/domainarts/depth.js |
 | `domain.spellscription.level` | one-shot | shape:crescent×6, shape:ring×3, shape:quad, shape:sphere, shape:band×2, flash, light, shake, sprites:talisman, sprites:soft | the level-up: five strokes, a circle drawn round the Courier, the seal stamped at the feet, two bands of script |  |
 
 ### flourish (27)
@@ -651,9 +651,9 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `blow.finisher` | one-shot | sprites:streak×2, sprites:ringthin×2, sprites:ring, sprites:core, sprites:star4, sprites:glint, light | extends `blow.heavy`. FINISHER the string's last blow (and a plunge, a charge let go, a heat-1 blow): the heavy's look and a star, a second ring after the first, a wash of the vfx's own lamp, and more of what it is made of |  |
+| `blow.finisher` | one-shot | sprites:streak×2, sprites:ringthin×2, sprites:ring, sprites:core, sprites:star4, sprites:glint, light | extends `blow.heavy`. FINISHER the string's last blow (and a plunge, a charge let go, a heat-1 blow): the heavy's look and a star, a second ring after the first, a wash of the vfx's own lamp, and more of what it is made of | world/strawmanwell/fighter/kit.js |
 | `blow.finisher.clay` | one-shot | sprites:streak×2, sprites:ringthin×2, sprites:ring, sprites:core, sprites:star4, sprites:glint, light, sprites:chip, sprites:puff | extends `blow.finisher`.  |  |
-| `blow.finisher.straw` | one-shot | sprites:streak×3, sprites:ringthin×2, sprites:ring, sprites:core, sprites:star4, sprites:glint, light, sprites:puff | extends `blow.finisher`.  |  |
+| `blow.finisher.straw` | one-shot | sprites:streak×3, sprites:ringthin×2, sprites:ring, sprites:core, sprites:star4, sprites:glint, light, sprites:puff | extends `blow.finisher`.  | vfx/strawmanwell/dummies.js |
 | `blow.guardbreak` | one-shot | sprites:diamond, sprites:ring, sprites:shard | A GUARD BREAK (hit.guardBreak): the guard's own pieces, diamonds of white light burst out in a ring, a gold ring thrown wide | vfx/blowfeel.js |
 | `blow.guardbreak.clay` | one-shot | sprites:diamond, sprites:ring, sprites:shard, sprites:chip | extends `blow.guardbreak`.  |  |
 | `blow.guardbreak.straw` | one-shot | sprites:diamond, sprites:ring, sprites:shard, sprites:streak | extends `blow.guardbreak`.  |  |
@@ -716,11 +716,21 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `dunes.fulgurite.hot` | held | sprites:core, sprites:puff |  | vfx/dunes/hotfulgurite.js |
 | `dunes.fulgurite.strike` | one-shot | sprites:core, light, sprites:chip, sprites:puff×2 |  | vfx/dunes/fulgurites.js |
 
+### sentinel (5)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `sentinel.crack` | one-shot | sprites:chip, sprites:puff |  | audio/cues.js, vfx/sentinelbody.js, vfx/sentinellook.js |
+| `sentinel.fall` | one-shot | sprites:puff, sprites:chip |  | audio/cues.js, vfx/sentinellook.js |
+| `sentinel.mend` | one-shot | sprites:soft, shape:ring, sprites:puff |  | audio/cues.js, creatures/sentinel/mind.js, feedback/tracking/sentinels.js +1 |
+| `sentinel.slam` | one-shot | shape:ring, sprites:puff, sprites:chip, shake |  | vfx/sentinellook.js |
+| `sentinel.wake` | one-shot | sprites:puff, sprites:chip, shape:ring |  | audio/cues.js, creatures/sentinel/sentinels.js, feedback/tracking/sentinels.js +2 |
+
 ### swing (5)
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `swing` | one-shot | trail×2, sprites:glint | what a thing leaves in the air as it sweeps: ribbons between its two ends (a wide one, a hot core near the tip), and motes shed along the way, so many per metre the tip travels (vfx.js `swing`). 'tint' is the swing's colour, 'tip' its ho... | audio/dunemaw.js, coop/personas.js, feedback/tracking/dunemaw.js +12 |
+| `swing` | one-shot | trail×2, sprites:glint | what a thing leaves in the air as it sweeps: ribbons between its two ends (a wide one, a hot core near the tip), and motes shed along the way, so many per metre the tip travels (vfx.js `swing`). 'tint' is the swing's colour, 'tip' its ho... | audio/dunemaw.js, coop/personas.js, feedback/tracking/dunemaw.js +22 |
 | `swing.brush` | one-shot | trail×2, sprites:soft | the Soul Brush's club: a warm wet arc of slip, a pale edge, droplets flung off the bristles | tools/soulbrush/club.js, vfx/vfx.js |
 | `swing.cutlass` | one-shot | trail×3, sprites:glint, sprites:streak, sprites:sparkle | the Sondelass's cutlass: ember to warm white, an afterglow of Lachryma behind, embers off the edge, glints off the point | tools/sondelass/cutlass.js, vfx/vfx.js |
 | `swing.dreamvane` | one-shot | trail×2, sprites:glint, sprites:chip | the Dreamvane's pick brought down overhead: a heavy arc of Lachryma, gold at the head, stone chips and glints thrown off it | tools/dreamvane/dreamvane.js |
@@ -755,9 +765,16 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `wisp.cast` | one-shot | sprites:core, sprites:soft | its cast leaving the lantern: a puff of the flame and a spark; its ember in flight (held, following the ember): a short hot tail, a halo, sparks shed and falling; put out (when the Death clip ends): the wick's smoke, its last embers and ... | audio/cues.js, creatures/wisp/lanternwisp.js, feedback/tracking/wisps.js +2 |
+| `wisp.cast` | one-shot | sprites:core, sprites:soft | its cast leaving the lantern: a puff of the flame and a spark; its ember in flight (held, following the ember): a short hot tail, a halo, sparks shed and falling; put out (when the Death clip ends): the wick's smoke, its last embers and ... | audio/cues.js, feedback/tracking/wisps.js, vfx/lanternwisplook.js +1 |
 | `wisp.cast.flight` | held | sprites:core, sprites:soft×2 |  | vfx/lanternwisplook.js, vfx/racewaytraps/bodies2.js |
 | `wisp.snuff` | one-shot | sprites:core, sprites:puff, sprites:soft, sprites:sparkle |  | vfx/duelview/aberrants/wisp.js, vfx/lanternwisplook.js, vfx/racewaytraps/bodies2.js |
+
+### drop (2)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `drop.rare` | one-shot | sprites:star4, sprites:glint, sprites:sparkle |  | feedback/tracking/cooking.js, progress/cookingachievements.js, vfx/dropsprites.js |
+| `drop.take` | one-shot | sprites:ringthin, sprites:sparkle |  | feedback/tracking/cooking.js, progress/cookingachievements.js, vfx/dropsprites.js +1 |
 
 ### panic (2)
 
@@ -820,7 +837,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `impact` | one-shot | shape:cone, sprites:streak, sprites:puff |  | audio/cues.js, audio/damage.js, audio/shellparts.js +48 |
+| `impact` | one-shot | shape:cone, sprites:streak, sprites:puff |  | audio/cues.js, audio/damage.js, audio/shellparts.js +55 |
 
 ### implode (1)
 
@@ -850,5 +867,5 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `shock` | one-shot | shape:ring, sprites:ring, sprites:ringthin, sprites:sparkle | a shockwave out of a feat of the Courier's power (the parry, a dive's landing, a charge's end, a bomb's pop, the Opening: fx.shockwave): Lachryma's ring, not a white one. The oil film's hues banded across a ring running out, a band of cr... | vfx/particles.js, workbench/lachrymastage.js |
+| `shock` | one-shot | shape:ring, sprites:ring, sprites:ringthin, sprites:sparkle | a shockwave out of a feat of the Courier's power (the parry, a dive's landing, a charge's end, a bomb's pop, the Opening: fx.shockwave): Lachryma's ring, not a white one. The oil film's hues banded across a ring running out, a band of cr... | vfx/particles.js, workbench/lachrymastage.js, world/strawmanwell/stages/troupewalkers.js |
 

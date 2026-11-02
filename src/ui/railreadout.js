@@ -41,6 +41,10 @@ const CSS = `
 .rr,.rr.bf{position:fixed;left:calc(10*var(--d));top:calc(18*var(--d) + var(--cine,0vh));z-index:3;pointer-events:none;width:calc(132*var(--d));
   transition:opacity .2s;opacity:1}
 .rr[hidden]{display:block!important;opacity:0;visibility:hidden}
+/* (on touch the top left is the log's ticker's, under the top bar (ui/touchlog.js, ui/hudlayout.js): the readout stands under it, at its
+   left edge; with the ticker folded to its tab, in its place. Petra's crossing shot at 896 x 414, 2026-11-02: CHAIN over the ticker) */
+body.hud-touch .rr,body.hud-touch .rr.bf{left:var(--hud-log-x,12px);top:calc(var(--hud-log-y,60px) + var(--hud-log-h,36px) + 30px + var(--cine,0vh))}
+body.hud-touch.log-tab.log-folded .rr,body.hud-touch.log-tab.log-folded .rr.bf{top:calc(var(--hud-log-y,60px) + var(--cine,0vh))}
 .rr-score{display:flex;justify-content:flex-end;margin:calc(-1*var(--d)) 0 calc(3*var(--d));min-height:1em}
 .rr-row{display:flex;align-items:center;height:calc(12*var(--d));font-size:calc(11*var(--d))}
 .rr-row>b{font-family:'Jersey 15',monospace;font-weight:400;letter-spacing:.12em;font-size:calc(12*var(--d));color:${SALT};opacity:.85}

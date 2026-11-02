@@ -38,6 +38,7 @@ export function bootChat(game, made) {
   game.toolSkins = new ToolSkins(game); // (a tool's skin, looks only, kept in the save and /toolskin: vfx/toolskinwear.js, vfx/toolskins.js)
   game.cardBacks = new CardBackChoice(game); // (the back each deck wears, kept in the settings, and /cardback: ui/cardbackchoice.js)
   game.flourishes = new Flourishes(game); // (the Courier's flourishes: prints, dash trail, shatter, aura, arrival; /flourish: vfx/flourishes.js)
+  game.systems.add('fx', game.flourishes, { clock: 'raw', name: 'flourishes' }); // (the `fx` phase: core/systems.js)
   sightCommands(game); // (/sight: the Sight's waypoint on the chat line)
   game.perfReadout = new PerfReadout(game, { diag, renderer }); // (the phone measurement panel: ?perf, /perf, the knob visual.perfReadout; debug/perfreadout.js, MOBILE.md 10.3)
   game.fieldReport = new FieldReport(game, { renderer, cloud }); // (what this load did on its device, to the page's private store: debug/fieldreport.js)
