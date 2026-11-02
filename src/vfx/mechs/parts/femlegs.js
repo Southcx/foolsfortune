@@ -293,7 +293,7 @@ function haydeePelvis(S, o = {}) {
   const holes = !!o.hip, sx = o.sx || 1, fig = o.fig || FIGURES.d;
   const key = (holes ? `fem.pelvis.${o.hip.map((v) => v.toFixed(2))}.${o.axis.map((v) => v.toFixed(3))}.${o.R.toFixed(2)}.${o.key || ''}` : 'fem.pelvis.closed') + `.${fig.id}${o.opening ? '.open' : ''}`;
   const f = pelvisField({ ...o, holes });
-  sculptSide(S.p, f, [[-2.6, -1.4, -1.86], [2.6, 1.14, 1.3]], PELVIS.cell, { key, tone: aoTone(f), sc: [sx, 1, 1] });
+  sculptSide(S.p, f, [[-2.6, -1.4, -1.86], [2.6, 1.14, 1.3]], PELVIS.cell, { key, tone: aoTone(f), sc: [sx, 1, 1], mirror: true });
   const at = (q) => [q[0] * sx, q[1], q[2]]; // (the waistband dropped: the dantian's socket opens the pelvis's top front and back)
   const near = (q) => holes && Math.hypot(Math.abs(q[0]) - o.hip[0], q[1] - o.hip[1], q[2] - o.hip[2]) < o.R + 0.14; // (a point in the hip ball's opening)
   (o.harness || harnessOf(null)).pelvis?.(S, { f, at, surf: surfAt, open: near, fig, nrm: (q) => gradN(f, [q[0] / sx, q[1], q[2]]) });

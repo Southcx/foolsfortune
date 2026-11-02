@@ -92,35 +92,42 @@ export const grooves = (f, planes, w = 0.02, depth = 0.025) => (x, y, z) => {
 // ------------------------------------------------------------------ the mesh
 const CACHE = new Map();
 const EDGES = [[0, 1], [2, 3], [4, 5], [6, 7], [0, 2], [1, 3], [4, 6], [5, 7], [0, 4], [1, 5], [2, 6], [3, 7]];
+const EA = Int8Array.from(EDGES, (e) => e[0]), EB = Int8Array.from(EDGES, (e) => e[1]);
 /** The field meshed by naive surface nets over bounds [[x0, y0, z0], [x1, y1, z1]] at `cell` m: a BufferGeometry with position, normal
  *  (the field's gradient) and color (white, or `tone(x, y, z, nx, ny, nz)` -> hex or [r, g, b]); cached by `key` when given. */
-export function mesh(f, [[x0, y0, z0], [x1, y1, z1]], cell = SDF_LOOK.cell, { key = null, tone = null, relax = SDF_LOOK.relax } = {}) {
+export function mesh(f, [[x0, y0, z0], [x1, y1, z1]], cell = SDF_LOOK.cell, { key = null, tone = null, relax = SDF_LOOK.relax, mirror = false } = {}) {
   if (key && CACHE.has(key)) return CACHE.get(key);
   const pad = cell * 1.5; x0 -= pad; y0 -= pad; z0 -= pad; x1 += pad; y1 += pad; z1 += pad;
-  const nx = Math.max(2, Math.ceil((x1 - x0) / cell) + 1), ny = Math.max(2, Math.ceil((y1 - y0) / cell) + 1), nz = Math.max(2, Math.ceil((z1 - z0) / cell) + 1);
+  // a field mirrored in x (`mirror`): the grid laid symmetric about x = 0 and only its +x half asked, the rest copied (the same mesh, half the calls)
+  if (mirror) { x1 = Math.ceil(Math.max(-x0, x1) / cell) * cell; x0 = -x1; }
+  const nx = Math.max(2, Math.ceil((x1 - x0) / cell - (mirror ? 1e-6 : 0)) + 1), ny = Math.max(2, Math.ceil((y1 - y0) / cell) + 1), nz = Math.max(2, Math.ceil((z1 - z0) / cell) + 1);
   const V = new Float32Array(nx * ny * nz), I = (i, j, k) => i + nx * (j + ny * k);
   // the narrow band: the field asked once a block of B cells at its centre; a block the surface cannot reach (its distance past the
   // block's half diagonal, with a margin for the smooth operators' loose bounds) is filled with that one value, only the rest sampled
   const B = 4, hb = (B * cell) / 2, reach = SDF_LOOK.band > 0 ? (hb * 1.732 + cell) * SDF_LOOK.band : Infinity;
-  for (let bk = 0; bk < nz; bk += B) for (let bj = 0; bj < ny; bj += B) for (let bi = 0; bi < nx; bi += B) {
+  const mid = mirror ? (nx - 1) >> 1 : 0;
+  for (let bk = 0; bk < nz; bk += B) for (let bj = 0; bj < ny; bj += B) for (let bi = mid; bi < nx; bi += B) {
     const ek = Math.min(nz, bk + B), ej = Math.min(ny, bj + B), ei = Math.min(nx, bi + B);
     const d = f(x0 + (bi + hb / cell) * cell, y0 + (bj + hb / cell) * cell, z0 + (bk + hb / cell) * cell);
     if (Math.abs(d) > reach) { for (let k = bk; k < ek; k++) for (let j = bj; j < ej; j++) for (let i = bi; i < ei; i++) V[I(i, j, k)] = d; continue; }
     for (let k = bk; k < ek; k++) for (let j = bj; j < ej; j++) for (let i = bi; i < ei; i++) V[I(i, j, k)] = f(x0 + i * cell, y0 + j * cell, z0 + k * cell);
   }
+  if (mirror) for (let k = 0; k < nz; k++) for (let j = 0; j < ny; j++) for (let i = 0; i < mid; i++) V[I(i, j, k)] = V[I(nx - 1 - i, j, k)];
   // a vertex a cell the surface crosses, at the mean of its edges' crossings
   const vid = new Int32Array((nx - 1) * (ny - 1) * (nz - 1)).fill(-1), C = (i, j, k) => i + (nx - 1) * (j + (ny - 1) * k);
-  const pos = [], cor = [0, 0, 0, 0, 0, 0, 0, 0];
-  for (let k = 0; k < nz - 1; k++) for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
-    let m = 0;
-    for (let c = 0; c < 8; c++) { const v = V[I(i + (c & 1), j + ((c >> 1) & 1), k + ((c >> 2) & 1))]; cor[c] = v; if (v < 0) m |= 1 << c; }
+  const pos = [], cor = [0, 0, 0, 0, 0, 0, 0, 0], vcl = []; // (vcl, mirrored: each vertex's cell column and its mirror cell's index)
+  const sy0 = nx, sz0 = nx * ny, OFF = [0, 1, sy0, sy0 + 1, sz0, sz0 + 1, sz0 + sy0, sz0 + sy0 + 1];
+  for (let k = 0; k < nz - 1; k++) for (let j = 0; j < ny - 1; j++) for (let i = 0, o0 = I(0, j, k); i < nx - 1; i++) {
+    const o = o0 + i; let m = 0; // (flat reads and flat edge tables: this loop runs over every cell of the grid)
+    for (let c = 0; c < 8; c++) { const v = V[o + OFF[c]]; cor[c] = v; if (v < 0) m |= 1 << c; }
     if (m === 0 || m === 255) continue;
     let sx = 0, sy = 0, sz = 0, n = 0;
-    for (const [a, b] of EDGES) {
-      const va = cor[a], vb = cor[b]; if ((va < 0) === (vb < 0)) continue;
+    for (let e = 0; e < 12; e++) {
+      const a = EA[e], b = EB[e], va = cor[a], vb = cor[b]; if ((va < 0) === (vb < 0)) continue;
       const t = va / (va - vb);
       sx += (a & 1) + ((b & 1) - (a & 1)) * t; sy += ((a >> 1) & 1) + (((b >> 1) & 1) - ((a >> 1) & 1)) * t; sz += ((a >> 2) & 1) + (((b >> 2) & 1) - ((a >> 2) & 1)) * t; n++;
     }
+    if (mirror) vcl.push(i, C(nx - 2 - i, j, k));
     vid[C(i, j, k)] = pos.length / 3; pos.push(x0 + (i + sx / n) * cell, y0 + (j + sy / n) * cell, z0 + (k + sz / n) * cell);
   }
   // a quad for each grid edge the surface crosses, between the four cells round it, wound by which way the field rises
@@ -168,10 +175,12 @@ export function mesh(f, [[x0, y0, z0], [x1, y1, z1]], cell = SDF_LOOK.cell, { ke
   const P = new Float32Array((quads.length / 4) * 18), N = new Float32Array(P.length), K = new Float32Array(P.length), col = new THREE.Color();
   const vn = new Float32Array(nv * 3), vc = new Float32Array(nv * 3);
   for (let v = 0; v < nv; v++) {
+    if (mirror && vcl[v * 2] < mid) continue; // (its mirror's, copied below)
     const x = pos[v * 3], y = pos[v * 3 + 1], z = pos[v * 3 + 2]; (SDF_LOOK.trueNormals ? gradF : grad)(x, y, z, g); vn.set(g, v * 3);
     const t = tone ? tone(x, y, z, g[0], g[1], g[2]) : 0xffffff;
     if (Array.isArray(t)) vc.set(t, v * 3); else { col.set(t); vc[v * 3] = col.r; vc[v * 3 + 1] = col.g; vc[v * 3 + 2] = col.b; }
   }
+  if (mirror) for (let v = 0; v < nv; v++) if (vcl[v * 2] < mid) { const w = vid[vcl[v * 2 + 1]]; vn[v * 3] = -vn[w * 3]; vn[v * 3 + 1] = vn[w * 3 + 1]; vn[v * 3 + 2] = vn[w * 3 + 2]; for (let c = 0; c < 3; c++) vc[v * 3 + c] = vc[w * 3 + c]; }
   let o = 0;
   for (let q = 0; q < quads.length; q += 4) for (const e of [0, 1, 2, 0, 2, 3]) {
     const v = quads[q + e]; for (let c = 0; c < 3; c++) { P[o + c] = pos[v * 3 + c]; N[o + c] = vn[v * 3 + c]; K[o + c] = vc[v * 3 + c]; } o += 3;
