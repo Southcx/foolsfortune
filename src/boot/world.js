@@ -83,6 +83,7 @@ export async function bootWorld(game, made) {
   game.systems.add('world', () => game.duelFoes.update(), { name: 'duelFoes' });
   game.touchstoneLook = new TouchstoneLook(game); // (the Touchstone dressed as a dark assay hall, built and taken down with her area: vfx/touchstonelook.js)
   game.bazaarHall = new BazaarHall(game); // (the bazaar's Gold Saucer dress: dome, mosaic, stalls, neon, lanterns, carnival props; vfx/bazaarhall.js)
+  for (const name of ['touchstoneLook', 'bazaarHall']) game.systems.add('fx', game[name], { clock: 'raw', name }); // (the `fx` phase: core/systems.js)
   { // (the moonflowers on the pond's far shore: sacred datura is a desert native; vfx/datura.js)
     const at = (a, k = 1.12) => ({ x: DUNE.x + POND.x + Math.cos(a) * POND.rx * k, z: DUNE.z + POND.z + Math.sin(a) * POND.rz * k });
     game.daturas = new Daturas(game, [{ ...at(-2.2), n: 9 }, { ...at(-1.75, 1.18), n: 6 }, { ...at(-2.6, 1.1), n: 7 }]);

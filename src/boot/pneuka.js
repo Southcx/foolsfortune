@@ -104,6 +104,7 @@ export function bootPneuka(game, made) {
   game.events.on('tool.lend', (e) => character.lend(e.tool, game.belt?.freeHand)); // (the sub's verb's body: anim/lendgesture.js)
   game.lentModels = new LentModels(game); // (and the tool at the hand where the verb needs it: tools/lend.js)
   game.pairSpecials = new PairSpecials(game); // (a pair's special: the sub's lent verb fed through the main's, tools/pairspecials.js)
+  game.systems.add('minds', game.pairSpecials, { clock: 'raw', name: 'pairSpecials', after: 'flash' }); // (the `minds` phase: core/systems.js)
   const baubles = new Baubles(game);
   game.baubles = baubles;
   const shells = new Shells(game);

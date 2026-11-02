@@ -210,7 +210,7 @@ export function bootFrame(game, made) {
     game.cartography.update(dt);
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
     game.folk?.update(dt); game.dialogue?.update(game.rawDt); game.shops?.update(dt); game.weather?.update(dt); game.vessel?.update(game.rawDt); game.toolSkins?.update(game.rawDt); game.vesselDamage?.update(dt); game.death?.update(game.rawDt); game.ultimate?.update(game.rawDt); game.combat?.update(dt);
-    diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); if (!worldAsleep) { game.jellies.update(dt); game.wisps?.update(dt); } game.stun.update(dt); game.dissolve.update(dt); game.figmentScatter.update(dt); game.oddsTags?.update(game.rawDt); game.flash.update(game.rawDt); game.pairSpecials?.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
+    diag.begin('minds'); game.systems.run('minds', dt, game.rawDt ?? dt); diag.end('minds'); // (what thinks, each registered where it is built, in the order they declare: core/systems.js)
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
     game.interact.update(game.rawDt);
@@ -324,9 +324,6 @@ export function bootFrame(game, made) {
     game.graphics.shadowsWanted = under < 1; renderer.shadowMap.autoUpdate = under < 1 && (T.visual.shadowEvery | 0) <= 1; // (every frame, or on the graphics tier's own turns: render/graphics.js beforeDraw)
     game.bazaar?.light(); // (the bazaar's own air under its dome: world/bazaar/bazaar.js)
     game.sandbox?.light(); game.hangar?.light(); game.strawmanWell?.light(); game.touchstone?.light(); // (the Touchstone's dark: world/touchstone/touchstone.js)
-    game.bazaarHall?.update(game.rawDt ?? dt); // (the dome's turn, the wheel's and the carousel's spin, the neon's film walk: vfx/bazaarhall.js)
-    game.touchstoneLook?.update(game.rawDt ?? dt); // (the plinth you stand at lit, the stone's sign of the trial running, a run's streak rubbed in: vfx/touchstonelook.js)
-    game.mimicryLooks?.update(game.rawDt ?? dt); game.sandboxLook?.update(game.rawDt ?? dt); game.panicMarks?.update(); game.domainArtMarks?.update(game.rawDt ?? dt); // (the puzzle stones and the ghost, the Sandbox's ball, net and shadow, panic's marks let go: vfx/mimicry/, vfx/sandbox/, vfx/panic.js)
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)
     diag.begin('fx'); fx.update(dt, camera); game.systems.run('fx', dt, game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)

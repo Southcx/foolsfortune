@@ -11,7 +11,7 @@
 //   sync, energy and the cable (rules.js syncStep, energyStep: on the cable within ENERGY.cable of its socket the battery refills; off
 //     it the battery, then the pool at POOL_KJ a point, then the mech fails: the cradle's wreck); the barrier pressed on V
 //   damage into its FORMS.mech vessel by region (vessel.js blowOn; the pool's shield first, down while V presses), each crack's
-//     feedback said (`mech.feedback { k }`); a region broken as MECHS.md 4.7; the core broken or the cracks past the line, it fails,
+//     feedback said (`mech.feedback { k, region }`, cracking your Pneuka Jar at the region it echoes to, never past a shatter); a blow shakes the view (visual.shake); a region broken as MECHS.md 4.7; the core broken or the cracks past the line, it fails,
 //     unless the berserk is rolled (4.8: 12 real s on its own toward the giant, then it kneels and the Jar is out uncracked)
 // The camera pulled out by the mech's height, swung by the mouse (a cinema shot, as the helm's chase).
 //
@@ -22,13 +22,14 @@
 //   cradle's update)   M.idle(dt) (unsealed)   M.hurt(region, k, by)   M.mode ('gantry' | 'lift' | 'pilot' | 'parked')   M.sync M.battery
 //   M.cable (a socket index or null)   M.berserk (real s left)   M.pos M.yaw M.speed   M.target() (what the giant reads)   PILOT   CLAIM
 //   events: mech.seal, mech.unseal { why }, mech.launch, mech.step { beat }, mech.boost { kind }, mech.hurt { region, k, broke },
-//   mech.cable { plugged }, mech.berserk, mech.fail { why }, mech.feedback { k }, mech.sync { v } (at most once a real second)
+//   mech.cable { plugged }, mech.berserk, mech.fail { why }, mech.feedback { k, region }, mech.sync { v } (at most once a real second)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { shakeOf } from '../../core/config.js';
 import { stream } from '../../core/rng.js';
 import { G as GRAV, DRAG, QB } from '../../progress/mechs/frame.js';
 import { SYNC, syncCeiling, beatOf, syncStep, outputK, feedbackK, ENERGY, POOL_KJ, energyStep, BERSERK, berserkRoll } from '../../progress/mechs/rules.js';
-import { blowOn, crackSum, breakLine } from '../../progress/combat/vessel.js';
+import { blowOn, crackSum, breakLine, FORMS } from '../../progress/combat/vessel.js';
 import { HANGAR, PROVING, SOCKET_REACH, clampProving } from './layout.js';
 import { MechBody, MECH_BODY, seatOf, heightOf } from './mech.js';
 import { MechWeapons } from './mechweapons.js';
@@ -42,14 +43,16 @@ export const PILOT = { cam: { back: 2.3, up: 0.95, look: 0.62, ease: 14 }, swing
 /** The keys taken while sealed (core/input.js claim): the walk, boosts, jump, the arms, the back unit, the barrier, the cable, unseal,
  *  and the Courier's own verbs that would otherwise wake under them (the belt's R and X, the emotes' and the god hand's keys). */
 export const CLAIM = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'Space', 'Mouse0', 'Mouse1', 'Mouse2', 'KeyG', 'KeyV', 'KeyF', 'KeyX', 'KeyQ', 'KeyE', 'KeyR', 'KeyC', 'KeyY'];
-const R = stream('world/hangar');
+const R = stream('world/hangar'), SHAKE_R = stream('world/hangar/shake'); // (the camera's shake its own draw, so a look never moves the berserk's rolls)
+/** The mech's regions as the vessel's (MECHS.md 4.7: the cracks echo into your Pneuka Jar where they land on the frame). */
+const ECHO = { head: 'mask', core: 'torso', back: 'torso', armL: 'armL', armR: 'armR', legs: null };
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _f = new THREE.Vector3(), _c = new THREE.Vector3(), _l = new THREE.Vector3(), _s = new THREE.Vector3();
 
 export class MechPilot {
   constructor(hangar) {
     this.hangar = hangar; this.game = hangar.game; this.state = hangar.state;
     this.pos = new THREE.Vector3(); this.vel = new THREE.Vector3(); this.yaw = 0; this.vy = 0;
-    this.camYaw = 0; this.camPitch = 0.28; this.mode = 'gantry'; this.kneel = 0; this.dt = 0;
+    this.camYaw = 0; this.camPitch = 0.28; this.shake = 0; this.mode = 'gantry'; this.kneel = 0; this.dt = 0;
     this.mech = null; this.weapons = new MechWeapons(this); this.cableLine = null;
     this.resetRun();
   }
@@ -280,7 +283,13 @@ export class MechPilot {
     this.sync = syncStep(this.sync, { hitK: kk, ceiling: this.ceiling() });
     const broke = !was && this.broken(region);
     g.events?.emit('mech.hurt', { region, k: +kk.toFixed(3), broke, by });
-    if (r.crack > 0) g.events?.emit('mech.feedback', { k: +(feedbackK(this.sync) * r.crack).toFixed(4), by });
+    this.shake = Math.max(this.shake, Math.min(1, kk * 2.5)); // (the camera's shake while sealed: camera())
+    if (r.crack > 0) {
+      const fk = feedbackK(this.sync) * r.crack, to = region === 'legs' ? ((this.leg = !this.leg) ? 'legL' : 'legR') : ECHO[region] ?? 'torso'; // (the legs' blows by turns on each leg)
+      g.events?.emit('mech.feedback', { k: +fk.toFixed(4), region: to, by });
+      // the echo is past the shield already (the mech's blowOn took it), and never shatters you in the cradle: the frame fails first (fail())
+      if (fk > 0) g.vesselDamage?.hit({ k: fk / FORMS.courier.crack, region: to, why: 'feedback', by, past: true, spare: true });
+    }
     if (this.broken('core') || crackSum(this.state.vessel) >= breakLine('mech')) this.fail('core');
   }
   /** It would fail: the berserk, rolled at high sync, or the cradle's wreck (the Jar thrown clear, cracked). */
@@ -326,6 +335,7 @@ export class MechPilot {
   /** The chase pulled out by the mech's height, swung by the mouse; from the hangar's floor, looking up, while the lift rides. */
   camera(dt) {
     const g = this.game, I = g.input, h = heightOf(this.stats), C = PILOT.cam;
+    this.shake = Math.max(0, this.shake - dt * 2.8); // (eased out in every mode, so none waits for the launch)
     if (this.mode === 'lift') {
       const A = HANGAR.at; _c.set(A.x + 6, A.y + 3, A.z + HANGAR.gantry.z + 30); _l.copy(this.pos).setY(this.pos.y + h * 0.6);
       g.cinema?.shot('mech', { pos: _c, look: _l, bars: 0, ease: C.ease }); return;
@@ -334,6 +344,10 @@ export class MechPilot {
     const back = h * C.back, a = this.camYaw;
     _c.set(this.pos.x - Math.sin(a) * back * Math.cos(this.camPitch), this.pos.y + h * C.up + Math.sin(this.camPitch) * back, this.pos.z - Math.cos(a) * back * Math.cos(this.camPitch));
     _l.copy(this.pos).setY(this.pos.y + h * C.look);
+    if (this.shake > 0) { // (a blow felt in the cradle: the view knocked by its weight, scaled by the setting visual.shake)
+      const m = this.shake * this.shake * h * 0.035 * shakeOf();
+      _c.x += (SHAKE_R() - 0.5) * m; _c.y += (SHAKE_R() - 0.5) * m; _c.z += (SHAKE_R() - 0.5) * m;
+    }
     g.cinema?.shot('mech', { pos: _c, look: _l, bars: 0, ease: C.ease });
   }
 }

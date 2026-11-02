@@ -127,7 +127,7 @@ export class VesselDamage {
   get P() { return this.game.player; }
 
   /** A blow on them: resolved to a region, that region cracked by `k` (0..1). */
-  hit({ point = null, from = null, dir = null, k = 0.5, shatter = 0, why = 'blow', by = 'environment', past = false, region: bound = null } = {}) { // (`shatter` 0..1: the blow's own breaking power, SUBSTRATE.md F5b; `past`: a blow already past every gate (Postpone's held blow landing at `bound`): courier/domainarts/run.js)
+  hit({ point = null, from = null, dir = null, k = 0.5, shatter = 0, why = 'blow', by = 'environment', past = false, spare = false, region: bound = null } = {}) { // (`shatter` 0..1: the blow's own breaking power, SUBSTRATE.md F5b; `past`: a blow already past every gate (Postpone's held blow landing at `bound`): courier/domainarts/run.js)
     const g = this.game;
     if (!this.boxes || g.death?.active) return -1;
     if (!past) {
@@ -169,6 +169,7 @@ export class VesselDamage {
     k = g.domainArtsRun?.share?.(k, region, { point, from, dir, why, by }) ?? k; // (Possession's link: a bound creature takes its half, a domain's rung)
     k = g.domainArtsRun?.plate?.(region, k) ?? k; if (!(k > 0)) return region; // (Plating: the plate over this region takes its share, never one that would shatter)
     const res = blowOn(state(), { region: REGIONS[region], k, shatter });
+    if (res.shatter && spare) return -1; // (`spare`: an echo that never shatters (a mech's feedback into the sealed Jar: world/hangar/mechpilot.js), its thing failing first)
     if (res.shatter && g.classArtsRun?.rebirth?.()) { this.mendAll(); return -1; } // (Rebirth, once a game day: whole instead, a class's art)
     if (res.shatter) { g.death?.begin({ why, by, region: REGIONS[region] }); return region; } // (courier/vessel/death.js)
     this.crack[region] = res.state.crack[REGIONS[region]];
