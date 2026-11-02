@@ -13,6 +13,7 @@
 //
 //   const F = new CityFire(city)   F.update(rawDt)   F.reset()   (stepped from ToyCity.update; city.fire)
 //   F.igniteAt(point, r, chance, cause, by) -> cells lit   F.igniteRay(from, dir, chance, cause, by) -> cells lit   F.flame(from, dir, range, angle, dt, by)
+//   F.cells (Float32Array, x y z a burning cell, world)   F.n   F.ver (bumped each fire step)   CELLS
 //   F.douseAt(point, r, cause, by) -> cells put out (a water tower's burst also a burning giant in reach)   F.burningNear(point, r, h?) -> bool   F.heat (the mech's, 0..1)
 //   points are world (x, y, z); causes 'shot' | 'beam' | 'flame' | 'giant' | 'chunk'; by 'courier' | 'environment' | ...
 //   events (all with `by`, the building's fire's: b.fire.by): city.ignite { building, lot, at, cause }, city.burn { building, lot, cells, k, at } (about 1 Hz),
@@ -24,6 +25,10 @@ import { stream } from '../../core/rng.js';
 import { FIRE, HEAT, GIANT_FIRE, STATE, newFire, stepFire, igniteNear, igniteRay, douse, heatStep } from '../../progress/mechs/fire.js';
 import { MECH_BODY, heightOf } from './mech.js';
 
+/** The most burning cells the look's buffer holds (city.fire.cells: a burning shop row peaks about 170, the whole street a few thousand). */
+export const CELLS = 4096;
+const _gw = new THREE.Vector3();
+
 /** The flame's reach (m along the cone) of each point it lights from, and the radius it lights round one (clamped: the cone's own, 5 m at most). */
 const CONE = { at: [2.5, 6, 10, 14, 18, 22, 26, 30], rMin: 1.2, rMax: 5 };
 const _p = new THREE.Vector3(), _g = new THREE.Vector3(), _w = new THREE.Vector3();
@@ -31,7 +36,21 @@ const r1 = (v) => Math.round(v);
 
 export class CityFire {
   constructor(city) { this.city = city; this.game = city.game; this.R = stream('world/hangar/cityfire'); this.reset(); }
-  reset() { this.acc = 0; this.heat = 0; this.said = 0; this.crackT = 0; }
+  reset() { this.acc = 0; this.heat = 0; this.said = 0; this.crackT = 0; this.n = 0; this.ver = 0; this.cells = this.cells || new Float32Array(CELLS * 3); }
+  /** The burning cells' centres in world metres (x, y, z each), `n` of them, `ver` bumped each fire step: what a look's instanced draw
+   *  re-reads when `ver` changes (Petra, 2026-11-02: no array carried on an event each step). At most CELLS. */
+  gather() {
+    let n = 0; const out = this.cells, C = this.city, v = _gw;
+    for (const rec of C.recs) {
+      if (!rec.fx.on) continue; const b = rec.b, st = b.fire?.state; if (!st) continue;
+      for (let i = 0; i < st.length && n < CELLS; i++) {
+        if (st[i] !== STATE.burning || !b.mat[i]) continue;
+        const x = i % b.w, q = (i - x) / b.w, z = q % b.d; C.cellWorld(rec, x, (q - z) / b.d, z, v);
+        out[n * 3] = v.x; out[n * 3 + 1] = v.y; out[n * 3 + 2] = v.z; n++;
+      }
+    }
+    this.n = n; this.ver++;
+  }
   say(name, payload) { this.game.events?.emit(name, payload); }
   pt(p) { return [r1(p.x), r1(p.y), r1(p.z)]; }
   /** The middle of cells (indices) of a building, in the world, rounded. */
@@ -120,7 +139,7 @@ export class CityFire {
   update(raw) {
     if (!this.city.built) return;
     const dt = 1 / FIRE.hz; this.acc = Math.min(this.acc + raw, dt * 2);
-    while (this.acc >= dt) { this.acc -= dt; for (const rec of this.city.recs) if (rec.fx.on || rec.fx.watch) this.step(rec, dt); this.giants(dt); }
+    while (this.acc >= dt) { this.acc -= dt; for (const rec of this.city.recs) if (rec.fx.on || rec.fx.watch) this.step(rec, dt); this.giants(dt); this.gather(); }
     this.heatTick(raw);
   }
 

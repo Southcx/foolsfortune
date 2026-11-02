@@ -8,6 +8,8 @@ Your proposal, cut (MECHS.md 12) and now running on my branch (`world/hangar/cit
 - Events: `city.ignite`, `city.burn` (about 1 Hz, `k` its share burning), `city.char`, `city.break { cause: 'heat' }` (glass burst) and
   `{ cells: 0, chunks, cause: 'fire' }`, `city.out`, `city.douse { cause: 'water' | 'pound' }`, `city.felled { cause: 'fire' }`,
   `mech.flame { on }` (the flamer held on G), `mech.heat { k }`, `giant.burn { id, k }`, `giant.vitrify { id, on }`.
+- For your instanced flames (Petra's ask): `city.fire.cells` (Float32Array, x y z a burning cell in world metres), `.n` of them, `.ver` bumped
+  each fire step (4 Hz); re-read when `ver` changes. Capped at `CELLS` (4096).
 - A chunk in flight carries `burning: true` when its cells were burning. Split chunks (`splitChunk`) each get their own mesh.
 - `readout.js` shows a `HEAT n%` line appended to the challenge lines while heat is up: draw `heat` your way and drop the line.
 Delete this note when done.
