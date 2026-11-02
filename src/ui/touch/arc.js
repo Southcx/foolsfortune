@@ -96,6 +96,7 @@ export class TouchArc {
   press(slot, down, inside) {
     const g = this.game; this.touched = performance.now() / 1000;
     if (this.collapsed) { if (!down && inside) this.collapse(false); return; }
+    if (down && this.tiles.get(slot)?.el.dataset.fold === 'flipping') return; // (a press lands only on a tile that has landed: TOUCH-REBUILD.md 7)
     const stack = this.fold === 'folded' && this.setting === 'folded' && slot === this.foldFace && (this.foldSlots?.length || 0) > 1;
     if (slot === 'PICK' || slot === 'BELT' || (stack && slot !== 'F')) return this.heldPress(slot, down, inside, stack);
     if (stack) { // (F as the stack: its art on the lift, so a pull down opens the fold without casting it)
@@ -129,7 +130,7 @@ export class TouchArc {
     this.closeRadial = openRadial(t?.el, items, { onPick: (it) => this.pickItem(it), sticky, size: TILE.small, from: Math.PI * 0.9, to: Math.PI * 1.35 }); // (left to up-left: straight up from PICK is F's cell, and the arc is to the right)
   }
 
-  open() { if (this.fold === 'open') return; this.fold = 'open'; this.touched = performance.now() / 1000; this.key = ''; this.say('open', this.foldSlots); }
+  open() { if (this.fold === 'open') return; this.fold = 'open'; this.touched = this.flipAt = performance.now() / 1000; this.key = ''; this.say('open', this.foldSlots); }
   close() { if (this.fold === 'folded') return; this.fold = 'folded'; this.closeRadial?.(); this.closeRadial = null; this.key = ''; this.say('folded', this.foldSlots); }
   say(state, tiles) { this.game.events?.emit?.('touch.fold', { state, tiles: [...(tiles || [])], by: 'courier' }); }
 
@@ -171,9 +172,11 @@ export class TouchArc {
     const { slots, face } = this.read(ctx);
     const folded = setting === 'folded' && this.fold === 'folded', foldSlots = foldOf(ctx).filter((s) => slots.some((x) => x.slot === s));
     this.foldSlots = foldSlots; this.foldFace = foldSlots[0] || null;
-    let show = slots.filter((s) => !folded || !foldSlots.includes(s.slot) || s.slot === this.foldFace);
+    // (the cascade: each tile under the face lands ARC_FOLD_TIME.flip after the one above it, and only a landed tile takes a press)
+    const flipK = (slot) => { const i = foldSlots.indexOf(slot); return i <= 0 || folded || setting !== 'folded' ? 1 : Math.min(1, Math.max(0, (now - (this.flipAt || 0)) / ARC_FOLD_TIME.flip - (i - 1))); };
+    let show = slots.filter((s) => (!folded || !foldSlots.includes(s.slot) || s.slot === this.foldFace) && flipK(s.slot) > 0);
     if (this.collapsed) show = [{ slot: 'A', rect: slots.find((s) => s.slot === 'A')?.rect || arcRect('A', { right: placeOf(g).view.w, bottom: placeOf(g).view.h }) }];
-    const key = `${ctx}|${folded}|${this.collapsed}|${show.map((s) => `${s.slot}:${Math.round(s.rect.x)},${Math.round(s.rect.y)}`).join()}`;
+    const key = `${ctx}|${folded}|${this.collapsed}|${show.length}|${show.map((s) => `${s.slot}:${Math.round(s.rect.x)},${Math.round(s.rect.y)}`).join()}`;
     const want = new Set(show.map((s) => s.slot));
     if (key !== this.key) {
       this.key = key;
@@ -186,6 +189,10 @@ export class TouchArc {
       if (f.label) t.label(f.label.word, f.label.corner); else t.face({ glyph: f.glyph ?? null, word: f.word ?? null, corner: f.corner ?? null, tint: f.tint ?? null });
       const stack = this.collapsed || (folded && s.slot === this.foldFace && foldSlots.length > 1);
       t.el.classList.toggle('arc-stack', stack); // (the stepped rim of the folded column: Calissa's look)
+      // (for Calissa's dress: data-slot is the slot (A..G, PICK, BELT); data-fold is the fold column's state on its tiles, 'folded' (the
+      //  stack), 'flipping' (landing in the cascade) or 'open'; absent on the arc's other tiles)
+      const fk = foldSlots.includes(s.slot) ? (stack ? 'folded' : flipK(s.slot) < 1 ? 'flipping' : 'open') : null;
+      if (fk) t.el.dataset.fold = fk; else delete t.el.dataset.fold;
       t.set({ hidden: false, lit: t.state.pressed || !!f.lit, dim: !!f.dim, charge: f.charge ?? 0 });
       t.update(now);
     }
