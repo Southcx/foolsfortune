@@ -1,8 +1,6 @@
 **Wanda's open list** (the notes it replaces are deleted; each line names who asked).
 
-- **Placeholders that want real sounds** (Petra, 2026-10-06 and 07; each calls an existing method today):
-  - at sea: the gun on the sixteenth (`sfx.tap(9)`), the volley (`seekers`), polarity, the roll, a hit, a ricochet, a shot drunk;
-    `rail.broadside`, `rail.ram`, `rail.warn`, `rail.part`, `rail.bite`, `rail.toll { onBeat }`, `rail.end`.
+- **The crossing's five borrowed sounds** (Petra's call sites): built (`audio/crossing.js`), waiting on the swap: `docs/handoffs/petra/2026-11-02-from-wanda-crossing-sounds.md`.
 - **The mech's other moments** (Dovina's and Calissa's notes, 2026-11-02): the mount, the city and the ring are in (`audio/mechs.js`); still to come `mech.step`, `.cable`, `.seal`, `.launch`, `.boost`, `.barrier`, `.berserk`, `.special`, `giant.*` and the hangar's cue.
 - **The settings' save sections** (Petra, 2026-10-05): `foolsfortune.voice`, `.music`, `.rhythm` into `game.save` sections, scope
   `settings`, once the save can carry an adopted key's value.

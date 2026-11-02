@@ -514,6 +514,18 @@ const RULES = {
   'rail.shoal.eye': (s, e) => s.shoalEye?.(e.open),
   'rail.shoal.lock': (s, e) => s.shoalLock?.(!!e.on, e.k),
   'rail.shoal.shatter': (s) => s.shoalShatter?.(),
+  'rail.hit': (s, e) => s.railHullHit?.(e.region, e.kind),
+  'rail.dodge': (s) => s.railDodge?.(),
+  'rail.cancel': (s, e, g) => s.railCancel?.(e.n, g.music?.grid?.()),
+  'rail.mend': (s) => s.railMend?.(),
+  'rail.warn': (s, e) => s.railWarn?.(e.blow),
+  'rail.ram': (s) => s.railRam?.(),
+  'rail.broadside': (s, e) => s.railBroadside?.(e.ports),
+  'rail.steal': (s) => s.railSteal?.(),
+  'rail.phase': (s, e, g) => s.railPhase?.(g.music?.grid?.()),
+  'rail.toll': (s, e) => s.railTollBeat?.(e.onBeat),
+  'rail.start': (s) => s.railStart?.(),
+  'rail.volley': (s, e, g) => s.railVolleyCount?.(e.downs, g.music?.grid?.()),
   'spirit.bind': (s, e, g) => s.catchSting?.(e.from, g.music?.grid?.()), // (a Figment caught, by the coffin or the hand: audio/catch.js)
   // the garden's spirits and the hand's clay (audio/spirits.js): their voices say the moment; their feeling bends the leap
   'spirit.feed': (s, e) => { s.spiritVoice?.('eat', e); setTimeout(() => s.spiritVoice?.('happy', e), 420); },
