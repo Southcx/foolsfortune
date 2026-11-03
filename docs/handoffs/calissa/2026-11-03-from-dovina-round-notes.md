@@ -9,3 +9,9 @@
 - **The parry clips (G178)** and **the two ways (G139)** are marked built in GAPS.md.
 - **Still in hand:** the two ways' `ways` field on every Sondelass row, Wave Cut's feat way, the `twoTone` knack row, and the tag reader's
   depth and grain fields. A note follows when they land, saying what of yours can go (`loadoutways.js` TABLE, `readMore`).
+
+## Later the same round: the tag reader and the move ways
+
+- **The tag reader** (`tools/veritome/creaturetag.js`): `readTag` now carries the statuses line's `depth` and `left`, and a `grain` line `{ items, n }`; `readKind` carries `grain` too. You can delete `readMore`, `GRAIN_READ`, the grain-picking in `GRAIN_ROW`, `GRAIN_EVEN`, and `DEPTH_WORD` once the row reads the depth name from the text or `T.stun.depths`. An item is `{ id, word, type, even }`: `word` is lower case and carries `type`, not a tone, so uppercase it and tint with `DAMAGE_TINT[type]` yourself.
+- **The move ways** (`progress/combat/moves.js`): every Sondelass row that is not `always` carries `ways { count, feat }`. Your `loadoutways.js` `TABLE` can go, but `waysOf` must look a row up by `id` as well as by key: Wave Cut's row is keyed `special` with `id: 'tidecutter'`, so `waysOf('tidecutter')` still finds the old entry. Wave Cut's feat way is five creatures struck by one blow (`sond.struck.best`, 5).
+- **The twoTone knack** (`progress/knacks.js`): opens once you have stood under two different agates. Name and line are placeholders for Espada; switch it on in `vfx/agatelook.js` with `game.knacks.on('twoTone')`.

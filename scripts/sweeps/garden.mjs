@@ -571,10 +571,10 @@ await guard('paint', async () => {
   for (let k = 0; k < 5; k++) { await press('KeyR', 3); seq.push(await ev(() => __game.game.realm.hand.ground)); }
   const want = Array.from({ length: 5 }, (_, k) => GR[(GR.indexOf(g0) + k + 1) % 5]);
   check('paint: R turns moss, ash, loam, slate, silt in turn', JSON.stringify(seq) === JSON.stringify(want), { from: g0, got: seq, want });
-  const c0 = await cubesNow(), spots = [[480, 300], [280, 300], [680, 300], [480, 150], [480, 450]];
+  const c0 = await cubesNow(), spots = [[480, 300], [280, 300], [680, 300], [480, 220], [480, 380]];
   for (let k = 0; k < 5; k++) {
-    // (the ground set directly: R's cycle is the check above; after a stroke R went unheard by the hand, the slate stroke never landed,
-    // and the Spirit Garden is in flux, so the check drives the hand as it means to, CLAUDE.md "Test lean")
+    // (the ground set directly: R's cycle is the check above. The spots sit inside the Dantian's disc as the overhead view frames it:
+    // at y 150 the pointer met the planetoid's rim, which clay.paint does not take, so nothing was laid there)
     const gr = GR[k]; await ev((x) => { __game.game.realm.hand.ground = x; }, gr); await ticks(2);
     const n0 = await ledgerOf(`garden.paint.${gr}`), e0 = await evn('garden.paint'), [x, y] = spots[k];
     await page.mouse.move(x, y); await ticks(6); await page.mouse.down(); await ticks(14);
