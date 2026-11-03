@@ -74,7 +74,8 @@ export function leftColumn(root, on, fit = null) {
   if (typeof requestAnimationFrame !== 'function') return;
   requestAnimationFrame(() => {
     const d = dot(), B = document.body, touch = B.classList.contains('hud-touch'), cs = touch ? getComputedStyle(B) : null;
-    const top0 = touch ? (parseFloat(cs.getPropertyValue('--hud-log-y')) || 60) + (parseFloat(cs.getPropertyValue('--hud-log-h')) || 36) + 20 * d : 40 * d;
+    const lt = touch ? document.getElementById('chatlog')?.getBoundingClientRect() : null; // (the ticker as drawn: its padding and tab are taller than its lines, Petra 2026-11-03)
+    const top0 = touch ? Math.max((parseFloat(cs.getPropertyValue('--hud-log-y')) || 60) + (parseFloat(cs.getPropertyValue('--hud-log-h')) || 36), lt && lt.height > 0 && lt.top < innerHeight / 2 ? lt.bottom : 0) + 20 * d : 40 * d;
     const lr = touch ? null : document.getElementById('chatlog')?.getBoundingClientRect();
     const floor = (lr && lr.height > 0 && lr.left < innerWidth / 3 && lr.top > top0 + 120 * d ? lr.top : innerHeight) - 8 * d;
     let top = top0, left = 10 * d, prev = null;
