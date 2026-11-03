@@ -32,9 +32,10 @@
 
 /** Every move a slot can hold. A normal's `play` is how the combo engine plays it (tools/moveset.js's A MOVE); today's four and the
  *  stinger are today's rows of the cutlass's table, unchanged (SONDELASS-STRINGS.md section 1), and their numbers are their `rule` rows
- *  of progress/combat/moves.js, which win (`stats` mirrors them for the card). The catalogue's new moves (phase 3, 2026-10-11) carry
- *  their own `stats` until Dovina takes them into her table; each is held to the row rule (the string's power a real second within 15%
- *  of today's, whatever the slots hold: SONDELASS-STRINGS.md section 7, measured). Clip seconds in `play`; real seconds in `stats`. */
+ *  of progress/combat/moves.js, which win. Every move of the catalogue has its row there (`rule || id`, Dovina's, G215, 2026-11-03); the
+ *  card reads it (loadoutwords.js numbersOf), so a row's `stats` here keeps only its `range` as the card's own and mirrors the rest; each
+ *  is held to the row rule (the string's power a real second within 15% of today's, whatever the slots hold: SONDELASS-STRINGS.md section
+ *  7, measured). Clip seconds in `play`; real seconds in `stats`. */
 export const SONDELASS_MOVES = {
   // ---- the normals (LMB: the string's slots) ----
   c1: { id: 'c1', kind: 'normal', label: 'Slash', line: 'Cuts flat, right to left', lore: null, clip: 'Sond_Combo1', effect: 'stagger', parent: null, earn: null, rule: 'combo1', // (opener: a flat cut, right to left)

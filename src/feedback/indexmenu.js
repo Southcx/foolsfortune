@@ -158,6 +158,7 @@ export class IndexMenu {
       if (room.group !== group) { group = room.group; im.appendChild(el('div', 'grp', group)); grid = el('div', 'rooms'); im.appendChild(grid); }
       const row = el('div', `room${i === this.sel ? ' sel' : ''}`, `<span class="n">${room.tag}</span><span><b>${room.name}</b><s>${room.blurb}</s></span>`);
       if (room.danger) { const p = this.game.dangerPips?.(room.danger); if (p) row.querySelector('.n').after(p); } // (a Well's danger, its FOE's class as pips after the key: ui/dangerpips.js)
+      { const b = this.game.firstBead?.(room.id); if (b) row.querySelector('.n').after(b); } // (a room whose first of the game day is still to take: ui/firstbead.js, GAPS G46)
       row.onclick = () => this.pick(i);
       row.onmouseenter = () => { this.sel = i; };
       grid.appendChild(row);

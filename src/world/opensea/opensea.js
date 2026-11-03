@@ -177,6 +177,7 @@ export class OpenSea {
   // ---------------------------------------------------------------- each frame
   update(dt) {
     this.folds.update(dt);
+    this.tide(dt);
     if (!this.partsChatted && this.game.chat?.add) { this.partsChatted = true; this.chatParts(this.game); } // (the chat may come after the room at boot)
     if (!this.built || !this.active) { if (this.herds) this.herds.group.visible = false; return; }
     const g = this.game, I = g.input, P = g.player;
@@ -213,6 +214,7 @@ export class OpenSea {
       else if (this.pieces.pickBottle(H.pos, this.halfHull())) { /* a drift bottle's note read (puzzlepieces.js) */ }
       else if (wreck) this.salvage(wreck);
       else if (isl) { const d = _v.copy(H.pos).sub(isl.pos).setY(0).normalize(); H.placeAt(isl.pos.clone().addScaledVector(d, isl.r + (H.look.beam ?? 2.4) / 2 + 1.5).setY(SEA.y), Math.atan2(d.x, d.z) + Math.PI / 2); this.stepOff({ islet: isl.feature.id, kit: isl.islet?.kit }, isl.pos.clone().addScaledVector(d, isl.r - 1.5).setY(isl.top + 0.05), Math.atan2(-d.x, -d.z)); } // (moored broadside to the shore, a stride off it)
+      else if (this.props.islets.some((i) => this.under(i) && Math.hypot(H.pos.x - i.pos.x, H.pos.z - i.pos.z) - i.r < ROOM.moor + this.halfHull())) g.log?.say?.('info', 'The sandbar is under water.', { key: 'sea.moor', throttle: 3 }); // (placeholder words, Espada's)
       else g.log?.say?.('info', 'Nothing to moor to here.', { key: 'sea.moor', throttle: 3 });
     }
   }
@@ -223,7 +225,7 @@ export class OpenSea {
     if (!P.latch?.('KeyF') && !I.wasPressed('KeyF')) return;
     if (this.pieces.interact(P)) return; // (the Dreamvane in hand, on a buried cache: dig)
     if (P.pos.distanceTo(_v.copy(H.pos).setY(P.pos.y)) < ROOM.reach + (H.look.length ?? 7) / 2) return this.board();
-    const isl = this.props.islets.find((i) => i.secret.pos.distanceTo(_v.copy(P.pos).setY(i.top)) < ROOM.secret);
+    const isl = this.props.islets.find((i) => !this.under(i) && i.secret.pos.distanceTo(_v.copy(P.pos).setY(i.top)) < ROOM.secret);
     if (isl) return this.claim(isl);
     const home = Object.entries(this.props.quays).find(([, q]) => q.open && q.post.distanceTo(_v.copy(P.pos).setY(q.post.y)) < 3);
     if (home) { const go = () => g.places?.travel?.('workshop'); g.seam?.cross(go) || go(); }
@@ -350,10 +352,22 @@ export class OpenSea {
   bump(H) {
     const hit = (c, r) => { const d = _v.copy(H.pos).sub(c).setY(0), n = d.length(); if (n < r) { d.multiplyScalar((r - n) / Math.max(n, 1e-3)); H.pos.add(d); H.speed *= 0.2; return true; } return false; };
     const half = (H.look.beam ?? 2.4) / 2 + 1; // (the hull's side, not its middle: a 10 m beam)
-    for (const i of this.props.islets) hit(i.pos, i.r + Math.max(4, half));
+    for (const i of this.props.islets) if (!this.under(i)) hit(i.pos, i.r + Math.max(4, half)); // (a sandbar under the tide is sailed over)
     for (const q of Object.values(this.props.quays)) hit(q.pos, Math.max(15, this.alongside() + 0.5));
   }
-  nearIslet(p, reach) { let best = null, bd = Infinity; for (const i of this.props.islets) { const d = Math.hypot(p.x - i.pos.x, p.z - i.pos.z) - i.r; if (d < reach && d < bd) { bd = d; best = i; } } return best; }
+  /** A sandbar under the tide (Calissa's clock, vfx/opensea/isletlooks.js sandbarTide: up 05:00-07:00 and 18:00-20:00 game time): sailed
+   *  over, never moored to or stood on (GAPS G164). */
+  under(i) { return i.islet?.kit === 'sandbar' && (this.game.seaLooks?.sandbarUp?.() ?? 1) < 0.5; }
+  /** Once a real second: each sandbar's collider follows its tide, and a Courier moored on one that sinks is stepped back aboard. */
+  tide(dt) {
+    if ((this.tideT = (this.tideT ?? 0) - dt) > 0 || !this.props) return; this.tideT = 1;
+    for (const i of this.props.islets) {
+      if (i.islet?.kit !== 'sandbar') continue;
+      const down = this.under(i); i.collider?.setEnabled?.(!down);
+      if (down && !this.sailing && this.moored?.islet === i.feature.id) { this.game.log?.say?.('info', 'The tide covers the sandbar. You step back aboard.', { key: 'sea.sandbar', throttle: 6 }); this.board(); } // (placeholder words, Espada's)
+    }
+  }
+  nearIslet(p, reach) { let best = null, bd = Infinity; for (const i of this.props.islets) { if (this.under(i)) continue; const d = Math.hypot(p.x - i.pos.x, p.z - i.pos.z) - i.r; if (d < reach && d < bd) { bd = d; best = i; } } return best; }
   phenomena(dt) {
     if ((this.phT = (this.phT || 0) - dt) > 0) return; this.phT = 2;
     const phase = phaseAt();

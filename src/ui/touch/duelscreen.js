@@ -86,6 +86,7 @@ export class TouchDuel {
       else if (e.id === 'du.flee') put(e.id, R.flee, R.flee.h - F, true);
       else if (e.id === 'du.undo') put(e.id, R.undo, R.undo.h - F);
       else if (e.id === 'du.form') put(e.id, R.form, R.form.h - F, true);
+      else if (e.id === 'du.whistle') put(e.id, R.form, R.form.h - F, true); // (the form's spot: no form in the drag and PvE duels)
     }
     const spots = L.toolSpots(R.tools, tools.length);
     tools.forEach((e, i) => { const p = spots[i]; put(e.id, { x: p.x, y: p.y, w: p.s, h: p.s + F }, p.s); });

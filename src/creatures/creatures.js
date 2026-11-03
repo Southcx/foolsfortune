@@ -168,7 +168,7 @@ export class Creatures {
       dur *= stateOf(c.mind).take; // (a Stoic mind holds a status a third as long; a Prismatic one twice)
       if (dur < 0.5) { // (shrugged off: and it hardens)
         if (!(by === 'courier' && this.game.classArtsRun?.cutThrough?.())) { c.mind = pushed(c.mind, MIND.perResist); this.mindMoved(c, by); } // (Cut Through: resisted, it hardens nothing)
-        this.game.events?.emit('creature.resist', { kind: c.kind, status: name, by });
+        this.game.events?.emit('creature.resist', { kind: c.kind, status: name, at: c.pos?.clone?.(), by }); // (at: where the resist mark plays, vfx/typetells.js)
         return false;
       }
     }
@@ -176,7 +176,7 @@ export class Creatures {
     if (c.friend) { // (a status from an ally: a trick once, not a lock; each within the window holds shorter, the third is shrugged off)
       const T0 = (c.tolerance ||= {}), was = T0[name];
       const n = was && was.left > 0 ? was.n + 1 : 0, tol = tolerance(n); T0[name] = { n, left: FRIENDLY.windowSec };
-      if (!tol) { this.game.events?.emit('creature.resist', { kind: c.kind, status: name, by }); return false; }
+      if (!tol) { this.game.events?.emit('creature.resist', { kind: c.kind, status: name, at: c.pos?.clone?.(), by }); return false; } // (at: where the resist mark plays, vfx/typetells.js)
       dur *= tol.dur;
     }
     const s = c.status.get(name);

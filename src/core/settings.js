@@ -33,6 +33,8 @@ export const SETTING_ROWS = [
   { id: 'haptics', path: 'audio.haptics', kind: 'switch', label: 'Haptics', line: 'Small buzzes when you hop, land, hit or are hit. Only on devices that can buzz.' },
   { id: 'shake', path: 'visual.shake', kind: 'choice', choices: [['full', 'Full'], ['half', 'Half'], ['off', 'Off']], label: 'Screen shake', line: 'How hard the view shakes when a blow lands or you land hard.' }, // (Espada's words)
   { id: 'keyPoses', path: 'visual.keyPoses', kind: 'switch', label: 'Key poses (trial)', line: 'The kick, the jump, the landing, the air dash and the turnaround drawn as held poses. Off plays them as before.' }, // (Calissa's words, Espada's to rule)
+  { id: 'alchemySpokes', path: 'alchemy.spokes', kind: 'switch', label: 'Colour wheel spokes', line: 'At the press, seven faint lines from the grey centre of the colour wheel to the seals. Still no numbers.' }, // (vfx/alchemy/bath.js; Calissa's words, Espada's to rule)
+  { id: 'alchemySeals', path: 'alchemy.seals2x', kind: 'switch', label: 'Large seals', line: 'At the press, the seals drawn at twice the size, on the step outside the rim.' }, // (vfx/alchemy/basin.js; Calissa's words, Espada's to rule)
   { id: 'layout', kind: 'action', label: 'Reset the touch layout', line: 'Puts every button back where it started.', confirm: 'Put every button back where it started?' },
 ];
 const BY_ID = new Map(SETTING_ROWS.map((r) => [r.id, r]));

@@ -62,7 +62,7 @@ class LoadoutEditor {
 
   /** A row of the catalogue as a choice card's row. `equipped`: it is what the picked slot holds; `key`: the picked slot's key cap. */
   card(row, { equipped = false, key = null } = {}) {
-    const st = moveStatus(this.game, row), n = numbersOf(row, RULES.sondelass?.[row.rule]), kw = effectKeyword(row);
+    const st = moveStatus(this.game, row), n = numbersOf(row, RULES.sondelass?.[row.rule || row.id]), kw = effectKeyword(row);
     return {
       id: row.id, name: labelOf(row), does: lineOf(row), lore: row.lore || null, detail: row.detail || null,
       power: n.power, reach: n.reach, speed: n.speed, cost: n.cost, keywords: kw ? [kw] : [], icon: kw ? `kw.${kw}` : null,
@@ -137,7 +137,7 @@ class LoadoutEditor {
   /** The string's numbers as a whole: its blows, their power and their time (moves.js: the rule the rows keep, about 2.6 a second). */
   sum(string) {
     let power = 0, time = 0;
-    for (const id of string) { const r = SONDELASS_MOVES[id], n = numbersOf(r, RULES.sondelass?.[r?.rule]); power += n.power || 0; time += n.speed || 0; }
+    for (const id of string) { const r = SONDELASS_MOVES[id], n = numbersOf(r, RULES.sondelass?.[r?.rule || r?.id]); power += n.power || 0; time += n.speed || 0; }
     const d = make('div', 'lo-sum');
     d.innerHTML = `A full string: <b>${string.length}</b> blows, <b>${+power.toFixed(1)}</b> power in <b>${+time.toFixed(2)}</b> s${time > 0 ? `, <b>${+(power / time).toFixed(1)}</b> a second` : ''}.`;
     return d;

@@ -52,11 +52,11 @@ export function buildSeaProps(room) {
         const I = isletOf(f, room.seed), rad = I.across / 2;
         const m = add(new THREE.Mesh(new THREE.CylinderGeometry(rad * 0.85, rad, SEA.top + 2, 12), mat(KIT_COLOUR[I.kit] ?? 0x7a7066)));
         m.position.set(at.x, top - (SEA.top + 2) / 2, at.z);
-        W.createCollider(RAPIER.ColliderDesc.cylinder((SEA.top + 2) / 2, rad * 0.85).setTranslation(at.x, top - (SEA.top + 2) / 2, at.z).setCollisionGroups(GROUPS.static), body);
+        const collider = W.createCollider(RAPIER.ColliderDesc.cylinder((SEA.top + 2) / 2, rad * 0.85).setTranslation(at.x, top - (SEA.top + 2) / 2, at.z).setCollisionGroups(GROUPS.static), body); // (a sandbar's let go while the tide is over it: opensea.js tide())
         const sp = at.clone().add(new THREE.Vector3(r.range(-rad * 0.3, rad * 0.3), 0, r.range(-rad * 0.3, rad * 0.3))).setY(top);
         const s = add(new THREE.Mesh(I.secret === 'crystal' ? new THREE.ConeGeometry(0.6, 2, 5) : new THREE.BoxGeometry(1, 0.8, 0.7), mat(SECRET_COLOUR[I.secret] ?? 0xffffff, I.secret === 'crystal' ? { emissive: 0x2a6070 } : {})));
         s.position.copy(sp).setY(top + 0.4);
-        out.islets.push({ feature: f, islet: I, pos: at.clone().setY(top), r: rad * 0.85, top, secret: { kind: I.secret, pos: sp, mesh: s } });
+        out.islets.push({ feature: f, islet: I, collider, pos: at.clone().setY(top), r: rad * 0.85, top, secret: { kind: I.secret, pos: sp, mesh: s } });
         out.marks.push({ feature: f, mesh: m });
       } else if (f.kind === 'monument') {
         const grp = new THREE.Group();

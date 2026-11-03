@@ -386,6 +386,7 @@ export const DEFAULTS = {
   // touch play's arc (ui/touch/arc.js, TOUCH-REBUILD.md 7): its fold column folded, shown or hidden (a setting), and the whole arc folded to
   // one stack by the top bar's fold tile (kept with the settings)
   touch: { controls: 'folded', collapsed: false },
+  alchemy: { spokes: false, seals2x: false }, // (Soul Alchemy's two assists at the press, settings: vfx/alchemy/bath.js, basin.js; GAPS G218)
   audio: {
     volume: 0.7,
     haptics: true, // small buzzes on a device that can buzz (audio/haptics.js; a setting)

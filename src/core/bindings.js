@@ -116,6 +116,7 @@ export const ACTIONS = [
   { id: 'duEnd',    keys: ['Space'],                    touch: 'du.end',     ctx: 'duel', how: 'tap' },     // (END TURN, the cluster's largest)
   { id: 'duFinish', keys: ['KeyF'],                     touch: 'du.finish',  ctx: 'duel', how: 'tap' },     // (shown on a broken foe)
   { id: 'duFlee',   keys: ['KeyE'],                     touch: 'du.flee',    ctx: 'duel', how: 'tap' },
+  { id: 'duWhistle', keys: ['KeyH'],                    touch: 'du.whistle', ctx: 'duel', how: 'tap' },     // (the Wake Whistle: away at once, shown while one is held; PUZZLE-DUELS.md 27)
   { id: 'duForm',   keys: ['Backquote'],                touch: 'du.form',    ctx: 'duel', how: 'tap' },     // (hand / Courier)
   { id: 'duYield',  keys: ['Backspace'],                touch: 'menu.yield', ctx: 'duel', how: 'hold' },    // (held 1.5 real s; in the pause menu)
   // ---- the rail (M4: a crossing at sea; Petra's ctx `rail`, 2026-10-24). The ship steers on the move area's stick (W A S D); the view is

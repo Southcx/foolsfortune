@@ -52,7 +52,7 @@ export class OverlayScene {
   /** The HUD is off the screen (F2, or a feature's want): body.ui1 / body.ui2, as hideui.js sets them; level 2 hides even the kept. */
   hidden(slot) {
     const B = document.body.classList;
-    return B.contains('ui2') || (slot.hud && B.contains('ui1') && !B.contains('uilog'));
+    return B.contains('ui2') || (slot.hud && B.contains('ui1'));
   }
 
   /** Place every slot for this frame; true if anything is to be drawn. */

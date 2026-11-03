@@ -139,7 +139,7 @@ export class PneukaUI {
     if (F) out.push({ label: F.put, run: () => box.fitOn(slot) });
     if (it.id === 'mat.shard' && this.game.lockheart) out.push({ label: 'Feed to the Lockheart', run: () => box.feed(slot) });
     if (it.kind === 'dish' && this.game.cooking) out.push({ label: 'Eat', run: () => { this.game.cooking.eat(slot); this.render(); } }); // (a serving from a batch: its draught laid, replacing the one held: progress/cooking/cooking.js eat)
-    if (it.kind === 'whistle') out.push({ label: 'Blow', run: () => { if (this.game.well?.escape()) this.close(); } }); // (the Wake Whistle: world/well/dunemaw.js)
+    if (it.kind === 'whistle') out.push({ label: 'Blow', run: () => { const D = this.game.duel; if (D?.active && D.state?.sides?.[0]?.whistles > 0) { this.close(); D.take({ kind: 'whistle' }); return; } if (this.game.well?.escape()) this.close(); } }); // (in a puzzle duel it ends the duel: PUZZLE-DUELS.md 27) // (the Wake Whistle: world/well/dunemaw.js)
     out.push({ label: 'Drop', run: () => box.drop(slot) });
     out.push({ label: 'Examine', run: () => box.examine(s.id) });
     return out;

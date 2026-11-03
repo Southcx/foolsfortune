@@ -49,6 +49,7 @@ import { Pillar, Stalactite, Clutch, dressBrood, slipMaterial as caveSlip } from
 import { bowlSand, PoolRing } from '../../vfx/bowl.js';
 import { Finds, artifactMaterial } from './finds.js';
 import { UrnCrown } from '../../vfx/urncrown.js';
+import { tearMaterial } from '../../vfx/wellwarp.js'; // (the warped pocket's one program, warmed in prewarm)
 import { NURSERY, FOE } from '../../progress/combat/dunemaw.js';
 
 /** The haul rolled each player's own (COOP.md C5, MH's rewards per hunter): the run's seed lays the floors for the whole party, and the
@@ -92,7 +93,7 @@ export class Dunemaw {
     const U = new UrnCrown({ radius: 0.62 }); U.core.visible = true; U.shards.visible = true; U.group.position.copy(F.arrive.pos); F.group.add(U.group);
     for (const mat of [slipMaterial(), caveSlip(), bowlSand({}), artifactMaterial(false)]) { const m = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), mat); m.position.copy(F.arrive.pos); F.group.add(m); } // (caveSlip: the bowl's crude now)
     const ring = new PoolRing({ radius: 1 }); ring.ring(0.5); ring.update(1 / 60);
-    const brood = new THREE.Group(); brood.add(new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), artifactMaterial(true))); dressBrood(brood);
+    const brood = new THREE.Group(); brood.add(new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), artifactMaterial(true))); dressBrood(brood); brood.add(new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), tearMaterial())); // (a warped pocket's tear compiled here, not on the first floor: vfx/wellwarp.js)
     for (const o of [new Pillar({ height: 2, radius: 0.3 }).group, new Stalactite({ kind: 'brittle', length: 1, radius: 0.3 }).group, new Clutch({ eggs: 2 }).group, ring.group, brood]) { o.position.copy(F.arrive.pos); F.group.add(o); }
     // (Calissa's FoeLook for the raid: the body's shell lit, the beads, the lip, a sherd and its threads, the flood: world/well/raid.js)
     const foeRoot = new THREE.Group(); foeRoot.add(new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 6), slipMaterial())); foeRoot.position.copy(F.arrive.pos); F.group.add(foeRoot);

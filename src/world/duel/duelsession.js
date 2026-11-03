@@ -60,6 +60,7 @@ import { rulesetOf, KIND_RULESETS } from '../../progress/duel/rulesets.js';
 import { clapOf } from '../../progress/duel/secrets.js';
 import { DUEL_VIEW, cellLocal } from '../../vfx/duelview/layout.js';
 import { stream } from '../../core/rng.js';
+import { ECON } from '../../progress/econ/table.js';
 import { sfx } from '../../audio/sfx.js';
 const duelRand = stream('world/duel/duelsession'); // (the duel's seed: the session's own draw, the same twice)
 
@@ -102,6 +103,7 @@ export class DuelSession {
     this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], poolMax: [this.poolMax, 100], tools: [tools, []],
       luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0], // (Luck's sway on a flee, 0..2: a tenth of its level, as ruled)
       rerolls: [g.rerolls?.left() ?? 0, 0], lesson: lessonDue(g.ledger), dim: g.lend?.has?.('feelings') ? [] : notAwakened(g.ledger), learned: learnedOf(g.ledger), // (a feeling not yet awakened gives half a gem's pool: PUZZLE-DUELS.md 26; an aberrant's skill learned: its secret found, or enough won, learned.js)
+      whistles: [c.practice ? 0 : g.pneuka?.count?.(ECON.escape.item) ?? 0, 0], // (the Wake Whistles in the Box: a free way out of the drag and PvE duels, PUZZLE-DUELS.md 27, G188)
       levels: Object.fromEntries(Object.keys(DOMAINS).map((d) => [d, g.psyche?.level?.(d) ?? 1])) }); // (the PvE duel's powers cost less with their domain's level: powers.js powerCost) // (the first duel a lesson until one is won: lesson.js, PUZZLE-DUELS 18.3) // (Luck's re-rolls left this game day: a failed Flee is thrown again, progress/duel/flee.js)
     this.practice = !!c.practice; // (a practice foe, Strawman's: every duel.* event says so and counts nothing; no pool, no shatter, no drain)
     this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null; this.shown = null; this.picked = null; this.hinted = null; this.idleT = 0; this.spentT = 0;
@@ -193,6 +195,7 @@ export class DuelSession {
     if (input.wasPressed('Space')) return this.endMine();
     if (input.wasPressed('KeyZ') && (input.isDown('ControlLeft') || input.isDown('ControlRight'))) return this.takeBack();
     if (input.wasPressed('KeyE')) return this.take({ kind: 'flee' });
+    if (input.wasPressed('KeyH') && S.whistles > 0) return this.take({ kind: 'whistle' }); // (the Wake Whistle blown: away at once, unrolled, G188)
     if (input.isDown('Backspace')) { if ((this.yieldT += raw) >= DUEL_ROOM.yieldHold) return this.yield(); } else this.yieldT = 0;
     this.arm(S.form !== 'hand' && input.isDown('KeyG')); // (Paint armed while G or du.paint is held: its reach and greying, the view's glows)
     if (input.wasPressed('Mouse0') && this.view?.foeCast?.tap?.(input.mx, input.my)) return; // (a tap on the aberrant's countdown badge: its tooltip, if seen; the view's)
@@ -427,6 +430,7 @@ export class DuelSession {
       if (e.type === 'secret.half') this.emit('duel.secret', { id: e.id, half: true, by: 'courier' });
       if (e.type === 'duel.secret') this.emit('duel.secret', { id: e.id, done: true, by: 'courier' });
       if (e.type === 'foe.desperate') this.emit('duel.desperate', { by: 'creature' });
+      if (e.type === 'whistle' && e.side === 0) { const i = this.game.pneuka?.slots.findIndex((x) => x?.id === ECON.escape.item) ?? -1; if (i >= 0) this.game.pneuka.take(i); this.emit('duel.whistle', { left: e.left, by: 'courier' }); } // (one Wake Whistle out of the Box: it breaks when blown)
       if (e.type === 'flee') { const lucky = e.side === 0 && this.luckyFlee && e.reroll != null; this.luckyFlee = false; this.emit('duel.flee', { roll: e.roll, reroll: e.reroll ?? null, need: e.need, ok: e.ok, ...(lucky ? { lucky: true } : {}), by: e.side === 0 ? 'courier' : 'creature' }); }
     }
     const done = () => { this.busy = false; this.botRun = false; if (this.armedPower && !this.mine) this.armPower(null); if (!this.active) return; if (this.state.winner !== null) this.finish(); else this.intent(); };
@@ -508,7 +512,7 @@ export class DuelSession {
     if (g.duelInstance?.active) g.duelInstance.close(() => !V || (!V.closing && !V.root?.visible) || V.isOpen, () => this.putBack(home)); else this.putBack(home);
     this.unpin(c); this.release();
     const atOnce = how === 'fled' && this.atOnce; this.atOnce = false;
-    this.emit('duel.end', { kind: c?.kind, won, how, shiny: !!c?.shiny, turns: s ? Math.ceil(s.ply / 2) : 0, ...(atOnce ? { atOnce } : {}), by: won || how === 'fled' ? 'courier' : 'creature' });
+    this.emit('duel.end', { kind: c?.kind, won, how, shiny: !!c?.shiny, turns: s ? Math.ceil(s.ply / 2) : 0, ...(atOnce ? { atOnce } : {}), ...(s?.whistled ? { whistle: true } : {}), by: won || how === 'fled' ? 'courier' : 'creature' });
     if (g.duelFoes && c) g.duelFoes.rearm = c; // (no pull from it again until you have stepped past the pull's far edge)
     if (this.practice) { if (c) c.emo = 0; } // (practice: both whole, nothing taken, it stands as it was)
     else if (won && c?.alive) { c.dataBugMended = true; c.aberrant = false; g.creatures.strike(c, c.pos.clone().setY(c.pos.y + (c.height ?? 1)), _v.set(0, 1, 0), 999, 'drain', 'courier'); }

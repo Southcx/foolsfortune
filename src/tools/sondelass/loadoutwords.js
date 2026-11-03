@@ -59,8 +59,9 @@ export function lineOf(row) {
 /** The keyword its effect is shown as (null for an effect with none). */
 export const effectKeyword = (row) => EFFECT_KEYWORD[row?.effect] || null;
 
-/** The card's numbers. The row's own `numbers` (or `stats`) first; then its row of progress/combat/moves.js (`rule`: what the engine
- *  plays: power times hits, `time` the real seconds a blow takes, `cost` Lachryma); then the row's play and its special's own. `power`
+/** The card's numbers. Its row of progress/combat/moves.js first (`rule`, the row's `rule || id`: what the engine plays: power times
+ *  hits, `time` the real seconds a blow takes, `cost` Lachryma; one number, Dovina's, G215), then the row's own `numbers` (or `stats`),
+ *  then the row's play and its special's own; the reach is the row's own (the catalogue's measure). `power`
  *  is a hit's times its `hits` (Spin Slash's four cuts); `reach` is the row's `reach` or its `range` (the catalogue's: the farthest the
  *  measured tip goes in the strike plus what the sweep adds, SONDELASS-STRINGS.md section 7a); `speed` is real seconds a blow takes
  *  (moves.js `time`): lower is faster. */
@@ -69,9 +70,9 @@ export function numbersOf(row, rule = null) {
   const N = row.numbers || row.stats || {}, S = row.sting || {};
   const num = (...v) => v.find((x) => typeof x === 'number' && Number.isFinite(x));
   return {
-    power: num(N.power * (N.hits || 1), rule && rule.power * (rule.hits || 1), S.power, row.play?.hit?.power),
+    power: num(rule && rule.power * (rule.hits || 1), N.power * (N.hits || 1), S.power, row.play?.hit?.power),
     reach: num(N.reach, N.range, PLACEHOLDER[row.id]?.reach),
-    speed: num(N.speed, N.time, rule?.time),
-    cost: num(N.cost, rule?.cost, S.cost, row.play?.cost) || undefined, // (a free move shows no cost chip)
+    speed: num(rule?.time, N.speed, N.time),
+    cost: num(rule?.cost, N.cost, S.cost, row.play?.cost) || undefined, // (a free move shows no cost chip)
   };
 }
