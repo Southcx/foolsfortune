@@ -17,7 +17,7 @@
 //   LEND_GESTURES[tool] -> { clip, from, to, rate, out, mask: 'arm' (the right arm) | 'armL' (the left) | 'upper', mirror?, free? }   (from /
 //                          to: s in the clip; rate: x real time; out: the real s it fades over at the end; mirror: the clip mirrored; free:
 //                          authored on the right arm and played on whichever hand the main leaves free, mirrored onto the left)
-//   const lend = new LendGesture(ch)   lend.play(tool, freeHand = 'L') -> true if the tool has a gesture   lend.pose(dt, base)
+//   const lend = new LendGesture(ch, table = LEND_GESTURES)   lend.play(tool, freeHand = 'L') -> true if the tool has a gesture   lend.pose(dt, base)
 //   lend.active -> tool | null   (freeHand: game.belt.freeHand, tools/belt.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -53,8 +53,8 @@ const IN = 0.05;
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 
 export class LendGesture {
-  constructor(ch) {
-    this.ch = ch; this.C = ch.clips;
+  constructor(ch, table = LEND_GESTURES) {
+    this.ch = ch; this.C = ch.clips; this.table = table; // (table: another of the same shape, the parry's: anim/parrygesture.js)
     this.g = null; this.t = 0; this.len = 0; this.active = null;
     this.pose_ = this.C.pose(); this.raw = this.C.pose(); this.prev = this.C.pose(); this.prevW = 0; this.prevMask = null;
   }
@@ -62,7 +62,7 @@ export class LendGesture {
   maskOf(g) { const ch = this.ch; return g.mask === 'upper' ? ch.MASK_UPPER : g.mask === 'armL' ? ch.MASK_ARM.L : ch.MASK_ARM.R; }
 
   play(tool, freeHand = 'L') {
-    let g = LEND_GESTURES[tool];
+    let g = this.table[tool];
     if (!g || !this.C.clips[g.clip]) return false;
     if (g.free && freeHand !== (g.mask === 'armL' ? 'L' : 'R')) g = { ...g, mask: freeHand === 'L' ? 'armL' : 'arm', mirror: !g.mirror }; // (the authored arm's motion on the other, the free hand)
     // (a lend over one still playing: its pose as it stands fades out under the new one, over IN)

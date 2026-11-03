@@ -17,12 +17,16 @@
 // Gradius' power-up bar (the slot row), Monster Hunter's equipment compare (the arrows), Hades' boon cards (the choice card), and the
 // lectern's own page (strawmanstrings.js) for the window it opens in.
 //
+// A locked move's card shows its two ways, the count way's and the feat way's, with the ledger's number of each (loadoutopen.js moveWays);
+// the Codex's shelf adds the moves' tree under the editor (loadouttree.js).
+//
 //   showLoadoutPage(game) -> bool (the Index's window on the editor's page)   renderLoadoutShelf(codex, cx) (the Codex's shelf)
 //   loadoutEditor(game).render(host, { redraw })   (any host: `redraw()` draws the host again after a change)
 // ---------------------------------------------------------------------------------------
 import { SONDELASS_MOVES } from './sondelassloadout.js';
 import { MOVES as RULES } from '../../progress/combat/moves.js';
-import { SLOTS, slotsOpen, slotOpening, moveStatus, moveOpening } from './loadoutopen.js';
+import { SLOTS, slotsOpen, slotOpening, moveStatus, moveOpening, moveWays } from './loadoutopen.js';
+import { moveTree } from './loadouttree.js';
 import { labelOf, lineOf, effectKeyword, numbersOf, SPECIAL_SLOTS, ordinal } from './loadoutwords.js';
 import { ChoiceCard, cardList, slotRow } from '../../ui/choicecard.js';
 import { lentMark } from '../../ui/lendpanel.js';
@@ -63,7 +67,7 @@ class LoadoutEditor {
       id: row.id, name: labelOf(row), does: lineOf(row), lore: row.lore || null, detail: row.detail || null,
       power: n.power, reach: n.reach, speed: n.speed, cost: n.cost, keywords: kw ? [kw] : [], icon: kw ? `kw.${kw}` : null,
       key: key || (row.kind === 'special' ? 'RMB' : 'LMB'), state: !st.known ? 'locked' : equipped ? 'equipped' : 'ready',
-      opens: st.known ? null : moveOpening(row, SONDELASS_MOVES), lent: this.game.mode === 'debug' && st.known ? st.lent : undefined,
+      opens: st.known ? null : moveOpening(row, SONDELASS_MOVES), ways: st.known ? null : moveWays(this.game, row, SONDELASS_MOVES), lent: this.game.mode === 'debug' && st.known ? st.lent : undefined,
     };
   }
   /** What a slot shows: the move's label and its effect's icon, its lend mark in DEBUG. */
@@ -175,4 +179,5 @@ export function showLoadoutPage(game) {
 export function renderLoadoutShelf(codex, cx) {
   cx.appendChild(make('div', 'shelf', subFor(`THE SONDELASS · ${PAGE.title} · Esc, F or B closes`, codex.game.input?.device))); // (on touch the keys go)
   loadoutEditor(codex.game).render(cx, { redraw: () => codex.render() });
+  cx.appendChild(moveTree(codex.game)); // (the moves' tree, each next one's two ways: loadouttree.js)
 }

@@ -23,6 +23,7 @@ import { SKIFF_BOARD_EFFECTS } from './skiffboardeffects.js'; // (the board's st
 import { RACEWAY_SIPHON_EFFECTS } from './racewaysiphoneffects.js'; // (the siphon arches' draw, drink and gulp: vfx/racewaysiphons.js plays them)
 import { PSYGUN_VARIANT_EFFECTS } from './psygunvarianteffects.js'; // (the psygun variants' flare, pentacle and reveal: tools/psygun/variantplay.js, vfx/flarereveal.js)
 import { PUZZLE_EFFECTS } from './opensea/puzzleeffects.js';
+import { SEA_TELL_EFFECTS } from './opensea/seatelleffects.js'; // (the small tells on the water: a fishing spot's bubbles, a waiting lair's boil, vfx/opensea/seatells.js)
 import { SALVAGE_EFFECTS } from './opensea/salvageeffects.js'; // (the haul's moment and the drift bottle's glint: vfx/opensea/salvagelooks.js, bottlelooks.js) // (the islets' caches dug: the sand thrown up and the find's glint, vfx/opensea/puzzlelooks.js)
 import { ANGLING_EFFECTS } from './anglingeffects.js'; // (the catch leaving the water: tools/sondelass/angling/catchlift.js)
 import { BLOW_FEEL_EFFECTS } from './blowfeeleffects.js'; // (a melee blow's weight, and Strawman's straw: vfx/blowfeel.js plays them)
@@ -40,7 +41,9 @@ import { CLASS_ART_EFFECTS } from './library/classarts/index.js'; // (the 76 cla
 import { PAIR_SPECIAL_EFFECTS } from './library/pairspecials/index.js'; // (the 21 pair specials' looks, the main's and the sub's grammars braided: vfx/pairspeciallooks.js plays them)
 import { GARDEN_EFFECTS } from './library/garden.js'; // (the Spirit Garden's: a launch lotus's fling and catch, a chimney's smoke: vfx/garden/launchlotus.js, facilitylooks.js)
 import { SENTINEL_EFFECTS } from './library/sentinel.js'; // (a sentinel's moments: vfx/sentinellook.js plays them)
+import { WELL_WARP_EFFECTS } from './library/wellwarp.js'; // (a warped pocket's moments in the Great Dunemaw: vfx/wellwarp.js plays them)
 import { DROP_EFFECTS } from './library/drops.js'; // (a creature's drop's moments: the rare one's glint, the take's burst: vfx/dropsprites.js plays them)
+import { TELL_EFFECTS } from './library/tells.js'; // (the tells: a sneaking step's ring, a trump's and a resist's flash, the Overload's recoil: vfx/stealthmarks.js, vfx/typetells.js, vfx/lockheartreliquary.js)
 import { PANIC_EFFECTS } from './library/panic.js'; // (a creature struck by a thrown thing: its sweat flung, its stars spun off: vfx/panic.js plays them)
 import { SLAB_EFFECTS } from './library/slabs.js'; // (carving a slab: each verb's moment, the fossil lifting and the spirit waking: vfx/garden/slablook.js plays them)
 import { MECH_SPECIAL_EFFECTS } from './library/mechs.js'; // (a mech part's special at the frame's scale: vfx/mechs/speciallooks.js plays them)
@@ -437,6 +440,7 @@ export const LIBRARY = {
   ...PSYGUN_VARIANT_EFFECTS,
   ...PUZZLE_EFFECTS,
   ...SALVAGE_EFFECTS,
+  ...SEA_TELL_EFFECTS,
   ...ANGLING_EFFECTS,
   ...BLOW_FEEL_EFFECTS,
   ...FLOURISH_EFFECTS,
@@ -453,8 +457,10 @@ export const LIBRARY = {
   ...PAIR_SPECIAL_EFFECTS,
   ...GARDEN_EFFECTS,
   ...PANIC_EFFECTS,
+  ...TELL_EFFECTS,
   ...DROP_EFFECTS,
   ...SENTINEL_EFFECTS,
+  ...WELL_WARP_EFFECTS,
   ...SLAB_EFFECTS,
   ...MECH_SPECIAL_EFFECTS,
   ...CITY_FIRE_EFFECTS,

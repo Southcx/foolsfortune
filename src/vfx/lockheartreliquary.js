@@ -17,6 +17,11 @@
 //                   nothing from the pool: the DRINK (the overflow, worn and the pool full) runs down the link like a spend, three slow
 //                   pulled beads, the window rising as they land; the GULP (its parry swallowing a shot into the pool) is the link's one
 //                   true reverse, one bright bead coffin to bulb, the lid snapping like a mouth
+//   THE RECOIL      an Overload let out takes the Caster's toll from the vessel (`lockheart.recoil` { tolls, shattered }: BRACELET.md, "a
+//                   pressurized vessel when taking things out"): the coffin strains on its chain (its seams lit, a pressure shudder),
+//                   then cracks of white-gold light shoot across it, a pair and a pair more a toll, fading through the Mind's violet
+//                   (lockheartreliquary/coffin.js drawRecoil); and in the world the coffin on the chain shudders the same while
+//                   `lockheart.recoil` (vfx/library/tells.js) bursts from it: cracks of light, the violet vented, sherds of its lacquer
 // It reads, never drives (game.lockheart, the Pneuka Box's keyring and its uses, the moveset's string, the Lockheart's wheel). It replaces
 // the old padlock and sockets that stood beside the 3D coffin, retired, not hidden (the owner,
 // 2026-10-19; casebook rule 235). The hoover's reach on the ground stays a world mark (vfx/lockheartreach.js).
@@ -47,6 +52,7 @@ const OX = 144, OY = 104;      // (the hand's point in the canvas, dots)
 const CLEAR = 18, HAND = [85, 152]; // (CSS px from the right edge as the tube's; then the hand's point in dots: left of the tube's bulb, and up from the bottom)
 const PHI0 = 0, SCALE = 1.3; // (the chain's rest angle: straight down, parallel to the Lachrimeter, the owner 2026-10-19; dots a unit of the coffin)
 const KT = 0.18, DUR = 2.1, HOLD = 0.9; // (real s: a Possibilikey's turn at the Opening; the wheel's spin and its hold, tools/lockheart/wheel.js)
+const RECOIL = { dur: 1.3, shake: 0.7, amp: 0.035 }; // (real s it lasts; real s the world's coffin shudders, and how far (m) at its start)
 const DRINK = { dur: 0.35, gap: 0.07, colour: 0x7f5cf0 }, GULP = { dur: 0.12, colour: 0xffe296, amount: 6 };
 /** The coffin's look in the Lockheart's skin (vfx/toolskins.js): its body and trim the skin's, its emblem the heart's own. */
 const skinnedLook = (L) => { const P = skinPalette('lockheart'); return P ? { ...L, col: P.body || L.col, trim: P.trim || L.trim } : L; };
@@ -57,7 +63,7 @@ export class LockheartReliquary {
     this.game = game; this.S0 = game.overlayScene;
     this.t = 0; this.a = 0; this.shown = false; this.gate = new RedrawGate(30); this.busy = true;
     this.snapT = 9; this.drainT = 9; this.echoT = 9; this.rippleT = 9; this.fullT = 9; this.wasOpen = false;
-    this.pend = 0; this.shownCharge = -1; this.lid = 0;
+    this.pend = 0; this.shownCharge = -1; this.lid = 0; this.recoilT = 9; this.recoilN = 1; this.recoilSeed = 1;
     this.F = { lit: 0, hitAge: 9, cooling: false, cool: 0 };
     this.rot = null; this.ghostA = null; this.ghostB = null; this.ghostT = 9; this.ghostSig = ''; this.oddsT = 0; this.odds = null;
     this.opening = null; this.close = null; this.peek = null; this.spinQ = null; this.fromPeek = false; this.prevOut = null; this.hold = 0;
@@ -80,6 +86,7 @@ export class LockheartReliquary {
     on('lockheart.keyring', (e) => this.turned(e.keys || []));
     on('lockheart.preview', (e) => { this.peek = { R: e.rates || [], t0: this.t }; });
     on('lockheart.open', (e) => this.opened(e));
+    on('lockheart.recoil', (e) => this.recoiled(e));
   }
 
   /** The Lockheart, drawn and in the hands as the belt says, or null. */
@@ -99,6 +106,7 @@ export class LockheartReliquary {
   // ---------------------------------------------------------------- each frame it may be drawn
   update(dt, slot) {
     const g = this.game, B = document.body.classList, L = this.tool();
+    this.shudder(dt);
     const allowed = !!L && !g.title?.active && !g.rail?.stage?.active && !B.contains('cine') && !B.contains('bztable-seated');
     this.a = C01(this.a + (allowed ? dt / 0.22 : -dt / 0.16));
     if (!allowed && this.a <= 0) return this.hide();
@@ -174,13 +182,14 @@ export class LockheartReliquary {
     this.lift = lerp(this.lift ?? 0, lift, Math.min(1, dt * (lift > (this.lift ?? 0) ? 12 : 4)));
     this.lid += (lidT - this.lid) * Math.min(1, dt * 14);
     // busy: anything that moves past the ambient shimmer (the fill rolling, the lid and lift settling, a turn, the Opening, the wheel, a bead, a flash, the odds re-forming, the flail's light)
-    this.busy = !!(opening || this.rot || this.close || wheel || canNow || this.beadQ.length || this.landing.length || this.snapT < 0.3 || this.drainT < 0.9 || this.rippleT < 0.35 || this.echoT < 0.55 || this.ghostT < 0.5
+    this.busy = !!(opening || this.recoilT < RECOIL.dur || this.rot || this.close || wheel || canNow || this.beadQ.length || this.landing.length || this.snapT < 0.3 || this.drainT < 0.9 || this.rippleT < 0.35 || this.echoT < 0.55 || this.ghostT < 0.5
       || F.lit > 0 || F.cooling || F.hitAge < 0.6 || (L.hooverW || 0) > 0 || Math.abs(this.shownCharge - target) > 0.01 || Math.abs(this.lift - lift0) > 1e-3 || Math.abs(this.lid - lid0) > 1e-3 || Math.abs(this.lid - lidT) > 0.01);
     this.S = {
       look, heart, fill, charge: this.shownCharge, shownCharge: this.shownCharge, keys, ghost: gh,
       canOpen: can, fullAge: this.fullT, shackleOpen: shackle, lid: this.lid, snap: this.snapT < 0.25 ? this.snapT : -1,
       hoover: L.hooverW || 0, hvCol: this.drainT < 0.8 ? (this.drainCol || '#b49be6') : null, ripple: this.rippleT < 0.3 ? 1 - this.rippleT / 0.3 : 0,
       flail: { st: F.lit, hitAge: F.hitAge, runP: C01(F.hitAge / 0.12), next: F.cooling ? -1 : place.next, cool: F.cooling ? F.cool : 0 },
+      recoil: this.recoilT < RECOIL.dur ? { u: this.recoilT / RECOIL.dur, n: this.recoilN, seed: this.recoilSeed } : null,
       swingT: 0, swingAt: null, trailA: 0, lift: this.lift, chainA: lerp(1, 0.25, this.lift), pour, wheel,
     };
     Object.assign(this.state, { shown: this.shown, heart, charge: +L.charge.toFixed(1), fill, canOpen: canNow, keys: keys.map((k) => ({ id: k.id, uses: k.uses, st: k.st })), wheel: wheel ? (wheel.peek ? 'peek' : 'spin') : null, flail: { st: F.lit, next: place.next } });
@@ -239,6 +248,26 @@ export class LockheartReliquary {
     const n = next.length; if (!this.shown || n < 2 || prev.length !== n) return;
     const fwd = next.every((id, i) => id === prev[(i - 1 + n) % n]), back = next.every((id, i) => id === prev[(i + 1) % n]);
     if (fwd || back) this.rot = { t0: this.t, dir: fwd ? 1 : -1 };
+  }
+
+  /** The Overload's recoil: the piece's strain and cracks, and in the world the coffin's burst and shudder. */
+  recoiled(e) {
+    const g = this.game, L = g.lockheart, n = Math.max(1, e?.tolls | 0);
+    this.recoilT = 0; this.recoilN = n; this.recoilSeed = (this.recoilSeed * 7 + 13) % 997; this.busy = true;
+    const cof = L?.cof?.group, at = new THREE.Vector3();
+    if (cof && L.model?.group?.visible !== false) cof.getWorldPosition(at); else if (g.player?.pos) at.copy(g.player.pos).setY(g.player.pos.y + 1.1); else return;
+    g.vfx?.play('lockheart.recoil', { pos: at, power: n });
+  }
+  /** The world's coffin shuddering on its chain a moment after the recoil (laid over its rest place, put back after). */
+  shudder(dt) {
+    this.recoilT += dt; const C = this.game.lockheart?.cof?.group; if (!C) return;
+    if (this.recoilT < RECOIL.shake) {
+      if (!this.cofRest || this.cofRest.g !== C) this.cofRest = { g: C, p: C.position.clone(), s: C.scale.x };
+      const k = (1 - this.recoilT / RECOIL.shake) * RECOIL.amp * (1 + 0.5 * (this.recoilN - 1)), t = performance.now() * 0.06, R = this.cofRest;
+      C.position.set(R.p.x + k * Math.sin(t * 1.7), R.p.y + k * Math.sin(t * 2.3 + 1), R.p.z + k * Math.sin(t * 1.9 + 2));
+      C.scale.setScalar(R.s * (1 + 0.6 * k * Math.abs(Math.sin(t * 0.8))));
+      this.game.lockheart.rest?.wake?.();
+    } else if (this.cofRest) { const R = this.cofRest; if (R.g === C) { C.position.copy(R.p); C.scale.setScalar(R.s); } this.cofRest = null; }
   }
 
   /** The Opening: each key on the ring turned; which held, which was spent (brass) and which broke, read from the ring after it. */

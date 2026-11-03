@@ -12,10 +12,10 @@
 //
 //   drawPiece(x, P, S) -> S.anchor (the link's end, dots), S.W (the wheel's centre)
 //     P: { hx, hy (the hand's point, dots), k (dots a unit), t, phi0 (the chain's rest angle) }
-//     S: { look, charge, shownCharge, fill, keys, flail, swingT, swingAt(dt), trailA, lift, chainA, lid, snap, pour, hoover, hvCol, wheel, ghost, ... }
+//     S: { recoil: { u, n, seed } (the Overload's recoil), look, charge, shownCharge, fill, keys, flail, swingT, swingAt(dt), trailA, lift, chainA, lid, snap, pour, hoover, hvCol, wheel, ghost, ... }
 // ---------------------------------------------------------------------------------------
 import { TAU, D, C01, lerp, KEY, film, rgba, hsh } from './look.js';
-import { drawCoffin, drawKey, drawChain, CH_L, WIN_M } from './coffin.js';
+import { drawCoffin, drawKey, drawChain, drawRecoil, CH_L, WIN_M } from './coffin.js';
 import { drawWheel, drawPeekRates, drawOutcomePlate, drawTags, drawCount } from './dial.js';
 
 const SLOT = [150, 118, 86, 54].map((d) => d * D); // (the keyring's four places, round from the hand's side)
@@ -24,7 +24,8 @@ const slotAng = (s) => { const i = Math.floor(s), f = s - i; if (i >= 3) return 
 export function drawPiece(x, P, S) {
   const k = P.k, t = P.t;
   const phiAt = (sw) => (P.phi0 + sw) * (1 - S.lift) + 0.12 * Math.sign(P.phi0) * S.lift, phi = phiAt(S.swingT); S.phi = phi;
-  const hx = P.hx, hy = P.hy - S.lift * 4 * k, bail = [hx + Math.sin(phi) * CH_L * k, hy + Math.cos(phi) * CH_L * k];
+  const R = S.recoil, shud = R && R.u < 0.7 ? (1 - R.u / 0.7) * (1 + 0.5 * (R.n - 1)) : 0; // (the Overload's recoil: a pressure shudder on the chain's end)
+  const hx = P.hx, hy = P.hy - S.lift * 4 * k, bail = [hx + Math.sin(phi) * CH_L * k + shud * 1.6 * k * Math.sin(t * 91), hy + Math.cos(phi) * CH_L * k + shud * 1.1 * k * Math.sin(t * 73 + 1)];
   const c0 = Math.cos(-phi), s0 = Math.sin(-phi), toW = (lx, ly) => [bail[0] + (lx * c0 - ly * s0) * k, bail[1] + (lx * s0 + ly * c0) * k];
   // the swing's trail, gold behind the coffin as the flail swings it
   if (S.trailA > 0 && S.swingAt) {
@@ -48,7 +49,7 @@ export function drawPiece(x, P, S) {
     x.restore();
   }
   x.save(); x.translate(hx, hy); x.scale(k, k); drawChain(x, phi, S, t, S.chainA); x.restore();
-  x.save(); x.translate(bail[0], bail[1]); x.scale(k, k); x.rotate(-phi); drawCoffin(x, S, t); x.restore();
+  x.save(); x.translate(bail[0], bail[1]); x.scale(k, k); x.rotate(-phi); drawCoffin(x, S, t); drawRecoil(x, S, t); x.restore();
   const W = [bail[0] - 2 * k, bail[1] - (S.wheel && S.wheel.peek ? 31 : 24) * k];
   if (S.pour >= 0) { // (the pour: the coffin's Lachryma rising out of its open lid into the wheel)
     const from = toW(0, 22), q = S.pour; x.save(); x.globalCompositeOperation = 'lighter';

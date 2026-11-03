@@ -28,6 +28,7 @@ import { MimicryLooks } from '../vfx/mimicry/look.js';
 import { SandboxLook } from '../vfx/sandbox/look.js';
 import { PanicMarks } from '../vfx/panic.js';
 import { DomainArtMarks } from '../vfx/domainartmarks.js';
+import { StealthMarks } from '../vfx/stealthmarks.js';
 import { Geysers } from '../world/dunes/geysers.js';
 import { Raceway } from '../world/raceway/raceway.js';
 import { OpenSea } from '../world/opensea/opensea.js';
@@ -38,6 +39,8 @@ import { SeaLooks } from '../vfx/opensea/isletlooks.js';
 import { PuzzleLooks } from '../vfx/opensea/puzzlelooks.js';
 import { BottleLooks } from '../vfx/opensea/bottlelooks.js';
 import { SalvageLooks } from '../vfx/opensea/salvagelooks.js';
+import { SeaTells } from '../vfx/opensea/seatells.js';
+import { HelmBunker } from '../vfx/shipkit/bunker.js';
 import { ShipPartWear } from '../vfx/shipkit/partlooks.js';
 import { SeaSeals } from '../ui/mapdress/seaseals.js';
 import { SquallLine } from '../vfx/opensea/squallline.js';
@@ -86,8 +89,8 @@ export function bootRooms(game, made) {
     game.systems.add('world', game.wellTargets, { name: 'wellTargets', after: 'strawmanWell' });
     game.systems.add('world', game.wellLook, { clock: 'raw', name: 'wellLook', after: 'wellTargets' });
     game.systems.add('world', game.impacts, { name: 'impacts', after: ['sandbox', 'strawmanWell'] });
-    game.mimicryLooks = new MimicryLooks(game); game.sandboxLook = new SandboxLook(game); game.panicMarks = new PanicMarks(game); game.domainArtMarks = new DomainArtMarks(game); // (the puzzle stones, the ghost and a step's mark; the Sandbox dressed; panic over a creature a thrown thing struck: vfx/mimicry/, vfx/sandbox/, vfx/panic.js)
-    for (const name of ['mimicryLooks', 'sandboxLook', 'panicMarks', 'domainArtMarks']) game.systems.add('fx', game[name], { clock: 'raw', name }); // (the `fx` phase: core/systems.js)
+    game.mimicryLooks = new MimicryLooks(game); game.sandboxLook = new SandboxLook(game); game.panicMarks = new PanicMarks(game); game.domainArtMarks = new DomainArtMarks(game); game.stealthMarks = new StealthMarks(game); // (the puzzle stones, the ghost and a step's mark; the Sandbox dressed; panic over a creature a thrown thing struck: vfx/mimicry/, vfx/sandbox/, vfx/panic.js)
+    for (const name of ['mimicryLooks', 'sandboxLook', 'panicMarks', 'domainArtMarks', 'stealthMarks']) game.systems.add('fx', game[name], { clock: 'raw', name }); // (the `fx` phase: core/systems.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
     game.systems.add('world', game.geysers, { name: 'geysers' });
     game.makeSeaSerpent = (o) => new SeaSerpentBody(game, o); // (the sea serpent's body for its mind to drive: vfx/opensea/seaserpentbody.js, drive/update/hit/down)
@@ -96,6 +99,7 @@ export function bootRooms(game, made) {
     game.cosmeticOpen = (kind, id) => cosmeticOpen(kind, id, game.ledger); // (what opens each of Calissa's tool skins, Jar parts, flourishes and instrument housings, for her OPEN_WHENs: progress/cosmetics.js)
     game.makeEgregore = (species, o) => egregoreBody(species, o); // (a safari Egregore's body, alive, for whatever lays a sighting on the water: update(dt, { speed, bend }), habit(name), dive(on); vfx/opensea/egregorebodies.js; nothing places them yet)
     game.makeEgregoreHerd = (o) => new EgregoreHerd(o); // (a herd of them in its square, scattering and regrouping round the ship: update(dt, { ship }); vfx/opensea/egregoreherd.js)
+    game.seaTells = new SeaTells(game); game.helmBunker = new HelmBunker(game); // (the small tells on the water: gulls over wrecks and herds, a fishing spot's bubbles, a waiting lair's light; the tank on the free helm's deck: vfx/opensea/seatells.js, vfx/shipkit/bunker.js)
     game.seaLooks = new SeaLooks(game); // (the open sea's islets dressed over Dovina's placeholders: vfx/opensea/isletlooks.js)
     game.puzzleLooks = new PuzzleLooks(game); game.squallLine = new SquallLine(game); // (the islets' puzzles dressed, the dig's moment; a front's squall line: vfx/opensea/puzzlelooks.js, squallline.js)
     game.systems.add('fx', (d) => game.squallLine.update(d, game.camera), { clock: 'raw', name: 'squallLine' }); // (the `fx` phase: core/systems.js)
@@ -104,7 +108,7 @@ export function bootRooms(game, made) {
     game.seaFightLook = new SeaFightLook(game); game.seaHull = new SeaHull(game); // (the fight's needles, globs, splashes and the hull's pips: vfx/opensea/seafightlook.js, ui/seahull.js)
     game.seaFight = new SeaFight(game); // (what fights at the free helm: the gun, the parry, the hull, the sea serpent: world/opensea/seafight.js)
     // (the open sea's looks each frame, on the game's clock: core/systems.js; the frame runs them after the fight and the garden)
-    for (const name of ['seaLooks', 'puzzleLooks', 'bottleLooks', 'salvageLooks', 'shipPartWear']) game.systems.add('looks', game[name], { name });
+    for (const name of ['seaLooks', 'puzzleLooks', 'bottleLooks', 'salvageLooks', 'shipPartWear', 'seaTells', 'helmBunker']) game.systems.add('looks', game[name], { name });
     game.systems.add('looks', game.seaHull, { clock: 'raw', name: 'seaHull' });
     game.raceway = new Raceway(game); game.race = new Race(game); // (the Solar Skiff's test circuit and its time trial, built the first time it is entered: world/raceway/, docs/plans/SKIFF-RACING.md)
     game.systems.add('world', game.raceway, { name: 'raceway' }); game.systems.add('world', game.race, { name: 'race', after: 'raceway' });

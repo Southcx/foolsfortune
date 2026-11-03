@@ -33,6 +33,8 @@ import { GoalsWindow } from '../ui/goalswindow.js';
 import { QuestJournal } from '../ui/questjournal.js';
 import { QuestSplash } from '../ui/questsplash.js';
 import { AssayWindow } from '../ui/assaywindow.js';
+import { ThingTags } from '../feedback/thingtags.js';
+import { installThingTagSources } from '../feedback/thingtagsources.js';
 import { HudLayout } from '../ui/hudlayout.js';
 import { RailResults } from '../ui/railresults.js'; // (round 6's overlay pieces: OVERLAY.md 10.5c)
 import { prewarmFish } from '../tools/sondelass/angling/fishmesh.js';
@@ -163,6 +165,8 @@ export async function bootWarmup(game, made) {
   game.questJournal = new QuestJournal(game); // (the quests as a System window under the goals window's: on /quests, a beat at quest.start and quest.done, and the recap: ui/questjournal.js)
   game.questSplash = new QuestSplash(game); // (a quest begun or done: EVENT! or QUEST COMPLETE! over the play, then the journal's beat; waits out a live moment: ui/questsplash.js)
   game.systems.add('world', () => game.questSplash.update(), { name: 'questSplash', after: 'quests' }); // (between the quests and the recap, as they ran: core/systems.js)
+  game.thingTags = new ThingTags(game); game.thingTagSources = installThingTagSources(game); // (a thing's tag: the folk, a price, a crystal's fret, a planetoid's harmony, a cracked region, the sky read: feedback/thingtags.js, feedback/thingtagsources.js)
+  game.systems.add('marks', game.thingTagSources, { clock: 'raw', name: 'thingTagSources' }); game.systems.add('marks', game.thingTags, { clock: 'raw', name: 'thingTags', after: 'thingTagSources' }); // (core/systems.js)
   game.assayWindow = new AssayWindow(game); // (the Assay as the isekai status sheet, summoned on /assay (aptitude.ask) before the Courier: ui/assaywindow.js)
   installTouchControls(game); // (touch play's controls, their look: built only once touch is on, ui/touch/index.js)
   game.touchShell = new TouchShell(game); // (what those controls do: a tile pressed through the bindings, the top bar's windows by their keys: feedback/touchshell.js)

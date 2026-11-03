@@ -100,6 +100,7 @@ export class BazaarTable {
 
     if (!this.src.open) { this.leave(); return; }
     this.t += dt; const s = this.s;
+    g.bazaarHall?.update(dt, 'table'); // (the hall, its neon and a tier 3 hand's all-out, ticked here while the page pauses the world: vfx/bazaarhall.js)
     if (s.S !== this.S) { this.S = s.S; this.seen = 0; this.zsel.clear(); this.lastDice = null; this.coach = null; this.chosen = new Set(); } // (a new game at the table: again)
     this.refreshCoach(dt);
     this.layout(); this.pickHover(); this.animate(dt); this.batch.write(); this.frame(dt); // (laid out every frame: a hundred pieces at most, and nothing the rules change is missed)

@@ -70,7 +70,11 @@ export const ZONE_FAR = { provingground: 600 };
  *  its own rate. A key left out is the maker's dusk (the dunes' `away` as built); `sunDir` turns the dunes' sun (`dunes.sunDir`), eased
  *  back on leaving. Keys: bg, fog, hemiSky, hemiGnd, sunC (hex), fogD, hemiI, ambI, sunI (numbers), sunDir ([x, y, z]). The rows are the
  *  zone's look's (Calissa's); `{}` is the maker's dusk as it stands. */
-export const ZONE_LIGHT = { provingground: {} };
+export const ZONE_LIGHT = {
+  // the yard at dusk (Calissa's, 2026-11-03; vfx/mechs/hangardress/yard.js's dome): a low amber sun from the west where the dome's sun
+  // sits, a violet fill off the upper sky, a dark ground under the hills; bg and fog as the hangar's own air for the yard (world/hangar/hangar.js AIR, which sets them after)
+  provingground: { bg: 0x9a8a78, fog: 0x9a8a78, hemiSky: 0x6a5c9c, hemiGnd: 0x2a1e26, sunC: 0xffa452, hemiI: 1.15, ambI: 0.18, sunI: 2.3, sunDir: [-0.92, 0.2, 0.33] },
+};
 export const ROOFED = new Set(['touchstone', 'bazaar', 'sandbox', 'strawmanwell', 'hangar']); // (the bazaar's dome too: Calissa, 2026-10-30, "the sun through a dome is a leak, not a look")
 
 /** What each zone is underfoot and as a space (Wanda's hooks, 2026-10-30): its `floor`, a step's surface where nothing on the ground

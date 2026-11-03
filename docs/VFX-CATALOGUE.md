@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-11-03). 691 effects in 45 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-11-03). 700 effects in 49 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -650,6 +650,25 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `aura.soaked` | held | shape:band, sprites:drip, sprites:glint |  |  |
 | `aura.soft` | held | shape:sphere, sprites:puff | softened (the next blow doubled): a cushion round it, its pink puffs drifting |  |
 
+### sea (14)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `sea.bottle.cork` | one-shot | sprites:drip, sprites:star4 |  | vfx/opensea/bottlelooks.js |
+| `sea.bottle.glint` | one-shot | sprites:star4, sprites:soft |  | vfx/opensea/bottlelooks.js |
+| `sea.dig` | one-shot | sprites:chip, sprites:puff |  | audio/cues.js, feedback/tracking/opensea.js, progress/cosmetics.js +4 |
+| `sea.dig.find` | one-shot | sprites:star4, sprites:glint, light |  | vfx/opensea/puzzlelooks.js |
+| `sea.salvage.drip` | one-shot | sprites:drip |  | vfx/opensea/salvagelooks.js |
+| `sea.salvage.land` | one-shot | sprites:chip, sprites:drip |  | vfx/opensea/salvagelooks.js |
+| `sea.salvage.open.common` | one-shot | sprites:star4, sprites:ringthin, sprites:glint, light |  |  |
+| `sea.salvage.open.legend` | one-shot | sprites:star4, sprites:ringthin, sprites:glint, light, sprites:sparkle, sprites:ring |  |  |
+| `sea.salvage.open.rare` | one-shot | sprites:star4, sprites:ringthin, sprites:glint, light |  |  |
+| `sea.salvage.open.uncommon` | one-shot | sprites:star4, sprites:ringthin, sprites:glint, light |  |  |
+| `sea.salvage.part` | one-shot | sprites:shard, sprites:star4 |  | vfx/opensea/salvagelooks.js |
+| `sea.salvage.rise` | one-shot | sprites:ringthin, sprites:drip, sprites:puff |  | vfx/opensea/salvagelooks.js |
+| `sea.tell.bubbles` | one-shot | sprites:bubble, shape:ring, sprites:drip | a fishing spot at sea: bubbles welling up and popping, a ring spreading flat on the crude, a fleck of spray | vfx/opensea/seatells.js |
+| `sea.tell.deep` | one-shot | sprites:bubble, shape:ring | over a lair that waits: one fat bubble breaking slowly, a wide faint ring in the light's violet | vfx/opensea/seatells.js |
+
 ### slab (13)
 
 | effect | kind | layers | what | asked by |
@@ -684,23 +703,6 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `caster.lightning` | one-shot | caster:lightning, light | lightning: one strike from `from` to `to` (a return stroke that flickers twice), and an arc held between them | tools/psygun/shellbodies.js, tools/psygun/shellsplitchain.js, vfx/shelllooks/storm.js |
 | `caster.lightning.arc` | held | caster:lightning |  | tools/psygun/shellbodies.js, tools/psygun/shellsplitchain.js |
 | `caster.rift` | one-shot | caster:portal | the portal: a rift on the ground, opening as an eye and closing over its life | tools/psygun/shellspacetime.js |
-
-### sea (12)
-
-| effect | kind | layers | what | asked by |
-|---|---|---|---|---|
-| `sea.bottle.cork` | one-shot | sprites:drip, sprites:star4 |  | vfx/opensea/bottlelooks.js |
-| `sea.bottle.glint` | one-shot | sprites:star4, sprites:soft |  | vfx/opensea/bottlelooks.js |
-| `sea.dig` | one-shot | sprites:chip, sprites:puff |  | audio/cues.js, feedback/tracking/opensea.js, progress/cosmetics.js +4 |
-| `sea.dig.find` | one-shot | sprites:star4, sprites:glint, light |  | vfx/opensea/puzzlelooks.js |
-| `sea.salvage.drip` | one-shot | sprites:drip |  | vfx/opensea/salvagelooks.js |
-| `sea.salvage.land` | one-shot | sprites:chip, sprites:drip |  | vfx/opensea/salvagelooks.js |
-| `sea.salvage.open.common` | one-shot | sprites:star4, sprites:ringthin, sprites:glint, light |  |  |
-| `sea.salvage.open.legend` | one-shot | sprites:star4, sprites:ringthin, sprites:glint, light, sprites:sparkle, sprites:ring |  |  |
-| `sea.salvage.open.rare` | one-shot | sprites:star4, sprites:ringthin, sprites:glint, light |  |  |
-| `sea.salvage.open.uncommon` | one-shot | sprites:star4, sprites:ringthin, sprites:glint, light |  |  |
-| `sea.salvage.part` | one-shot | sprites:shard, sprites:star4 |  | vfx/opensea/salvagelooks.js |
-| `sea.salvage.rise` | one-shot | sprites:ringthin, sprites:drip, sprites:puff |  | vfx/opensea/salvagelooks.js |
 
 ### challenge (10)
 
@@ -843,6 +845,14 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `overture.draw` | one-shot | sprites:ringthin, sprites:glint, flash | a tool drawn on the half bar: a flash of the Mind at the hand, a ring out | cine/overture.board.js |
 | `overture.ring` | held | mesh:ult_vortex, sprites:streak, sprites:sparkle | the CLIMB's ring: the Mind's labradorite wound round the Courier as the tools are drawn, faster and brighter to the snare roll | cine/overture.board.js |
 
+### well (3)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `well.warp.let` | one-shot | sprites:chip, sprites:puff, shape:ring |  | vfx/wellwarp.js |
+| `well.warp.pot` | one-shot | sprites:chip, sprites:puff |  | vfx/wellwarp.js |
+| `well.warp.rise` | held | sprites:chip, sprites:puff, sprites:sparkle |  | vfx/wellwarp.js |
+
 ### wisp (3)
 
 | effect | kind | layers | what | asked by |
@@ -878,6 +888,13 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 |---|---|---|---|---|
 | `psygun.flare` | one-shot | sprites:core×2, sprites:star4×2, sprites:streak, sprites:glint, sprites:puff, light, decal:shockring, decal:scorch |  | audio/cues.js, feedback/tracking/gunshots.js, tools/psygun/variantplay.js |
 | `psygun.pentacle` | one-shot | decal:pentacle×2, decal:shockring, fx:damage.impact, sprites:streak×5, sprites:star4×5, fx:damage.influence, fx:damage.delirium, fx:damage.ego, fx:damage.illusion, sprites:core, sprites:sparkle, light, shake |  | audio/cues.js, feedback/tracking/gunshots.js, progress/cosmetics.js +3 |
+
+### tell (2)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `tell.resist` | one-shot | sprites:chip, sprites:ringthin, glyph | a resist: a dull grey deflect, chips falling off it, a small grey ring, the resist mark dim | vfx/typetells.js |
+| `tell.trump` | one-shot | shape:quad, sprites:star4×2, sprites:streak, sprites:ringthin | a trump: the sharp spark, the cracked-glass star behind it, splinters out straight, a thin ring | vfx/typetells.js |
 
 ### absorb (1)
 
@@ -939,6 +956,12 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 |---|---|---|---|---|
 | `lane.mark` | held | decal:circle_swirl, mesh:ult_pillar, sprites:streak, sprites:ringthin | Divination's lane mark: where a wave will come, up to 3 s before it does (held; the caller raises its strength `k` from 0 to 1 as the wave nears). It must read at speed over the black crude: a column of the Mind's labradorite standing up... |  |
 
+### lockheart (1)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `lockheart.recoil` | one-shot | sprites:core, sprites:streak, sprites:puff, sprites:ring, sprites:shard, shake | the Overload's recoil on the coffin: cracks of light shot from it, the violet vented, a ring, sherds of lacquer | feedback/tracking/lockheart.js, tools/lockheart/outcomes.js, vfx/lockheartreliquary.js |
+
 ### poof (1)
 
 | effect | kind | layers | what | asked by |
@@ -950,4 +973,10 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
 | `shock` | one-shot | shape:ring, sprites:ring, sprites:ringthin, sprites:sparkle | a shockwave out of a feat of the Courier's power (the parry, a dive's landing, a charge's end, a bomb's pop, the Opening: fx.shockwave): Lachryma's ring, not a white one. The oil film's hues banded across a ring running out, a band of cr... | vfx/particles.js, workbench/lachrymastage.js, world/strawmanwell/stages/troupewalkers.js |
+
+### stealth (1)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `stealth.step` | one-shot | shape:hoop | a footstep while sneaking: one hoop of the film run out to the noise radius, faint | vfx/stealthmarks.js |
 

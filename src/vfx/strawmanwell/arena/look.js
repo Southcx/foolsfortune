@@ -10,6 +10,8 @@
 //   the barrage     the brawler's held jab drawn as ghost fists, the tsuke's beats under it (arena/barrage.js)
 //   the cast        each straw fighter restitched as an understudy in rehearsal blacks with Strawman's paper target pinned on
 //                   (arena/understudy.js), once, as the kit makes them
+// The flat stage (Dovina's, stages/flatstage.js, Final Destination's layout: the same kit) is dressed the same, read by its own layout
+// (its backdrop the flats' night sky, flats/flatstage.js).
 // Nothing here moves a body or decides a rule: the kit's numbers are read, its looks object replaced whole when the room is dressed.
 //
 // Prior art: the fight rehearsal and the tech rehearsal (work lights, glow tape, the ghost light, the stage manager's desk); Super Smash
@@ -21,22 +23,36 @@ import { RehearsalSet } from './set.js';
 import { ArenaFighterLooks } from './fighterlooks.js';
 import { dressUnderstudy } from './understudy.js';
 import { BarrageLook } from './barrage.js';
+import { ARENA } from '../../../world/strawmanwell/stages/arena.js';
+import { FLAT } from '../../../world/strawmanwell/stages/flatstage.js';
 
-const kitOf = (ctx) => ctx.well?.stages?.arena?.kit || null;
+/** The fighter stages this dresses, each with its layout (the flat stage's names are the Arena's: fighterstage.js). */
+const STAGES = { arena: ARENA, flatstage: FLAT };
+const kitOf = (ctx, id) => ctx.well?.stages?.[id]?.kit || null;
 
-export function dressArena(ctx) {
-  const lane = ctx.lanes.arena; if (!lane || !kitOf(ctx)) return null;
-  const set = new RehearsalSet(ctx, lane); ctx.add(set.group, 'arena');
-  const barrage = new BarrageLook(ctx); ctx.add(barrage.group, 'arena');
+/** One fighter stage's rehearsal: its set, its barrage, its kit's looks and understudies; null if the stage or its kit is not built. */
+function dressStage(ctx, id, A) {
+  const lane = ctx.lanes[id]; if (!lane || !kitOf(ctx, id)) return null;
+  const set = new RehearsalSet(ctx, lane, A); ctx.add(set.group, id);
+  const barrage = new BarrageLook(ctx, id); ctx.add(barrage.group, id);
   /** The kit's looks made the rehearsal's (again if the kit was built anew), and every straw fighter it has made an understudy. */
   const keep = () => {
-    const K = kitOf(ctx); if (!K) return;
+    const K = kitOf(ctx, id); if (!K) return;
     if (K.looks && !(K.looks instanceof ArenaFighterLooks)) { const into = K.looks.into, z = K.looks.z; K.looks.dispose(); K.looks = new ArenaFighterLooks(into); K.looks.z = z; }
     (K.foes || []).forEach((f, i) => { if (f?.model && !f.model.group.userData.understudy) dressUnderstudy(f.model, i, f.F?.team ?? 1); });
   };
   keep();
   return {
-    update(dt) { keep(); set.update(dt); barrage.update(dt, kitOf(ctx)); },
+    update(dt) { keep(); set.update(dt); barrage.update(dt, kitOf(ctx, id)); },
     dispose() { set.dispose(); barrage.dispose(); },
+  };
+}
+
+export function dressArena(ctx) {
+  const parts = Object.entries(STAGES).map(([id, A]) => dressStage(ctx, id, A)).filter(Boolean);
+  if (!parts.length) return null;
+  return {
+    update(dt) { for (const p of parts) p.update(dt); },
+    dispose() { for (const p of parts) p.dispose(); },
   };
 }

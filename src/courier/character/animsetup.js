@@ -21,6 +21,7 @@ import { Airborne } from '../anim/airborne.js';
 import { IdleBreaks } from '../anim/idlebreak.js';
 import { Hurt } from '../anim/hurt.js';
 import { LendGesture } from '../anim/lendgesture.js';
+import { ParryGesture } from '../anim/parrygesture.js';
 import { MantleClips } from '../anim/mantle.js';
 import { Prowl, PROWL } from '../anim/prowl.js';
 import { Crawl } from '../anim/crawl.js';
@@ -45,6 +46,7 @@ export function initAnim(ch, pack) {
   ch.idles = new IdleBreaks(ch); // (the idle, the fighting stance, the idle breaks: anim/idlebreak.js)
   ch.hurt = new Hurt(ch); // (a blow taken: anim/hurt.js)
   ch.lendGesture = new LendGesture(ch); // (the sub's verb lent on R: anim/lendgesture.js)
+  ch.parryGesture = new ParryGesture(ch); // (V's body with a tool in the hands: anim/parrygesture.js)
   ch.mantle = new MantleClips(ch); // (over a ledge: anim/mantle.js)
   ch.slideTrack = new Track(C, new Set(['slideLoop']));
   ch.prowl = new Prowl(ch); // (the crouch on the move: its loop, the hips' lift and the cat's still head: anim/prowl.js)

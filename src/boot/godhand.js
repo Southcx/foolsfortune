@@ -30,6 +30,7 @@ import { CodeCard } from '../ui/combcode.js';
 import { CelestialTargets } from '../vfx/celestialtargets.js';
 import { ReadingTable } from '../ui/readingtable.js';
 import { dangerPips } from '../ui/dangerpips.js';
+import { firstBead } from '../ui/firstbead.js';
 import { ReadingView } from '../vfx/readingview.js';
 import { installUndersideLook } from '../ui/undersidelook.js';
 import { installKitchenLook } from '../ui/kitchenlook.js';
@@ -53,6 +54,7 @@ export function bootGodHand(game, made) {
   game.realm = new Realm(game, { god }); // (the Spirit Garden entered at a Shrine: the Jar on its planetoids, the hand over it: world/garden/realm.js)
   game.scanner = new Scanner(game); // (a real barcode or QR code read into a material or a spirit slab: /scan, the plate shrine; world/scanner.js)
   game.readingTable = new ReadingTable(game); // (the Pneuka Box's loadout as a two-card reading: Dovina's window mounts .el and calls draw(state), ui/readingtable.js)
+  game.firstBead = (roomId) => firstBead(game, roomId); // (a room whose first of the game day is still to take, a gold bead after its key tag: the Index's row puts it, ui/firstbead.js)
   game.dangerPips = dangerPips; // (a Well's danger mark, its FOE's class as pips: the Index's row puts dangerPips(cls) after its key tag, ui/dangerpips.js)
   game.readingView = new ReadingView(game); // (the Box flipped: the laid Majors orbiting the Courier, the cloth under their feet, the hand; its scene, game.readingScene, sets .group and calls update(dt): vfx/readingview.js)
   installCookStage(game); // (Spirit Cooking in 3D: the god hand and a soft dough, drawn in place of the world while the hearth's window is open: vfx/cooking/cookstage.js)

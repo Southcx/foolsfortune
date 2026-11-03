@@ -25,7 +25,7 @@
 //                 the ship), dived it swallows (deep and fast, pouring over its lip); a blow on it lifts its parts' line and glow; beaten,
 //                 it sinks and the sea goes still; at the leg's release it goes down and the whirlpool lets go
 //   THE PRESSURES the hull's cracks on the sloop as hits carry leg to leg (vfx/sloop.js scars: dark seams with the crude in them), and
-//                 the gold they turn to when a haven caulks them; the bunker as a Lachrymato Bottle on the deck (vfx/bottle.js), its
+//                 the gold they turn to when a haven caulks them; the bunker as a Lachrymato Bottle on the deck of the hull sailed (vfx/shipkit/bunker.js), its
 //                 level the fuel left (never a number, never the word tank); adrift, the current's streaks running past the ship in the
 //                 way it is carried. (On the sea chart, a waypoint's feeling, the squall's flame and a following sea are the chart's
 //                 own look: ui/seachart/seachart.js.)
@@ -42,7 +42,7 @@ import * as THREE from 'three';
 import { MarkBuffer, STYLE } from './railmark.js';
 import { RailGeometry } from './railgeometry.js';
 import { warpMaterial, deepMaterial, keepTrue, warpObject } from './stormwarp.js';
-import { LachrymatoBottle } from './bottle.js';
+import { ShipBunker } from './shipkit/bunker.js';
 import { RefitSweep } from './refitsweep.js';
 import { RailFoeMarks } from './railfoemarks.js';
 import { installVoxels } from './voxels/index.js';
@@ -106,13 +106,8 @@ export class CrossingLook {
     // one of each, parked for the warm-up's compile (casebook 17: a program first drawn in play is a hitch); put down at the first cast-off
     this.parkedRing = this.geo.ring(new THREE.Vector3(0, -1e4, 0), new THREE.Quaternion(), 1);
     this.parkedSlab = this.geo.monolith(new THREE.Vector3(0, -1e4, 0), { height: 4, rise: 1 });
-    // the bunker: a Lachrymato Bottle stood on the deck aft of the mast (the sloop's own frame: +Z the bow, 7 m long)
-    const body = st.ship?.look?.body;
-    if (body) {
-      this.bottle = new LachrymatoBottle({ size: 'large' });
-      this.bottle.group.scale.setScalar(5.2); this.bottle.group.position.set(0.55, 0.47, 0.05); this.bottle.group.rotation.y = 0.5;
-      this.bottle.group.visible = false; body.add(this.bottle.group);
-    }
+    // the bunker: a Lachrymato Bottle stood on the deck of whichever hull is sailed (vfx/shipkit/bunker.js: it follows a hull changed)
+    this.bottle = new ShipBunker(); this.bottle.follow(st.ship?.look || null);
     // the maelstrom: the whirlpool's disc beside the sea, Charybdis parked hidden (both of programs already made: the sea's, Old Nobody's)
     this.whirl = st.sea?.whirlpool?.() || null;
     this.beast = new CharybdisLook({ env: this.game.sky?.env || null, fx: this.game.vfx || null });
@@ -122,7 +117,7 @@ export class CrossingLook {
   show(on) {
     this.marks.mesh.visible = on; this.geo.group.visible = on; this.hazards.show(on);
     if (!on) this.stillMaelstrom();
-    if (this.bottle) this.bottle.group.visible = on && this.st.stage.fuel != null;
+    if (this.bottle) this.bottle.set(on ? this.st.stage.fuel ?? null : null);
   }
 
   /** A crossing cast off: the rings and slabs laid out along the rail's turns and legs (hung when the rail comes to them). */
@@ -271,10 +266,8 @@ export class CrossingLook {
     this.hitsWas = r.hits;
     sl.scars?.({ open: r.bears ? r.hits / r.bears : 0, gilt: r.bears ? this.gilt / r.bears : 0 });
     const B = this.bottle; if (!B) return;
-    const fuel = st.stage.fuel;
-    B.group.visible = fuel != null && sl.group.visible;
+    B.follow(sl); B.set(sl.group.visible ? st.stage.fuel ?? null : null);
     if (!B.group.visible) return;
-    B.set({ fill: fuel });
     const v = st.ship.vel; _acc.copy(v).sub(_prevVel).divideScalar(Math.max(raw, 1e-3)); _prevVel.copy(v); // (the slosh: the ship's own pushes, in the rail's frame)
     st.rail.dirWorld(_acc, _w);
     B.update(raw, _w);

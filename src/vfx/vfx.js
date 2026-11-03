@@ -55,6 +55,7 @@ import { hasTag } from '../core/tags.js';
 import { Trail } from './trail.js';
 import { meshFx, FX_V, FX_F, fxUniforms } from './meshfx.js';
 import { LIBRARY } from './library.js';
+import { TypeTells } from './typetells.js';
 import { sfx } from '../audio/sfx.js';
 import { mindTime, mindTick } from './labradorite.js';
 import { featTint } from './oxidation.js';
@@ -289,6 +290,7 @@ export class Vfx {
     const name = `hit.${tool}.${mat}${kill ? '.kill' : ''}`;
     const ctx = { pos: point, dir: dir ? _d.copy(dir).negate() : UP, power: THREE.MathUtils.clamp(power, 0.4, 2.5), tint: tint ?? TOOL_TINT[tool], floor: point.y - 1.5 };
     if (type) this.play(`damage.${type}`, ctx); // (what the blow is made of, over what struck what: the damage looks)
+    if (type) (this.typeTells ||= new TypeTells(this.game)).hit(ent, type, point); // (the type chart's tell: a trump's flash, a resist's deflect: vfx/typetells.js)
     return this.play(name, ctx);
   }
 

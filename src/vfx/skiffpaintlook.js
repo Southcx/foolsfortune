@@ -43,7 +43,8 @@
 //
 //   const look = new SkiffPaintLook(skiff, game)   (boat.js load, once the cloth is made)   look.apply()   look.frame(t)  (placePennant)
 //   look.pose(bones)  (boat.js own: the pennant's length)   look.clear()  (the ribbon gone: stowed)   look.dispose()
-//   skiffPaintPreview(game, kind, id)  (the race board's preview: a choice worn on the board for a look, not chosen)
+//   skiffPaintPreview(game, kind, id)  (the race board's preview: a choice worn on the board for a look, not chosen; kind an object of
+//                                      { kind: id } previews a skiff set's every slot at once: vfx/skiffsets.js skiffSetPreview)
 //   SKIFF_PAINT_LOOK (the numbers)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -179,7 +180,7 @@ export class SkiffPaintLook {
   }
 
   /** What is worn (a preview over it, for the race board's look). */
-  get worn() { const w = { ...(this.game?.skiffPaint?.worn || {}) }; if (this.preview) w[this.preview.kind] = this.preview.id; return w; }
+  get worn() { const w = { ...(this.game?.skiffPaint?.worn || {}) }; if (this.preview?.kinds) Object.assign(w, this.preview.kinds); else if (this.preview) w[this.preview.kind] = this.preview.id; return w; } // (a set's preview: every slot at once, `kinds`)
 
   /** The choices made into the cloth, the pennant's length and the trail's kind: at load and on every `skiff.paint`. */
   apply() {
@@ -358,5 +359,5 @@ class Ribbon {
 /** The race board's PAINT tab's preview: a choice worn on the Courier's board for a look, never chosen (null puts the worn back). */
 export function skiffPaintPreview(game, kind = null, id = null) {
   const look = game?.techs?.get?.('skiff')?.skiff?.paintLook; if (!look) return false;
-  look.preview = kind ? { kind, id } : null; look.apply(); return true;
+  look.preview = kind && typeof kind === 'object' ? { kinds: kind } : kind ? { kind, id } : null; look.apply(); return true;
 }

@@ -9,13 +9,14 @@
 //   - ITS MARK: the power the puzzle it sets now teaches, the god hand's art icon (ui/icons/artart.js) in its domain's palette and
 //     ringed in its domain's glaze colour (ui/domainlook.js), at the top of the face; the stone at the Gnomon flats wears Shape, the
 //     shore's Scoop, the ridges' Transmute, the ruins' Swap, until a later rung asks for another.
-//   - THE RUNG'S NUMBER: the ladder's number of the puzzle it sets now (MIMIC_LADDER, 1 to 14) in neuralese numerals, gold, under the
+//   - THE RUNG'S NUMBER: the ladder's number of the puzzle it sets now (MIMIC_LADDER.indexOf + 1, 1 to 17) in neuralese numerals, gold, under the
 //     mark (the numerals worn, vfx/wornnumerals.js). The game day's puzzle wears none.
 //   - THE STARS: three star sockets under the number, cut into the stone; the best a puzzle has been solved with filled in gold (the
 //     ledger's `god.mimic.stars.<id>`), and on a solve the stars it took struck in one by one (look.js plays the beat).
 //   - THE OGHAM EDGE: a stemline down the face's right edge with one group of notches a rung of the stone's own (the first rung one
 //     notch, the second two ...), as ogham is cut along a stone's arris: gold for a rung solved, the film's pale violet for the one it
-//     sets now, a dark incision for one still to come. The stone's whole ladder is read off it at a glance.
+//     sets now, a dark incision for one still to come (a rung waiting on the runtime, out of MIMIC_LIVE, is one of these until it runs).
+//     The stone's whole ladder is read off it at a glance: the flats' six, the shore's four, the ridges' four, the ruins' three.
 // No words: every mark is a world mark (CLAUDE.md "Feedback"); the log says what happened.
 // DRAWS: every stone's body is one vertex-coloured mesh in the kit's standard program (vfx/racewaypark.js Tris, the Touchstone's
 // parameters), and every face one decal mesh of one atlas in the numerals' decal program (vfx/wornnumerals.js's parameters): 2 draws

@@ -1,6 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE ARENA'S REHEARSAL SET (South, 2026-11-01: "go wild on theatre rehearsal themes"): what stands on the platform fighter's stage
-// (world/strawmanwell/stages/arena.js) because it is a rehearsal and not the show, behind the plane the fight is on:
+// (world/strawmanwell/stages/arena.js), and on the flat stage (stages/flatstage.js) the same, because it is a rehearsal and not the show,
+// behind the plane the fight is on (read from the stage's layout: its mid, half, starts and underside):
 //   the ghost light    a bare bulb in a wire cage on a pole and tripod at the back of the main stage's middle, the theatre's one
 //                      light left burning on an empty stage; it breathes a little, as a filament does on a long cable
 //   the work lights    a clamp lamp on a stand at each end of the main stage, turned in, and their pools on the boards
@@ -14,7 +15,7 @@
 // Prior art: the ghost light (the theatre's superstition and its safety), the rehearsal's clamp lamps and glow tape spike marks,
 // stage weights; the Well's theatre (vfx/strawmanwell/theatre.js) for the boards it stands on.
 //
-//   const S = new RehearsalSet(ctx, lane)   S.group   S.update(dt)   S.dispose()   REHEARSAL_SET
+//   const S = new RehearsalSet(ctx, lane, layout = ARENA)   S.group   S.update(dt)   S.dispose()   REHEARSAL_SET
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Sheet, box, rgb } from '../theatre/kit.js';
@@ -24,15 +25,15 @@ import { ARENA } from '../../../world/strawmanwell/stages/arena.js';
 
 /** The pieces' places (m about the stage's middle, behind the plane) and colours. */
 export const REHEARSAL_SET = {
-  ghost: { x: 0, z: -2.1, h: 1.95, cage: 0.17, glow: 2.6, rib: 0.014 }, work: { x: 10.2, z: -1.7, h: 2.6 },
+  ghost: { x: 0, z: -2.1, h: 1.95, cage: 0.17, glow: 2.6, rib: 0.014 }, work: { in: 0.8, z: -1.7, h: 2.6 }, // (work.in: m in from the stage's end)
   tape: { w: 0.05, len: 0.42, sides: [0x7a8cff, 0xff6a4a] }, steel: 0x1c1c22, serge: 0x1e171c, pleat: 0.35, pole: 0x3a3a40, bulb: 0xfff2c8, sandbag: 0x8a7a5a,
 };
 const R = REHEARSAL_SET;
 
 export class RehearsalSet {
-  constructor(ctx, lane) {
-    this.ctx = ctx; this.group = new THREE.Group(); this.group.name = 'arena.set'; this.t = 0;
-    const X = (x) => ctx.at.x + ARENA.mid + x, Y = ctx.at.y, Z = lane.z;
+  constructor(ctx, lane, A = ARENA) {
+    this.ctx = ctx; this.group = new THREE.Group(); this.group.name = `${lane.id || 'arena'}.set`; this.t = 0;
+    const X = (x) => ctx.at.x + A.mid + x, WX = A.half - R.work.in, Y = ctx.at.y, Z = lane.z;
     const S = new Sheet(), steel = (f) => rgb(R.steel, f === 't' ? 1.3 : 0.9), pole = (f) => rgb(R.pole, f === 'f' ? 1.2 : 0.8);
     // the ghost light: a tripod, its pole, the cage's ribs round the bulb
     const G = R.ghost, gx = X(G.x), gz = Z + G.z;
@@ -42,19 +43,20 @@ export class RehearsalSet {
     for (const y of [Y + G.h, Y + G.h + 0.34]) box(S, gx - G.cage, gx + G.cage, y - 0.01, y + 0.01, gz - G.cage, gz + G.cage, steel, 'tb');
     // the work lights: a stand, its clamp lamp turned in toward the middle
     for (const s of [-1, 1]) {
-      const wx = X(s * R.work.x), wz = Z + R.work.z, h = R.work.h;
+      const wx = X(s * WX), wz = Z + R.work.z, h = R.work.h;
       box(S, wx - 0.03, wx + 0.03, Y, Y + h, wz - 0.03, wz + 0.03, pole, 'ftlrb');
       for (const [dx, dz] of [[0.35, 0], [-0.2, 0.3], [-0.2, -0.3]]) box(S, wx + Math.min(0, dx) * 1, wx + Math.max(0, dx) * 1 + 0.03, Y, Y + 0.04, wz + Math.min(0, dz) - 0.02, wz + Math.max(0, dz) + 0.02, steel, 'ft');
       box(S, wx - s * 0.32 - 0.14, wx - s * 0.32 + 0.14, Y + h - 0.2, Y + h + 0.06, wz - 0.13, wz + 0.13, steel, 'ftlrb');
     }
     // the spike tape: a T a starting mark in its side's colour, in the boards' plane just in front of the back half
     const T = R.tape, mark = (x, col) => { const c = rgb(col, 1.3), y = Y + 0.004, z0 = Z - 0.2; S.quad(new THREE.Vector3(x - T.len / 2, y, z0 - T.w), new THREE.Vector3(x - T.len / 2, y, z0 + T.w), new THREE.Vector3(x + T.len / 2, y, z0 + T.w), new THREE.Vector3(x + T.len / 2, y, z0 - T.w), c); S.quad(new THREE.Vector3(x - T.w, y, z0), new THREE.Vector3(x - T.w, y, z0 + T.len), new THREE.Vector3(x + T.w, y, z0 + T.len), new THREE.Vector3(x + T.w, y, z0), c); };
-    mark(X(ARENA.courier), T.sides[0]); for (const f of ARENA.foes) mark(X(f), T.sides[1]);
+    mark(X(A.courier), T.sides[0]); for (const f of A.foes) mark(X(f), T.sides[1]);
     // stage weights by the ends, sandbags crossed on them
-    for (const s of [-1, 1]) { const sx = X(s * (ARENA.half - 0.9)), sz = Z - 2.4; box(S, sx - 0.3, sx + 0.3, Y, Y + 0.18, sz - 0.18, sz + 0.18, (f) => rgb(R.sandbag, f === 't' ? 1.15 : 0.8), 'ftlr'); box(S, sx - 0.18, sx + 0.18, Y + 0.18, Y + 0.34, sz - 0.3, sz + 0.3, (f) => rgb(R.sandbag, f === 't' ? 1.05 : 0.7), 'ftlr'); }
-    // the drape: the underside's front skirted in pleated serge (its box read back: the kit's spool-coloured one wider than 6 m)
-    const under = (ctx.boxes.mergedOf('arena', ctx.color.spool) ? ctx.boxes.boxesOf(ctx.boxes.mergedOf('arena', ctx.color.spool)) : []).find((b) => b.w > 6);
-    if (under) {
+    for (const s of [-1, 1]) { const sx = X(s * (A.half - 0.9)), sz = Z - 2.4; box(S, sx - 0.3, sx + 0.3, Y, Y + 0.18, sz - 0.18, sz + 0.18, (f) => rgb(R.sandbag, f === 't' ? 1.15 : 0.8), 'ftlr'); box(S, sx - 0.18, sx + 0.18, Y + 0.18, Y + 0.34, sz - 0.3, sz + 0.3, (f) => rgb(R.sandbag, f === 't' ? 1.05 : 0.7), 'ftlr'); }
+    // the drape: each step of the underside's front skirted in pleated serge (its boxes read back: the kit's spool-coloured ones wider
+    // than 6 m; the flat stage's two steps each their own skirt, the wider one's in front)
+    const spools = ctx.boxes.mergedOf(lane.id, ctx.color.spool), unders = (spools ? ctx.boxes.boxesOf(spools) : []).filter((b) => b.w > 6);
+    for (const under of unders) {
       const x0 = under.c.x - under.w / 2 - 0.05, x1 = under.c.x + under.w / 2 + 0.05, y0 = under.c.y - under.h / 2, y1 = under.c.y + under.h / 2 + 0.02, zf = under.c.z + under.d / 2 + 0.03, n = Math.ceil((x1 - x0) / R.pleat);
       for (let i = 0; i < n; i++) {
         const a = x0 + (i * (x1 - x0)) / n, b = x0 + ((i + 1) * (x1 - x0)) / n, m = (a + b) / 2, k = i % 2 ? 1.25 : 0.7;
@@ -71,7 +73,7 @@ export class RehearsalSet {
     this.bulbMat = new THREE.MeshBasicMaterial({ color: R.bulb }); this.bulbGeo = new THREE.SphereGeometry(0.07, 12, 8);
     const bulb = new THREE.Mesh(this.bulbGeo, this.bulbMat); bulb.scale.setScalar(1.4); bulb.position.set(gx, Y + G.h + 0.16, gz); this.group.add(bulb);
     this.ghostGlow = glow(gx, Y + G.h + 0.16, gz, G.glow, 1);
-    this.pools = [-1, 1].map((s) => glow(X(s * R.work.x) - s * 0.32, Y + R.work.h - 0.1, Z + R.work.z + 0.15, 1.1, 0.6));
+    this.pools = [-1, 1].map((s) => glow(X(s * WX) - s * 0.32, Y + R.work.h - 0.1, Z + R.work.z + 0.15, 1.1, 0.6));
   }
 
   /** A tripod's leg from the foot (dx, dz off the pole) up to the pole at 0.5 m: a thin slab leaned in. */

@@ -174,8 +174,12 @@ window.__paStates = (() => {
     add(`${n}.rmbHeld`, set, `${n}: RMB held 1 s (aim, lens, dowse, blade, the octave), let go`, (c) => draw(c).hold('Mouse2').run(60).free('Mouse2').run(40));
     add(`${n}.rmbTap`, set, `${n}: RMB tapped (the stinger, the flick, the fork, the opening)`, (c) => draw(c).press('Mouse2').run(80));
   }
+  // the other tools' parries (V: courier/parries.js; their bodies courier/anim/parrygesture.js, docs/plans/PARRY-CLIPS.md)
+  for (const [tool] of TOOLS.filter(([t]) => t !== 'sondelass')) add(`${tool}.parry`, 'tools', `${tool}: V tapped (the parry's body)`, (c) => lab(c).tool(tool).pool(100).press('KeyV').run(45));
+  add('soulbrush.soak', 'tools', 'the Soul Brush in mop mode: V tapped (the soak)', (c) => { lab(c).tool('soulbrush').pool(100); c.g.techs.get('soulbrush').load.setMode('mop'); c.warm(10).press('KeyV').run(45); c.g.techs.get('soulbrush').load.setMode('paint'); });
+  add('dreamvane.twirl', 'tools', 'the Dreamvane: V held 1 s (the twirl, spinning)', (c) => lab(c).tool('dreamvane').pool(100).hold('KeyV').run(60).free('KeyV').run(30));
   // the cutlass's own
-  const cut = (c) => lab(c).tool('sondelass', 'cutlass').pool(100);
+  const cut =(c) => lab(c).tool('sondelass', 'cutlass').pool(100);
   add('cutlass.iaido', 'sondelass', 'the iaido\'s charge: crouched, RMB held 0.43 s', (c) => cut(c).posture('crouch').hold('Mouse2').run(26));
   add('cutlass.drawCut', 'sondelass', 'the iaido\'s draw cut: crouched, RMB held 0.33 s, let go', (c) => cut(c).posture('crouch').hold('Mouse2').run(20).free('Mouse2').run(60));
   add('cutlass.bladeMode', 'sondelass', 'blade mode: crouched, RMB held through the charge; its stance, then LMB cuts along the line', (c) => cut(c).posture('crouch').hold('Mouse2').run(70).run(40).press('Mouse0').run(60).free('Mouse2').run(30));

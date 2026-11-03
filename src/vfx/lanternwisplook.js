@@ -14,6 +14,10 @@
 //   PUT OUT        through the Death clip (1.6 s) the flame gutters, sputtering lower, and its light with it; as the clip ends and the
 //                  model goes, `wisp.snuff`: the wick's smoke, its last embers and its Lachryma rising as motes.
 //
+//   ITS WATCH      its head up or down (`c.vigil.up`, progress/stealth.js; STEALTH.md 5): up, the lantern lifted (the body rising and
+//                  tipping back with it), the flame flaring, the whole of it turning slowly side to side as it scans; down, it sinks a
+//                  little and bows over the sand, its flame low. Only while it is about its own business (VIGIL_TELL.wisp.calm,
+//                  vfx/stealthmarks.js); laid over the pose the body set this frame (`layered`), never built up.
 //   THE FUEL       `c.look.dim` (0..1, its share left) and `c.look.gutter` (0..1, how hard it sputters): set by a puzzle duel's secret drawing
 //                  the lantern down (vfx/duelview/aberrants/wisp.js); 1 and 0 as made.
 //
@@ -27,6 +31,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { matteFrom } from './matte.js';
+import { VIGIL_TELL, layered } from './stealthmarks.js';
 
 /** Its numbers. light: colour, intensity, reach (m), decay; flicker: amounts of three slow sines; flash: how fast a blow's fades (/s);
  *  mood: per pose, the flame's tint and brightness, and how quick its flicker; ember: radius (m), colour. */
@@ -110,7 +115,21 @@ export class LanternWispLook {
     const gut = S.gutter || 0, sputter = 1 - gut * 0.6 * Math.max(0, Math.sin(this.t * 9 + S.phase) * Math.sin(this.t * 3.7 + S.phase * 2));
     // a blow taken: the body module sets c.flash to 1; it fades here
     c.flash = Math.max(0, (c.flash || 0) - dt * W.flash);
-    this.paint(c, S.k * flick * (S.dim ?? 1) * sputter * (1 + c.flash * 0.8), c.flash);
+    this.paint(c, S.k * flick * (S.dim ?? 1) * sputter * (1 + c.flash * 0.8) * this.vigil(c, dt), c.flash);
+  }
+
+  /** Its watch on the body (STEALTH.md 5): the lift, the tip and the scan laid over the root the body placed this frame; returns the
+   *  flame's share (flaring up, low down). */
+  vigil(c, dt) {
+    const V = VIGIL_TELL.wisp, S = c.look; if (!c.vigil || c.taking || c.stashed || c.dueling) return 1;
+    const T = S.vig || (S.vig = { k: 0, up: 0 }), calm = V.calm.includes(c.pose) && !c.attack && !(c.once > 0), e = Math.min(1, dt * V.ease);
+    T.k += ((calm ? 1 : 0) - T.k) * e; T.up += ((c.vigil.up ? 1 : 0) - T.up) * e;
+    if (T.k < 0.01) return 1;
+    const up = T.up * T.k, down = (1 - T.up) * T.k, t = this.t + S.phase;
+    c.root.position.y = layered(T, 'y', c.root.position.y, V.up.lift * up - V.down.sink * down);
+    c.root.rotation.x = layered(T, 'x', c.root.rotation.x, V.up.tip * up + V.down.bow * down);
+    c.root.rotation.y = layered(T, 'yaw', c.root.rotation.y, Math.sin(t * V.up.scanHz * Math.PI * 2) * V.up.scan * up);
+    return 1 + V.up.flare * up - (1 - V.down.dim) * down;
   }
 
   /** The flame and glow at `k` (1 its own), the light with them, and the clay's flash at `flash` (0..1). */

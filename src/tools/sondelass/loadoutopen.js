@@ -20,10 +20,12 @@
 //
 //   SLOTS { start, most }   SLOT_OPENS [{ slot, hits, run }]   STARTERS
 //   slotsOpen(game) -> { n, earned, lent }   slotOpening(slot) -> its one line ('300 hits, or 8 in a row': both ways)
-//   moveStatus(game, row) -> { known, earned, lent }   moveOpening(row, catalogue) -> its one line ('Locked. Learned from Backhand
-//   (to come).')
+//   moveStatus(game, row) -> { known, earned, lent }   moveOpening(row, catalogue) -> its one line ('Locked. Learned from Backhand.';
+//   '(to come)' only where no way exists yet)   moveWays(game, row, catalogue) -> [{ kind: 'count' | 'feat', line, have, need, done }]
+//   (its two ways with the ledger's progress, loadoutways.js: the editor's card and the Codex's tree show them, GAPS G139)
 // ---------------------------------------------------------------------------------------
 import { labelOf } from './loadoutwords.js';
+import { waysOf, wayWords, wayHave } from './loadoutways.js';
 import * as RULES from '../../progress/combat/moves.js';
 
 export const SLOTS = { start: 4, most: 8 };
@@ -60,9 +62,9 @@ export function slotOpening(slot) {
 /** Dovina's earning, where the game has it: `unlocked(tool, move, L)` asked for a row her table (progress/combat/moves.js MOVES) holds
  *  with an `unlock`; null where it has none (the catalogue's new moves today), so nothing is earned by a row she has not written. */
 function earnedByRules(row, L) {
-  const has = typeof RULES.unlocked === 'function' && typeof RULES.MOVES?.sondelass?.[row.id]?.unlock === 'function';
-  if (!has) return null;
-  try { return !!RULES.unlocked('sondelass', row.id, L); } catch { return false; }
+  const T = RULES.MOVES?.sondelass, key = typeof T?.[row.id]?.unlock === 'function' ? row.id : typeof T?.[row.rule]?.unlock === 'function' ? row.rule : null; // (a row keyed by its rule: Wave Cut's is `special`)
+  if (typeof RULES.unlocked !== 'function' || !key) return null;
+  try { return !!RULES.unlocked('sondelass', key, L); } catch { return false; }
 }
 
 /** Whether the Courier knows a move: `earned` (one of today's, or Dovina's `unlocked` says so: earnedByRules), `lent` (DEBUG's lend
@@ -75,10 +77,20 @@ export function moveStatus(game, row) {
   return { known: earned || lent, earned, lent };
 }
 
-/** A locked move's one line: that it is locked, and the move it grows from (its parent), marked as to come: until Dovina's earning is
- *  in, no way to learn it exists, so none is promised (casebook 209). Words placeholders for Espada's. */
+/** A locked move's one line: that it is locked, and the move it grows from (its parent); marked as to come only where no way to learn it
+ *  exists yet (casebook 209: none is promised that does not). Words placeholders for Espada's. */
 export function moveOpening(row, catalogue) {
   if (!row) return '';
-  const parent = row.parent && catalogue?.[row.parent];
-  return parent ? `Locked. Learned from ${labelOf(parent)} (to come).` : 'Locked.';
+  const parent = row.parent && catalogue?.[row.parent], live = !!waysOf(row.id) && hasRule(row);
+  return parent ? `Locked. Learned from ${labelOf(parent)}${live ? '.' : ' (to come).'}` : live ? 'Locked.' : 'Locked (to come).';
+}
+const hasRule = (row) => { const T = RULES.MOVES?.sondelass; return typeof T?.[row.id]?.unlock === 'function' || typeof T?.[row.rule]?.unlock === 'function'; };
+
+/** A locked move's two ways, each alternative a line with the ledger's progress: the count way's first, then the feat way's. Empty where
+ *  the move has no way yet. */
+export function moveWays(game, row, catalogue) {
+  const W = row && hasRule(row) ? waysOf(row.id) : null; if (!W) return [];
+  const L = game?.ledger, out = [];
+  for (const kind of ['count', 'feat']) for (const w of W[kind]) { const have = wayHave(w, L); out.push({ kind, line: wayWords(w, labelOf, catalogue), have: Math.min(have, w.n), need: w.n, done: have >= w.n }); }
+  return out;
 }

@@ -28,6 +28,8 @@ export const KUROGO = {
 };
 const K = KUROGO;
 const NOH_LANES = new Set(['swing', 'depth', 'wall', 'script']), KABUKI_LANES = new Set(['chase', 'arsenal', 'pit', 'flip', 'jar']);
+/** The fighter stages (the Arena, the flat stage): no stagehand stands in a fight. */
+const FIGHT_LANES = new Set(['arena', 'flatstage']);
 
 /** The cut-outs' atlas: the crouch (left half) and the stand with the clappers (right half), and the butterfly and the ghost-fire. */
 function atlas() {
@@ -132,7 +134,7 @@ export function dressKurogo(ctx) {
   return {
     lane(id) {
       laneId = id; const L = id ? ctx.lanes[id] : null;
-      const on = !!L && id !== 'arena'; // (the Arena keeps its rehearsal's own crew: no stagehand over a fight)
+      const on = !!L && !FIGHT_LANES.has(id); // (a fighter stage keeps its rehearsal's own crew: no stagehand over a fight)
       follower.visible = pole.visible = lure.visible = on; if (!L) { clapper.visible = false; snow.length = 0; flakes.count = 0; return; }
       z = L.z + K.z; fx = null;
       wingL.visible = wingR.visible = !NOH_LANES.has(id); fire.visible = NOH_LANES.has(id);

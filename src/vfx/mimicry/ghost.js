@@ -13,12 +13,22 @@
 //   - THE SCAN: a soft band sweeping the patch corner to corner every 3.2 real s, the lines brightening as it passes (the sight being
 //     read); on the turn (`mimic.turn`) a sweep at once, the sheet up from the demonstration's dimmer strength.
 //   - THE FRAME: four corner brackets and a faint border round the patch, so its edge is known from the hand's height.
+//   - THE VEIL (Below the Surface, the ridges stone): a veiled puzzle's hidden cells (`game.mimicry.veiled()`: the target's ground more
+//     than 0.2 m under the start's, not yet read) are left out of the sheet, sunk under the sand; a Layer View read (`mimic.read`, its
+//     line from `god.strata`) lifts the cells it read, their contours coming up out of the ground one after another along the read,
+//     a bright front on them as they rise past their place and settle onto it (1.1 real s each, swept 0.6 real s along the line), so the read is the lesson made visible.
+//   - THE PEN (The Flock, the shore stone): a herd puzzle's pen (`fr.pen`, Dovina's penOf, patch-local) drawn on the sheet itself, so it
+//     lies on the ground at any slope: the pen's line, a dashed inner line, a ring at each corner (a stake's place), a faint wash inside;
+//     film while the flock is out, turning gold as its share inside (herdMatchOf) climbs to clean. It stands in for the runtime's
+//     placeholder line (`game.mimicry.flock.penLine`, hidden by look.js).
+//   - A CREATION'S BODY (Pillar and Arch, the ruins stone): the voxels asked, meshed and drawn in the same film (vfx/mimicry/ghostvoxels.js).
 //   - THE SOLVE'S BEAT: a gold ring sweeping out from the patch's middle to its corners, every line it passes turned gold, then the sheet
 //     lifted and let go (1.6 real s); a puzzle left unsolved fades out in 0.4.
 // Every line is a fixed width in the frame's own pixels (its height's or its uv's screen derivative), a dark keyline round a light core
 // so it reads on the pale sand at noon and on the dark at night, at the desk's lines and the phone's alike; nothing is thresholded,
 // so nothing crawls (docs/CASEBOOK.md, the kilns' bands). No words: a world mark (the log says the rest).
-// DRAWS: two (the sheet and its x-ray), 1,058 triangles each, one program for both (the ghost's own: a raise of one, warmed at boot).
+// DRAWS: two (the sheet and its x-ray), 1,058 triangles each, one program for both (the ghost's own: a raise of one, warmed at boot);
+// a creation puzzle two more (its body, ghostvoxels.js: one program, warmed beside it).
 //
 // Prior art: the topographic map's contour lines (the Ordnance Survey's, a line every fixed rise), the sci-fi hologram table's
 // scanned terrain (the scan band and the glow of Prometheus's and Halo's map rooms), Islands of Insight's Matchbox (the object to match
@@ -26,26 +36,30 @@
 // the real ground, green where the build matches, red where it does not).
 //
 //   const gh = new MimicryGhost(game)   gh.open(S)   (S: game.mimicry.S, the open puzzle: { at, F, fr: { start, target } })
-//   gh.demo(on)   gh.turn()   gh.update(raw, F)   (F: the live field while open, null after)   gh.solve()   gh.leave()   gh.done
+//   gh.demo(on)   gh.turn()   gh.lift()   gh.readLine(a, b)   gh.update(raw, F)   (F: the live field while open, null after)   gh.solve()   gh.leave()   gh.done
 //   GHOST_LOOK   ghostMaterial({ xray })   prewarmGhost(scene) -> park (removes it)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime, mindTick } from '../labradorite.js';
 import { MIMIC } from '../../progress/mimicry.js';
+import { herdMatchOf } from '../../progress/mimicryherd.js';
+import { VoxelGhost, prewarmVoxelGhost } from './ghostvoxels.js';
 
 /** The numbers: a contour every `step` metres of change; the change under `still` is no change; the target's sheet `lift` metres over
  *  its ground; `ok` the error (m) inside which a cell reads as copied (gold from its first number, full at its second); `stray` the
  *  movement (m) of ground no change was asked of that reads as a stray stroke; the scan's period; the demonstration's strength; the
  *  solve's and the leave's times; how often the live field is read. */
-export const GHOST_LOOK = { step: 0.2, still: [0.03, 0.07], lift: 0.05, ok: [0.35, 0.1], stray: [0.12, 0.3], scan: 3.2, demo: 0.6, solve: 1.6, leave: 0.4, read: 0.12 };
+export const GHOST_LOOK = { step: 0.2, still: [0.03, 0.07], lift: 0.05, ok: [0.35, 0.1], stray: [0.12, 0.3], scan: 3.2, demo: 0.6, solve: 1.6, leave: 0.4, read: 0.12,
+  sink: 0.9, rise: 1.1, sweep: 0.6, over: 0.7, pen: { max: 8, inner: 0.35, stake: 0.16, share: [0.5, 0.85] } }; // (sink: m a veiled cell lies under; rise, sweep: a lift's real s; over: m a lifting cell rises past its place before it settles; pen: its corners at most, the inner line's and a stake ring's m, the share gold from and full)
 const G = GHOST_LOOK;
 
 const VERT = /* glsl */`
-attribute float aD; attribute vec2 aUV; attribute vec2 aNow;
+attribute float aD; attribute vec2 aUV; attribute vec2 aNow; attribute float aHide;
 uniform float uLift;
-varying float vD; varying vec2 vUV; varying vec2 vNow; varying vec3 vW; varying vec3 vView;
+varying float vD; varying vec2 vUV; varying vec2 vNow; varying vec3 vW; varying vec3 vView; varying float vHide;
 void main() {
-  vec3 p = position; p.y += uLift;
+  float hh = 1.0 - aHide, up = aHide > 0.001 && aHide < 0.999 ? sin(hh * 3.14159) * hh : 0.0; // (a lifting cell: up out of the ground past its place, then settled onto it)
+  vec3 p = position; p.y += uLift - aHide * ${G.sink.toFixed(2)} + up * ${G.over.toFixed(2)}; vHide = aHide;
   vec4 w = modelMatrix * vec4(p, 1.0);
   vW = w.xyz; vView = normalize(cameraPosition - w.xyz); vD = aD; vUV = aUV; vNow = aNow;
   gl_Position = projectionMatrix * viewMatrix * w;
@@ -53,8 +67,20 @@ void main() {
 const FRAG = /* glsl */`
 uniform float uK, uXray, uT, uScan, uSolve, uStep, uHalf;
 uniform vec2 uStill; uniform vec3 uMid;
-varying float vD; varying vec2 vUV; varying vec2 vNow; varying vec3 vW; varying vec3 vView;
+uniform vec2 uPen[${G.pen.max + 1}]; uniform float uPenN, uPenK;
+varying float vD; varying vec2 vUV; varying vec2 vNow; varying vec3 vW; varying vec3 vView; varying float vHide;
 ${LAB_GLSL}
+// the pen (world xz corners, the first repeated after the last): the signed distance to its line (negative inside), and the nearest corner's distance
+vec2 penAt(vec2 p) {
+  float d = 1e3, c = 1e3; bool inside = false;
+  for (int i = 0; i < ${G.pen.max}; i++) {
+    if (float(i) >= uPenN) break;
+    vec2 a = uPen[i], b = uPen[i + 1], e = b - a, w = p - a; // (the corners closed: the first again after the last)
+    float t = clamp(dot(w, e) / max(dot(e, e), 1e-6), 0.0, 1.0); d = min(d, length(w - e * t)); c = min(c, length(w));
+    if ((a.y > p.y) != (b.y > p.y) && p.x < e.x * (p.y - a.y) / e.y + a.x) inside = !inside;
+  }
+  return vec2(inside ? -d : d, c);
+}
 // a line a fixed width in the frame's pixels where f crosses a whole number: its light core and its dark keyline round it
 vec2 lineAt(float f) { float d = abs(fract(f - 0.5) - 0.5) / max(fwidth(f), 1e-4); return vec2(1.0 - smoothstep(0.45, 1.15, d), 1.0 - smoothstep(1.15, 2.4, d)); }
 // the same where f crosses zero
@@ -71,11 +97,20 @@ void main() {
   float br = max(qa.x * step(q.y, 0.12), qa.y * step(q.x, 0.12)), brh = max(qh.x * step(q.y, 0.12), qh.y * step(q.x, 0.12));
   L = max(L, vec2(br, brh));
   float border = max(qa.x, qa.y) * 0.35;
+  // the pen: its line (twice the contours' width), a dashed line inside it, a ring at each corner, a wash inside; film to gold
+  float penIn = 0.0, penLit = 0.0;
+  if (uPenN > 2.5) {
+    vec2 pe = penAt(vW.xz); float sd = pe.x;
+    vec2 Lp = zeroAt(sd * 0.55), Li = zeroAt(sd + ${G.pen.inner.toFixed(2)}) * step(0.5, fract((vW.x - vW.z) * 1.25)), Ls = zeroAt(pe.y - ${G.pen.stake.toFixed(2)});
+    vec2 P = max(max(Lp, Li * 0.8), Ls); L = max(L, P);
+    penLit = max(P.x, P.y * 0.6); penIn = 1.0 - smoothstep(-0.05, 0.05, sd);
+  }
   // the scan: a soft band corner to corner
   float diag = (vUV.x + vUV.y) * 0.5, s = fract((uT - uScan) / ${G.scan.toFixed(2)}) * 1.5 - 0.25, band = exp(-pow((diag - s) / 0.04, 2.0));
   // the colours: the film, gold where copied, ember where ground was moved that no change was asked of
   vec3 film = labSoft(labPhase(vW, vView)), gold = vec3(1.0, 0.62, 0.16), ember = vec3(1.0, 0.16, 0.05);
   vec3 c = mix(film, gold, vNow.x); c = mix(c, ember, vNow.y);
+  c = mix(c, gold, uPenK * max(penLit, penIn));
   // the solve's ring sweeping out from the middle, gold behind it
   float r = length(vW.xz - uMid.xz) / (uHalf * 1.4142), R = uSolve * 1.3;
   float ring = uSolve > 0.0 ? exp(-pow((r - R) / 0.05, 2.0)) : 0.0, behind = uSolve > 0.0 ? step(r, R) : 0.0;
@@ -83,12 +118,15 @@ void main() {
   // the x-ray (what the ground hides): dashed and dimmed
   float dash = mix(1.0, step(0.45, fract((vW.x + vW.z) * 1.6)), uXray), dim = mix(1.0, 0.42, uXray);
   float aLine = max(L.y * 0.55, L.x) * dash, core = L.x * dash;
-  float aFill = (inside * (0.1 + 0.2 * vNow.x) + 0.22 * vNow.y + band * 0.06 * inside + ring * 0.75 + border) * dim;
+  float aFill = (inside * (0.1 + 0.2 * vNow.x) + 0.22 * vNow.y + band * 0.06 * inside + ring * 0.75 + border + penIn * (0.07 + 0.08 * uPenK)) * dim;
   vec3 lineCol = mix(LAB_INK, c * (1.15 + 0.9 * band), smoothstep(0.0, 1.0, core / max(aLine, 1e-3)));
   float a = aLine * dim + aFill * (1.0 - aLine);
   vec3 col = (lineCol * aLine * dim + c * (1.0 + band) * aFill * (1.0 - aLine)) / max(a, 1e-3);
   float fade = 1.0 - smoothstep(0.72, 1.0, uSolve);
-  gl_FragColor = vec4(col, clamp(a, 0.0, 1.0) * uK * fade);
+  // a veiled cell: gone while hidden; as it is lifted, its lines come up out of the ground with a bright front on them
+  float shown = 1.0 - smoothstep(0.0, 0.95, vHide), front = vHide > 0.001 && vHide < 0.999 ? pow(4.0 * vHide * (1.0 - vHide), 0.6) : 0.0;
+  col = mix(col, mix(film, gold, 0.55) * 2.6, front * 0.9); // (the front bright enough to read from the hand's height)
+  gl_FragColor = vec4(col, clamp(a + front * (aLine * 0.9 + 0.3 * inside + 0.12), 0.0, 1.0) * uK * fade * shown);
 }`;
 
 /** The ghost's material: the sheet (`xray` false: drawn where it is in front of the ground) or its x-ray (drawn where the ground
@@ -99,6 +137,7 @@ export function ghostMaterial({ xray = false } = {}) {
     uniforms: {
       uK: { value: 0 }, uXray: { value: xray ? 1 : 0 }, uT: { value: 0 }, uScan: { value: 0 }, uSolve: { value: 0 }, uLift: { value: 0 },
       uStep: { value: G.step }, uHalf: { value: MIMIC.half }, uStill: { value: new THREE.Vector2(...G.still) }, uMid: { value: new THREE.Vector3() }, uMindT: mindTime,
+      uPen: { value: Array.from({ length: G.pen.max + 1 }, () => new THREE.Vector2()) }, uPenN: { value: 0 }, uPenK: { value: 0 },
     },
     vertexShader: VERT, fragmentShader: FRAG, transparent: true, depthWrite: false, depthTest: true,
     depthFunc: xray ? THREE.GreaterDepth : THREE.LessEqualDepth, side: THREE.DoubleSide, fog: false, forceSinglePass: true,
@@ -116,13 +155,14 @@ function sheet(m, xz, y, d) {
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('aD', new THREE.BufferAttribute(new Float32Array(d), 1));
   geo.setAttribute('aUV', new THREE.BufferAttribute(uv, 2)); geo.setAttribute('aNow', new THREE.BufferAttribute(now, 2).setUsage(THREE.DynamicDrawUsage));
+  geo.setAttribute('aHide', new THREE.BufferAttribute(new Float32Array(N), 1).setUsage(THREE.DynamicDrawUsage));
   geo.setIndex(idx); geo.computeBoundingSphere();
   return geo;
 }
 const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
 export class MimicryGhost {
-  constructor(game) { this.game = game; this.group = null; this.done = true; }
+  constructor(game) { this.game = game; this.group = null; this.done = true; this.vox = new VoxelGhost(game); this.lifts = []; this.line = null; this.liftDue = false; }
 
   /** The ghost laid over an open puzzle's patch: its target's heights and its change asked, cell for cell. */
   open(S) {
@@ -137,14 +177,57 @@ export class MimicryGhost {
       this.tgt[o] = tot(T, o); this.st0[o] = tot(S0, o);
       y[o] = (kk >= 0 ? F.base[kk] : at.y) + this.tgt[o] + G.lift; d[o] = this.tgt[o] - this.st0[o];
     }
-    this.m = m; this.geo = sheet(m, xz, y, d);
+    this.m = m; this.at = at; this.geo = sheet(m, xz, y, d);
     this.mats = [ghostMaterial(), ghostMaterial({ xray: true })];
     const grp = (this.group = new THREE.Group()); grp.name = 'mimicry-ghost'; grp.userData.zone = 'dunes';
     this.meshes = this.mats.map((mat, i) => { const me = new THREE.Mesh(this.geo, mat); me.name = mat.name; me.renderOrder = 6 + i; me.frustumCulled = false; grp.add(me); return me; });
     for (const mat of this.mats) mat.uniforms.uMid.value.set(at.x, at.y, at.z);
     this.game.scene?.add(grp);
     this.k = 0; this.want = S.demo ? G.demo : 1; this.solveT = -1; this.leaveT = -1; this.readT = 0; this.t = 0; this.done = false;
+    // the veil: the cells still hidden, sunk out of the sheet (the runtime's own mask; the frames' as they open if it has none)
+    this.hidden = this.veiled(S); this.lifts = []; this.line = null; this.liftDue = false;
+    if (this.hidden) { const A = this.geo.attributes.aHide; A.array.set(this.hidden); A.needsUpdate = true; }
+    // the pen, in world xz, on both materials
+    const pen = S.fr.family === 'herd' ? (S.fr.pen || []).slice(0, G.pen.max) : [];
+    this.pen = pen.length > 2 ? pen : null;
+    for (const mat of this.mats) { const U = mat.uniforms; U.uPenN.value = this.pen ? pen.length : 0; [...pen, pen[0]].forEach((p, i) => p && U.uPen.value[i].set(at.x + p[0], at.z + p[1])); }
+    this.vox.open(S);
     this.read(F);
+  }
+
+  /** The veiled cells still hidden (1 a cell, snap's order), or null for a puzzle with no veil. */
+  veiled(S) {
+    const M = this.game.mimicry, v = M?.veiled?.() ?? null; if (v) return v;
+    if (!S?.fr?.veil) return null;
+    const out = new Uint8Array(S.fr.veil.length); for (let o = 0; o < out.length; o++) out[o] = S.fr.veil[o] && !S.read?.[o] ? 1 : 0; return out;
+  }
+  /** A read lifted part of the veil (`mimic.read`): the cells it newly showed rise on the next update, along the read's line. */
+  lift() { if (this.hidden) this.liftDue = true; }
+  /** The read's line (`god.strata`: world [x, z] ends), for the order the cells rise in. */
+  readLine(a, b) { if (a && b) this.line = { a, b }; }
+  /** The newly read cells set rising, each later the further along the read it lies. */
+  startLifts() {
+    this.liftDue = false;
+    const now = this.veiled(this.game.mimicry?.S); if (!now || !this.hidden) return;
+    const m = this.m, c = MIMIC.cell, at = this.at, x0 = at.x - MIMIC.half, z0 = at.z - MIMIC.half, L = this.line;
+    const dx = L ? L.b[0] - L.a[0] : 1, dz = L ? L.b[1] - L.a[1] : 0, L2 = dx * dx + dz * dz || 1;
+    for (let o = 0; o < now.length; o++) {
+      if (!this.hidden[o] || now[o]) continue;
+      this.hidden[o] = 0;
+      const x = x0 + ((o % m) + 0.5) * c, z = z0 + (Math.floor(o / m) + 0.5) * c, u = L ? Math.min(1, Math.max(0, ((x - L.a[0]) * dx + (z - L.a[1]) * dz) / L2)) : (o % m) / m;
+      this.lifts.push({ o, t0: this.t + u * G.sweep });
+    }
+  }
+  /** The rising cells stepped: each from sunk (1) to shown (0) over `rise`. */
+  stepLifts() {
+    if (!this.lifts.length || !this.geo) return;
+    const A = this.geo.attributes.aHide, a = A.array;
+    for (let j = this.lifts.length - 1; j >= 0; j--) {
+      const L = this.lifts[j], k = (this.t - L.t0) / G.rise;
+      a[L.o] = k <= 0 ? 1 : k >= 1 ? 0 : 1 - sm(0, 1, k);
+      if (k >= 1) this.lifts.splice(j, 1);
+    }
+    A.needsUpdate = true;
   }
 
   /** The demonstration running (the sheet at its dimmer strength) or over. */
@@ -163,6 +246,7 @@ export class MimicryGhost {
       a[o * 2 + 1] = (1 - ask) * sm(G.stray[0], G.stray[1], Math.abs(now - this.st0[o]));
     }
     A.needsUpdate = true;
+    if (this.pen) { const fl = this.game.mimicry?.flock, k = fl?.local ? sm(G.pen.share[0], G.pen.share[1], herdMatchOf(fl.local(this.at), this.pen)) : 0; for (const mat of this.mats) mat.uniforms.uPenK.value = k; }
   }
 
   /** The solve's beat: the ring swept out, then the sheet let go. */
@@ -178,12 +262,16 @@ export class MimicryGhost {
     let solve = 0, lift = 0, k = this.k;
     if (this.solveT >= 0) { this.solveT += raw; solve = Math.min(1, this.solveT / G.solve); lift = 0.6 * sm(0.6, 1, solve); if (solve >= 1) { this.dispose(); return; } }
     if (this.leaveT >= 0) { this.leaveT += raw; k *= Math.max(0, 1 - this.leaveT / G.leave); if (this.leaveT >= G.leave) { this.dispose(); return; } }
+    if (this.liftDue) this.startLifts();
+    this.stepLifts();
     for (const mat of this.mats) { const U = mat.uniforms; U.uK.value = k; U.uT.value = this.t; U.uSolve.value = solve; U.uLift.value = lift; }
+    this.vox.set({ k, t: this.t, solve, lift, scan: this.mats[0].uniforms.uScan.value }, raw, !!F && this.solveT < 0 && this.leaveT < 0);
   }
 
   dispose() {
     if (this.group) this.game.scene?.remove(this.group);
     this.geo?.dispose(); for (const mat of this.mats || []) mat.dispose();
+    this.vox?.dispose(); this.lifts = []; this.hidden = null; this.pen = null;
     this.group = this.geo = this.mats = this.meshes = null; this.done = true;
   }
 }
@@ -196,5 +284,6 @@ export function prewarmGhost(scene) {
   const mats = [ghostMaterial(), ghostMaterial({ xray: true })];
   for (const mat of mats) { mat.uniforms.uK.value = 0.001; const me = new THREE.Mesh(geo, mat); me.frustumCulled = false; grp.add(me); }
   grp.position.set(0, -50, 0); grp.userData.zoneFree = true; scene.add(grp);
-  return () => { grp.visible = false; };
+  const parkVox = prewarmVoxelGhost(scene);
+  return () => { grp.visible = false; parkVox(); };
 }
