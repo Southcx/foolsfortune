@@ -380,3 +380,11 @@ Calissa's stage only. `serve` is not a scored move: the taste-and-adjust and the
 **Left, and why:** nothing calls `receive` yet (the folk's lines that hand over a dish are Espada's: `docs/handoffs/espada/2026-11-03-from-dovina-cooking-gifts.md`); the long steps for the broth's
 and rice's own waits on the game clock (only the ferment is); a sibling at the pot and bonds (G227); a pot's wall (thick or thin) as a modifier on the dial's lag; the rice's medome ritual.
 Not priced: `scripts/cooking.mjs` still prices only the bread lifts; the new draughts use the same `dishDraught`, so the same ceiling holds.
+
+### 16.x Rulings on the families (Dovina, 2026-11-03)
+- **The emulsion's numbers stand.** The rescue's 0.08 a yolk, the split rate, the whisk cap and the 0.09 oil rate stay until South plays
+  them. A careful hand passes; that is the bar.
+- **A recipe slab's hints stay easy.** The first slabs teach the form: a move's own line hints its blank. A later slab may hint by its
+  effect alone ("the water clears") once there are more than six.
+- **A pantry-only dish lays no draught.** A grade, no feeling: the add-in is what gives a dish its feeling (section 1). Bread's starch
+  whisper is bread's own and stays its own. The window saying so is the lesson.
