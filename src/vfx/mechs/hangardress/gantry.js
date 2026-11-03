@@ -9,7 +9,7 @@
 //                  that sway (moved on the CPU: a dozen quads; a breeze always, a gust on a beat)
 //   THE CLAMPS     her clamps as iron arms from the piers' backs, a jaw at each end, gold-banded bolts, a ram braced to the pier
 //   THE SCAFFOLD   ashiba (bamboo and iron) up the piers' outer sides: poles, ledgers every 2.2 m, braces, boards at three levels
-//   THE WALKWAY    her walkways (HANGAR.walks, a ring round the frame; HANGAR.walk alone until then) and ramp lacquered (sang de boeuf),
+//   THE WALKWAY    her walkways (HANGAR.walks, a ring round the frame) and ramp lacquered (sang de boeuf),
 //                  a gold fascia, vermilion rails with gold giboshi on the outer edges only (none across where two walkways meet, none
 //                  facing the frame), black pillars to the floor clear of the lift's deck, paper lanterns on posts at the runs' ends
 //                  (their bodies one glowing mesh: flared gold by the mount)
@@ -179,7 +179,7 @@ export function buildGantry(D, hangar) {
 }
 
 /** The walkways (Petra's: a list once she lays them round the frame, the one before the chest until then). */
-export const walksOf = () => HANGAR.walks ?? [HANGAR.walk];
+export const walksOf = () => HANGAR.walks;
 /** Does a local point stand on the lift's deck (it rides up with the frame: no pillar there)? */
 const onDeck = (x, z) => Math.abs(x - HANGAR.gantry.x) < DECK.w / 2 + 0.3 && Math.abs(z - HANGAR.gantry.z) < DECK.d / 2 + 0.3;
 /** Does rect q reach past w's edge at `at` (the edge with outward normal nx, nz), within `e`? */
