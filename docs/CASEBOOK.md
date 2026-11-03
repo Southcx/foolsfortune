@@ -1112,3 +1112,7 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 
 399. **A line that would say a zero says nothing.** A count rounded for the log is said only once it is a whole
   one; the ledger keeps the fractions.
+
+NEW:shot-kept-in-room. **A shot of its own is kept in the room it is in.** A scripted camera's every position, and the path it eases along,
+  is clamped inside the room its subject stands in (off the walls, under the roof, out of the solids), and a move whose line would pass
+  through the set or the subject is a cut; offsets scaled by a body's size are scaled by a size measured in the body's own space.
