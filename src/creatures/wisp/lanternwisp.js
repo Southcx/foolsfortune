@@ -212,6 +212,7 @@ export class LanternWisps {
       const k = (c.dueling || st(c, 'halt') ? 0 : st(c, 'slow') ? 0.35 : 1) * (1 + 0.5 * st(c, 'haste')), dtk = dt * k;
       c.want.set(0, 0, 0); c.face = null;
       if (dtk > 0) { if (c.driven) c.driven(dtk); else c.brain.update(dtk); }
+      this.game.dunesAreas?.hold?.(c); // (it waits at its area's edge: world/dunes/areacut.js, A6)
       if (c.attack && (c.attack.t -= dtk) <= 0) this.release(c);
       // moving: it eases toward what its mind wants, and hovers over the ground with a slow bob
       c.vel.x += (c.want.x - c.vel.x) * Math.min(1, dtk * 3); c.vel.z += (c.want.z - c.vel.z) * Math.min(1, dtk * 3);

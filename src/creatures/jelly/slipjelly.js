@@ -319,6 +319,7 @@ export class SlipJellies {
       c.prevPos.copy(c.pos);
       c.want.set(0, 0, 0); c.face = null;
       if (dtk > 0) { if (c.driven) c.driven(dtk); else { c.brain.update(dtk); this.attackTick(c, dtk); } } // (`driven`: a body moved by its own pattern, not the jelly's mind: greatjelly.js)
+      g.dunesAreas?.hold?.(c); // (it waits at its area's edge: world/dunes/areacut.js, A6)
       this.move(c, dtk);
       this.pose(c, dt, dtk);
     }

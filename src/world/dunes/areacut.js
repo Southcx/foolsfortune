@@ -12,7 +12,8 @@
 //   distance between two; `ok(spot)` a test of its own)   DUNES_AREA_ORDER
 //   countsOf(kind) -> { area: n } (AREA_CONTENTS's)   RUIN_PIECES   crestOf(game, id) -> [x, y, z] (its highest sand)   archOf(game, id) -> [x, y, z]
 //   game.dunesAreas = new DunesAreas(game)   .update(raw) (boot/frame.js)   .here   events area.enter { area, from, away, by },
-//   area.leave { area, to, by }   (`away`: real s since that area was last left, or null the first time)
+//   area.leave { area, to, by }   (`away`: real s since that area was last left, or null the first time)   .hold(c) (a creature kept to
+//   its home area, A6: the kinds call it between mind and move)
 // ---------------------------------------------------------------------------------------
 import { DUNES_AREAS, AREA_CONTENTS, areaAt } from '../../progress/areas.js';
 import { DUNE } from './dunes.js';
@@ -20,7 +21,7 @@ import { DUNE } from './dunes.js';
 export const DUNES_AREA_ORDER = Object.keys(DUNES_AREAS);
 /** Petra's: degrees kept off a sector's edges (nothing laid on a seam); the real seconds a new area must hold before it is said (a walk
  *  along an edge says nothing); how many draws a spot may take before its rule is let go of. */
-const PAD = 4, HOLD = 0.75, TRIES = 60;
+const PAD = 4, HOLD = 0.75, TRIES = 60, EDGE_LOOK = 0.5; // (EDGE_LOOK: real s of a creature's way looked ahead at an edge, A6)
 
 /** Each area's count of a kind (AREA_CONTENTS: crystals, geysers, ostraca, columns). */
 export const countsOf = (kind) => Object.fromEntries(Object.entries(AREA_CONTENTS).map(([id, c]) => [id, c[kind] || 0]));
@@ -88,5 +89,16 @@ export class DunesAreas {
     const was = this.here; this.here = id; this.next = null;
     if (was) { this.left[was] = this.t; g.events?.emit('area.leave', { area: was, to: id, by: 'courier' }); }
     if (id) g.events?.emit('area.enter', { area: id, from: was, away: this.left[id] != null ? Math.round(this.t - this.left[id]) : null, by: 'courier' });
+  }
+  /** A6 (FFXII's rule, AREAS.md): a creature does not follow across an edge. Called by a kind between its mind and its move: a creature
+   *  standing in its home area (the one it first stood in) whose want or way would take it over the edge within EDGE_LOOK real s stops
+   *  there and waits. Knocked out of it, it is free to walk home. An ally (a called spirit) goes where it likes. */
+  hold(c) {
+    if (!this.game.dunes?.active || c.ally || !c.want) return;
+    const ax = c.pos.x - DUNE.x, az = c.pos.z - DUNE.z, here = areaAt(ax, az), home = (c.homeArea ??= here);
+    if (!home || here !== home) return;
+    const L = EDGE_LOOK, out = (vx, vz) => (vx || vz) && areaAt(ax + vx * L, az + vz * L) !== home;
+    if (out(c.want.x, c.want.z)) c.want.set(0, 0, 0);
+    if (c.vel && out(c.vel.x, c.vel.z)) { c.vel.x = 0; c.vel.z = 0; }
   }
 }
