@@ -19,9 +19,9 @@
 //                  seal pressed over the photograph's corner (a shut eye: it never saw you), a held plate's gold rim; held a beat,
 //                  then put by into the book's corner. No words: the log says what happened.
 //
-// The viewfinder's own canvas, lids and falling plate are hidden while this is installed (`body.safari-lens`), so nothing is drawn twice.
-// It reads the Veritome's fields (`lens`, `preview`, `charge`, `chance`, `zoom`, `memory`, `tide`) and `photo.take`; the hand-off it wants
-// instead is in docs/handoffs/petra/2026-11-03-from-calissa-safari-lens.md.
+// The viewfinder skips its own pages while this is its skin (Petra's `vf.skin`, boot/warmup.js) and hands each frame's state to `take(s,
+// aperture)`; its lids and falling plate are hidden (`body.safari-lens`), this lens's shutter and print in their place, so nothing is
+// drawn twice. Without a fresh hand-off it reads the Veritome's own fields; `photo.take` gives the plate's stars and candid mark.
 //
 // Prior art, as on a museum label: Pokemon Snap (1999) and New Pokemon Snap (2021): the dark rounded finder, the brackets, the photograph
 // after the shot with its stars; Fatal Frame (2001): the capture circle and its charge; a Rolleiflex's and a Leica's focus scale and
@@ -40,7 +40,7 @@ export const SAFARI_LENS = {
   print: { in: 0.18, star: 0.13, seal: 0.16, hold: 1.25, out: 0.32, w: [150, 270], share: 0.24 }, // the print: its slide in, a star's beat, the seal's, held, put by; its width (px, a share of the aperture's)
 };
 const CSS = `
-body.safari-lens #viewfinder canvas, body.safari-lens #viewfinder .lid, body.safari-lens #viewfinder .dev { display: none !important; }
+body.safari-lens #viewfinder .lid, body.safari-lens #viewfinder .dev { display: none !important; } /* (the blink and the put-by are this lens's shutter and print; the viewfinder's own pages it skips for a skin) */
 #safarilens { position: fixed; inset: 0; pointer-events: none; z-index: 31; display: none; }
 #safarilens.on { display: block; }
 #safarilens canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -74,10 +74,22 @@ export class SafariLens {
     game.events?.on('photo.take', (e) => this.onShot(e));
   }
 
-  /** What the lens draws from: the Veritome's own fields (the hand-off asked of Petra would pass these in). */
+  /** The viewfinder's hand-off each frame the lens is up (viewfinder.js draw: `skin.take(s, aperture)`). */
+  take(s, aperture) { this.taken = { s, aperture, t: this.t }; }
+
+  /** What the lens draws from: the viewfinder's hand-off while it is fresh, else the Veritome's own fields. */
   state() {
     const g = this.game, V = g.veritome, P = g.player;
     if (!V) return null;
+    const k = this.taken;
+    if (k?.s && this.t - k.t < 0.25) {
+      const s = k.s, A = k.aperture;
+      return {
+        up: !!V.lens, heading: s.heading ?? 0, pitch: s.pitch ?? 0, tide: s.tide ?? 0, charge: s.charge ?? 0, chance: !!s.chance,
+        brackets: s.brackets || [], stars: s.stars || 0, zoom: s.zoom ?? 0, left: s.memory?.left ?? 0, of: s.memory?.of ?? 0, thirds: !!s.thirds,
+        aperture: (W, H) => (A && W === innerWidth && H === innerHeight ? A : V.vf?.aperture?.(W, H) ?? { x: W * 0.1, y: H * 0.12, w: W * 0.8, h: H * 0.76 }),
+      };
+    }
     return {
       up: !!V.lens, heading: P ? ((Math.PI - P.yaw) * 180) / Math.PI : 0, pitch: P?.pitch ?? 0, tide: V.tide ?? 0,
       charge: V.charge ?? 0, chance: !!V.chance, brackets: V.preview?.brackets || [], stars: V.preview?.stars || 0,
