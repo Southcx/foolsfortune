@@ -46,8 +46,11 @@ friendly-fire tolerance, so what you learn on it is true in the field. `training
 numbers:** one log line a bout (blows until 4 real seconds without one), e.g. "Strawman took 18 blows in 6.2 s: 54 damage, 8.7 a second
 (Impact 40, Ego 14); stunned once."; `/strawman` repeats it. F cycles still, guard and swing (a harmless telegraphed swing every 3 sim s).
 
-**Planned, not built: a tunable Strawman** (the owner, 2026-10-06: "improve Strawman's ability to be tuned to test various combat
-interactions").
+**Built 2026-11-03: a tunable Strawman** (the owner, 2026-10-06: "improve Strawman's ability to be tuned to test various combat
+interactions"; rules `progress/combat/strawmanrig.js`, the room's side `world/throwingroom/strawmanrig.js`). The console is a lectern beside the
+sparring circle (F opens a page of presets and rows); `/strawman` says the last bout, takes a preset, or runs a preset against a script
+(`/strawman run crowned burst`); the bout's line and a QAIS report carry the rig's name. The preset numbers are placeholders from the sources'
+own poise and stun (Dovina to re-measure).
 - A console beside Strawman opens its settings (the test's conditions, not the game's tuning: never the tuned warning); it goes away
   when you leave the Workshop.
 - It sets: its grain (the five dials), its mental state (held or free), each damage type's affinity, its poise and each status's

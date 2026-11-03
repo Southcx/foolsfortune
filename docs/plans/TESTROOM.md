@@ -22,4 +22,4 @@ WALL, INDEX), Strawman's `STRAWMAN` and `bout` in `src/progress/combat/dunemaw.j
 **Event:** `drill.end { id, run: { hits, shots, times (ms), group: { radius, drift } }, tuned: [keys], by }`; ledger `drill.<id>`,
 `drill.<id>.best`, `drill.<id>.<medal>`.
 
-**Open:** Strawman's fuller rig (grain, mental state, affinities, presets mirroring real creatures: `DUNEMAW-SYSTEMS.md` section 5).
+**Built 2026-11-03:** Strawman's fuller rig (grain, mental state, affinities, presets mirroring real creatures, a console beside the circle, `/strawman` and its scripted runs: `DUNEMAW-SYSTEMS.md` section 5).

@@ -8,6 +8,7 @@
 // Prior art: Super Smash Bros.' Battlefield (a floor and three soft ledges, the blast zones off its ends), Subspace Emissary's stages;
 // LittleBigPlanet's and Super Mario Maker's contraption courses.
 //
+//   (The Machine runs on past the cannon to a pulley with a crate for its weight and a pair of on/off blocks: machinepulley.js, machineonoff.js.)
 //   buildBrawl(well, S) -> { goal, door, checks, arena, flag }   buildMachine(well, S) -> { goal, door, checks }   BRAWL (its numbers)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -56,13 +57,21 @@ export function buildMachine(well, S) {
   }
   sign(S, 'CRUMBLING', 43.6, 5.2, 'do not stand still');
   // a switch and its timed door, the lock's door, a cannon on a beat before the goal
-  floor(S, 46.5, len + 1);
+  floor(S, 46.5, 76.3);
   const pad = S.box(48.4, 49.6, 0, 0.12, COLOR.spring, { own: true, d: 1.4 });
   const doorA = S.box(52, 52.6, 0, 9, COLOR.door, { own: true });
   M.switch({ x0: X(48.4), x1: X(49.6), top: Y(0.12), mesh: pad.mesh, y0: pad.mesh.position.y }, { mesh: doorA.mesh, collider: doorA.collider }); sign(S, 'SWITCH', 49, 5.2, 'it holds the door a moment');
   const doorB = S.box(57, 57.6, 0, 9, COLOR.gold, { own: true }); sign(S, 'LOCK', 55.5, 5.2);
   M.key(key.mesh, { mesh: doorB.mesh, collider: doorB.collider });
   S.box(64.6, 66, 0, 1.6, COLOR.pin); M.cannon(S.at(64.4, 1.0), -1, 6, S.group); sign(S, 'CANNON', 64, 5.2, 'jump the balls');
-  goalFlag(S, 62.4, 0);
-  return { goal: [62.4, 0], door: [60.6, 0], checks: [[2, 0], [10, 4], [15, 0], [30, 0], [47, 0], [54, 0]] };
+  // a pulley: the Courier on the low platform, a crate on the high one (the brake holds until you stand on one); the heavier side falls and lifts the other
+  M.pulley(S, { a: [76.5, 80], b: [86.4, 89.2], aLow: 0, bHigh: 6, travel: 6 });
+  S.box(80.2, 86.2, 2, 6, COLOR.boards); S.box(89.4, 98, 2, 6, COLOR.boards);
+  M.crate(S.at(87.8, 6), 0.9); sign(S, 'PULLEY', 78, 9.4, 'stand on the low platform; the crate on the other is the weight');
+  // on/off blocks: the red set is solid, the green a ghost; the toggle on the island swaps them
+  M.onOff(S, { sets: [[[99.2, 102.2, 5.6, 6]], [[109.6, 112.2, 5.6, 6], [113.6, 116.2, 5.6, 6]]], pad: [105.8, 107.2, 6], on: 0 });
+  S.box(104.6, 108.4, 2, 6, COLOR.boards); sign(S, 'ON / OFF', 106, 9.4, 'step on the switch: the red blocks and the green swap');
+  S.box(117.4, len + 1, 2, 6, COLOR.boards);
+  goalFlag(S, 122, 6);
+  return { goal: [122, 6], door: [124.6, 6], checks: [[2, 0], [10, 4], [15, 0], [30, 0], [47, 0], [54, 0], [75, 0], [84, 6], [91, 6], [106, 6]] };
 }
