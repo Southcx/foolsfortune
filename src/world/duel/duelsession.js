@@ -98,7 +98,7 @@ export class DuelSession {
   open(c, feeling, ruleset) {
     const g = this.game, P = g.player, pool = g.lachryma;
     const tools = (g.belt?.tools || []).filter((t) => g.belt.isWorn(t.id)).map((t) => t.id);
-    this.startPool = Math.round(pool?.available ?? 30); this.poolMax = Math.round(pool?.max ?? 100); // (the real pool on the board, its ceiling the pool's own max: SUBSTRATE.md F6)
+    this.startPool = this.synced = Math.round(pool?.available ?? 30); this.poolMax = Math.round(pool?.max ?? 100); // (the real pool on the board, its ceiling the pool's own max: SUBSTRATE.md F6)
     if (pool && !c.practice) pool.addModifier('duel', { regenMult: 0, source: 'the puzzle duel' }); // (the pool held while the board is up: no regen behind it, SUBSTRATE.md F6)
     this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], poolMax: [this.poolMax, 100], tools: [tools, []],
       luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0], // (Luck's sway on a flee, 0..2: a tenth of its level, as ruled)
@@ -410,7 +410,7 @@ export class DuelSession {
   }
   /** Events played by the view (awaited: nothing is taken meanwhile), then the forecast and the end. */
   run(events) {
-    this.busy = true;
+    this.busy = true; this.syncPool();
     if (events.some((e) => e.type === 'duel.finisher')) this.drainCamera(); // (the finisher is the data drain: its own camera, cine/sequences.js)
     for (const e of events) {
       if (e.type === 'duelBreak') this.emit('duel.break', { kind: this.foe?.kind, depth: e.depth, by: e.side === 1 ? 'courier' : 'creature' }); // (the room maps a side to `by`: PUZZLE-DUELS.md 13.1)
@@ -497,6 +497,14 @@ export class DuelSession {
     const L = this.game.hudLayout, V = L?.view, R = L?.touch ? L.duelLayout?.(B)?.board : null; if (!R?.h || !V?.w) return 0;
     const k = R.h / (R.m?.h ?? B.h * DUEL_VIEW.cs + DUEL_VIEW.border); return Math.max(0, Math.min(R.x, V.w - R.x - R.w)) / k;
   }
+  /** The board's pool written into the real pool as it moves (SUBSTRATE.md F6, G266): what a move spent or a clear gave back shows on
+   *  the Lachrimeter's tube at once, not when the board folds. A difference, never a copy: the pool's own caps and reserve stay as
+   *  they are, and it is never a use, so no cost multiplier and never refused (C2). Practice counts nothing. */
+  syncPool() {
+    const pool = this.game.lachryma, s = this.state; if (this.practice || !pool || !s) return;
+    const v = s.sides[0].pool, d = Math.round(v - (this.synced ?? this.startPool)); if (!d) return;
+    pool.setTo(pool.value + d, 'duel'); this.synced = (this.synced ?? this.startPool) + d;
+  }
   /** Down with the board, back to the world: the pool as it stands, the Figment drained (you won) or calmed (it did); a loss shatters. */
   close({ won = false, how = 'yield' } = {}) {
     const g = this.game, c = this.foe, s = this.state; if (!this.active) return;
@@ -504,9 +512,8 @@ export class DuelSession {
     this.view?.close?.(); g.god?.hideCursor?.();
     g.cinema?.unshot('duel'); document.body.classList.remove('duel');
     if (g.input?.enabled) g.input.requestLock?.();
-    const pool = g.lachryma, d = this.practice ? 0 : Math.round((s?.sides[0].pool ?? this.startPool) - this.startPool);
-    pool?.removeModifier('duel');
-    if (pool && d) pool.setTo(pool.value + d, 'duel'); // (the board's result settled into the real pool: never a use, so no cost multiplier and never refused, SUBSTRATE.md C2)
+    const pool = g.lachryma;
+    this.syncPool(); pool?.removeModifier('duel'); // (what is left of the board's pool settled, then the regen let go)
     this.dragLeft = null; this.dragClock(null); this.armPower(null); this.clockShown = undefined;
     const V = this.view, home = this.home; this.home = null; // (the instance held while the tsuitate folds away, then the world again and the foe where it stood)
     if (g.duelInstance?.active) g.duelInstance.close(() => !V || (!V.closing && !V.root?.visible) || V.isOpen, () => this.putBack(home)); else this.putBack(home);

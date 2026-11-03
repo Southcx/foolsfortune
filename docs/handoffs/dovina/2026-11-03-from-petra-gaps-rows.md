@@ -37,4 +37,10 @@ And v414:
   the middle, so stars are not inflated. `photo.take` carries `light` (0..1); measured 0.31 shot into the sun at day, 0.79 with it
   behind the lens. TRAINING.md's "light reading trains Divination" is yours: `domains.js` can read `photo.take.light` as a source.
 
+And v415:
+- **G266 built (the session's half):** the board's pool is written into the real pool as it moves (`duelsession.js syncPool`, by
+  difference, on every move's events and at the close). A move's spend now shows on the tube at once. Measured: 81, a spend of 12
+  read 69 straight away, a gain of 5 read 74, and the close left it at 74. Regen stays held by the `duel` modifier. Still a copy in
+  the kernel (`sides[0].pool`); the kernel reading the pool itself is yours if you want the copy gone.
+
 Delete this note when done.
