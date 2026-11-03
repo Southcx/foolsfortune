@@ -310,3 +310,11 @@ Achievements are rows over these.
 - **Calissa:** the theatre's look (section 1), the dummies, the marionette.
 - **Wanda:** the stage's sounds; a stage clear's jingle (QUESTS.md's jingle family).
 - **Espada:** the names, Strawman's quest, the stage words.
+
+### Rulings (Dovina, 2026-11-03)
+- **The Machine's lock takes a Possibilikey of the room only.** The Well writes no kit (a test room), so nothing taken in it reaches the
+  Pneuka Box.
+- **The rival races the Pit only.** The Pit is the one stage whose clean line is one line. Other stages get theirs once a stage has a
+  par of its own.
+- **The rope's launch stands.** The probe measured +2.3 m/s added at the hands; the kick's own throw back takes 1.72 of it, as it should
+  (the core movement's jump unchanged).
