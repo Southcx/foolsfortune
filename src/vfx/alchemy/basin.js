@@ -20,7 +20,9 @@
 //
 //   NORTH_HUE   wheelPoint(h, s, R, out) -> the bath's frame (x east, y up, -z north)   DISH { centre, lines, depth, lipDark }
 //   KERB { w, top }   WARE { w, y }   FOOTING { at, r, top }   const B = new Basin(group, marks, { R })   B.seals(hues)   B.update(dt, lit, { ember, gold }?)
-//   B.sealAt(i, out) (a seal's place, the bath's frame)   B.dispose()
+//   B.sealAt(i, out) (a seal's place, the bath's frame)   B.onSeat (called when the seals move)   B.dispose()
+//   (the SEALS AT TWICE THE SIZE, an assist: `T.alchemy.seals2x`, a setting, off by default (4.21): 32 px, standing on the ware ring's
+//   step outside the kerb)
 //   (lit: one number, or one a seal (each light landing in its own); ember: a seal whose light has lifted out, dimmed so it still
 //   reads; gold: a true firing's warmth, a beat)
 // ---------------------------------------------------------------------------------------
@@ -28,13 +30,14 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RANGE, MARK } from './marks.js';
 import { oklabColour, wheelOklab, wheelColour } from '../wheelcolour.js';
+import { T } from '../../core/config.js';
 
 export const NORTH_HUE = 354.5; // (4.4: the press stands over the gap between Resilience and Willpower)
 export const DISH = { centre: 0.125, lines: [1 / 3, 0.65, 0.985], depth: 4.8 }; // (metres; saturations; the floor's darkening: linear (1 - s)^depth)
 export const KERB = { w: 0.45, top: 0.07 }; // (metres: its width; its top over the liquid)
 export const WARE = { w: 0.5, y: -0.03 }; // (metres: its width; its height, a hand under the kerb's top and 2 cm over the highest ground the press found)
 export const FOOTING = { at: 4.35, r: 1.2, top: -0.05 }; // (metres: north of the centre, its radius, its top under the liquid: 2 cm under the ware ring, so the two never share a plane)
-const SEAL = { size: 0.34, lift: 0.015 }; // (metres: 16 px at the press view's widest; over the kerb's top: casebook rule 1)
+const SEAL = { size: 0.34, big: 0.68, bigAt: 0.34, lift: 0.015 }; // (metres: 16 px at the press view's widest, 32 px with the assist; the big seals' centre out past the kerb's outer edge, on the ware ring's step; over the top they stand on: casebook rule 1)
 const STONE = { kerb: 0x222126, arris: 0x121114, ware: 0x4a4448, skirt: 0x3a3440, foot: 0x6a5a6a }; // (basalt; the arris in shadow; the step; the Athanor's rock and its top, vfx/garden/planetoid.js)
 
 /** A place on the colour wheel in the bath's own frame. */
@@ -46,7 +49,7 @@ export function wheelPoint(h, s, R, out = new THREE.Vector3()) {
 const _m = new THREE.Matrix4(), _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _c = new THREE.Color(), _c2 = new THREE.Color();
 export class Basin {
   constructor(group, marks, { R = 2.5 } = {}) {
-    this.R = R; this.marks = marks; this.lit = new Array(7).fill(0); this.ember = new Array(7).fill(0); this.gold = new Array(7).fill(0); this.hues = null;
+    this.R = R; this.marks = marks; this.big = !!T.alchemy?.seals2x; this.onSeat = null; this.lit = new Array(7).fill(0); this.ember = new Array(7).fill(0); this.gold = new Array(7).fill(0); this.hues = null;
     // the lathe: [radius, height, colour] from the skirt's foot in the ground, up to the ware ring, up the kerb, over it and down its
     // arris into the liquid (a lathe's faces look to the left of the way the profile runs: inward and up, here)
     const k = R + KERB.w, w = k + WARE.w, P = [
@@ -72,16 +75,20 @@ export class Basin {
     const r = this.R + KERB.w * 0.52, [i0] = RANGE.seals;
     H.forEach((h, i) => {
       this.sealAt(i, _p);
-      _m.compose(_p, _q.identity(), _s.set(SEAL.size / 2, 1, SEAL.size / 2)); // (upright toward the press: never turned round the circle)
+      const sz = this.big ? SEAL.big : SEAL.size; _m.compose(_p, _q.identity(), _s.set(sz / 2, 1, sz / 2)); // (upright toward the press: never turned round the circle)
       wheelColour(h, 0.65, _c); const [, a, b] = wheelOklab(h, 0.65); oklabColour(0.83, a, b, _c2, 0.86); // (lit from within: the glaze at a lightness that stands 6.7:1 or more on the basalt, measured; no channel past 0.86, so none blooms)
       this.marks.put(i0 + i, _m, MARK.seal, _c, _c2, [i, this.lit[i] * (1 - 0.6 * this.ember[i]), this.gold[i]]);
     });
   }
   /** Where seal `i` is carved, in the bath's frame. */
-  sealAt(i, out = new THREE.Vector3()) { wheelPoint(this.hues?.[i] ?? 0, 1, this.R + KERB.w * 0.52, out); out.y = KERB.top + SEAL.lift; return out; }
+  sealAt(i, out = new THREE.Vector3()) {
+    if (this.big) { wheelPoint(this.hues?.[i] ?? 0, 1, this.R + KERB.w + SEAL.bigAt, out); out.y = WARE.y + SEAL.lift; return out; } // (the assist: on the ware ring's step, outside the kerb)
+    wheelPoint(this.hues?.[i] ?? 0, 1, this.R + KERB.w * 0.52, out); out.y = KERB.top + SEAL.lift; return out;
+  }
   /** The light in the seals, eased toward `lit` (1 while the press view is open; or one a seal), their embers and their gold. */
   update(dt, lit, { ember = null, gold = null } = {}) {
     let moved = false;
+    const big = !!T.alchemy?.seals2x; if (big !== this.big) { this.big = big; moved = true; this.onSeat?.(); } // (the seals at twice the size, an assist: moved out to the step, the hue ring's lights seated again)
     const ease = (arr, i, to, k) => { const v = arr[i], n = Math.abs(to - v) < 0.003 ? to : v + (to - v) * Math.min(1, k); if (n !== v) { arr[i] = n; moved = true; } };
     for (let i = 0; i < 7; i++) {
       ease(this.lit, i, Array.isArray(lit) ? lit[i] : lit, dt * 10);

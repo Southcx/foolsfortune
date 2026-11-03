@@ -6,7 +6,8 @@
 //   KNEAD    press on the dough: the hand's heel pushes it away (the window's beat, judged on its pulse, which glows on the board), let go
 //            and it folds back and turns a quarter; the dough itself tells how far the gluten has come: shaggy and floury, then satin
 //            and springy, then tight. Hold still on it a moment, then draw up: the hand pinches a piece and stretches it; thin enough,
-//            the light comes through (the windowpane); short of it, it tears and snaps back
+//            the light comes through (the windowpane); short of it, it tears and snaps back; too tight, it tears at once and
+//            the dough's skin shows torn. Every tell is shown on the dough before the window says it (the poke's after the dent is seen)
 //   PROOF    the dough sits in the celadon bowl and swells with the game clock; press on it: a fingertip pokes it, and the dent springs
 //            back fast, slowly, or stays, because the dough is that elastic (the tell is the physics)
 //   BAKE     the loaf on the oven's floor in the kamado's mouth, its crust browning with the bake, blistered if steamed; press on it: the
@@ -36,7 +37,7 @@ export const COOK_STAGE = {
     board: [[0, 2.5, 2.1], [0, 0.05, -0.3]], bowl: [[-1.75, 2.2, 1.6], [-1.75, 0.3, -0.55]],
     oven: [[3.4, 0.7, 1.4], [3.4, -0.2, -2.05]], served: [[0.3, 1.5, 1.7], [0, 0.15, -0.2]],
   },
-  hover: 0.5, press: 0.24, pinchHold: 0.35, pull: 0.5, poke: 0.22, foldTime: 0.28,
+  hover: 0.5, press: 0.24, pinchHold: 0.35, pull: 0.5, poke: 0.22, dentSeen: 0.6, foldTime: 0.28,
   palm: 0.2, tip: 0.07,
 };
 const S0 = COOK_STAGE, clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
@@ -53,12 +54,12 @@ const CSS = `
 /** The dough's program: flour clinging (until the gluten takes it), the satin of a kneaded dough, an add-in's tint, the crust by the
  *  bake (blistered when steamed), and the windowpane's light through what is stretched thin. */
 function doughMaterial() {
-  const U = { uFlour: { value: 1 }, uSatin: { value: 0 }, uBake: { value: 0 }, uSteam: { value: 0 }, uTint: { value: new THREE.Color(0xf2e2c4) }, uTintK: { value: 0 } };
+  const U = { uFlour: { value: 1 }, uSatin: { value: 0 }, uBake: { value: 0 }, uSteam: { value: 0 }, uTight: { value: 0 }, uTint: { value: new THREE.Color(0xf2e2c4) }, uTintK: { value: 0 } };
   const mat = new THREE.MeshStandardMaterial({ name: 'cook-dough', color: 0xf2e2c4, roughness: 0.9 });
   mat.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, U);
     sh.vertexShader = 'attribute float aThin;\nattribute vec3 aRest;\nvarying float vThin;\nvarying vec3 vRest;\nvarying vec3 vUp;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n  vThin = aThin; vRest = aRest; vUp = normal;');
-    sh.fragmentShader = 'uniform float uFlour, uSatin, uBake, uSteam, uTintK;\nuniform vec3 uTint;\nvarying float vThin;\nvarying vec3 vRest;\nvarying vec3 vUp;\n' + sh.fragmentShader
+    sh.fragmentShader = 'uniform float uFlour, uSatin, uBake, uSteam, uTintK, uTight;\nuniform vec3 uTint;\nvarying float vThin;\nvarying vec3 vRest;\nvarying vec3 vUp;\n' + sh.fragmentShader
       .replace('#include <color_fragment>', `#include <color_fragment>
   vec3 base = mix(diffuseColor.rgb, uTint, uTintK);
   float spk = smoothstep(0.55, 0.95, sin(vRest.x * 211.0) * sin(vRest.y * 197.0) * sin(vRest.z * 223.0)) * uFlour;
@@ -68,6 +69,9 @@ function doughMaterial() {
   vec3 crust = b < 0.4 ? mix(c0, c1, b / 0.4) : b < 0.62 ? mix(c1, c2, (b - 0.4) / 0.22) : b < 0.85 ? mix(c2, c3, (b - 0.62) / 0.23) : mix(c3, c4, clamp((b - 0.85) / 0.15, 0.0, 1.0));
   float blister = uSteam * smoothstep(0.35, 0.8, sin(vRest.x * 71.0) * sin(vRest.y * 67.0 + 1.3) * sin(vRest.z * 79.0 + 0.7)) * smoothstep(0.3, 0.6, uBake);
   base = mix(base, crust, smoothstep(0.02, 0.15, uBake)) + blister * vec3(0.16, 0.12, 0.06);
+  float rip = abs(sin(vRest.x * 41.0 + sin(vRest.z * 29.0) * 2.2 + vRest.y * 17.0));
+  float tear = uTight * (1.0 - smoothstep(0.0, 0.07, rip)) * smoothstep(0.1, 0.6, sin(vRest.z * 13.0 + 2.0) * sin(vRest.x * 11.0) + 0.3);
+  base = mix(base, vec3(0.62, 0.5, 0.36), tear * 0.85);
   float th = smoothstep(0.25, 0.9, vThin);
   base = mix(base, vec3(1.0, 0.95, 0.8), th * 0.55);
   diffuseColor.rgb = base;`)
@@ -161,6 +165,7 @@ export class CookStage {
       const v = clamp(S.v || 0, 0, 1.05), over = v >= MOVES.knead.tells[3][0];
       D.set({ stiff: 0.06 + 0.3 * clamp(v), plastic: 2.4 - 1.9 * clamp(v), smooth: 0.9 * clamp(v - 0.2) });
       U.uFlour.value = clamp(1 - v * 1.3); U.uSatin.value = clamp((v - 0.45) / 0.3) * (over ? 0.5 : 1);
+      U.uTight.value = over ? clamp((v - MOVES.knead.tells[3][0]) / 0.08) : 0; // (too tight: torn where it fights back, shown on the dough before it is said)
       const M = MOVES.knead, ph = ((S.beatT || 0) % M.beat) / M.beat, on = Math.pow(1 - Math.min(ph, 1 - ph) * 2, 4);
       this.pulse.position.set(D.centre(_c).x, 0.01, _c.z); this.pulse.material.opacity = step === 'knead' ? 0.15 + 0.6 * on + 0.4 * (S.flash || 0) : 0; this.pulse.scale.setScalar(1 + 0.1 * on);
     } else {
@@ -169,10 +174,10 @@ export class CookStage {
         const v = K.lastProof ?? K.C?.proofValue?.() ?? 0, sink = v > 0.85 ? clamp((v - 0.85) / 0.15) : 0;
         D.scaleRest(1 + 0.27 * clamp(v / 0.5) - 0.18 * sink);
         D.set(v < 0.38 ? { stiff: 0.5, plastic: 0.2, smooth: 0.3 } : v < 0.62 ? { stiff: 0.06, plastic: 0.5, smooth: 0.3 } : { stiff: 0.02, plastic: 3, smooth: 0.1 });
-        U.uFlour.value = 0.15; U.uSatin.value = 0.6;
+        U.uFlour.value = 0.15; U.uSatin.value = 0.6; U.uTight.value = 0;
       } else { // (the bake sets it; the crust browns)
         D.set({ stiff: 0.7, plastic: 0, smooth: 0 }); D.scaleRest(S.steamed ? 1.2 : 1.12);
-        U.uBake.value = step === 'bake' ? clamp(S.v || 0, 0, 1.02) : clamp(S.lastBake ?? 0.7, 0, 1); U.uSteam.value = S.steamed ? 1 : 0; U.uFlour.value = 0.08;
+        U.uBake.value = step === 'bake' ? clamp(S.v || 0, 0, 1.02) : clamp(S.lastBake ?? 0.7, 0, 1); U.uSteam.value = S.steamed ? 1 : 0; U.uFlour.value = 0.08; U.uTight.value = 0;
       }
     }
   }
@@ -238,14 +243,14 @@ export class CookStage {
       } else if (G.kind === 'pinch') { // (the piece drawn up between thumb and finger: the tear by the gluten)
         const lift = G.lift || 0, to = _v.copy(G.top).add(_w.set(0, lift * S0.pull, 0));
         D.drag(to); px = to.x; y = to.y + 0.12; pz = to.z + 0.2;
-        const K = this.k, v = K.st?.v ?? 0, pane = MOVES.knead.tells[2][0];
-        if (D.thinMax > (v < pane ? 0.45 + v : 1.6)) { D.drop(); this.gesture = null; H.rig.play('release', { again: true }); K.stretched = 1.2; K.tell?.(tellAt(MOVES.knead, v)); } // (torn: it snaps back)
+        const K = this.k, v = K.st?.v ?? 0, pane = MOVES.knead.tells[2][0], tight = v >= MOVES.knead.tells[3][0];
+        if (D.thinMax > (tight ? 0.3 : v < pane ? 0.45 + v : 1.6)) { D.drop(); this.gesture = null; H.rig.play('release', { again: true }); K.stretched = 1.2; K.tell?.(tellAt(MOVES.knead, v)); } // (torn: it snaps back. Shaggy tears at once, smooth later, the windowpane holds; too tight tears instead of stretching)
       } else if (G.kind === 'poke') { // (a fingertip pressed in and drawn out: the dent left to the dough)
         const k = G.t < S0.poke ? G.t / S0.poke : Math.max(0, 1 - (G.t - S0.poke) / 0.15);
         const top = c.y + 0.32 * D.restScale; y = top + 0.32 - k * 0.2; px = c.x; pz = c.z + 0.18;
         D.colliders.push({ c: new THREE.Vector3(c.x, top + 0.04 - k * 0.14, c.z), r: S0.tip });
-        if (G.t > S0.poke && !G.said) { G.said = true; this.k.poked = 1.2; this.k.tell?.(tellAt(MOVES.proof, this.k.lastProof ?? this.k.C?.proofValue?.() ?? 0)); }
-        if (G.t > S0.poke + 0.3) this.gesture = null;
+        if (G.t > S0.poke + S0.dentSeen && !G.said) { G.said = true; this.k.poked = 1.2; this.k.tell?.(tellAt(MOVES.proof, this.k.lastProof ?? this.k.C?.proofValue?.() ?? 0)); } // (said once the dent has been seen springing back, filling slowly, or staying)
+        if (G.t > S0.poke + S0.dentSeen) this.gesture = null;
       } else if (G.kind === 'knock') { if (G.t > 0.4) this.gesture = null; y = c.y + 0.45; px = c.x; pz = c.z + 0.2; }
       else if (G.kind === 'turn') { const a = (Math.PI / 2) * Math.min(1, G.t / S0.foldTime), d = a - G.done; if (d > 0) { D.turn(d); G.done = a; } if (G.t > S0.foldTime) this.gesture = null; }
     }

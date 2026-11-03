@@ -28,13 +28,16 @@
 //   B.ghostBead({ h, s } | null, greys)   B.active (the tile the soul bead is in, or -1)   B.beadAt { x, z }   B.T [{ x, z, bare, now }]
 //   B.fx { shown, scale, men, crawl } (the firing's hold on the bead: vfx/alchemy/firing.js)   B.ring(x, z)   B.glint(i, k)
 //   B.cursor({ x, z } | null)   B.glow(k)   B.dispose()
+// The SPOKES, an assist (`T.alchemy.spokes`, a setting, off by default; 4.21, Celeste's assists): seven faint labradorite lines from the
+// grey centre to the seals, drawn in the same shader; still no numbers.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { SELF_LIT_GLSL, selfLitUniforms, syncSelfLit } from '../selflit.js';
 import { wheelColour } from '../wheelcolour.js';
 import { RANGE, MARK, RING_K } from './marks.js';
 import { DISH, wheelPoint } from './basin.js';
-import { FEELING_HUE } from '../../progress/alchemy.js';
+import { FEELING_HUE, ATTRIBUTES } from '../../progress/alchemy.js';
+import { T as TUNING } from '../../core/config.js';
 
 const BODY = [0xa3927a, 0x94482c, 0x94482c, 0x94482c, 0x77746f, 0x77746f, 0x77746f, 0xeceae4, 0xeceae4, 0xeceae4, 0xd8a640]; // (the folk's ladder by rank: raw clay, earthenware, stoneware, porcelain, the Prince's gilt)
 const MOTIF = { wonder: 0, mirth: 1, desire: 2, grief: 3, dread: 4 };
@@ -44,7 +47,7 @@ const BEAD = { r: 0.06, ghost: 0.07 }; // (metres: the soul bead is 12 cm across
 const VERT = /* glsl */`varying vec2 vP; void main() { vP = position.xz; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }`;
 const FRAG = /* glsl */`
 uniform float uR, uTime, uStir, uBrim; uniform vec4 uTile[ 7 ]; uniform vec3 uGlaze[ 7 ]; uniform float uBreak[ 7 ];
-uniform vec4 uRing; uniform vec2 uFold; uniform vec4 uCurrent; uniform vec3 uClay; uniform vec4 uDish; uniform vec4 uGlint; uniform vec2 uGlintAt;
+uniform vec4 uRing; uniform vec2 uFold; uniform vec2 uSpoke[ 7 ]; uniform float uSpokes; uniform vec4 uCurrent; uniform vec3 uClay; uniform vec4 uDish; uniform vec4 uGlint; uniform vec2 uGlintAt;
 varying vec2 vP;
 ${SELF_LIT_GLSL}
 float hash( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
@@ -95,6 +98,13 @@ void main() {
       c = mix( c, mix( uGlaze[ i ], vec3( 1.0 ), 0.42 + 0.4 * uBreak[ i ] ), line( d - T.w + bw, bw, px ) * ( 0.75 + 0.25 * uBreak[ i ] ) );
     }
   }
+  // the spokes (an assist, alchemy.spokes: SOUL-ALCHEMY.md 4.21): seven faint labradorite lines from the grey centre to the seals, no numbers
+  if ( uSpokes > 0.001 ) for ( int i = 0; i < 7; i++ ) {
+    vec2 D = uSpoke[ i ]; float along = dot( vP, D ), across = D.x * vP.y - D.y * vP.x;
+    float on = step( uDish.x, along ) * ( 1.0 - smoothstep( uR * 0.97, uR, along ) ), hw = max( 0.005, 0.5 * px );
+    vec3 lab = vec3( 0.34, 0.46, 0.56 ) + 0.16 * cos( 6.2832 * ( along * 0.35 + vec3( 0.55, 0.68, 0.82 ) ) );
+    c = mix( c, lab, 0.32 * uSpokes * on * line( across, hw, px ) );
+  }
   // a refusal's glint: the nearest spread's break catching the light once, on the side that faces the bead
   if ( uGlint.w > 0.001 ) {
     vec2 q = vP - uGlint.xy; float d = length( q ), bw = max( 0.012, 1.2 * px );
@@ -122,6 +132,7 @@ export class Bath {
       uTile: { value: Array.from({ length: 7 }, () => new THREE.Vector4()) }, uGlaze: { value: Array.from({ length: 7 }, () => new THREE.Color()) }, uBreak: { value: new Array(7).fill(0) },
       uRing: marks.uniforms.uRing, uFold: { value: new THREE.Vector2() }, uCurrent: { value: new THREE.Vector4() },
       uClay: { value: wheelColour(0, 0) }, uDish: { value: new THREE.Vector4(DISH.centre, DISH.depth, DISH.lines[0], DISH.lines[1]) }, ...selfLitUniforms(),
+      uSpoke: { value: Object.values(ATTRIBUTES).map((a) => { wheelPoint(a.hue, 1, 1, _p); return new THREE.Vector2(_p.x, _p.z); }) }, uSpokes: { value: 0 }, // (the seals' bearings; the assist's share, eased)
       uGlint: { value: new THREE.Vector4() }, uGlintAt: { value: new THREE.Vector2(1, 0) }, // (the break's centre and radius, its strength; the way to the bead)
     };
     const geo = new THREE.CircleGeometry(R + 0.04, 160).rotateX(-Math.PI / 2); // (its rim runs under the kerb's arris: the two cross on a line, never share a plane)
@@ -188,6 +199,7 @@ export class Bath {
     this.cur = ease(this.cur, str, dt * 1.5);
     if (lead) { wheelPoint(FEELING_HUE[lead] ?? 0, 1, 1, _p); this.u.uCurrent.value.set(_p.x, _p.z, this.cur, MOTIF[lead]); } else this.u.uCurrent.value.z = this.cur;
     this.u.uBrim.value = this.cur;
+    this.u.uSpokes.value = ease(this.u.uSpokes.value, TUNING.alchemy?.spokes ? 1 : 0, dt * 4); // (the spokes assist, a setting: off by default)
     for (let i = 0; i < 7; i++) this.u.uBreak.value[i] = this.brk[i] = ease(this.brk[i], i === this.brkTo ? 1 : 0, dt * 6);
   }
 

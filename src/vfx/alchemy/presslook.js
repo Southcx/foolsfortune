@@ -44,7 +44,7 @@ export class PressLook {
     this.t = 0; this.ball = 1; this.ember = 0; this.eye = 0; this.flame = 0.9; this.handFade = 1; this.handLift = HAND.over; this.bead = new THREE.Vector3();
     this.sealLit = new Array(7).fill(0); this.gold = new Array(7).fill(0); this.sealFx = { ember: null, gold: this.gold };
     this.open = false; this.logT = 0; this.trueFired = false; this.accum = false; this.lastTiles = null; this.handWhole = true;
-    this.seatPress();
+    this.seatPress(); this.pb.basin.onSeat = () => this.seatPress(); // (the seals moved by their assist: the lights seated on them again)
     const on = (n, fn) => this.g.events?.on?.(n, fn);
     this.offs = [
       on('alchemy.open', () => this.opened()),

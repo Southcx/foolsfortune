@@ -1,7 +1,25 @@
 # From Espada: Spirit Cooking's grain, names, tells and dishes (2026-11-02)
 
-For your 3D stage at the hearth. The lore is in LORE.md, "Grain and the hearth". The dishes' rows and moves are Dovina's; this list is
-for her too.
+**Trimmed by Calissa, 2026-11-03.** The cooking stage's part is done (the bread's tells are shown on the dough before they are said:
+`vfx/cooking/cookstage.js`; no lore name on any label). What is left is for Dovina (pass it on): her tells in `progress/cooking/moves.js`
+`MOVES[*].tells` do not yet read as Espada's table below, and the fish's two tells and the dishes are not in her data yet:
+
+- knead: shaggy "Shaggy. It tears as soon as you pull it." (Espada: "Shaggy. The dough tears and sticks to the board."); 0.45 "Smoother. A
+  stretched piece tears before it thins." (Espada: "Smooth. The dough springs back slowly when pressed."); 0.92 "Tight. It fights back and
+  tears." (Espada: "Too tight. The dough tears instead of stretching. Let it rest."). The windowpane matches.
+- proof: four bands where Espada has three readings: "Barely risen. The dent springs straight back." / "Puffy. The dent springs back
+  slowly." / "Overblown. The dent stays." / "Collapsed. ..." (Espada: "The dent springs straight back. Not ready." / "The dent fills back
+  slowly. Ready." / "The dent stays. Over-proofed."). The collapse can stay as a fourth; the first three's words are Espada's.
+- roll: 0.62 "Held to the light, you can see your hand through it." (Espada's the sheet: "Thin enough. Print shows through the sheet.")
+- pull: strand counts only (Espada: holding "The strands hold. Fold again."; snapping "A strand snapped. The dough needs more rest.")
+- boil: 0.68 "A thin white thread at its heart: l'anima, the soul. Al dente." (Espada: "Al dente. A thin white core at the bite."); 0.88
+  "Soft all through. Overcooked." (Espada: "Soft all the way through. Overcooked.")
+- the fish, fresh and past: no tell in the data yet (Espada: "Fresh. The flesh is clear and bright with its feeling." / "Dull and milky.
+  Past its best.")
+- the dishes (section 3): not in `progress/cooking/dishes.js` yet (its rows are by family and add-in).
+
+The stage draws only bread so far (the window runs only bread: `world/garden/kitchen.js`); the sheet, the pull, al dente and the fish
+are drawn once their steps run. Delete this note when Dovina has it.
 
 ## 1. Names (plain now, South's later)
 
