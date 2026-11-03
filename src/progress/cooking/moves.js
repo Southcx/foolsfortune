@@ -93,16 +93,76 @@ export const MOVES = {
     tells: [[0, 'It thrashes.'], [0.3, 'It slows.'], [0.42, 'Still. Strike now.'], [0.6, 'It gathers itself again.']],
     tradeoff: 'A calm end keeps the flesh sweet: rigor comes later and less lactic acid sours it.', attr: 'focus',
   },
-  // the other families' moves, as data for the rounds after (SPIRIT-COOKING.md 4's table): not played yet
-  simmer:   { label: 'SIMMER', gesture: 'keep', clock: 'real', heart: 0.6, width: [0.1, 0.18], over: 0.8, unit: 'heat, 0.8 the boil', attr: 'focus', later: true },
-  sugar:    { label: 'SUGAR', gesture: 'test', clock: 'real', heart: 0.5, width: [0.06, 0.12], over: 1, unit: 'syrup stage (soft ball 112-116 C .. hard crack 146-154 C)', attr: 'perception', later: true },
-  roux:     { label: 'ROUX', gesture: 'stir', clock: 'real', heart: 0.5, width: [0.08, 0.15], over: 1, unit: 'colour, white to dark', attr: 'focus', later: true },
-  emulsion: { label: 'EMULSION', gesture: 'pour', clock: 'real', heart: 0.5, width: [0.1, 0.18], over: 0.9, unit: 'pour against whisk, 0.9 split', attr: 'dexterity', later: true },
-  rice:     { label: 'RICE', gesture: 'rinse', clock: 'real', heart: 0.85, width: [0.1, 0.15], over: 1.01, unit: 'rinse water clear', attr: 'perception', later: true },
-  ferment:  { label: 'FERMENT', gesture: 'tend', clock: 'game', heart: 0.5, width: [0.1, 0.16], over: 0.85, unit: 'koji at 30 C, 0.85 sporing', attr: 'focus', later: true },
-  steep:    { label: 'STEEP', gesture: 'wait', clock: 'real', heart: 0.55, width: [0.08, 0.14], over: 1, unit: 'water heat by its bubbles', attr: 'perception', later: true },
-  smoke:    { label: 'SMOKE', gesture: 'keep', clock: 'real', heart: 0.4, width: [0.1, 0.16], over: 0.9, unit: 'fire low and fed, thin blue smoke', attr: 'focus', later: true },
+  // the rice, broth, tea, sauce, sweet, ferment and smoke families' moves (G222 to G225, 2026-11-03), played in the hearth's window by
+  // progress/cooking/plays.js. Each is a real technique, each tell what a cook really reads, none a thermometer.
+  simmer: {
+    label: 'SIMMER', line: 'Do nothing, correctly: keep the dial low so the pot barely trembles. A bubble that rolls is a boil, and a boil ruins it.',
+    gesture: 'dial', clock: 'real', run: 12, warm: 3, lag: 0.35, start: 0.75, boilFor: 1.5, // (the pot's wall answers the dial late, a donabe slowly; a boiled kombu turns bitter: the pot starts too hot and the cook turns it down)
+    heart: 0.6, width: [0.1, 0.18], over: 0.8, unit: 'heat held, 0.8 the boil',
+    tells: [[0, 'Barely warm. Nothing moves.'], [0.35, 'The first wisp of steam.'], [0.55, 'A few bubbles at the pot\'s edge: a trembling simmer.'], [0.72, 'Bubbles rising steadily. Too far for kombu.'], [0.8, 'A rolling boil.']],
+    tradeoff: 'A longer, lower simmer is deeper; a hotter one is quicker and nearer bitter.', attr: 'focus',
+  },
+  rice: {
+    label: 'RICE', line: 'Rinse the rice and pour the water off until it runs almost clear. Then set the water to the line on the pot.',
+    gesture: 'rinse', clock: 'real', perRinse: 0.16, // (each wash clears a share of what is left: starch dust clouds the first water)
+    heart: 0.85, width: [0.1, 0.15], over: 1.01, unit: 'rinse water clear',
+    tells: [[0, 'The water is milk-white.'], [0.4, 'Cloudy. It still clouds the pot.'], [0.78, 'Almost clear, a faint haze.'], [0.95, 'Clear as water.']],
+    tradeoff: 'None: rice is the honest move.', attr: 'perception',
+  },
+  steep: {
+    label: 'STEEP', line: 'Watch the water, not a clock. Pour when the bubbles are the right size for the leaf.',
+    gesture: 'wait', clock: 'real', rate: 1 / 22, finish: 'POUR', // (water heating from cold to the boil in 22 real s: shrimp eyes, crab eyes, fish eyes, a rope of pearls, the boil)
+    heart: 0.55, width: [0.08, 0.14], over: 1, unit: 'water heat by its bubbles',
+    tells: [[0, 'Still water, a few tiny beads on the pot: "shrimp eyes".'], [0.3, 'Bubbles the size of crab eyes. The first wisp of steam.'], [0.5, 'Fish eyes, with a hush: the water is hot, not boiling.'], [0.72, 'A rope of pearls rising from the bottom.'], [0.9, 'Rolling boil. It will scald the leaf.']],
+    tradeoff: 'Hotter water is stronger and more bitter.', attr: 'perception',
+  },
+  sugar: {
+    label: 'SUGAR', line: 'Boil the syrup and drop a spoon of it in cold water to read it. Take it off at the stage you want.',
+    gesture: 'test', clock: 'real', rate: 1 / 18, finish: 'TAKE IT OFF', blind: true, // (the cold-water test: you only know the stage when you drop a spoon in)
+    heart: 0.5, width: [0.06, 0.12], over: 0.95, unit: 'syrup stage (soft ball 112-116 C .. hard crack 146-154 C)',
+    tells: [[0, 'The spoon dissolves. Still only sugar water.'], [0.25, 'A thread, no more.'], [0.42, 'A soft ball: it holds, and flattens in the fingers.'], [0.6, 'A hard ball, firm and chewy.'], [0.75, 'Hard crack: it snaps like glass.'], [0.92, 'Amber going dark. It smells of caramel, then smoke.']],
+    tradeoff: 'A harder stage keeps longer and is less tender.', attr: 'perception',
+  },
+  roux: {
+    label: 'ROUX', line: 'Equal flour and fat, stirred. Keep it moving or it scorches. Stop at the colour you want.',
+    gesture: 'stir', clock: 'real', rate: 1 / 22, stirGap: 1.5, scorchK: 2.2, finish: 'STOP', // (white to dark in 22 real s; left unstirred the bottom catches and it browns twice as fast)
+    heart: 0.5, width: [0.08, 0.15], over: 1, unit: 'colour, white to dark',
+    tells: [[0, 'White, smelling of raw flour.'], [0.25, 'Blond, a biscuit smell.'], [0.45, 'Peanut-butter brown. Nutty.'], [0.7, 'Dark chocolate. A quarter of white\'s thickening.'], [0.92, 'Scorched. It smells burnt.']],
+    tradeoff: 'Darker is more flavour and less body.', attr: 'focus',
+  },
+  emulsion: {
+    label: 'EMULSION', line: 'Pour the oil in a thin thread while you whisk. Pour only as fast as the whisk can take it.',
+    gesture: 'pour', clock: 'real', oilRate: 0.09, whiskTap: 0.2, whiskDecay: 0.6, split: 1.2, // (oil into yolk: whisked faster than poured it holds; poured faster than whisked it breaks; the rescue is a fresh yolk and a spoon of water)
+    heart: 0.5, width: [0.1, 0.18], over: 1.01, unit: 'oil taken, held by the whisk',
+    tells: [[0, 'Yolk and a few drops of oil.'], [0.25, 'Pale and loose. It is taking the oil.'], [0.45, 'Glossy and thick, ribbons off the whisk.'], [0.75, 'Stiff, nearly too much oil.']],
+    tradeoff: 'The one rhythm move: a rescue costs a yolk.', attr: 'dexterity',
+  },
+  ferment: {
+    label: 'FERMENT', line: 'Koji works on its own clock, warm. Set the warmth now and then; take it out before it spores.',
+    gesture: 'tend', clock: 'game', rate: 0.25, modes: { cool: { mult: 0.6, label: 'COOLER' }, steady: { mult: 1, label: 'STEADY' }, warm: { mult: 1.6, label: 'WARMER' } }, // (a game hour: 0.25; real koji is about 48 h at 30 C, and above 36 C it spores)
+    heart: 0.5, width: [0.1, 0.16], over: 0.85, unit: 'koji at 30 C, 0.85 sporing',
+    tells: [[0, 'Rice and white threads, a sweet smell of chestnut.'], [0.3, 'A white bloom, warm to the hand. It smells of apples.'], [0.5, 'Fully white, sweet and mushroomy. Ready.'], [0.72, 'Yellow-green flecks. It is starting to spore.'], [0.85, 'Spored. Bitter and spent.']],
+    tradeoff: 'Longer is deeper and sweeter, with less bite.', attr: 'focus',
+  },
+  smoke: {
+    label: 'SMOKE', line: 'Keep the fire low and fed. Thin blue smoke is good; white, heavy smoke is bad.',
+    gesture: 'feed', clock: 'real', run: 14, warm: 2, fall: 0.07, feed: 0.14, start: 0.4, white: 0.8, whiteFor: 2, // (a smouldering fire dies back and is fed a little at a time)
+    heart: 0.4, width: [0.1, 0.16], over: 0.9, unit: 'fire low and fed, thin blue smoke',
+    tells: [[0, 'Nearly out. Only a thread of grey.'], [0.25, 'Thin blue smoke curling up. Good.'], [0.55, 'Thicker. It is turning white.'], [0.8, 'Heavy white smoke. It will taste bitter.']],
+    tradeoff: 'Longer is stronger and drier.', attr: 'focus',
+  },
 };
+
+/** A move as a dish asks it: some hearts move with the family or the leaf (kombu comes out at the first wisp, a mint tea is brewed gentle,
+ *  a bitter leaf hot, honey candy to the hard crack). A copy; MOVES itself is never changed. */
+const HEARTS = { 'broth.steep': 0.4, 'steep.mint': 0.45, 'steep.bitterleaf': 0.7, 'sugar.honey': 0.7 };
+export function moveFor(move, family = null, addin = null) {
+  const M = MOVES[move], h = HEARTS[`${family}.${move}`] ?? HEARTS[`${move}.${addin}`];
+  return h == null ? M : { ...M, heart: h };
+}
+
+/** The rice's second half: the water against the rice, 1 : 1.1 to 1.2 (the line on the pot). Scored as a move's value, 0.8 to 1.5. */
+export const WATER_LINE = { heart: 1.15, width: [0.1, 0.2], over: 9, min: 0.8, max: 1.5 };
 
 /** A move's band now: its width at no practice, grown toward its ceiling by practice (0..100). Never its heart. */
 export const widthOf = (M, practice = 0) => M.width[0] + (M.width[1] - M.width[0]) * Math.max(0, Math.min(100, practice)) / 100;

@@ -5,7 +5,7 @@
 //
 // Ledger: cook.serve, cook.serve.<grade>, cook.dish.<id>, cook.family.<family>, cook.true, cook.true.<dish>, cook.dubious, cook.move.<move>, cook.hit.<move>,
 // cook.learn (a new recipe), hi cook.grade (0 dubious .. 5 true), hi cook.best.<dish> (the same, a dish's), cook.batch, cook.batch.servings,
-// hi cook.batch.size, cook.auto, cook.eat (a batch's serving eaten from the Box); drop.take, drop.take.<cat>, drop.rare, first drop.first.
+// hi cook.batch.size, cook.auto, cook.eat (a batch's serving eaten from the Box), cook.taste, cook.taste.new, cook.slab.found, cook.slab.tried, cook.slab.mend; drop.take, drop.take.<cat>, drop.rare, first drop.first.
 //
 //   cookingRules({ on, L, log })   (tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
@@ -19,6 +19,18 @@ export function cookingRules({ on, L, log }) {
   on('cook.learn', (e) => { if (e.by !== 'courier') return; L.inc('cook.learn'); log.say('system', `New recipe: ${e.label}.`, { key: 'cook.learn', throttle: 1 }); });
   on('cook.proof', (e) => { if (e.by !== 'courier') return; log.say('info', 'The dough is proofing at the hearth. Return in about a game hour and poke it.', { key: 'cook.proof', throttle: 2 }); });
   on('cook.dubious', (e) => { if (e.by !== 'courier') return; L.inc('cook.dubious'); log.say('warn', 'Dubious dish. A little Lachryma returns to your pool.', { key: 'cook.dubious', throttle: 1 }); });
+  on('cook.taste', (e) => { // (a dish a folk or a spirit gave you to taste: recipes.js GIFTS)
+    if (e.by !== 'courier') return;
+    L.inc('cook.taste'); if (e.fresh) L.inc('cook.taste.new');
+    log.say('gain', e.fresh ? `You taste ${e.label.toLowerCase()} and know how it is made.` : `You taste ${e.label.toLowerCase()}. You know it already.`, { key: 'cook.taste', throttle: 1 });
+  });
+  on('cook.slab', (e) => { // (a recipe slab found at the hearth, tried, or mended)
+    if (e.by !== 'courier') return;
+    if (e.state === 'found') { L.inc('cook.slab.found'); log.say('info', 'A cracked recipe slab has turned up at the hearth.', { key: 'cook.slab', throttle: 2 }); }
+    else if (e.state === 'tried') { L.inc('cook.slab.tried'); log.say('info', `The slab is not whole: ${e.right} of ${e.total} lines fit.`, { key: 'cook.slab', throttle: 1 }); }
+    else if (e.state === 'mended') { L.inc('cook.slab.mend'); log.say('gain', `The slab is whole: ${e.label.toLowerCase()}.`, { key: 'cook.slab', throttle: 1 }); }
+  });
+  on('cook.long', (e) => { if (e.by === 'courier') log.say('info', 'It works on the game clock. Return and tend it, then take it out before it spores.', { key: 'cook.long', throttle: 2 }); });
   on('cook.serve', (e) => {
     if (e.by !== 'courier') return;
     L.inc('cook.serve'); L.inc(`cook.serve.${e.grade}`); L.inc(`cook.dish.${e.dish}`); L.inc(`cook.family.${String(e.dish).split('.')[0]}`); L.hi('cook.grade', ORDER.indexOf(e.grade));
