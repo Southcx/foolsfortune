@@ -159,7 +159,7 @@ function wakeBody(body, game) {
 }
 
 // ------------------------------------------------------------------ the room a shot is kept in
-const walksOf = () => HANGAR.walks ?? [HANGAR.walk];
+const walksOf = () => HANGAR.walks;
 /** The hangar's solids as world boxes [x0, x1, y0, y1, z0, z1] (the walkways' slabs and rails with them), grown by `m`. */
 function solidsOf(m) {
   const A = HANGAR.at, out = [];
