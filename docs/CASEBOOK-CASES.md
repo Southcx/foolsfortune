@@ -4978,7 +4978,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Seen:** `node scripts/mycelium.mjs` failed "every curio has a colour" and then threw on the fulgurite (the ridges' rare find, a tier-3 curio).
 - **Cause, as measured:** the curio was added to the curios' table with the rare find, but not to the mycelium's `SIGNATURE`; `signatureOf` returned undefined and the rot read `[0]` of it.
 - **Fix:** a signature for it (h 28, s 0.35: fused tan glass) in `progress/mycelium.js`.
-- **Rule:** NEW:curio-signature — a new curio gets its row in the mycelium's `SIGNATURE` in the same change; `scripts/mycelium.mjs` says which lack one.
+- **Rule:** 402 — a new curio gets its row in the mycelium's `SIGNATURE` in the same change; `scripts/mycelium.mjs` says which lack one.
 
 ### 2026-11-03 · The mount's camera went through the hangar's north wall a moment after the Pneuka Jar locked in (vfx/mechs/mount.js; found by South)
 - **Seen:** South: "the camera clips into the wall when the Pneuka Jar is loaded into the mech in the hangar after about a second."
