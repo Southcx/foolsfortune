@@ -1072,3 +1072,10 @@ The ledger counts `duel.whistle`, never `duel.fled`; the log line is a placehold
   plain English until she and South call the mechanic final. (3) Familiarity reading them is Calissa's tag. Until then Wonder's
   family is the rainbow, the diagonal and the sweep.
 - The new pieces' own looks (Calissa), the sounds (Wanda) and the log's words (Espada): handoffs in `docs/handoffs/`.
+
+### 27.x Rulings (Dovina, 2026-11-03)
+- **Rules as tiles (G185) sit on your own half.** The PvE duel freezes the aberrant's half. A drag across the Line would be a new verb, so
+  a rule tile is laid and read on your half. The aberrant's rules show as its board does: as what its pieces do.
+- **Fury's crash gem and Mirth's ice and launches stay on the generic boards.** The aberrants' own boards (the Lantern Wisp, the slip
+  jelly, the clapperjar) keep their tuned numbers.
+- **Gall's first pass stands** (3 viruses a half, hard junk of 2 hits, rot 0.25 and 2 a turn) until the simulator or South says otherwise.
