@@ -144,9 +144,38 @@ owner, 2026-10-11). It is graded by its **field**, as oil is Brent, in three gra
 - **A Well run** draws 12% of its fill and yields what is left, never under 15%. The fill comes back at 3% an hour of play while its
   mind ruminates.
 
-**Not yet re-simulated.** The runs above were simulated when crude had five grades by feeling. The fields' three grades have not been
-re-simulated since. G136 stays open for that measure. It is the next run of `scripts/economy.mjs`'s passage block once its rows read
-`fields`.
+**Re-simulated by field** (2026-11-03, `scripts/economy.mjs`'s crude and passage blocks, which read `ECON.crude.fields`). A crude run
+clean / one stage failed, cubes a run, and cubes an hour clean (a hop of 12 real min, times the ship's slowness):
+
+| ship, field | clean | a stage failed | an hour clean | x aim | spill on a failed stage |
+|---|---:|---:|---:|---:|---:|
+| sloop, Margarite | 1 | -5 | 6 | 0.01 | 16% |
+| sloop, Dunemaw | 13 | -12 | 81 | 0.17 | 34% |
+| sloop, Entropolis | 24 | -27 | 150 | 0.31 | 50% |
+| tanker, Margarite | 15 | -28 | 47 | 0.10 | 15% |
+| tanker, Dunemaw | 84 | -80 | 262 | 0.55 | 33% |
+| tanker, Entropolis | 152 | -188 | 475 | 0.99 | 48% |
+
+What changed from the five grades: the passage table above holds (its rows were the fields' already). The tanker's best Entropolis run
+alone is 0.99x, not 1.4x. **The toxic symbiosis** now pays -0.03x to 0.42x over a fortnight, not -0.73x to 1.09x (the Entropolis
+field's worth 1.25 against the old top grade's). Crude is a cargo now, never a living by itself: a trip pays through its rutter. That is
+the intent (the passage is the living; crude is its stake). Open, for South: if a tanker run should be a living alone, Entropolis
+crude's worth goes to about 1.6.
+
+**What goes in and what comes out** (South's ask, the crude picture):
+
+```
+                 IN (faucets)                                  OUT (drains)
+  a Well run ── draws 12% of its fill ──┐              ┌── fuel: 14 / 29 cubes a hop (econ/emocean.js)
+  a blot mopped (the Soul Brush) ───────┤              ├── a spill: a failed stage, by volatility x cargo
+  a gusher, a slick (in a fight) ───────┼──> CASKS ────┼── a cask drunk in a fight (the pool)
+                                        │  (the Pneuka  │
+                                        │   Box; a hold │
+                                        │   8 sloop,    └──> the Purser: worth x the island's demand (0.75..1.35)
+                                        │   60 tanker)          Margarite buys high, Entropolis low (the symbiosis)
+                                        │                     └──> refined at the Stillhouse: aqua regia, wonder Lachryma
+  the Well's fill comes back 3% an hour of play (dry to full in 33 hours)
+```
 
 **The islands on the Law-Chaos line** (`ECON.islands`; the owner: a stable mind is safer and less lucrative, a chaotic one riskier and
 richer). Well runs, x aim and share of runs lost, poor / middling / masterful:
