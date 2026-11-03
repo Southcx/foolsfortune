@@ -28,6 +28,7 @@ export const FIRST_TODAY = {
     godhand: { label: 'The god hand', on: ['god.miracle'] },
     well:    { label: 'A Well', on: ['well.floor'] },
     dunes:   { label: 'The crystals', on: ['crystal.harvest'] },
+    safari:  { label: 'The safari', on: ['safari.plate'] }, // (the first behaviour caught on a plate a game day: STEALTH.md 8.7)
   },
 };
 

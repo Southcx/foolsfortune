@@ -193,7 +193,33 @@ a turn, as a second avenue for the watch.
 
 **Espada:** the Fieldcraft achievements' words, and the log's candid line.
 
-## 8. The safari: the Veritome's overhaul (planned, not built)
+## 8. The safari: the Veritome's overhaul (rules built 2026-11-03; the look and the lure's input are not)
+
+**Built (Dovina, 2026-11-03).** The rules are `progress/safari.js` (data and pure functions), the running half `progress/safarirun.js`
+(`game.safari`), the counts and the log `feedback/tracking/safari.js`, the achievements fc6 to fc14 (Fieldcraft), and `safari` a
+`FirstToday` module. What each step became:
+1. **Two readouts** (G241): `safari.plate` carries `stars` (the behaviour's rarity: anywhere 1, condition 2, lured 3, candid 4) and
+   `score` with its `framing` word (poor, fair, good, great). The lens's own stars still ride `photo.take`; the safari's are the ones
+   the plate should draw (Calissa).
+2. **Behaviour** (G242): `BEHAVIOURS[kind]`, four a Figment (the slip jelly and the Lantern Wisp), read from the running action
+   (`brain.action.id`), the hour's phase, the weather and the subject's awareness. Until the shutter names its subject (Petra, handoff),
+   the nearest Figment of the plate's kind is asked.
+3. **Research by area** (G243): a level is how many of an area's behaviours you hold there (1, 3, 5, 7); level 2 opens the area's
+   night variant, 3 its rare finds, 4 all (`areaOpen(L, area, what)`). Petra's rare finds and night variants ask there (handoff).
+4. **Lures** (G244): `game.safari.lure(feeling)` spends 8 of the pool, calls Figments of that feeling from 16 m for 30 real s and holds
+   those inside 7 m for their lured behaviour. `/lure <feeling>` stands in for the throw; the real input (a lure verb for the Veritome,
+   or PAINT aiming) is still to design.
+5. **The darkroom** (G245): the day's plates are kept in the save; at the turn of the game day (or `/darkroom`) the best of each kind is
+   judged and the log says why (behaviour, candid, lured, close, framing). The window is Calissa's; the words Espada's.
+6. **The look** (G246): not built (Calissa).
+7. **What it pays** (G247): a behaviour's first plate pays 0.5 to 2 minutes of play (by rarity), a research level a quarter of a hunt
+   of the class its number names, and the first safari plate a game day the `safari` FirstToday.
+8. **Flight rings, habituation** (G248): `flightDistance` (bold, speed, heading, posture, habituation) bolts an unaware Figment
+   (`brain.force('flee')`, `stealth.spook`); gentle, slow company inside 1.6 rings raises a kind's habituation to 1 over 90 real s, a fright
+   takes a quarter off, time 1 in 600 s. The scent on the wind is `scentReach(wind, pool)`, waiting on an island wind.
+
+The plan before it was built, kept:
+
 
 South's ask is a "mental safari": hunting Figments down and photographing them, Pokemon Snap's loop in a Lachryma tool. The Veritome
 already has most of a Snap:

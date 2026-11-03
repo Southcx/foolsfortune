@@ -82,6 +82,7 @@ import { courseRules } from './course.js';
 import { systemLineRules, commandEchoRules } from './systemlines.js';
 import { veritomeRules } from './veritome.js';
 import { stealthRules } from './stealth.js';
+import { safariRules } from './safari.js';
 import { domainArtsRules } from './domainarts.js';
 import { cookingRules } from './cooking.js';
 import { mechRules } from './mechs.js';
@@ -124,7 +125,7 @@ export function areaRules(ctx) {
   courseRules(ctx);
   systemLineRules(ctx);
   placeEnterRules(ctx);
-  veritomeRules(ctx); stealthRules(ctx); domainArtsRules(ctx); cookingRules(ctx); mechRules(ctx); mechNightRules(ctx); mechFireRules(ctx); // (a candid photograph: progress/stealth.js; a domain's rungs: progress/domainarts.js)
+  veritomeRules(ctx); stealthRules(ctx); safariRules(ctx); domainArtsRules(ctx); cookingRules(ctx); mechRules(ctx); mechNightRules(ctx); mechFireRules(ctx); // (a candid photograph: progress/stealth.js; a domain's rungs: progress/domainarts.js)
   itemRules(ctx);
   chatLineRules(ctx);
   folkRules(ctx);
