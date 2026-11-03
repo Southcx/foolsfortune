@@ -388,3 +388,20 @@ Not priced: `scripts/cooking.mjs` still prices only the bread lifts; the new dra
   effect alone ("the water clears") once there are more than six.
 - **A pantry-only dish lays no draught.** A grade, no feeling: the add-in is what gives a dish its feeling (section 1). Bread's starch
   whisper is bread's own and stays its own. The window saying so is the lesson.
+
+### The named dishes (Espada, 2026-11-02; to be built as dish rows once a recipe gates something) (grain, feeling by its taste: SPIRIT-COOKING.md 6)
+
+| dish (plain name) | grain | feeling | why (a real fact each) |
+|---|---|---|---|
+| cold soba with mint and shiso | buckwheat | Wonder (cool) | zaru soba is served cold; menthol reads as cold (TRPM8) |
+| honey toast | wheat (shokupan) | Mirth (sweet) | Tokyo's café dessert: a hollowed loaf, buttered, honeyed |
+| ramen carbonara | wheat (alkaline noodles) | Desire (rich) | egg yolk and fat emulsified off the heat, as Roman carbonara is |
+| mentaiko spaghetti | wheat (pasta) | Fury (heat) | the first wafu pasta (Tokyo, 1960s), spicy cod roe |
+| orecchiette with bitter greens | wheat (durum) | Gall (bitter) | Puglia's dish with cime di rapa, a bitter brassica |
+| onion soup in a bread bowl | wheat (a round loaf) | Grief (salt, tears) | the onion's lachrymatory factor; salt is tears |
+| squid-ink udon with sudachi | wheat (udon) | Dread (sour) | sudachi is a sour Japanese citrus; ink is the dark |
+| pulled noodles in broth | wheat (lamian) | none (the add-in picks it) | the folds double the strands; umami holds the draught |
+| the catch over rice | rice | the fish's own | kaisendon; the seafood course, its feeling the catch's |
+| crazy-water fish | (bread to mop it) | the fish's own | aquapazza, Naples' fish poached in seawater |
+
+The tells are Espada's words since 2026-11-03 (`progress/cooking/moves.js`), the pull's two moments and the fish's freshness (`FISH_TELLS`) beside them. No lore names on the dishes until South rules the module final.

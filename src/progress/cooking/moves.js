@@ -13,7 +13,7 @@
 // its parts), the windowpane test and the poke test of every bread book (Hamelman's Bread, 2004; Forkish's Flour Water Salt Yeast,
 // 2012), the hollow knock (bread is done at about 96 C inside: the crust rings), steam in the first ten minutes for oven spring.
 //
-//   MOVES { id: { label, line, gesture, clock, rate, heart, width: [w0, wMax], over, unit, tells: [[at, words]], tradeoff, attr } }
+//   MOVES { id: { label, line, gesture, clock, rate, heart, width: [w0, wMax], over, unit, tells: [[at, words]], moments?, tradeoff, attr } }   FISH_TELLS
 //   widthOf(move, practice) -> half-width   scoreOf(move, value, practice) -> { score 0..1, hit (inside the heart), ruined }
 //   tellAt(move, value) -> words   pullOver(gluten) -> the pull's snap for that dough
 // ---------------------------------------------------------------------------------------
@@ -24,14 +24,14 @@ export const MOVES = {
     label: 'KNEAD', line: 'Fold and push in time. Stop when a stretched piece lets the light through without tearing.',
     gesture: 'beat', clock: 'real', beat: 0.75, perBeat: 0.06, offBeat: 0.02, // (a fold, a push and a quarter turn about every 0.75 s, a baker's pace; on the beat it builds three times as fast)
     heart: 0.8, width: [0.12, 0.2], over: 1, unit: 'gluten built, 1 overworked',
-    tells: [[0, 'Shaggy. It tears as soon as you pull it.'], [0.45, 'Smoother. A stretched piece tears before it thins.'], [0.68, 'Windowpane. A stretched piece lets light through without tearing.'], [0.92, 'Tight. It fights back and tears.']],
+    tells: [[0, 'Shaggy. The dough tears and sticks to the board.'], [0.45, 'Smooth. The dough springs back slowly when pressed.'], [0.68, 'Windowpane. A stretched piece lets light through without tearing.'], [0.92, 'Too tight. The dough tears instead of stretching. Let it rest.']],
     tradeoff: 'Underworked bread is dense; overworked is tough.', attr: 'dexterity',
   },
   proof: {
     label: 'PROOF', line: 'Leave it somewhere warm. Press a floured finger in: ready when the dent springs back slowly.',
     gesture: 'wait', clock: 'game', rate: 1, // (doubled in about a game hour at the hearth's warmth: real bulk proof is hours at 21-23 C; the game hour is 150 real s)
     heart: 0.5, width: [0.1, 0.16], over: 0.85, unit: 'risen, 0.5 doubled, 0.85 collapsing',
-    tells: [[0, 'Barely risen. The dent springs straight back.'], [0.38, 'Puffy. The dent springs back slowly.'], [0.62, 'Overblown. The dent stays.'], [0.85, 'Collapsed. It rose too long and sank.']],
+    tells: [[0, 'The dent springs straight back. Not ready.'], [0.38, 'The dent fills back slowly. Ready.'], [0.62, 'The dent stays. Over-proofed.'], [0.85, 'Collapsed. It rose too long and sank.']],
     tradeoff: 'A longer proof is more flavour and risks collapse.', attr: 'focus',
   },
   bake: {
@@ -48,7 +48,7 @@ export const MOVES = {
     label: 'ROLL', line: 'Roll it thinner pass by pass. Hold it to the light: stop when you can see your hand through it.', stage: '3d',
     gesture: 'roll', clock: 'real', perPass: 0.09, // (a pass through the rollers, or a long push of the pin; a pasta machine's nine settings, the heart its seventh: about 0.8 mm)
     heart: 0.72, width: [0.08, 0.15], over: 1, unit: 'thinness, 1 torn',
-    tells: [[0, 'Thick as a biscuit. No light comes through.'], [0.4, 'Even, but the light stops at it.'], [0.62, 'Held to the light, you can see your hand through it.'], [0.88, 'Paper thin. The edges are starting to tear.']],
+    tells: [[0, 'Thick as a biscuit. No light comes through.'], [0.4, 'Even, but the light stops at it.'], [0.62, 'Thin enough. Print shows through the sheet.'], [0.88, 'Paper thin. The edges are starting to tear.']],
     tradeoff: 'Thinner is silkier and cooks faster, nearer torn.', attr: 'dexterity',
   },
   laminate: {
@@ -70,13 +70,14 @@ export const MOVES = {
     gesture: 'stretch', clock: 'real', perPull: 0.125, // (a doubling a pull: 1 rope, 2, 4 .. 256 strands at 8; lamian, hand-pulled noodles)
     heart: 0.75, width: [0.07, 0.13], over: 1, unit: 'doublings over 8 (strands = 2^pulls)',
     tells: [[0, 'One thick rope.'], [0.25, 'Four strands, thick as a finger.'], [0.5, 'Sixteen strands, round as chopsticks.'], [0.7, 'Sixty-four strands, thin as string.'], [0.9, 'Two hundred and fifty-six, thread-fine. It is near snapping.']],
+    moments: { hold: 'The strands hold. Fold again.', snap: 'A strand snapped. The dough needs more rest.' }, // (said as a pull lands or a strand breaks: Espada's, 2026-11-02)
     tradeoff: 'Finer noodles need more gluten: knead well first or they snap.', attr: 'dexterity',
   },
   boil: {
     label: 'BOIL', line: 'Boil in water salted like the sea. Bite one: take it out while a thin white thread is left at its heart.', stage: '3d',
     gesture: 'hold', clock: 'real', rate: 1 / 20, // (fresh pasta's 2 to 3 minutes and dried pasta's 9 to 12 as 20 real s; water at about 1% salt, 10 g a litre)
     heart: 0.78, width: [0.06, 0.12], over: 1, unit: 'doneness by the bite, 1 mush',
-    tells: [[0, 'Raw. It snaps.'], [0.45, 'It bends, chalky all through.'], [0.68, 'A thin white thread at its heart: l\'anima, the soul. Al dente.'], [0.88, 'Soft all through. Overcooked.'], [0.97, 'Mush.']],
+    tells: [[0, 'Raw. It snaps.'], [0.45, 'It bends, chalky all through.'], [0.68, 'Al dente. A thin white core at the bite.'], [0.88, 'Soft all the way through. Overcooked.'], [0.97, 'Mush.']],
     tradeoff: 'Al dente keeps its bite and its soul; a minute more and both are gone.', attr: 'focus',
   },
   sear: {
@@ -179,6 +180,10 @@ export function scoreOf(M, value, practice = 0) {
 }
 
 /** What the food shows at `value`: the tell's words (the last step it has passed). */
+/** A landed fish's freshness read on its flesh (the seafood family's add-in; Espada's lines, 2026-11-02): fresh while its catch is this
+ *  game day's, past after (the stage draws it, Calissa's). */
+export const FISH_TELLS = { fresh: 'Fresh. The flesh is clear and bright with its feeling.', past: 'Dull and milky. Past its best.' };
+
 export function tellAt(M, value) { let w = M.tells?.[0]?.[1] || ''; for (const [at, words] of M.tells || []) if (value >= at) w = words; return w; }
 
 /** Where the pull snaps for dough kneaded to `gluten` (the knead's value): short gluten snaps early, a dough at the windowpane (0.8) can

@@ -31,6 +31,7 @@ import { PAINT } from '../../progress/skiffpaint.js';
 import { isValidated, budgetOf, hauntOf, hashOf } from '../../progress/trackdef.js';
 import { TUNE, SETUPS, SLIDE, tuneMult } from '../../progress/skifftune.js';
 import { tuneSheet, runTrace } from '../../ui/garagesheet.js';
+import { setPicks } from '../../vfx/skiffsets.js';
 import { skiffPaintPreview } from '../../vfx/skiffpaintlook.js';
 import { WAGER } from '../../progress/econ/wager.js';
 import { ECON } from '../../progress/econ/table.js';
@@ -146,6 +147,10 @@ export class RaceBoard {
   paint(grp, row) {
     const g = this.game, S = g.skiffPaint; if (!S) return;
     const TITLE = { hull: 'THE HULL PAINTING · a firing\'s price each change', dye: 'THE SAIL\'S DYE · a firing\'s price each change', pattern: 'THE SAIL\'S PATTERN', cut: 'THE SAIL\'S CUT · a look only, its numbers the sail\'s', seal: 'YOUR SEAL', trail: 'THE TRAIL ON THE SAND', ribbon: 'THE TRAIL IN THE AIR', pennant: 'THE PENNANT\'S COLOUR', length: 'THE PENNANT\'S SHAPE', wrap: 'THE HULL WRAP · over your hull glaze' };
+    if (g.skiffSetCards) { // (the skiff sets first, one look across every slot worn whole: the cards are Calissa's, ui/skiffsetcards.js; words placeholders, Espada's)
+      const sets = grp('SKIFF SETS · one look across every slot, worn whole'); sets.style.display = 'block';
+      g.skiffSetCards(sets, { onWear: () => { this.unpreview(); this.open(); }, onHover: (id) => this.preview(setPicks(g, id)), onLeave: () => this.unpreview() });
+    }
     for (const kind of Object.keys(PAINT)) {
       const rows = grp(TITLE[kind]);
       for (const r of kind === 'dye' ? S.dyes() : PAINT[kind]) {
