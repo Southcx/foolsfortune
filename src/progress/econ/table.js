@@ -177,11 +177,18 @@ export const ECON = {
    *  cheap, Law buys it dear (the owner, 2026-10-04: "a toxic symbiotic relationship"), so the crude route runs Entropolis to Margarite.
    *  `maps` is the same for Cogitomaps (the owner, R57: the Purser buys them): Law wants its minds charted and pays for it, Chaos
    *  shrugs, and an island knows its own mind (a map of Anagami's Well is worth little on Anagami), so a good map is worth sailing to
-   *  Margarite: a good one nets about 15 cubes over selling it at home after the sloop's fuel, a middling one does not (R57). */
+   *  Margarite: a good one nets about 15 cubes over selling it at home after the sloop's fuel, a middling one does not (R57).
+   *  `wants` (G286, progress/econ/wants.js): the same centre, for what else an island wants: a material by its Soul Alchemy kind, a class of
+   *  Figment brought to its bounty board (the King's marque pays the class its island lacks), a Cogitomap of a particular Well (`well`, a Well
+   *  not listed falls to `maps`). Law wants finery, art and the small Figments; Chaos eldritch, arcane and the great ones; the middle island
+   *  the mechanisms and the middle classes (a half of what each wants is what it cannot make). */
   islands: {
-    margarite: { name: 'Margarite',       law: -2, deeper: 1.2,  floors: 5, risk: 0.02, foes: 0, crude: 0.8, maps: 0.95, field: 'margarite',  classes: [0, 1] },
-    anagami:   { name: 'Anagami Island',  law: 0,  deeper: 1.25, floors: 5, risk: 0.05, foes: 1, crude: 0.5, maps: 0.25, field: 'dunemaw', classes: [0, 1, 2] },
-    entra:     { name: 'Entropolis',      law: 2,  deeper: 1.3,  floors: 6, risk: 0.12, foes: 2, crude: 0.2, maps: 0.15, field: 'entra',   classes: [1, 2, 3] },
+    margarite: { name: 'Margarite',       law: -2, deeper: 1.2,  floors: 5, risk: 0.02, foes: 0, crude: 0.8, maps: 0.95, field: 'margarite',  classes: [0, 1],
+      wants: { material: { finery: 0.9, art: 0.85, provision: 0.6, arcane: 0.4, mechanism: 0.3, edge: 0.15, eldritch: 0.1 }, figment: { 0: 0.8, 1: 0.8, 2: 0.4, 3: 0.2, 4: 0.1 }, well: { dunemaw: 0.95 } } },
+    anagami:   { name: 'Anagami Island',  law: 0,  deeper: 1.25, floors: 5, risk: 0.05, foes: 1, crude: 0.5, maps: 0.25, field: 'dunemaw', classes: [0, 1, 2],
+      wants: { material: { mechanism: 0.85, provision: 0.8, art: 0.5, edge: 0.5, finery: 0.4, arcane: 0.3, eldritch: 0.25 }, figment: { 0: 0.4, 1: 0.6, 2: 0.8, 3: 0.5, 4: 0.3 }, well: { dunemaw: 0.25 } } },
+    entra:     { name: 'Entropolis',      law: 2,  deeper: 1.3,  floors: 6, risk: 0.12, foes: 2, crude: 0.2, maps: 0.15, field: 'entra',   classes: [1, 2, 3],
+      wants: { material: { eldritch: 0.9, arcane: 0.85, edge: 0.7, mechanism: 0.4, provision: 0.3, art: 0.2, finery: 0.1 }, figment: { 0: 0.2, 1: 0.3, 2: 0.7, 3: 0.9, 4: 0.9 }, well: { dunemaw: 0.55 } } },
   },
   /** A WELL DRAWN DOWN: working a feeling through. Each run draws `perRun` of its fill; its yield is the fill left (never under `floor`),
    *  and it refills `refillPerH` an hour of play while its mind keeps ruminating. A Well drawn dry is a mind that has healed. */

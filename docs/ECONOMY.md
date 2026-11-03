@@ -144,9 +144,38 @@ owner, 2026-10-11). It is graded by its **field**, as oil is Brent, in three gra
 - **A Well run** draws 12% of its fill and yields what is left, never under 15%. The fill comes back at 3% an hour of play while its
   mind ruminates.
 
-**Not yet re-simulated.** The runs above were simulated when crude had five grades by feeling. The fields' three grades have not been
-re-simulated since. G136 stays open for that measure. It is the next run of `scripts/economy.mjs`'s passage block once its rows read
-`fields`.
+**Re-simulated by field** (2026-11-03, `scripts/economy.mjs`'s crude and passage blocks, which read `ECON.crude.fields`). A crude run
+clean / one stage failed, cubes a run, and cubes an hour clean (a hop of 12 real min, times the ship's slowness):
+
+| ship, field | clean | a stage failed | an hour clean | x aim | spill on a failed stage |
+|---|---:|---:|---:|---:|---:|
+| sloop, Margarite | 1 | -5 | 6 | 0.01 | 16% |
+| sloop, Dunemaw | 13 | -12 | 81 | 0.17 | 34% |
+| sloop, Entropolis | 24 | -27 | 150 | 0.31 | 50% |
+| tanker, Margarite | 15 | -28 | 47 | 0.10 | 15% |
+| tanker, Dunemaw | 84 | -80 | 262 | 0.55 | 33% |
+| tanker, Entropolis | 152 | -188 | 475 | 0.99 | 48% |
+
+What changed from the five grades: the passage table above holds (its rows were the fields' already). The tanker's best Entropolis run
+alone is 0.99x, not 1.4x. **The toxic symbiosis** now pays -0.03x to 0.42x over a fortnight, not -0.73x to 1.09x (the Entropolis
+field's worth 1.25 against the old top grade's). Crude is a cargo now, never a living by itself: a trip pays through its rutter. That is
+the intent (the passage is the living; crude is its stake). Open, for South: if a tanker run should be a living alone, Entropolis
+crude's worth goes to about 1.6.
+
+**What goes in and what comes out** (South's ask, the crude picture):
+
+```
+                 IN (faucets)                                  OUT (drains)
+  a Well run ── draws 12% of its fill ──┐              ┌── fuel: 14 / 29 cubes a hop (econ/emocean.js)
+  a blot mopped (the Soul Brush) ───────┤              ├── a spill: a failed stage, by volatility x cargo
+  a gusher, a slick (in a fight) ───────┼──> CASKS ────┼── a cask drunk in a fight (the pool)
+                                        │  (the Pneuka  │
+                                        │   Box; a hold │
+                                        │   8 sloop,    └──> the Purser: worth x the island's demand (0.75..1.35)
+                                        │   60 tanker)          Margarite buys high, Entropolis low (the symbiosis)
+                                        │                     └──> refined at the Stillhouse: aqua regia, wonder Lachryma
+  the Well's fill comes back 3% an hour of play (dry to full in 33 hours)
+```
 
 **The islands on the Law-Chaos line** (`ECON.islands`; the owner: a stable mind is safer and less lucrative, a chaotic one riskier and
 richer). Well runs, x aim and share of runs lost, poor / middling / masterful:
@@ -200,6 +229,10 @@ each with a hue, a saturation and a path at the spirit press (DESIGN.md section 
 - **Salvage**: a wreck's crates once (1 to 4 minutes of play each by tier), then one a game day: the charted sea's small renewable faucet.
 - **The forge** (`opensea/forge.js`): a drain the sea's hunters choose: 120 cubes a class 2 beast's part, 240 the kraken's, 480 the
   legend's (960 for all five), against 30 to 60 cubes a class 2 kill: the beasts' faucet is paid back into the ship that hunts them.
+- **Fragments** (`opensea/fragments.js`, 2026-11-03): a crate's fragment takes the place of its cubes as a whole part did (3 pieces at x3 the chance: the same parts in expectation); the quay's making is a drain of 40 cubes (5 minutes of play).
+- **Capture** (`opensea/capture.js`): a beast taken alive pays 1.6x its minutes at the aim (a class 2 hunter 64 cubes) against a kill's 30 to 50: 1.28x the whole-hull kill for the harder way (worn under 30%, stunned, a 0.7x tow a hull hit parts); a statue pays no cubes; one beast a lair a game day either way, so the beasts' faucet is no wider.
+- **The wind's song** (`opensea/windsong.js`): worth at most 6.7 cubes of fuel an hour (a wholly fair hour), paid in 40% of the pool: no faucet.
+- **What each island wants beyond crude** (`econ/wants.js`, `ECON.islands[].wants`): materials by kind, a class of Figment, a Well's map, in the same band (0.75 to 1.35) and wave as every demand. Read against the band's middle, a bounty or a map pays 0.71 to 1.29 of its base: a better place to stand, no new faucet. Simulated (the economy's "THE OPEN SEA'S FOLDS"): the best day-0 cargo of 20 tier-2 materials nets 71 cubes after the sloop's fuel (0.15x an hour's aim), well under the crude run. The shop reads it for a material whose kind it knows (`demandKey(id, data)`); the bounty board and the Purser's Well-map price ask `bountyAt` and `mapAt` when those pages are built. (The decor sink printed by the script now leaves out the keepsakes, which are never sold: 2536 cubes, not 2656.)
 - **A square completed** (`opensea/squares.js`): 1 to 3 minutes of play once a square by its class, about 800 cubes over the whole
   sea: bounded, paid for going back at the hour a phenomenon wants.
 

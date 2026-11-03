@@ -48,6 +48,7 @@ export default {
     const K = new SpikeBatch(), kills = (st.kills = []);
     for (const [a, b, y] of [[9, 10.5, 0], [14, 15.6, 0], [62, 63.5, 0], [68, 70.2, -2.5], [100, 101.6, 0]]) kills.push(K.row(X(a), X(b), Y(y), 1, z));
     K.build(S);
+    for (const r of kills) well.verbs.surface({ x0: r.x0, x1: r.x1, y1: r.y1 }, 'spike'); // (a downward blow over spikes is a pogo: verbs.js)
     sign(S, 'THE PIT', 4, 4.4, 'a death costs 0.4 s; Shift runs');
     // saws on a beat
     st.saws = SAWS.map((s) => ({ ...saw(S, s.r, z), path: s.at }));

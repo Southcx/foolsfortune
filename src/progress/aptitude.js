@@ -57,6 +57,11 @@ export const APTITUDES = {
   // held when it was let go. A volley of fewer than 2 is no sample (one lock is aiming, not tracking). GAPS.md G14
   tracking: { label: 'Tracking', unit: 'targets held', better: 'high', event: 'rail.volley',
     value: (e) => (e.by === 'courier' && e.locks >= 2 ? e.locks : null), line: 'How many moving things your eye can keep at once.' },
+  // a mind rewritten (reprogramming's macro run on a stunned creature): the macro's quality, how near its words come to the change it asks
+  // (macro.js q, 0..1), planning made a reading (the Tower of London's and the Zoo Map's: a sequence composed toward a goal). A refused
+  // macro still counts: the plan was made. GAPS.md G14
+  planning: { label: 'Planning', unit: '% of the ideal macro', better: 'high', event: 'reprogram.run',
+    value: (e) => (e.q != null ? pct(e.q) : null), line: 'How well you compose a change before you make it.' },
   // the Lockheart opened: how far past its measure the coffin was held (0 at the measure, 100 at twice: the most it holds). A fuller
   // coffin lands harder and recoils harder (outcomes.js: the nuke's recoil by power), so holding on is a pump of BART's balloon. Not
   // better or worse: `style` says the trend's two ways instead of better and worse, and no best is said.

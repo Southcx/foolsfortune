@@ -32,6 +32,7 @@ export const MODES = {
   escape:   { label: 'Escape',    line: 'The antlion wakes in the crater. Climb out before it reaches you.', laps: 1, ruleset: 'escape', record: true },
   licence:  { label: 'Licence',   line: 'A test on a stretch of track, under a rule.', laps: 1, ruleset: 'licence', record: true },
   validate: { label: 'Validate', line: 'Your track ridden to the line once, alone: your time is its author time.', laps: 1, record: false, validate: true },
+  endless:  { label: 'Endless', line: 'One lap alone of each track on your shelf in turn, against its pace: three lives, one skip (G307).', laps: 1, flying: true, record: false, endless: true },
   haunted:  { label: 'Haunted race', line: 'Three laps against the rivals, the siblings possessing the traps against you.', laps: 3, rivals: true, medals: true, record: true, haunted: true },
   daily:    { label: "The game day's race", line: 'Three laps against the rivals under the game day\'s condition, whatever the sky. A new one each game day.', laps: 3, rivals: true, medals: true, flyover: true, record: true, daily: true },
   trim:     { label: 'Test lap',  line: 'One lap alone against your last test lap: the splits show what the tune changed.', laps: 1, flying: true, record: false, trim: true },

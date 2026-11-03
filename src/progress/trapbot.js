@@ -10,6 +10,8 @@
 //
 //   HAUNTERS [{ name, skill, eager }]   leadOf(kind) -> real seconds from firing to the trap's middle moment
 //   wantsFire({ kind, gapM, speed, ready, inGrace, haunter, rand }) -> bool
+//   secondsToFire({ kind, gapM, speed, ready, inGrace, extra }) -> real seconds until a perfect haunter would fire, or null (what Read
+//   shows a beat early: the same sum as wantsFire, without its roll; G308)   READ (the rider's Read: how early, how far)
 // ---------------------------------------------------------------------------------------
 import { TRAPS } from './traps.js';
 
@@ -25,14 +27,24 @@ export const HAUNTERS = [
  *  added by the caller, from the range). */
 export function leadOf(kind) {
   const K = TRAPS[kind], C = K.cycle;
-  return C.tell + (kind === 'pendulum' ? C.period / 4 : C.active / 2);
+  return C.tell + (kind === 'pendulum' ? C.period / 4 : C.active * (K.meet ?? 0.5));
+}
+/** The rider's Read (Divination, TRACK-EDITOR.md 6): a possessed trap's next fire is shown `early` real seconds before it goes, as the
+ *  possessor's aim drawn on the sand, to a rider within `range` metres. */
+export const READ = { early: 0.8, range: 120 };
+/** Real seconds until a perfect haunter fires this trap at a rider `gapM` metres before it at `speed` m/s (negative: it is past its moment),
+ *  or null if it could not fire (not ready, within a gate's grace, the rider past it or too slow). A trap that lands `ahead` metres past
+ *  itself (the pot) is timed to the rider's arrival there. */
+export function secondsToFire({ kind, gapM, speed, ready, inGrace, extra = 0 }) {
+  if (!ready || inGrace || gapM <= 0 || speed < 2) return null;
+  return gapM / speed - (leadOf(kind) + extra - (TRAPS[kind].ahead || 0) / speed);
 }
 
 /** Whether the haunter fires now: the rider `gapM` metres before the trap at `speed` m/s arrives when the trap is at its worst, within
  *  the haunter's error (a worse haunter fires up to 0.6 real s early or late). One roll a decision, from the caller's seeded `rand`. */
 export function wantsFire({ kind, gapM, speed, ready, inGrace, haunter, rand, extra = 0 }) {
   if (!ready || inGrace || gapM <= 0 || speed < 2) return false;
-  const eta = gapM / speed, want = leadOf(kind) + extra, slop = (1 - haunter.skill) * 0.6;
+  const eta = gapM / speed, want = leadOf(kind) + extra - (TRAPS[kind].ahead || 0) / speed, slop = (1 - haunter.skill) * 0.6;
   if (Math.abs(eta - want) > 0.05 + slop * Math.abs(rand() * 2 - 1)) return false;
   return rand() < haunter.eager;
 }

@@ -114,7 +114,8 @@ export function buildClimb(well, S) {
     out.beams.push(g.rigging.addBeam(level, [X(26), Y(0), z], [X(34), Y(0), z], { width: 0.32 })); sign(S, 'BALANCE BEAM', 30, 3.6);
     // a pole up to a ledge, then a hanging rope up to the last
     out.poles.push(g.rigging.addPole({ x: X(37), z, y0: Y(0), y1: Y(6.6) })); S.box(38.4, 42, FLOOR, 6, COLOR.boards); sign(S, 'POLE', 36.5, 8.4, 'walk into it, W climbs');
-    out.poles.push(g.rigging.addPole({ x: X(45), z, y0: Y(1.2), y1: Y(8.7), rope: true })); sign(S, 'ROPE', 44, 10.4, 'jump to it, W climbs');
+    out.poles.push(g.rigging.addPole({ x: X(45), z, y0: Y(1.2), y1: Y(8.7), rope: true })); sign(S, 'ROPE', 44, 10.4, 'jump to it, W climbs; A and D pump it, Space at the top of a swing launches');
+    { const { collider } = S.box(51, 55, 11, 11.4, COLOR.thin, { d: DEPTH - 0.6 }); well.mech.thin(collider, X(51), X(55), Y(11.4)); } sign(S, 'LAUNCH', 53, 13, 'a rope swing carries you here'); // (the rope's swing launch: verbs.js)
   }
   S.box(45.6, 56, FLOOR, 7.6, COLOR.boards);
   goalFlag(S, 52, 7.6);

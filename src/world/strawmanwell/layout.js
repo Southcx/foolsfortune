@@ -22,10 +22,10 @@ export const ZONE = { x0: AT.x - 50, x1: AT.x + 300, z0: AT.z - 19 * LANE - 30, 
 const ROWS = [
   ['wings', 0, 97, [2.2, 5], 4], // (97: room for the flat stage's door at 92.5)
   ['run', 1, 112, [2.2, 9], 2],
-  ['climb', 2, 56, [2.2, 10], 2],
+  ['climb', 2, 56, [2.2, 12], 2],
   ['stomp', 3, 44, [2.2, 6], 2],
   ['brawl', 4, 58, [3, 7], 18],
-  ['machine', 5, 66, [2.2, 7], 2],
+  ['machine', 5, 128, [2.2, 11], 2], // (128: the pulley and the on/off blocks past the cannon)
   ['flood', 6, 52, [1.5, 9], 2],
   // waves 2 to 4 (each built in its own module, world/strawmanwell/stages/<id>.js, registered in stagemods.js): lengths first cuts
   ['arsenal', 7, 90, [-3.5, 9], 2], // (its last beat is dug down to a passage 5 m under the boards)

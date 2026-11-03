@@ -30,9 +30,16 @@ export const FAMILIES = {
   sheets:  { label: 'SHEETS', moves: ['knead', 'laminate', 'roll', 'boil'], base: ['flour', 'egg', 'salt'], stage: '3d', fish: true, noun: 'LASAGNE', line: 'Folded and rolled until it is satin, then boiled.' },
   noodles: { label: 'NOODLES', moves: ['knead', 'pull', 'boil'], base: ['flour', 'water', 'salt', 'kansui'], stage: '3d', fish: true, noun: 'NOODLES', line: 'Hand-pulled: kneaded, doubled and doubled again, boiled.' },
   seafood: { label: 'SEAFOOD', moves: ['bleed', 'sear'], base: ['salt', 'oil'], stage: '3d', fish: true, needsFish: true, noun: '', line: 'A fish you landed from the Lachryma, bled calm and seared skin down.' },
-  rice:  { label: 'RICE', moves: ['rice', 'simmer'], base: ['rice', 'water'], built: false },
-  broth: { label: 'BROTH', moves: ['simmer', 'steep'], base: ['water', 'kombu'], built: false },
-  tea:   { label: 'TEA', moves: ['steep'], base: ['water'], built: false },
+  // the hearth window's other families (G222 to G225, 2026-11-03), played by progress/cooking/plays.js. Labels and nouns plain, Espada's to name.
+  rice:  { label: 'RICE', moves: ['rice', 'simmer'], base: ['rice', 'water'], built: true, noun: 'RICE', line: 'Rice rinsed clear and simmered in a donabe, the water to the line.' },
+  broth: { label: 'BROTH', moves: ['simmer', 'steep'], base: ['water', 'kombu'], built: true, fish: true, noun: 'BROTH', line: 'Kombu simmered, never boiled, then steeped: add a fish for katsuobushi\'s inosinate and the umami doubles.' },
+  tea:   { label: 'TEA', moves: ['steep'], base: ['water', 'tealeaf'], built: true, noun: 'TEA', line: 'Water brought to the leaf\'s heat by its bubbles, and poured.' },
+  sear:  { label: 'SEAR', moves: ['cut', 'sear'], base: ['salt', 'oil'], built: true, fish: true, noun: 'SEAR', line: 'Cut even, salted and seared in a hot pan until it lets go by itself.' },
+  sauce: { label: 'SAUCE', moves: ['roux', 'simmer'], base: ['flour', 'oil', 'salt'], built: true, noun: 'SAUCE', line: 'A roux to the colour, whisked into a liquid and simmered.' },
+  emulsion: { label: 'EMULSION', moves: ['emulsion', 'simmer'], base: ['egg', 'oil', 'salt'], built: true, noun: 'EMULSION', line: 'Oil whisked into yolk in a thread, held warm, never boiled.' },
+  sweet: { label: 'SWEET', moves: ['sugar'], base: ['water', 'sugar'], built: true, noun: 'CANDY', line: 'Syrup taken off at the stage it is asked: thread, ball or crack.' },
+  ferment: { label: 'FERMENT', moves: ['ferment'], base: ['rice', 'salt'], built: true, noun: 'KOJI', line: 'Koji on warm rice, left on the game clock and tended; take it out before it spores.' },
+  smoke: { label: 'SMOKE', moves: ['smoke'], base: ['salt'], built: true, fish: true, noun: 'SMOKED', line: 'Kept in thin blue smoke over a low fed fire.' },
 };
 
 /** A dish is its family with one add-in (or none): the pot recognises it and keeps its recipe (names placeholders for Espada's). */

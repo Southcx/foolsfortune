@@ -38,4 +38,9 @@ export function countAchievements({ C, F }) {
   C('ld4', 'brush', 'The Slide', 3, 'endure', 'Slick Run', 'Slide 500 m on the brush.', 'brush.slide.dist', 500);
   // the passage's worst day
   C('ps1', 'emocean', 'Sailing', 2, 'mechanic', 'Adrift', 'Run out of fuel at sea and live to tell it.', 'passage.adrift', 1);
+  // storms and the day's best (G180; words placeholders, Espada's): a storm's waypoint sailed into, the game day's best trip set (voyage.js)
+  C('ps2', 'emocean', 'Sailing', 2, 'mechanic', 'Into the Squall', 'Sail into a storm on a crossing.', 'passage.storm', 1);
+  C('ps3', 'emocean', 'Sailing', 4, 'endure', 'Stormchaser', 'Sail into 10 storms.', 'passage.storm', 10);
+  C('ps4', 'emocean', 'Sailing', 2, 'mechanic', 'Best of the Day', 'Set the game day\'s best score on a route.', 'passage.best', 1);
+  C('ps5', 'emocean', 'Sailing', 3, 'count', 'Seven Bests', 'Set the game day\'s best on a route 7 times.', 'passage.best', 7);
 }

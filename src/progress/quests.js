@@ -19,10 +19,12 @@
 //   events: quest.start { id, quest }   quest.step { id, quest, n, say, did, next }   quest.done { id, quest, points }   quests.ask { quests }
 // ---------------------------------------------------------------------------------------
 import { STAGES } from './strawmanwell.js';
+import { TALES } from './opensea/tales.js';
 
 const WAVE1 = STAGES.filter((s) => s.wave === 1);
 const cleared = (L) => WAVE1.filter((s) => L.get(`well.stage.clear.${s.id}`) >= 1).length;
 
+// (the open sea's tall tales are quests too: progress/opensea/tales.js, OPEN-SEA.md 15.6; they take the journal, the splash and the recap as they are)
 export const QUESTS = [
   {
     id: 'understudy', name: 'The Understudy', who: 'Strawman', points: 1,
@@ -36,6 +38,7 @@ export const QUESTS = [
       { say: 'Get an A or better on any 3 stages, then take a bow.', did: 'Curtain call! For once, Strawman got to play the lead.', done: (L) => WAVE1.filter((s) => (L.best(`well.stage.stars.${s.id}`) || 0) >= 2).length >= 3 },
     ],
   },
+  ...TALES,
 ];
 export const questOf = (id) => QUESTS.find((q) => q.id === id) || null;
 

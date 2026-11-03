@@ -584,8 +584,9 @@ Seasoning is said at 25, 50, 75 (`alchemy.season`) and 100 (`alchemy.seasoned`),
   wheel. (The economy: materials have a press value, not only a cube value: ECONOMY.md gets the line.)
 - **The garden:** the Athanor's layout sets the press's kindness (3.5); the ranks open the Firings, the Firings open the garden.
 - **Lachryma and mood:** the draught tints the bath (3.4); the mental state's keeper is now built (`courier/mind.js`).
-- **The spirits:** a spirit of a feeling at work on the Athanor gives that feeling's materials one extra step (`workBonus`, as the
-  beds and slots).
+- **The spirits:** a spirit of a feeling at work on the Athanor gives that feeling's materials one extra step (built 2026-11-03,
+  `progress/spiritwork.js`: a spirit whose entry's `work` is `press`, bond 30 or more; the press and its preview ask it, `SoulAlchemy.walk`;
+  the hook that sets `work` is Petra's).
 - **The look:** the soul glow (the vessel lit in the soul colour) shows where you stand on the wheel to anyone who sees you; a
   glaze matched to your soul colour is said by the folk (Espada).
 - **Achievements and Arts:** true firings, a rank in all seven, the first Firing each opens (section 3 of TRAINING.md).

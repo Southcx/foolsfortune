@@ -20,6 +20,13 @@ export function strawmanWellRules({ on, L, log }) {
   on('well.dummy.ko', (e) => { if (e.by !== 'courier') return; L.inc('well.dummy.ko'); if (e.kind && e.kind !== 'dummy') L.inc(`well.target.ko.${e.kind}`); }); // (a training target counts as a dummy, and by its kind)
   on('well.dummy.trophy', (e) => { if (e.by !== 'courier') return; L.inc('well.dummy.trophy'); say('gain', 'Trophy! Straw dummy launched at 100%.', 'well.trophy'); });
   on('well.pit.death', (e) => { if (e.by === 'courier') L.inc('well.pit.death'); });
+  on('well.pogo', (e) => { if (e.by === 'courier') L.inc('well.pogo'); }); // (a downward blow bounced off a foe or spikes: world/strawmanwell/verbs.js)
+  on('well.throw', (e) => { if (e.by === 'courier') L.inc('well.throw'); }); // (a dummy grabbed and thrown or slammed: dummygrab.js)
+  on('well.turret.stun', (e) => { if (e.by === 'courier') { L.inc('well.turret.stun'); say('battle', 'The turret took its own flame back.', 'well.turret', 1); } });
+  on('well.guide', (e) => { // (Strawman's ghost: guide.js; only a rival's finish is a result)
+    if (e.kind !== 'rival' || e.beat == null || e.by !== 'courier') return;
+    if (e.beat) { L.inc('well.rival.beat'); say('gain', 'You beat the rival to the flag.', 'well.rival', 0.5); } else say('info', 'The rival got there first.', 'well.rival', 0.5);
+  });
   on('well.flood.fill', (e) => { if (e.by === 'courier') L.hi('well.flood.best', e.cells || 0); });
   on('well.fighter.ko', (e) => { if (e.by !== 'courier') return; L.inc('well.fighter.ko'); if (e.stage) L.inc(`well.fighter.ko.${e.stage}`); say('gain', `KO! At ${Math.round(e.percent || 0)}%.`, 'well.fighter.ko', 0.3); });
   on('well.fighter.stock', (e) => {

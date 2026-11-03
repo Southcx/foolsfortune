@@ -12,6 +12,11 @@ import { QUERENT } from '../src/progress/casino/querent/rules.js';
 import { querentBot } from '../src/progress/casino/querent/bots.js';
 import { SUPERNOVA, supernovaBot } from '../src/progress/casino/supernova.js';
 import { NEBULA, nebulaBot } from '../src/progress/casino/nebula.js';
+import { CHARITY, charityBot, CHARITY_RULES } from '../src/progress/casino/charity.js';
+import { ENTROPY } from '../src/progress/casino/entropy/rules.js';
+import { entropyBot, randomEntropyBot } from '../src/progress/casino/entropy/bot.js';
+import { CLASS_IDS } from '../src/progress/casino/entropy/classes.js';
+import { FOLK, styleOf } from '../src/progress/casino/folk.js';
 
 const args = process.argv.slice(2), opt = (k, d) => { const i = args.indexOf(`--${k}`); return i >= 0 ? args[i + 1] : d; };
 const which = opt('game', 'all'), seed0 = +opt('seed', 1), pct = (a, b) => `${((100 * a) / Math.max(1, b)).toFixed(1)}%`;
@@ -76,9 +81,54 @@ function nebulaTells(n = 2000) {
     console.log(`  NEBULA reading tells ${read} vs 0.5: wins ${pct(won, n)}`);
   }
 }
+/** Charity Gamble: seat win rates and the purse's return by table size, with every seat the same bot; then each person's style against an even table. */
+function charity(n = 3000, seats = 4) {
+  const w = Array(seats).fill(0), ret = Array(seats).fill(0); let charityKept = 0, lies = 0, rounds = 0, carry = 0;
+  const bots = [...Array(seats)].map(() => (V, P, r) => charityBot(V, P, r, {}));
+  for (let s = seed0; s < seed0 + n; s++) {
+    const { result } = play(CHARITY, { seats, bots, seed: s, opts: { first: s % seats } });
+    w[result.winner]++; result.chips.forEach((c, i) => (ret[i] += c / CHARITY_RULES.chips)); charityKept += result.charity; lies += result.lies.reduce((a, b) => a + b, 0); rounds += result.rounds; carry += result.jar;
+  }
+  console.log(`CHARITY ${seats}p x${n} (same bot): seat wins ${w.map((x) => pct(x, n)).join(' ')}; purse returned ${ret.map((v) => (v / n).toFixed(3)).join(' ')} (the house's edge is charity's tenth: ${(charityKept / n / seats / CHARITY_RULES.chips).toFixed(3)} of a purse); lies ${pct(lies, rounds * seats)} of claims; jar left at the end ${(carry / n).toFixed(1)}`);
+}
+function charityFolk(n = 3000) {
+  const names = ['Raku', 'Petra', 'Calissa', 'Espada', 'Dovina', 'Wanda'], seats = names.length, w = Array(seats).fill(0), ret = Array(seats).fill(0);
+  const bots = names.map((nm) => (V, P, r) => charityBot(V, P, r, styleOf(nm, 'charity')));
+  for (let s = seed0; s < seed0 + n; s++) { const { result } = play(CHARITY, { seats, bots, seed: s, opts: { first: s % seats } }); w[result.winner]++; result.chips.forEach((c, i) => (ret[i] += c / CHARITY_RULES.chips)); }
+  console.log(`  CHARITY the folk (${names.join(', ')}): wins ${w.map((x) => pct(x, n)).join(' ')}; purse returned ${ret.map((v) => (v / n).toFixed(2)).join(' ')}`);
+}
+/** Entropy Tactics (two seats only). The search bot against the random floor, then every class against every other with the search bot on
+ *  both sides (a row's win rate against a column, the first seat alternating), then how a game ends and how long it runs. */
+function entropy(n = 200, iters = 40) {
+  const think = (it) => (V, P, r) => entropyBot(V, P, r, { iters: it });
+  let w = 0, rounds = 0; const how = {};
+  for (let s = seed0; s < seed0 + n; s++) { const { result } = play(ENTROPY, { seats: 2, bots: [think(iters), randomEntropyBot], seed: s, opts: { first: s % 2 } }); if (result.winner === 0) w++; }
+  console.log(`ENTROPY search (${iters} iterations) vs random x${n}: search wins ${pct(w, n)}`);
+  const m = {}; let first = 0, games = 0;
+  for (const a of CLASS_IDS) for (const b of CLASS_IDS) {
+    let won = 0;
+    for (let s = seed0; s < seed0 + n; s++) {
+      const f = s % 2, { result } = play(ENTROPY, { seats: 2, bots: [think(iters), think(iters)], seed: s, opts: { first: f, classes: [a, b] } });
+      if (result.winner === 0) won++; if (result.winner === f) first++; games++; rounds += result.rounds; how[result.how] = (how[result.how] || 0) + 1;
+    }
+    (m[a] ||= {})[b] = won / n;
+  }
+  console.log(`  ENTROPY classes, row against column (search ${iters} both sides, x${n} each): ${CLASS_IDS.join(' ')}`);
+  for (const a of CLASS_IDS) console.log(`    ${a.padEnd(8)} ${CLASS_IDS.map((b) => (100 * m[a][b]).toFixed(0).padStart(4)).join('')}   mean ${(100 * CLASS_IDS.reduce((x, b) => x + m[a][b], 0) / CLASS_IDS.length).toFixed(1)}%`);
+  console.log(`  ENTROPY the first seat wins ${pct(first, games)}; rounds a game ${(rounds / games).toFixed(1)}; ends by ${JSON.stringify(how)}`);
+}
+function entropyStyles(n = 200) {
+  for (const [name, st] of [['Espada 90', { iters: 90, greed: 0.5 }], ['Petra 80', { iters: 80, greed: 0.3 }], ['Crock 20', { iters: 20, greed: 0.9 }]]) {
+    let won = 0;
+    for (let s = seed0; s < seed0 + n; s++) { const { result } = play(ENTROPY, { seats: 2, bots: [(V, P, r) => entropyBot(V, P, r, st), (V, P, r) => entropyBot(V, P, r, { iters: 40, greed: 0.5 })], seed: s, opts: { first: s % 2 } }); if (result.winner === 0) won++; }
+    console.log(`  ENTROPY ${name} thinking vs 40: wins ${pct(won, n)}`);
+  }
+}
 const N = opt('n', null), K = opt('seats', null);
 if (which === 'all' || which === 'zodiac') for (const k of K ? [+K] : [2, 3, 4]) zodiac(N ? +N : 2000, k);
 if (which === 'all' || which === 'eventhorizon') for (const k of K ? [+K] : [1, 2, 4]) horizon(N ? +N : 20000, k);
 if (which === 'all' || which === 'querent') for (const k of K ? [+K] : [2, 3, 4]) querent(N ? +N : 300, k);
 if (which === 'all' || which === 'supernova') { for (const k of K ? [+K] : [2, 3, 4]) supernova(N ? +N : 4000, k); supernovaStyles(N ? +N : 4000); }
 if (which === 'all' || which === 'nebula') { for (const k of K ? [+K] : [2, 3, 4]) nebula(N ? +N : 2000, k); nebulaTells(N ? +N : 2000); }
+if (which === 'all' || which === 'charity') { for (const k of K ? [+K] : [4, 5, 6]) charity(N ? +N : 3000, k); charityFolk(N ? +N : 3000); }
+if (which === 'all' || which === 'entropy') { entropy(N ? +N : 100, 40); entropyStyles(N ? +N : 100); }

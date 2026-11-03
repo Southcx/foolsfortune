@@ -28,10 +28,12 @@ import { querentCoach } from './querent.js';
 import { zodiacCoach, horizonCoach } from './dice.js';
 import { supernovaCoach } from './supernova.js';
 import { nebulaCoach } from './nebula.js';
+import { charityCoach } from './charity.js';
+import { entropyCoach } from './entropy.js';
 import { ceremonyOf } from './ceremony.js';
 export { ceremonyOf, SCALE } from './ceremony.js';
 
-const COACHES = { querent: querentCoach, zodiac: zodiacCoach, eventhorizon: horizonCoach, supernova: supernovaCoach, nebula: nebulaCoach };
+const COACHES = { querent: querentCoach, zodiac: zodiacCoach, eventhorizon: horizonCoach, supernova: supernovaCoach, nebula: nebulaCoach, charity: charityCoach, entropy: entropyCoach };
 
 /** The house bot's choice for a seat's pending decision (a hint: the same bot the folk play with, at a middling style). */
 export function hint(T, S, seat = 0) {

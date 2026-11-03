@@ -563,3 +563,17 @@ mk30 Glassed.
   stride's beat (`beatOf` on the frame's pendulum, which keeps swinging while it glides) is a stroke on the beat: sync +`SYNC.skate` 0.03,
   three quarters of a step's 0.04. A quick boost off the beat costs nothing (unlike a step fought against the swing), and the glide between
   strokes only settles. The pilot passes `stroke: true` to `syncStep` (Petra's call site). Sync stays rhythm, never button rate.
+
+### The adobe city (2026-11-03; South: "Those buildings are still very placeholder")
+- **The lots are Calissa's.** 101 lots of 23 adobe kinds (9 large, 32 medium, 60 small; `progress/mechs/adobe/`) replace the first 19 lots.
+  The first kinds (house .. stall) stay as BUILDINGS rows for the simulator and a lot laid by hand. Every lot stands whole at build:
+  82 132 cells, 0 chunks, built in 39 ms in node.
+- **The blueprints are rules, so they moved under `progress/`.** They carve, burn and collapse. Calissa's dress reads their roles and props.
+- **`MAT.adobe`**: hp 1.0, density 1.4, span 2. Softer than fired brick (1.2), so a fist takes a room a blow sooner. Heavier (1.2), so a
+  chunk lands harder. Calissa's guess, ruled. The glazed tiles and gilded accents stay brick.
+- **Earth does not burn.** Adobe scorches as brick and stone do, and fire takes only the vigas, awnings, thatch and goods: 20 to 55% of the
+  market stall, the granary and the casa, under 5% of the mud-and-cedar kinds. So *burned down* is `BURNT` (fire.js): a building whose fire
+  took 15% of what it was built with, felled by anything within a real minute of the fire's last cell. It keeps mk27 (Burnt Down) earnable.
+- **A large adobe leaves a viga** on its street side when felled (the girder prop), as a steel frame leaves a girder. The adobe city has no
+  steel, so the curtain of glass and soft steel have no building to happen in until a steel kind is laid again.
+

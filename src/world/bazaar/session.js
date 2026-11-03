@@ -22,6 +22,10 @@ import { querentBot } from '../../progress/casino/querent/bots.js';
 import { ARCANA } from '../../progress/casino/querent/arcana.js';
 import { SUPERNOVA, supernovaBot } from '../../progress/casino/supernova.js';
 import { NEBULA, nebulaBot } from '../../progress/casino/nebula.js';
+import { CHARITY, charityBot } from '../../progress/casino/charity.js';
+import { ENTROPY } from '../../progress/casino/entropy/rules.js';
+import { entropyBot } from '../../progress/casino/entropy/bot.js';
+import { seatOf } from '../../progress/casino/folk.js';
 import { renderTable, renderLobby, renderHowto } from './views.js';
 import { coach } from '../../progress/casino/coach/index.js';
 import { HOWTO, howtoSeen } from '../../progress/casino/howto.js';
@@ -43,6 +47,11 @@ export const TABLES = [
     at: { x: -26, z: 28 }, r: 2.4, stake: 20, rake: 0.1, settle: 'pot', opts: (first) => ({ first }), label: 'Supernova Run', line: 'Roll your dice for points; a maximum makes another die. Fuse a d20: a natural 20 doubles your points and resets every hand. 500 wins.' },
   { id: 'nebula', game: NEBULA, seats: 3, names: ['you', 'Raku', 'Celadon'], bots: [null, [nebulaBot, NEBULA_STYLES[1]], [nebulaBot, NEBULA_STYLES[2]]],
     at: { x: 26, z: 28 }, r: 2.4, stake: 60, settle: 'purse', opts: (first, T) => ({ chips: T.stake, first, styles: NEBULA_STYLES }), label: 'Nebula Bluff', line: 'Claim what your hidden dice are worth; raise, call a bluff, or fold. Watch the folk for tells. The last with dice wins.' },
+  // the siblings take seats (GAPS G31; progress/casino/folk.js: each a style): Charity Gamble's five, and Entropy Tactics' duel against Dovina
+  { id: 'charity', game: CHARITY, seats: 5, names: ['you', 'Raku', 'Petra', 'Calissa', 'Espada'], bots: [null, seatOf('Raku', 'charity', charityBot), seatOf('Petra', 'charity', charityBot), seatOf('Calissa', 'charity', charityBot), seatOf('Espada', 'charity', charityBot)],
+    at: { x: -44, z: -8 }, r: 2.6, stake: 40, settle: 'purse', opts: (first, T) => ({ chips: T.stake, first }), label: 'Charity Gamble', line: 'Drop 1, 5 or 10 in the jar in secret, say what you dropped (lie if you like), and bet over or under the line. Right bets share the jar.' },
+  { id: 'entropy', game: ENTROPY, seats: 2, names: ['you', 'Dovina'], bots: [null, seatOf('Dovina', 'entropy', entropyBot)],
+    at: { x: 44, z: -8 }, r: 2.4, stake: 25, rake: 0.1, settle: 'pot', opts: (first) => ({ first, classes: ['fool', 'chariot'] }), label: 'Entropy Tactics', line: 'Two Major Arcana and a Grand Bomb on a 7 x 7 board: turn poker hands into tokens and spells, then push the bomb onto their ground. You are the Fool.' },
 ];
 /** Real seconds between a bot's moves (so its turn can be followed), by the table speed you choose (the bazaar's `prefs.speed`). */
 export const SPEEDS = [{ id: 'normal', label: 'Normal', beat: 0.6 }, { id: 'fast', label: 'Fast', beat: 0.25 }, { id: 'fastest', label: 'Fastest', beat: 0.08 }];
@@ -104,6 +113,12 @@ export class TableSession {
       else if (x.nova != null) e('nova', { who: who(x.nova), points: x.points });
       else if (x.fuse && x.into === 20) e('fuse20', { who: who(x.seat) });
       else if (x.callout != null) e('callout', { who: who(x.seat), on: who(x.callout), bluff: x.bluff, worth: x.worth, claim: x.claim });
+      else if (x.deposits) { e('deposits', { total: x.total, line: x.line, winners: x.winners.map(who), share: x.share }); for (const d of x.deposits) if (d.said !== d.deposit) e('liar', { who: who(d.seat), said: d.said, dropped: d.deposit }); }
+      else if (x.summon != null) e('summon', { who: who(x.summon), kind: x.kind });
+      else if (x.cast != null) e('spell', { who: who(x.cast), n: x.n, dmg: x.dmg, arcana: x.arcana });
+      else if (x.push != null) e('push', { who: who(x.push), tiles: x.tiles, atk: x.atk, def: x.def });
+      else if (x.count != null) e('countdown', { who: who(x.count), counter: x.counter });
+      else if (x.boom != null) e('boom', { zone: x.boom < 0 ? null : who(x.boom) });
       else if (x.reveal) e('reveal', { shown: x.reveal.map((y) => `${who(y.seat)} ${y.worth}`) });
     }
   }

@@ -47,6 +47,6 @@ export function constitutionOf(kind, c = null) {
   if (c?.aberrant) return { ...CONSTITUTION.aberrant, body: row?.body ?? 0.5 };
   return row;
 }
-export const affinityOf = (c) => constitutionOf(c?.kind, c)?.affinity ?? null;
+export const affinityOf = (c) => c?.affinityOver ?? constitutionOf(c?.kind, c)?.affinity ?? null; // (`affinityOver`: a test rig's setting on Strawman, world/throwingroom/strawmanrig.js)
 /** The type that bites a creature hardest (the one that trumps its affinity). */
 export const typeWeaknessOf = (c) => { const a = affinityOf(c); return a ? Object.keys(TRUMPS).find((t) => TRUMPS[t] === a) : null; };

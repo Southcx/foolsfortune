@@ -28,5 +28,8 @@ export function passageRules({ on, L, log }) {
   on('charybdis.dive', () => log.say('combat', 'Charybdis dives.')); // (Espada's, LORE.md: its first dive only)
   on('charybdis.felled', (e) => { log.say('combat', 'Charybdis defeated. The maelstrom calms.'); if (e.shards) log.say('gain', `${e.shards} crystal shards taken from the maelstrom!`); }); // (Espada's line; the pay's, the house style)
   on('charybdis.driven', () => log.say('combat', 'Charybdis sinks back into the maelstrom.'));
+  // passage.waypoint { type, k, storm, feel }: a storm's waypoint sailed into (the event says the sea laid it; only a trip of the Courier's
+  // reaches one, so it counts): G180
+  on('passage.waypoint', (e) => { if (e.storm) L.inc('passage.storm'); });
   on('passage.race', (e) => { if (e.by !== 'courier') return; if (e.beat) L.inc('passage.race.beat'); log.say(e.beat ? 'record' : 'info', e.beat ? 'Double beaten!' : 'Your double pulls ahead.'); });
 }

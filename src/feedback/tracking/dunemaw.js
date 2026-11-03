@@ -56,8 +56,11 @@ export function dunemawRules({ on, L, log, g }) {
     if (g?.player && zoneOf(g.player.pos) !== 'throwingRoom') return; // (its gap ran out after you left: said nowhere else, QA-A)
     const types = Object.entries(e.byType || {}).filter(([t]) => t !== 'blocked').sort((a, b) => b[1] - a[1]).map(([t, d]) => `${TYPE[t] || t} ${Math.round(d)}`).join(', ');
     const st = Object.entries(e.statuses || {}).map(([s, n]) => `${DONE[s] || s} ${n === 1 ? 'once' : `${n} times`}`).join(', ');
-    log.say('info', `Strawman took ${e.blows} ${e.blows === 1 ? 'blow' : 'blows'} in ${e.seconds} s: ${Math.round(e.damage)} damage, ${e.perSecond} per second${types ? ` (${types})` : ''}${e.blocked ? `; ${e.blocked} blocked` : ''}${st ? `; ${st}` : ''}.`);
+    log.say('info', `Strawman took ${e.blows} ${e.blows === 1 ? 'blow' : 'blows'} in ${e.seconds} s: ${Math.round(e.damage)} damage, ${e.perSecond} per second${types ? ` (${types})` : ''}${e.blocked ? `; ${e.blocked} blocked` : ''}${st ? `; ${st}` : ''}${e.rig ? ` [${e.rig}]` : ''}.`);
   });
+  on('strawman.rig', (e) => log.say('info', e.label ? `Strawman's rig: ${e.label}.` : 'Strawman as it stands.', { key: 'strawman.rig', throttle: 0.5 }));
+  on('strawman.run', (e) => log.say('info', `Strawman's run: ${e.blows} blows (${e.script}, ${e.preset}).`, { key: 'strawman.run', throttle: 0.5 }));
+  on('strawman.ask', (e) => log.say('info', `Strawman${e.label ? ` [${e.label}]` : ''}: ${e.bout ? `${e.bout.blows} blows in ${e.bout.seconds} s, ${Math.round(e.bout.damage)} damage, ${e.bout.perSecond} per second.` : 'no bout yet.'}`, { key: 'strawman.ask', throttle: 0.5 }));
   on('strawman.mode', (e) => log.say('info', `Strawman: ${e.mode}.`, { key: 'strawman', throttle: 1 }));
   // its moves and attack strings (world/throwingroom/strawmanstrings.js; the words placeholders for Espada's)
   const move = (e) => STRAWMAN_MOVES[e.move]?.label || 'swing';

@@ -29,16 +29,21 @@ import { skyOf, skyfall, deficitOf } from './skyfall.js';
 import { foeOf, foeSkillsNow, stagger } from './foeskills.js';
 import { POWER_ACTION, tickRests, underTransmute, powerActions, cutRests } from './powers.js';
 import { secretStart, secretStep } from './secrets.js';
+import { WHISTLE_ACTION } from './whistle.js';
+import { GRABTHROW } from './movement.js';
+import { junkProps, takeCells } from './junkrules.js';
+import { launch } from './clearrules.js';
+import { startRules, gemRules, actionRules, afterSettle, turnRules } from './turnrules.js';
 
 /** Every action a side may take: the board's (rules.js), the Courier's run and tools (couriertools.js), the god hand's finisher (duelbreak.js),
  *  and the flee (flee.js). */
-export const ACTIONS = { ...BOARD_ACTIONS, ...COURIER_ACTIONS, finisher: FINISHER_ACTION, flee: FLEE_ACTION, skill: SKILL_ACTION, power: POWER_ACTION };
+export const ACTIONS = { ...BOARD_ACTIONS, ...COURIER_ACTIONS, finisher: FINISHER_ACTION, flee: FLEE_ACTION, skill: SKILL_ACTION, power: POWER_ACTION, whistle: WHISTLE_ACTION, grabthrow: GRABTHROW };
 /** The one-gesture duel's verbs (PUZZLE-DUELS.md 22): the drag, the worn pair's skills, the finisher and the flee; a swap is a drag of one step. */
-const DRAG_VERBS = new Set(['drag', 'skill', 'finisher', 'flee']);
+const DRAG_VERBS = new Set(['drag', 'skill', 'finisher', 'flee', 'whistle']);
 /** Whether a duel is played by the hand's drag alone, with skills and no Courier on the board (the one-gesture duel and the PvE duel):
  *  ask this, never one style by name, so the next style added does not strand a check (Petra, 2026-10-28). */
 export const oneGesture = (s) => !!s && s.style !== 'classic';
-const PVE_VERBS = new Set(['drag', 'power', 'flee']); // (the PvE duel's big plays are the hand's powers, powers.js; the worn pair's skills are tabled there: PUZZLE-DUELS.md 24.4)
+const PVE_VERBS = new Set(['drag', 'power', 'flee', 'whistle']); // (the PvE duel's big plays are the hand's powers, powers.js; the worn pair's skills are tabled there: PUZZLE-DUELS.md 24.4)
 /** The PvE duel (PUZZLE-DUELS.md 23): the longest drag a turn takes (a finger's whole path under the session's timer), what a big play
  *  is (a chain this deep, or this much sent in one turn) that staggers the aberrant. */
 export const PVE = { maxPath: 48, stagger: { step: 4, sent: 10 }, columns: 2, drink: 1, drinkStep: 3, restCut: true, regen: 8 }; // (drink: pool a gem you clear, what pays the powers: powers.js; drinkStep: a gem cleared at chain step k drinks k (to 3); restCut: a chain of k steps takes k - 1 turns off every resting power: a good drag feeds the powers, PUZZLE-DUELS.md 26.2)
@@ -74,7 +79,7 @@ export const junkOf = (n, step) => Math.max(0, n - 2) * 2 ** (Math.min(step, CHA
 
 /** A new duel under a ruleset (rulesets.js). Each side's forms: the Courier, the god hand, or both (the owner, 2026-10-19); `ap` a number
  *  or one a side (a side of two players has two players' points: section 12); `tools` the tools a side wears (all, if not given). */
-export function newDuel({ ruleset, seed = 1, style = null, forms = ['hand', 'courier'], board: boardOver = null, lesson = false, line, w, h, ap = DUEL.ap, pool = DUEL.pool, tools = null, finisher = [true, false], flee = [true, false], luck = [0, 0], rerolls = [0, 0], levels = null, dim = null, learned = null, poolMax = DUEL_BREAK.poolMax } = {}) {
+export function newDuel({ ruleset, seed = 1, style = null, forms = ['hand', 'courier'], board: boardOver = null, lesson = false, line, w, h, ap = DUEL.ap, pool = DUEL.pool, tools = null, finisher = [true, false], flee = [true, false], luck = [0, 0], rerolls = [0, 0], levels = null, dim = null, learned = null, whistles = [0, 0], poolMax = DUEL_BREAK.poolMax } = {}) {
   const rs = { match: 3, cluster: 0, blast: 2, colours: 5, drip: 2, bombs: 0, queue: 3, pincer: false, ...ruleset };
   style ??= rs.style ?? DUEL.style; if (style === 'drag' || style === 'pve') forms = ['hand']; // (the one-gesture duel: no Courier form, no walk)
   if (style === 'pve') { const g = rs.gravity || (() => DIRS.S); rs.gravity = (x, y, b) => (b.sideOf(x) === 1 ? DIRS.NONE : g(x, y, b)); } // (the aberrant's half is its mind, frozen: nothing falls or clears there)
@@ -86,7 +91,7 @@ export function newDuel({ ruleset, seed = 1, style = null, forms = ['hand', 'cou
   const aps = Array.isArray(ap) ? ap : [ap, ap], pools = Array.isArray(pool) ? pool : [pool, pool], maxes = Array.isArray(poolMax) ? poolMax : [poolMax, poolMax]; // (a side's pool's ceiling: the Courier's own max in play, Petra's session passes it)
   const s = { board, rs, r, style, perColumn: style === 'pve' ? rs.pve?.perColumn ?? bd.perColumn : bd.perColumn, landCap: bd.landCap, ply: 1, toMove: 0, winner: null, apLeft: 0, capHits: 0, log: [],
     sides: [0, 1].map((i) => ({ form: forms[0], forms: [...forms], at: null, queue: [], pending: 0, sent: 0, landed: 0, total: 0,
-      ap: aps[i], pool: pools[i], poolMax: maxes[i] ?? DUEL_BREAK.poolMax, tools: style === 'pve' ? [] : tools && (tools[i] || tools), worn: tools && (tools[i] || tools), charge: {}, powers: style === 'pve' && i === 0, learned: i === 0 && learned?.length ? [...learned] : null, levels: i === 0 ? levels : null, emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, breaks: 0, finisher: !!finisher[i], flee: !!flee[i], fleeFails: 0 })) };
+      ap: aps[i], pool: pools[i], poolMax: maxes[i] ?? DUEL_BREAK.poolMax, tools: style === 'pve' ? [] : tools && (tools[i] || tools), worn: tools && (tools[i] || tools), charge: {}, powers: style === 'pve' && i === 0, learned: i === 0 && learned?.length ? [...learned] : null, levels: i === 0 ? levels : null, emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, breaks: 0, finisher: !!finisher[i], flee: !!flee[i], fleeFails: 0, whistles: Array.isArray(whistles) ? whistles[i] | 0 : whistles | 0 })) };
   s.lesson = lessonOf(lesson); // (the first duel as a lesson: lesson.js)
   if (style === 'pve') s.foe = foeOf(rs); // (its foe skills' countdowns: foeskills.js)
   s.secret = secretStart(s); // (its secret win, if it has one: secrets.js, ABERRANTS.md)
@@ -99,12 +104,14 @@ export function newDuel({ ruleset, seed = 1, style = null, forms = ['hand', 'cou
     if (spot) { board.set(spot[0], spot[1], piece('body', { side })); s.sides[side].at = spot; }
     topQueue(s, side);
   }
+  startRules(s, clears); // (ice, belts and viruses, if the ruleset has them: turnrules.js)
   const first = startTurn(s, 0); s.apLeft = first.ap; s.log.push(first.event);
   return s;
 }
 
 const colourOf = (s) => s.r.pick(paletteOf(s.rs));
-const gemOf = (s, side = null) => underTransmute(s, side, s.rs.bombs && s.r.chance(s.rs.bombs) ? piece('bomb') : piece('gem', { colour: colourOf(s) })); // (a side's transmute keeps its colour out: powers.js)
+// (plain: a skyfall refill is never a special gem: a rainbow made inside the settle that breaks a colour made the settle run away, measured on Wonder's board)
+const gemOf = (s, side = null, plain = false) => underTransmute(s, side, s.rs.bombs && s.r.chance(s.rs.bombs) ? piece('bomb') : ((c) => (plain ? piece('gem', { colour: c }) : gemRules(s, c, () => piece('gem', { colour: c }))))(colourOf(s))); // (a side's transmute keeps its colour out: powers.js)
 
 /** A side filled to DUEL.fill with gems, settled, and recoloured until nothing on it would clear at once. */
 function fillSide(s, side) {
@@ -139,10 +146,10 @@ export function settle(s) {
   for (let pass = 0; ; pass++) {
     if (pass >= DUEL.settleCap) { s.capHits++; events.push({ type: 'settle.cap' }); break; }
     events.push(...fall(s.board));
-    if (sky) { events.push(...skyfall(s, holes, gemOf, { wild })); holes = [[], []]; wild = false; } // (skyfall.js: the cleared gems back in from the far edge, to the waterline)
+    if (sky) { events.push(...skyfall(s, holes, (st, side) => gemOf(st, side, true), { wild })); holes = [[], []]; wild = false; } // (skyfall.js: the cleared gems back in from the far edge, to the waterline)
     const hot = clears(s.board, s.rs, tune, need); if (!hot.size) break;
     const { cleared, events: ev } = resolve(s.board, hot, s.rs);
-    events.push(...ev);
+    events.push(...ev, ...launch(s, ev)); // (a big clear throws pieces across the Line, if the ruleset launches: clearrules.js)
     if (sky) for (const e of ev) if (e.type === 'clear' && e.colour) holes[e.side].push(e.at);
     const weak = weaknessOf(s), hit = [0, 0], eff = [...cleared];
     for (const e of ev) if (e.type === 'clear' && e.side === 0 && e.colour) { // (a weak colour's 1.5, a resisted one's 0.5, a dim feeling's half: each gem's worth)
@@ -178,7 +185,7 @@ export function marginOf(s) {
 /** The turn as it stood before the last action: a copy kept for undo (no draw from the stream: nothing hidden is learned by it). */
 function snapOf(s) {
   return { board: s.board.clone(), sides: s.sides.map((S) => ({ ...S, forms: [...S.forms], at: S.at && [...S.at], queue: S.queue.map((p) => ({ ...p })), charge: { ...S.charge } })), // (charge its own: a skill fired on a copy must not drain the real one)
-    apLeft: s.apLeft, winner: s.winner, lesson: s.lesson && { ...s.lesson }, refunded: s.refunded || 0, chainFrom: s.chainFrom, foe: foeCopy(s.foe), secret: s.secret && { ...s.secret } };
+    apLeft: s.apLeft, winner: s.winner, lesson: s.lesson && { ...s.lesson }, refunded: s.refunded || 0, chainFrom: s.chainFrom, foe: foeCopy(s.foe), secret: s.secret && { ...s.secret }, virusLeft: s.virusLeft && [...s.virusLeft] };
 }
 
 /** Undo the side's last action this turn (Into the Breach's reset, a step at a time): free, until the turn ends or a die is thrown. */
@@ -196,21 +203,22 @@ export function act(s, a) {
   const side = s.toMove, A = ACTIONS[a.kind]; if (!A) return null;
   if (A.form && A.form !== s.sides[side].form) return null;
   const pve = s.style === 'pve' && side === 0, S0 = s.sides[side];
-  if (pve && (S0.dragged || (a.kind === 'drag' && (a.path?.length > PVE.maxPath || a.path?.some(([x]) => x === S0.sealed))))) return null; // (the PvE duel: one drag a turn, skills before it, a sealed column untouched: 23.1)
+  if (pve && a.kind !== 'whistle' && (S0.dragged || (a.kind === 'drag' && (a.path?.length > PVE.maxPath || a.path?.some(([x]) => x === S0.sealed))))) return null; // (the PvE duel: one drag a turn, skills before it, a sealed column untouched: 23.1)
   const cost = pve ? 0 : costOf(a); if (cost > s.apLeft || !A.legal(s, side, a)) return null;
   (s.undo ||= []).push(snapOf(s));
   s.apLeft -= cost;
   const before = s.sides[side].pool, events = A.apply(s, side, a);
   if (!events.length) events.push({ type: a.kind, side });
   if (s.sides[side].pool < before) Object.assign(events[0], { spent: before - s.sides[side].pool, pool: s.sides[side].pool }); // (what a spend cost, on its own event)
+  events.push(...actionRules(s, side, a));
   if (s.rs.pincer) events.push(...pinch(s.board, side));
-  events.push(...settle(s).events);
+  events.push(...settle(s).events, ...afterSettle(s));
   events.push(...chargeFrom(s, events, weaknessOf(s)));
   events.push(...bonusOf(s, side, events));
   s.beatLast = a.kind === 'drag' ? a.beat || 'miss' : null; // (where a drag was let go against the cue's beat, the session's: the clapperjar's secret)
   events.push(...secretStep(s, side, events)); // (an aberrant's secret win: secrets.js)
   s.beatLast = null;
-  if (a.kind === 'flee' || s.winner !== null) s.undo = []; // (a die thrown, or the duel decided: no taking it back)
+  if (a.kind === 'flee' || a.kind === 'whistle' || s.winner !== null) s.undo = []; // (a die thrown, or the duel decided: no taking it back)
   if (s.winner !== null) s.log.push(...events.filter((e) => e.type.startsWith('duel.'))); // (an end made by an action, not a turn's end (a secret won by a drag), kept in the log the session's finish reads: endTurn logs its own)
   if (pve) { for (const e of events) if (e.type === 'chain' && e.side === 0) S0.turnStep = Math.max(S0.turnStep || 0, e.step);
     const sip = Math.round(drinkOf(s, events)); if (sip) { S0.pool = Math.min(capOf(S0), S0.pool + sip); events.push({ type: 'drink', side, n: sip, pool: S0.pool }); } // (your clears fill the pool the powers spend, deeper steps more)
@@ -249,7 +257,7 @@ function bonusOf(s, side, events) {
  *  lands now (it had its turn to answer), the line moves, and the wins are checked. Then the other side's turn begins (its drip). */
 export function endTurn(s) {
   const events = [], side = s.toMove, foe = 1 - side, S = s.sides[side], F = s.sides[foe];
-  events.push(...tickEmbers(s, side), ...endOwnTurn(s, side)); // (its embers burn down; its orbs fade, its EmO settles, its stun counts down: before what lands on it can break it again)
+  events.push(...tickEmbers(s, side), ...endOwnTurn(s, side), ...turnRules(s, side, settle)); // (its embers burn down; its orbs fade, its EmO settles, its stun counts down: before what lands on it can break it again)
   const off = s.style === 'pve' ? 0 : Math.min(S.sent, S.pending); S.sent -= off; S.pending -= off; // (the PvE duel offsets nothing: your clears always push the Line, its junk always lands; Hold and Grab are the answer to junk: 23.2)
   if (off) events.push({ type: 'offset', side, n: off });
   const pve = s.style === 'pve';
@@ -273,7 +281,7 @@ export function endTurn(s) {
   s.toMove = foe; s.undo = []; s.refunded = 0; const next = startTurn(s, foe); s.apLeft = next.ap; events.push(next.event);
   if (pve && foe === 0 && s.sides[0].powers && PVE.regen && s.winner === null) { const F0 = s.sides[0], n = Math.min(PVE.regen, capOf(F0) - F0.pool); if (n > 0) { F0.pool += n; events.push({ type: 'drink', side: 0, n, pool: F0.pool, from: 'regen' }); } } // (your turn opens with the pool's own regen, said as a drink so the view's bead runs: the powers are never out of reach for long)
   if (s.lesson) events.push(...lessonTurn(s, foe));
-  events.push(...secretStep(s, 0, events)); // (what landed, dripped and fell cleared too: its secret counts it)
+  events.push(...afterSettle(s), ...secretStep(s, 0, events)); // (what landed, dripped and fell cleared too: its secret counts it)
   if (s.winner === null && !(pve && foe === 1)) events.push(...drip(s, foe));
   events.push(...chargeFrom(s, events, weaknessOf(s))); // (what landed and dripped and cleared charges too: Puzzle & Dragons' skyfall counts)
   topQueue(s, foe);
@@ -293,9 +301,9 @@ export function foeTurn(s) {
 /** Junk landing on a side: junk at random empty cells of it, then the settle; the line moves one column toward it for every
  *  perColumn landed (the board's: DUEL's on a board of 20). A side that cannot take it all has lost (Noon). */
 function land(s, side, n) {
-  const b = s.board, at = [], kind = emberKind(s, 1 - side), slimy = kind === 'junk' && s.rs.slime?.from === 1 - side, events = [{ type: 'land', side, n, at, kind, ...(slimy ? { slime: true } : {}) }], cells = b.empty(side); // (an aberrant slip jelly's junk is slime: junk that a Transmute turns to gems, ABERRANTS.md 5)
+  const b = s.board, at = [], kind = emberKind(s, 1 - side), slimy = kind === 'junk' && s.rs.slime?.from === 1 - side, events = [{ type: 'land', side, n, at, kind, ...(slimy ? { slime: true } : {}) }], cells = b.empty(side), hard = kind === 'junk' && !slimy ? junkProps(s, 1 - side) : {}; // (hard or sticky junk, shaped landings: junkrules.js) // (an aberrant slip jelly's junk is slime: junk that a Transmute turns to gems, ABERRANTS.md 5)
   let placed = 0;
-  for (; placed < n && cells.length; placed++) { const [x, y] = cells.splice(s.r.int(cells.length), 1)[0]; b.set(x, y, piece(kind, kind === 'ember' ? { count: s.rs.embers.count } : slimy ? { slime: true, extra: ['slime'] } : {})); at.push([x, y]); }
+  for (const [x, y] of takeCells(s, side, n, 1 - side, cells)) { b.set(x, y, piece(kind, kind === 'ember' ? { count: s.rs.embers.count } : slimy ? { slime: true, extra: ['slime'] } : hard)); at.push([x, y]); placed++; }
   events.push(...settle(s).events);
   if (placed < n || !b.empty(side).length) { s.winner = 1 - side; events.push({ type: 'duel.full', side, winner: s.winner }); return events; }
   const S = s.sides[side]; S.landed += n;
@@ -392,7 +400,7 @@ export function quietStream(s, salt = '') {
 const foeCopy = (F) => F && { ...F, moves: F.moves.map((m) => ({ ...m })), desperate: F.desperate && { ...F.desperate } };
 
 export function cloneState(s) {
-  const c = { ...s, foe: foeCopy(s.foe), secret: s.secret && { ...s.secret }, board: s.board.clone(), sides: s.sides.map((S) => ({ ...S, forms: [...S.forms], at: S.at && [...S.at], queue: S.queue.map((p) => ({ ...p })), charge: { ...S.charge } })), log: [], undo: [], lesson: s.lesson && { ...s.lesson } }; // (its own undo: a lookahead never writes into the real turn's)
+  const c = { ...s, foe: foeCopy(s.foe), secret: s.secret && { ...s.secret }, virusLeft: s.virusLeft && [...s.virusLeft], board: s.board.clone(), sides: s.sides.map((S) => ({ ...S, forms: [...S.forms], at: S.at && [...S.at], queue: S.queue.map((p) => ({ ...p })), charge: { ...S.charge } })), log: [], undo: [], lesson: s.lesson && { ...s.lesson } }; // (its own undo: a lookahead never writes into the real turn's)
   c.r = quietStream(s, 'clone'); // (its own stream, read from the duel as it stands: the real one is never drawn by a lookahead)
   return c;
 }

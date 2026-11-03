@@ -9,6 +9,7 @@
 //   the stages       The Run, The Climb, The Stomp (stages.js), The Brawl and The Machine (stagesmachine.js), The Flood (flood.js); each a
 //                    lane with a start, checkpoints, a goal flag and a door back to the wings; a fall off the bottom puts you back at the
 //                    last checkpoint in PIT.retry real s, never a shatter
+//   the verbs        the air verbs (verbs.js: the rope's launch, the pogo), grab and throw (dummygrab.js), Strawman's guide and rival (guide.js)
 //   the mechanics    thin platforms, springs, ice and goo, the wall kick, ? spools, stomp dummies (mechanics.js); the Machine's parts
 //                    (machine.js); the Brawl's straw dummies, creatures with the percent (dummy.js, dummymind.js)
 // What happened is said by events only (the tracking is Dovina's, feedback/tracking/strawmanwell.js): well.stage.enter { stage },
@@ -34,6 +35,9 @@ import { FloodStage } from './flood.js';
 import { buildWings, buildRun, buildClimb, buildStomp, clearClimb, stageDoor } from './stages.js';
 import { buildBrawl, buildMachine, BRAWL } from './stagesmachine.js';
 import { MODS, MOD } from './stagemods.js';
+import { WellVerbs } from './verbs.js';
+import { DummyGrab } from './dummygrab.js';
+import { StrawGuide } from './guide.js';
 import { profileOf } from '../../progress/movementprofiles.js';
 
 const PROFILE_LABEL = (id) => profileOf(id).label.toUpperCase();
@@ -46,8 +50,9 @@ export class StrawmansWell {
   constructor(game) {
     this.game = game; this.built = false; this.frame = new WellFrame(game);
     this.mech = new WellMechanics(this); this.machine = new WellMachine(this); this.dummies = new StrawDummies(this); this.flood = new FloodStage(this);
-    this.frame.pre((dt) => { if (this.built) { this.mech.pre(dt); this.flood.pre(dt); for (const M of MODS) M.pre?.(this, dt); } });
-    this.frame.post((dt) => { if (this.built) { this.mech.post(dt); for (const M of MODS) M.post?.(this, dt); } });
+    this.verbs = new WellVerbs(this); this.grab = new DummyGrab(this); this.guide = new StrawGuide(this); // (the air verbs, grab and throw, Strawman's guide and rival)
+    this.frame.pre((dt) => { if (this.built) { this.mech.pre(dt); this.flood.pre(dt); this.verbs.pre(dt); for (const M of MODS) M.pre?.(this, dt); } });
+    this.frame.post((dt) => { if (this.built) { this.mech.post(dt); this.verbs.post(dt); for (const M of MODS) M.post?.(this, dt); } });
     this.stage = null; this.stages = {}; this.seen = new Set(); this.offs = []; this.retryT = 0;
   }
 
@@ -72,6 +77,7 @@ export class StrawmansWell {
   teardown() {
     if (!this.built) return;
     this.frame.remove(); this.game.movementProfiles?.lift(); this.listen(false);
+    this.verbs.clear(); this.grab.clear(); this.guide.clear();
     this.dummies.clear(); this.machine.clear(); this.mech.clear(); this.flood.clear(); clearClimb(this);
     for (const M of MODS) M.clear?.(this);
     this.wings?.strawman?.dispose?.();
@@ -126,18 +132,21 @@ export class StrawmansWell {
     this.frame.apply({ z: L.z, x0: AT.x - 2, x1: AT.x + L.len + 2, band: [AT.y + L.band[0], AT.y + L.band[1]], face: 1 });
     g.movementProfiles?.apply(); // (the build worn here: progress/movementprofiles.js; taken off with the frame)
     this.kit?.show(id); this.listen(true);
+    this.grab.clear(); this.guide.stop();
     if (id === 'wings') { this.stage = { id: 'wings' }; if (this.kit) this.plates(); return; }
     this.stage = { id, t0: g.events?.time ?? 0, hits: 0, string: 0, cleared: false, check: 0, kos: 0 };
     if (id === 'brawl') { const F = this.stages.brawl.flag; F.post.visible = F.flag.visible = false; }
     g.events?.emit('well.stage.enter', { stage: id, by: 'courier' });
     MOD[id]?.enter?.(this);
+    if (id !== 'arena' && id !== 'flatstage') this.guide.start(id); // (the ghost of straw runs it first: guide.js)
   }
 
   /** The Courier's own moves heard while in the Well (the bench's checklist: well.verb), and nothing kept once out. */
   listen(on) {
     const ev = this.game.events; if (!ev) return;
-    if (!on) { for (const off of this.offs) off(); this.offs = []; return; }
+    if (!on) { for (const off of this.offs) off(); this.offs = []; this.verbs.listen(false); this.guide.listen(false); this.guide.stop(); this.grab.clear(); return; }
     if (this.offs.length) return;
+    this.verbs.listen(true); this.guide.listen(true);
     const add = (n, fn) => this.offs.push(ev.on(n, fn));
     add('move.jump', (e) => this.verb(e.kind === 'air' ? 'doubleJump' : e.kind === 'wall' ? 'wallJump' : 'jump'));
     add('move.dash', () => this.verb('dash'));
@@ -174,6 +183,7 @@ export class StrawmansWell {
     }
     else {
       const St = this.stages[S.id]; if (St) out.push({ ref: 'wings', pos: new THREE.Vector3(AT.x + St.door[0], AT.y + St.door[1] + 2.9, laneOf(S.id).z - 1.6), x: AT.x + St.door[0], y: AT.y + St.door[1] });
+      if (S.id === 'brawl') out.push(...this.grab.spots());
       if (S.id === 'flood') for (const L of this.flood.spots) out.push({ ref: L.ref, pos: L.pos, x: L.pos.x, y: AT.y });
       const M = MOD[S.id]; if (M?.spots) out.push(...M.spots(this));
     }
@@ -189,6 +199,7 @@ export class StrawmansWell {
   use(ref) {
     if (ref === 'hub') return this.leave();
     if (ref === 'profile') { this.game.movementProfiles?.next(); this.rackPlate(); return; }
+    if (ref === 'grab' || ref === 'throw') { this.grab.use(ref); return; }
     if (ref === 'wings') return this.go('wings');
     if (laneOf(ref)) return this.go(ref);
     const M = MOD[this.stage?.id]; if (M?.use?.(this, ref)) return;
@@ -211,7 +222,7 @@ export class StrawmansWell {
     this.flood.hold(it?.id === 'strawmanwell' ? it.ref : null, inp.isDown('KeyF'));
     MOD[S?.id]?.hold?.(this, it?.id === 'strawmanwell' ? it.ref : null, inp.isDown('KeyF'));
     if (S && S.id !== 'wings') this.watch(S, dt);
-    this.mech.update(dt); this.machine.update(dt); this.dummies.update(dt); if (this.flood.grid) this.flood.update(dt);
+    this.mech.update(dt); this.machine.update(dt); this.dummies.update(dt); this.grab.update(dt); this.guide.update(dt); if (this.flood.grid) this.flood.update(dt);
     for (const M of MODS) M.update?.(this, dt);
     this.wings?.strawman?.update?.(dt);
     this.frame.camera(g.rawDt ?? dt);

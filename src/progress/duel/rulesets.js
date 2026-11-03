@@ -1,11 +1,16 @@
 // ---------------------------------------------------------------------------------------
 // THE FIGMENTS' RULESETS (docs/plans/PUZZLE-DUELS.md section 6: "one aberrant Figment is one ruleset", the owner, 2026-10-19): what the
-// engine loads for a fight, chosen by the Figment's feeling. The kernel's three, a first pass; every other feeling's families are to
-// come as their rules are built (section 5). A ruleset is data: the clears it uses, its gravity map, its odds and its bot's weights.
+// engine loads for a fight, chosen by the Figment's feeling. All seven feelings have one now (GAPS G186, 2026-11-03), each wearing its
+// families from section 6's table as the rule modules were built (matchrules.js, clearrules.js, movement.js, junkrules.js, dread.js):
+// Wonder diagonal runs, rainbows and a sweep; Mirth ice and launches; Desire magnets and the pincer; Fury bombs and crash gems; Gall
+// hard junk, rot and viruses; Grief sinking clusters; Dread fog and embers. A ruleset is data: the clears it uses, its gravity map, its
+// odds and its bot's weights. (Wonder's "rules as tiles" is GAPS G185, not built.)
 //
 // Prior art: Puzzle Fighter's and Puyo's characters (one drop pattern each), Noon's arenas, Dr. Mario's viruses per level.
 //
 //   RULESETS[name] -> { feeling, board?: { w, h, perColumn, landCap }, run, cluster, gravity(x, y, board), bombs, blast, pincer, colours, drip, queue, fog, embers, bot }
+//   the optional rules' flags (each off unless set): diagonal, crash, rainbow (matchrules.js); lines, sweep { step }, launch { at, n } (clearrules.js);
+//   ice { share }, belts { rows, dir }, magnets (movement.js); hard { from, hits, sticky }, pattern { from, shapes }, corrode { p, max }, viruses { n, bonus, sides } (junkrules.js)
 //   bot: the score's weights (bot.js W), `sample`: actions it weighs a point (its cleverness: 60 if not said), `idle`: it never acts, `every`: it acts one turn in that many
 //   PRACTICE { idle, plain, wisp } -> a RULESETS key: the practice duel's difficulty (Strawman's)
 //   rulesetOf(creature, practice?) -> a ruleset: a practice pick's (PRACTICE), else its kind's own (KIND_RULESETS: an aberrant Lantern Wisp's, Strawman's), else its feeling's, else fury's
@@ -14,12 +19,23 @@ import { DIRS } from './board.js';
 
 export const RULESETS = {
   // Fury: bombs and kicks. Plain gravity, runs of three, a bomb in every 16 pieces that come.
-  fury: { feeling: 'fury', match: 3, cluster: 0, gravity: () => DIRS.S, bombs: 0.06, blast: 2, colours: 4, drip: 4, bot: { junk: 12 } },
+  // Its crash gem (matchrules.js, Puzzle Fighter's) beside the bombs: a gem that breaks the colour it touches.
+  fury: { feeling: 'fury', match: 3, cluster: 0, gravity: () => DIRS.S, bombs: 0.06, crash: 0.05, blast: 2, colours: 4, drip: 4, bot: { junk: 12 } },
   // Grief: everything sinks toward the line (each side's pile leans on it), clusters of four, the pincer turns junk to gems.
   grief: { feeling: 'grief', match: 0, cluster: 4, gravity: (x, y, b) => (b.sideOf(x) === 0 ? DIRS.E : DIRS.W), pincer: true, colours: 6,
     bot: { pairs: 1 } },
   // Mirth: gravity mirrored (down on the left, up on the right), runs and clusters both, so chains come easily.
-  mirth: { feeling: 'mirth', match: 3, cluster: 4, gravity: (x, y, b) => (b.sideOf(x) === 0 ? DIRS.S : DIRS.N), colours: 5, drip: 3 },
+  // Ice under a tenth of each half (a gem dragged onto it slides on) and bounces: a clear of 6 throws two of the pieces beside it across the Line.
+  mirth: { feeling: 'mirth', match: 3, cluster: 4, gravity: (x, y, b) => (b.sideOf(x) === 0 ? DIRS.S : DIRS.N), colours: 5, drip: 3, ice: { share: 0.1 }, launch: { at: 6, n: 2 } },
+  // Wonder: tiles of light. Runs count on the diagonals, a rainbow now and then breaks the colour it touches, and a bar sweeps each half
+  // at its turn's end, breaking the 2 x 2 squares it passes (Lumines). (Rules as tiles, Baba's layer, is G185: not built.)
+  wonder: { feeling: 'wonder', match: 3, cluster: 0, diagonal: 4, rainbow: 0.05, sweep: { step: 3 }, gravity: () => DIRS.S, colours: 5, drip: 3 },
+  // Desire: pull. A gem now and then is a magnet that draws the nearest of its colour closer each turn; the pincer turns junk between two
+  // gems of one colour into gems of it (Terra Battle's sandwich, desire's grasp).
+  desire: { feeling: 'desire', match: 3, cluster: 4, gravity: () => DIRS.S, magnets: 0.12, pincer: true, colours: 5, drip: 3 },
+  // Gall: hard junk (two breaks), rot (junk spreads to a gem beside it, two a turn at most) and three viruses on each half (Dr. Mario),
+  // cured for 4 junk. Measured with the simulator (PUZZLE-DUELS.md 27).
+  gall: { feeling: 'gall', match: 3, cluster: 4, gravity: () => DIRS.S, hard: { from: 1, hits: 2 }, corrode: { p: 0.25, max: 2 }, viruses: { n: 3, bonus: 4 }, colours: 5, drip: 3 },
   // Dread (dread.js): the Figment's half in fog but for its lantern's light, and its junk sent as embers that burn down three of your
   // turns before they can be cleared. Runs of three, plain gravity on both halves.
   dread: { feeling: 'dread', match: 3, cluster: 0, gravity: () => DIRS.S, colours: 5, drip: 3, fog: { side: 1, light: 3 }, embers: { from: 1, count: 3 } },

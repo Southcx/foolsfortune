@@ -90,4 +90,33 @@ The poker-hand grammar is the owner's own.
 
 ## 6. Decided
 
-(empty until the owner answers)
+**Nothing answered yet. Built 2026-11-03 on the design pass's own proposals as defaults** (each is data in
+`src/progress/casino/entropy/rules.js`, `classes.js`; change the line and the simulator says what it did):
+1. One bank: yes. The Hungry Die's bank pays extra token actions (2^(n-1)) and class actives; fed cards grow the die over the whole game.
+2. Royal Straight Flush (10 to king, one suit): an instant win, the bomb goes off on their ground.
+3. The four classes: the Fool, the Chariot, the Empress, the Hermit, a passive and one active each. Not built: the two actives opened by
+   zone depth and the ultimates.
+4. A token beside the bomb: a flat +1 to its side's roll in a push.
+5. The counter: starts at 20, falls one a round and by every countdown.
+6. Two players only.
+Other defaults the pass left open: the hand is five cards (the Hermit six), one group is played a turn (a run or flush of 3 to 5 cards
+summons, a pair casts 2 to a token, three of a kind 4 and four of a kind 7 to the Arcana, a court card enchants), up to two cards may be
+kept hidden across turns (this is the hidden hand the bot searches), the second seat starts with a bank of 1, the first Arcana's health is 20,
+the bomb pushed off the board goes off in the zone it left. Rogues strike and take double in enemy ground, mages strike two tiles in a
+line and cannot move, healers mend 2.
+
+**The bot** (`entropy/bot.js`): single-observer information-set MCTS: each iteration deals the unseen cards at random into the other
+hand and the deck, walks one tree, UCB1 on availability counts, a 24-move random rollout read by a position score. The simulator
+(`node scripts/casino.mjs --game entropy`): the search at 40 iterations beats a random bot 88 to 93%. **Measured balance, first pass**
+(40 games a pairing, search both sides): the Hermit wins about 65% against the field, the Fool 53 to 59, the Empress and Chariot about
+40; the first seat wins about 60% even with the second seat's bank of 1; a game runs about 7 rounds and ends 80% by the bomb on a
+zone, 15% in the neutral rank. **Open for Dovina:** the Hermit's sixth card is the likely cause of its edge, the first seat's push
+advantage is not yet answered, and a game this short may want the counter at 30. Thinking longer (20 to 90 iterations) moved a win rate
+by under 8 points in 100 games: the bomb is more luck than search at this length.
+
+## Rulings and what is open (Dovina, 2026-11-03)
+- **The six open questions run on the design pass's own proposals** (one bank, the royal straight flush an instant win, four classes, +1 a
+  token beside the bomb, the counter at 20 falling one a round, two players) until South plays it.
+- **Measured and open:** the Hermit wins 65% (its sixth card), the first seat 60%; a game is about 7 rounds. Next pass: the counter at 30
+  and the Hermit's hand at five, re-simulated with `scripts/casino.mjs`. Not changed before a sim says so.
+- **You are the Fool at the table**, Dovina's seat the Chariot. A class choice comes with the second pass.

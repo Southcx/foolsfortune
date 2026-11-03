@@ -16,13 +16,14 @@
 //
 //   ENCOUNTERS[id] = { id, name, cat, sub }   game.garden = new Garden(game)
 //   .mastered(enc) -> bool   .slots -> [{ enc, since }]   .slot(i, enc) -> { ok, why? }   .accrued(i) -> cubes   .collect() -> cubes
-//   .beds -> [{ kind, tier, at } | null]   .plant(i, boxSlot) -> { ok, why? }   .ripe(i) -> bool   .harvest(i) -> n
+//   .beds -> [{ kind, tier, at, k? } | null]   .surround(i, { feeling, ground, water }) -> k   .plant(i, boxSlot) -> { ok, why? }   .ripe(i) -> bool   .harvest(i) -> n
 //   .price(kind) -> cubes | null   .upgrade(kind) -> { ok, why? }   .grant(kind) (a feature placed: free)   .workBonus(kind) -> 0..0.25   (kind: 'slot' | 'bed')
 // ---------------------------------------------------------------------------------------
 import { ECON } from './econ/table.js';
 import { makeMaterial } from './econ/materials.js';
 import { stream } from '../core/rng.js';
 import { MAX } from './spirits.js';
+import { growthK } from './bedgrowth.js';
 import * as calendar from '../core/calendar.js';
 const clock = calendar.now; // (the calendar's clock, not Date.now: a replay pins it, so a replayed visit pays what it paid)
 // a game hour in real milliseconds (DESIGN.md section 17: a game day is a real hour), from the calendar when it says, else that scale
@@ -46,6 +47,7 @@ export class Garden {
   constructor(game) {
     this.game = game;
     this.s = fresh();
+    this.around = []; // (the pace each bed's ground and water give it, the world's to say: `surround`; a planted bed keeps its own `k`)
     game.save?.section('garden', { scope: 'player', version: 1, dump: () => this.s, load: (d) => { this.s = { ...fresh(), ...(d || {}) }; }, reset: () => { this.s = fresh(); } });
     // a terrace placed in the Inner Realm is a bed, a pavilion a slot: paid for as a feature (world/garden/plots.js), so granted here free
     game.events?.on?.('garden.place', (e) => { if (e.by !== 'courier') return; if (e.feature === 'terrace') this.grant('bed'); else if (e.feature === 'pavilion') this.grant('slot'); });
@@ -100,13 +102,20 @@ export class Garden {
     if (i < 0 || i >= this.s.beds.length) return { ok: false, why: 'There is no such bed.' };
     if (this.s.beds[i]) return { ok: false, why: 'Something already grows there.' };
     if (!s?.id?.startsWith('mat.') || !s.data?.kind) return { ok: false, why: 'Only what a Well gives will grow here.' };
-    this.s.beds[i] = { kind: s.data.kind, tier: s.data.tier || 0, at: clock() };
+    this.s.beds[i] = { kind: s.data.kind, tier: s.data.tier || 0, at: clock(), ...(this.around[i] > 1 ? { k: this.around[i] } : {}) };
     box.take(boxSlot);
     this.dirty();
     this.game.events.emit('garden.plant', { bed: i, kind: s.data.kind, by: 'courier' });
     return { ok: true };
   }
-  ripe(i, now = clock()) { const b = this.s.beds[i]; return !!b && now - b.at >= G.growHours * GAME_HOUR; }
+  ripe(i, now = clock()) { const b = this.s.beds[i]; return !!b && (now - b.at) * (b.k || 1) >= G.growHours * GAME_HOUR; }
+  /** The ground and water at a bed's plot (the world's, whenever they change; `feeling` the plot's): a bed on its own feeling's ground or
+   *  watered with it grows faster (bedgrowth.js, realm.js GROWTH). A bed already growing keeps the share of its growth done. */
+  surround(i, { feeling = null, ground = null, water = null } = {}) {
+    const k = growthK({ feeling, ground, water }), b = this.s.beds[i], now = clock(); this.around[i] = k;
+    if (b && (b.k || 1) !== k) { const done = (now - b.at) * (b.k || 1); b.k = k > 1 ? k : undefined; b.at = now - done / k; this.dirty(); }
+    return k;
+  }
   /** Harvest a ripe bed: its yield, of its kind and tier, into the box (each with its own path); the bed is empty again. */
   harvest(i) {
     const b = this.s.beds[i];

@@ -75,7 +75,7 @@ export const MOVES = {
     hookPunch: { power: 1.1, time: 0.43, parent: 'c2', unlock: either(hits('c2', 60), finishes('c2', 5), uses('kick.hit', 60)) }, // (never `hook`: the Sondelass's hook is its form)
     flyingKick: { power: 3.6, time: 1.45, cost: 7, parent: 'pushKick', unlock: either(hits('pushKick', 60), uses('sond.effect.knock', 10), uses('kick.hit', 150)) },
     tornadoKick: { power: 3.6, time: 1.45, cost: 8, parent: 'roundKick', unlock: either(hits('roundKick', 60), best('sond.struck.best', 3), uses('kick.hit', 150)) }, // (all round: three struck by one blow)
-    spinHeelKick: { power: 3.8, time: 1.55, cost: 7, parent: 'sideKick', unlock: either(hits('sideKick', 60), finishes('sideKick', 5), uses('kick.hit', 150)) },
+    spinHeelKick: { power: 3.8, time: 1.55, cost: 7, status: 'stagger', parent: 'sideKick', unlock: either(hits('sideKick', 60), finishes('sideKick', 5), uses('kick.hit', 150)) },
     risingKick: { power: 2.7, time: 1.1, cost: 6, status: 'airborne', parent: 'frontKick', unlock: either(hits('frontKick', 60), uses('move.launch', 10), uses('kick.hit', 150)) },
     flurry: { power: 1.0, hits: 3, time: 1.05, cost: 5, status: 'stagger', parent: 'bodyBlow', unlock: either(hits('bodyBlow', 60), finishes('bodyBlow', 5), uses('kick.hit', 150)) },
     breakKick: { power: 2.7, time: 1.18, cost: 6, status: 'stagger', parent: 'guardBreak', unlock: either(hits('guardBreak', 60), uses('sond.effect.guardBreak', 3), uses('kick.hit', 150)) },

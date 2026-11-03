@@ -38,6 +38,7 @@ import { lockheartRules, lockheartOutcomeRules } from './lockheart.js';
 import { raceRules } from './race.js';
 import { openSeaRules } from './opensea.js';
 import { seaSerpentRules } from './seaserpent.js';
+import { seaFoldsRules } from './seafolds.js';
 import { chatroomRules } from './chatroom.js';
 import { raceModeRules } from './racemodes.js';
 import { casinoRules } from './casino.js';
@@ -68,6 +69,7 @@ import { sandboxRules } from './sandbox.js';
 import { strawmanWellRules } from './strawmanwell.js';
 import { questsRules } from './quests.js';
 import { gardenGrowthRules } from './gardengrowth.js';
+import { gardenLifeRules } from './gardenlife.js';
 import { pairSpecialsPlayRules } from './pairspecialsplay.js';
 import { touchstoneRules } from './touchstone.js';
 import { worldShellRules } from './worldshells.js';
@@ -82,6 +84,7 @@ import { courseRules } from './course.js';
 import { systemLineRules, commandEchoRules } from './systemlines.js';
 import { veritomeRules } from './veritome.js';
 import { stealthRules } from './stealth.js';
+import { safariRules } from './safari.js';
 import { domainArtsRules } from './domainarts.js';
 import { cookingRules } from './cooking.js';
 import { mechRules } from './mechs.js';
@@ -124,7 +127,7 @@ export function areaRules(ctx) {
   courseRules(ctx);
   systemLineRules(ctx);
   placeEnterRules(ctx);
-  veritomeRules(ctx); stealthRules(ctx); domainArtsRules(ctx); cookingRules(ctx); mechRules(ctx); mechNightRules(ctx); mechFireRules(ctx); // (a candid photograph: progress/stealth.js; a domain's rungs: progress/domainarts.js)
+  veritomeRules(ctx); stealthRules(ctx); safariRules(ctx); domainArtsRules(ctx); cookingRules(ctx); mechRules(ctx); mechNightRules(ctx); mechFireRules(ctx); // (a candid photograph: progress/stealth.js; a domain's rungs: progress/domainarts.js)
   itemRules(ctx);
   chatLineRules(ctx);
   folkRules(ctx);
@@ -169,6 +172,7 @@ export function areaRules(ctx) {
   godRules(ctx);
   openSeaRules(ctx); // (the open sea: docs/plans/OPEN-SEA.md)
   seaSerpentRules(ctx); // (the sea serpent and the hull at the free helm: world/opensea/seafight.js)
+  seaFoldsRules(ctx); // (a song for the wind and a beast in tow: world/opensea/seafolds.js)
   chatroomRules(ctx); // (the room: coop/chatroom.js, COOP.md C7)
   raceRules(ctx); // (the Raceway's race, and the skiff's carve, pop, plates: docs/plans/SKIFF-RACING.md)
   raceModeRules(ctx); // (the Raceway's modes, cups, licences, City Trial, wager and the board's rules: SKIFF-RACING.md 12)
@@ -186,6 +190,7 @@ export function areaRules(ctx) {
   lockheartRules(ctx); // (the Lockheart's Overload recoil) // (the god hand's matter, miracles, epics and the island's rejection)
   voyageRules(sea);
   gardenRules(ctx);
+  gardenLifeRules(ctx); // (the garden's life: a spirit's remarks, the folk who call, a bed's tender, the tree's diary: tracking/gardenlife.js)
   weatherRules(ctx);
   dunemawRules(ctx);
   placeRules(ctx);

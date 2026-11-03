@@ -18,8 +18,18 @@
 //   portal pair      Ultimate Chicken Horse's teleporters, Portal: lit, a shortcut; possessed, a send-back. Read shows which.
 //   Wisp turret      Ultimate Chicken Horse's crossbow, Crawl's turrets, the Lantern Wisp's own flame: a shot at the rider; parry it
 //                    and it flies home and stuns the turret (and its possessor).
+// The other six (G305, 2026-11-03; their geometry is progress/trapzones.js):
+//   antlion          Crash Team Racing's pursuing hazards, Mario Kart's Chain Chomp, the pits' own maw (escape.js): a maw out of the sand
+//                    behind the rider, lunging along the line; out-run it, carve out of its lane, or hop it.
+//   boulder          Indiana Jones, Excitebike's obstacles, Donkey Kong's barrels: a rock rolls down the line at the rider; the shoulder
+//                    breaks it, or hop it.
+//   hasten field     Braid's time-dilation bubble, Mario Kart's mud: a patch where the board's clock drags; go round it.
+//   storm cell       Mario Kart's lightning, Zelda's storms: three marks on the sand, a bolt on each in turn; read the marks.
+//   ward gate        Ultimate Chicken Horse's force fields: a circle shuts for a beat; go round it.
+//   pot catapult     Donkey Kong Country's barrel cannons, Crash Team Racing's TNT crates: a pot lobbed onto the line; pop it in the air
+//                    or dodge the landing.
 // Each is made with a god power of its domain (the editor opens it with that power), so every domain but Divination owns one, and
-// Divination is the rider's: Read shows a possessed trap's next intent (TRACK-EDITOR.md 6).
+// Divination is the rider's: Read shows a possessed trap's next intent (TRACK-EDITOR.md 6; the ghost line: `readOf`, below, G308).
 //
 //   TRAP   TRAPS[kind] = { label, line, power, cost, cycle: { period, min, max, tell, active }, cooldown, size, ... }   TRAP_KINDS
 //   TRAP_OPEN[kind] = { count?: [key, n], feat?: [key, n], hint } (null: given)   trapOpen(kind, L) -> bool (G309: the editor's traps by
@@ -76,6 +86,45 @@ export const TRAPS = {
     size: { r: 1.5, range: 70 }, ball: { speed: 24, r: 1.3, life: 4, home: 0.8, parry: 5 }, stun: 4, hit: { kind: 'bump', size: 10, shove: 6, up: 2 },
     possessed: 'aim it and cast',
   },
+  // ---- the other six (G305; the plan's table, TRACK-EDITOR.md 4). `meet`: the share of its active stretch at which its threat is at the
+  // trap's own place (the bot's timing, trapbot.js); `ahead`: metres past the trap where it lands (the pot); `lanes`: it takes a lane (the
+  // possessor's Q / E, an unpossessed one's turn in turn); geometry: progress/trapzones.js.
+  antlion: {
+    label: 'Antlion', line: 'A maw rises out of the sand behind you and lunges along a lane. Out-run it, carve out of the lane, or hop it.',
+    power: 'take', cost: 10, cycle: { period: 7, min: 4, max: 14, tell: 1.0, active: 1.2 }, cooldown: 3.5, lanes: true, meet: 0.31,
+    size: { r: 4.5, back: 22, reach: 50 }, hit: { kind: 'bail' },
+    possessed: 'steer it into a lane (Q / E), and lunge',
+  },
+  boulder: {
+    label: 'Boulder', line: 'A rock rolls down a lane at you. Break it with the shoulder, or hop it.',
+    power: 'telekinesis', cost: 8, cycle: { period: 8, min: 4, max: 14, tell: 1.0, active: 1.6 }, cooldown: 4, lanes: true, meet: 0.73,
+    size: { r: 2.6, reach: 44, tail: 16, split: 7 }, hit: { kind: 'wall', size: 9, keep: 0.3 },
+    possessed: 'choose the lane (Q / E), and let it roll',
+  },
+  hasten: {
+    label: 'Hasten field', line: 'A patch where the board\'s clock drags: whatever is in it slows. Go round, or cross it before it shuts.',
+    power: 'hasten', cost: 8, cycle: { period: 10, min: 6, max: 18, tell: 0.9, active: 3 }, cooldown: 4.5, meet: 0.3,
+    size: { r: 9 }, drag: 1.6,
+    possessed: 'stop time in it, over the lane you choose (Q / E)',
+  },
+  storm: {
+    label: 'Storm cell', line: 'Marks on the sand, then a bolt on each in turn. Read the marks; the hop does not help, a lane does.',
+    power: 'miracle', cost: 10, cycle: { period: 8, min: 5, max: 14, tell: 1.2, active: 1.5 }, cooldown: 4, lanes: true, meet: 0.5,
+    size: { r: 3.5, bolts: 3, spread: 8 }, hit: { kind: 'bump', size: 10, shove: 10, up: 3 },
+    possessed: 'place the strikes: the lane you choose (Q / E) is where the middle one falls',
+  },
+  ward: {
+    label: 'Ward gate', line: 'A circle on the sand shuts for a beat and the board cannot cross it. Time it, or go round.',
+    power: 'ward', cost: 8, cycle: { period: 8, min: 5, max: 14, tell: 1.0, active: 1.2 }, cooldown: 4, meet: 0.4,
+    size: { r: 7 }, hit: { kind: 'wall', size: 8, keep: 0.2 },
+    possessed: 'shut it on a rider, over the lane you choose (Q / E)',
+  },
+  catapult: {
+    label: 'Pot catapult', line: 'Clapperjars lob a pot onto the line. Pop over it in the air, or dodge where it lands.',
+    power: 'muster', cost: 10, cycle: { period: 7, min: 4, max: 12, tell: 1.1, active: 1.2 }, cooldown: 3.5, lanes: true, meet: 0.92, ahead: 36,
+    size: { r: 4, range: 36, arc: 9, smash: 3.5 }, hit: { kind: 'bump', size: 9, shove: 9, up: 2 },
+    possessed: 'aim the lob into a lane (Q / E)',
+  },
 };
 export const TRAP_KINDS = Object.keys(TRAPS);
 for (const K of Object.values(TRAPS)) if (K.cycle.tell < TRAP.tellMin && K.cycle.active > 0) throw new Error(`a trap's tell under ${TRAP.tellMin} s: ${K.label}`);
@@ -101,7 +150,7 @@ export class TrapClock {
     this.cool = Math.max(0, this.cool - dt);
     const C = this.K.cycle; if (this.phase === 'idle') { this.k = 0; return; }
     this.t += dt;
-    if (this.phase === 'tell') { this.k = Math.min(1, this.t / C.tell); if (this.t >= C.tell) { this.phase = 'active'; this.t = 0; } }
+    if (this.phase === 'tell') { this.k = Math.min(1, this.t / C.tell); if (this.t >= C.tell) { this.phase = 'active'; this.t = 0; this.k = 0; } } // (k runs 0..1 through each phase: the first frame of the act is its start, not the tell's end)
     else if (this.phase === 'active') {
       const dur = this.kind === 'pendulum' ? C.period / 2 : C.active;
       this.k = Math.min(1, this.t / Math.max(1e-6, dur));
@@ -124,6 +173,13 @@ export const TRAP_OPEN = {
   gusher: { count: ['race.haunted', 6], feat: ['trap.wreck.pendulum', 3], hint: 'Race 6 haunted races, or wreck 3 rivals with a pendulum' },
   portal: { count: ['race.haunted', 8], feat: ['trap.warp.on', 3], hint: 'Race 8 haunted races, or ride a portal on 3 times' },
   turret: { count: ['race.haunted', 10], feat: ['trap.parry', 1], hint: 'Race 10 haunted races, or send a turret\'s flame back once' },
+  // the other six, a rung each after the turret: the whole box of thirteen in about 55 real minutes of haunted racing
+  antlion: { count: ['race.haunted', 11], feat: ['trap.wreck.turret', 3], hint: 'Race 11 haunted races, or wreck 3 rivals with a Wisp turret' },
+  boulder: { count: ['race.haunted', 12], feat: ['trap.wreck.antlion', 3], hint: 'Race 12 haunted races, or wreck 3 rivals with an antlion' },
+  hasten: { count: ['race.haunted', 13], feat: ['trap.break', 1], hint: 'Race 13 haunted races, or break a boulder with the shoulder once' },
+  storm: { count: ['race.haunted', 14], feat: ['trap.wreck.hasten', 3], hint: 'Race 14 haunted races, or wreck 3 rivals with a hasten field' },
+  ward: { count: ['race.haunted', 15], feat: ['trap.wreck.storm', 3], hint: 'Race 15 haunted races, or wreck 3 rivals with a storm cell' },
+  catapult: { count: ['race.haunted', 16], feat: ['trap.smash', 3], hint: 'Race 16 haunted races, or pop 3 pots in the air' },
 };
 /** Is a trap kind open in the editor (a ledger predicate). */
 export function trapOpen(kind, L) {

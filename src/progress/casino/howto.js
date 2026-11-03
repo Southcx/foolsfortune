@@ -69,6 +69,29 @@ export const HOWTO = {
     ],
     card: ['Goal: be the last with dice.', 'Claim what your secret hand is worth, or bluff.', 'Raise, call the bluff, or fold (−1 die).', 'Wrong call or caught bluff: −2 dice.', 'Watch for tells.'],
   },
+  charity: {
+    title: 'Charity Gamble',
+    steps: [
+      { say: 'Every round, each player secretly drops a chip into the charity jar: a 1, a 5 or a 10. Nobody sees which.', show: 'moves' },
+      { say: 'Then each player SAYS what they dropped. You can tell the truth or lie: it costs nothing.', show: 'seats' },
+      { say: 'The line is what the jar holds on average. Bet OVER or UNDER it. Your own chip is the one you know for sure.', show: 'centre' },
+      { say: 'Everyone\'s chips are shown. Players who bet right share the jar, so it pays to be right when few others are. Nobody right, or exactly on the line? The jar waits for the next round.', show: 'centre' },
+      { say: 'Watch who lies: each player\'s lie rate is shown on their plate. After 8 rounds, the most chips wins.', show: 'seats' },
+    ],
+    card: ['Goal: most chips after 8 rounds.', 'Drop 1, 5 or 10 in secret, then say what you dropped (lie if you like).', 'Bet over or under the line.', 'Right bets share the jar; charity keeps a tenth.', 'Watch the lie rates.'],
+  },
+  entropy: {
+    title: 'Entropy Tactics',
+    steps: [
+      { say: 'You and Raku are two Major Arcana. In the middle of the board sits the Grand Bomb with a counter. When it runs out, whoever\'s ground the bomb is on loses.', show: 'goal' },
+      { say: 'Each turn you hold five cards. A run or a flush of three or more summons a token. A pair or more casts a spell. A court card (page to king) enchants a token.', show: 'hand' },
+      { say: 'Cards you do not use are fed to your Hungry Die. The more you feed, the bigger it grows, and its bank pays for extra moves. You may keep two cards secret for next turn.', show: 'seats' },
+      { say: 'Move and strike with your tokens. Each may act once for free; more costs bank.', show: 'moves' },
+      { say: 'Last, roll the Hungry Die. Push the bomb toward them (it clashes with their die), or count its counter down. The odds are printed on the choice.', show: 'moves' },
+      { say: 'Win by having the bomb go off on their ground, by taking their Arcana to 0 health, or with a royal straight flush: 10 to king of one suit.', show: 'goal' },
+    ],
+    card: ['Goal: the bomb goes off on their ground, or their Arcana falls.', 'Turn: play one group, keep up to two cards, feed the rest, act with tokens, roll and push or count down.', 'Run or flush: a token. Pair or more: a spell. Court card: an enchantment.', 'The counter also falls one a round.', 'Royal straight flush wins at once.'],
+  },
 };
 
 /** Has this game's how-to been finished or skipped once (the ledger's count, kept per build)? */

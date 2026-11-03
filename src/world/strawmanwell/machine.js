@@ -10,24 +10,29 @@
 //   a crumbling floor stood on CRUMBLE.hold real s it drops away, and is back CRUMBLE.back after (Super Mario Bros. 3's)
 //   a switch          stood on, its door opens for SWITCH.open real s (Super Mario Maker's)
 //   a key and a lock  touched, the key rides over your head; brought to its lock, the lock's door opens for good (Spelunky's)
-//   a cannon          a slow ball every CANNON.every real s along the floor; one that meets you knocks you back (Mario's Bullet Bill)
+//   a cannon          the Lantern Wisp's turret (turret.js): a ball of its flame every few real s that V sends back; home, it stuns the turret
+//   a pulley          two platforms on a rope, the heavier side falling (machinepulley.js); on/off blocks swapped by a toggle (machineonoff.js)
 //
 //   const M = new WellMachine(well)   M.crate(at, size)   M.seesaw(at, len)   M.belt(at, size, vx)   M.shuttle(at, size, to)
-//   M.crumble(part)   M.switch(pad, door)   M.key(at, door)   M.cannon(at, dir, range)   M.update(dt)   M.clear()
+//   M.crumble(part)   M.switch(pad, door)   M.key(at, door)   M.cannon(at, dir, range)   M.pulley(S, spec)   M.onOff(S, spec)   M.update(dt)   M.clear()
+//   a key is a Possibilikey by kind (`key.brass`, tools/lockheart/table.js KEYS): its colour and name are that row's, carried in `K.kind`
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { COLOR } from './stagekit.js';
+import { KEYS } from '../../tools/lockheart/table.js';
+import { WellTurret } from './turret.js';
+import { makePulley, tickPulley } from './machinepulley.js';
+import { makeOnOff, tickOnOff } from './machineonoff.js';
 
 export const CRUMBLE = { hold: 0.6, back: 4 };
 export const SWITCH = { open: 4.5, rise: 7 };
-export const CANNON = { every: 2.4, speed: 5, r: 0.32, knock: 6.5 };
 export const SEESAW = { density: 60, damp: 1.6, max: 0.38, weight: 784 };
 
 const _v = new THREE.Vector3(), _q = new THREE.Quaternion(), _e = new THREE.Euler();
 
 export class WellMachine {
-  constructor(well) { this.well = well; this.game = well.game; this.items = []; this.crates = []; this.movers = []; this.balls = []; }
+  constructor(well) { this.well = well; this.game = well.game; this.items = []; this.crates = []; this.movers = []; this.turret = new WellTurret(this); }
 
   get P() { return this.game.player; }
   add(it) { if (it.z == null) it.z = this.well.kit?.z ?? null; this.items.push(it); return it; }
@@ -69,8 +74,10 @@ export class WellMachine {
   /** pad: { x0, x1, top, mesh }, door: { mesh, collider } */
   switch(pad, door) { const S = { kind: 'switch', pad, door, open: 0, y0: door.mesh.position.y, k: 0 }; this.add(S); return S; }
   /** A key (its mesh) at `at`, and the door its lock opens. */
-  key(mesh, door) { const K = { kind: 'key', mesh, door, held: false, used: false, home: mesh.position.clone(), y0: door.mesh.position.y, k: 0 }; this.add(K); return K; }
-  cannon(at, dir, range, into) { const C = { kind: 'cannon', at: at.clone(), dir, range, t: CANNON.every * 0.5, into }; this.add(C); return C; }
+  key(mesh, door, kind = 'key.brass') { mesh.material?.color?.setHex(KEYS[kind]?.color ?? COLOR.gold); mesh.name = 'wellPossibilikey'; const K = { kind: 'key', what: kind, mesh, door, held: false, used: false, home: mesh.position.clone(), y0: door.mesh.position.y, k: 0 }; this.add(K); return K; }
+  cannon(at, dir, range, into) { return this.turret.add(at, dir, range, into); }
+  pulley(S, spec) { return makePulley(this, S, spec); }
+  onOff(S, spec) { return makeOnOff(this, S, spec); }
 
   update(dt) {
     const g = this.game, P = this.P, W = this.well;
@@ -78,7 +85,7 @@ export class WellMachine {
     if (g.techs?.get?.('carry')?.item && this.crates.some((c) => c.e === g.techs.get('carry').item)) W.verb('carry');
     for (const m of this.movers) if (P.platform === m) W.verb(m.surface ? 'conveyor' : 'mover');
     for (const it of this.items) if (this.here(it)) this[`tick_${it.kind}`]?.(it, dt); // (only the lane you stand in runs: every lane starts at the same x)
-    this.tickBalls(dt);
+    this.turret.update(dt);
   }
 
   tick_seesaw(S, dt) {
@@ -119,25 +126,9 @@ export class WellMachine {
     D.door.mesh.position.y = D.y0 + D.k * SWITCH.rise;
     const solid = D.k < 0.4; if (solid !== D.solid) { D.solid = solid; D.door.collider?.setEnabled(solid); }
   }
-  tick_cannon(C, dt) {
-    if ((C.t -= dt) > 0) return;
-    C.t = CANNON.every;
-    const m = new THREE.Mesh(new THREE.SphereGeometry(CANNON.r, 12, 8), new THREE.MeshStandardMaterial({ color: COLOR.pin, metalness: 0.5, roughness: 0.4 }));
-    m.position.copy(C.at); m.castShadow = true; C.into.add(m);
-    this.balls.push({ m, C, d: 0, near: false });
-  }
-  tickBalls(dt) {
-    const P = this.P;
-    for (let i = this.balls.length - 1; i >= 0; i--) {
-      const B = this.balls[i]; B.m.position.x += B.C.dir * CANNON.speed * dt; B.d += CANNON.speed * dt;
-      _v.set(P.pos.x, P.pos.y + 1.0, P.pos.z);
-      const d = _v.distanceTo(B.m.position); let gone = B.d > B.C.range;
-      if (d < 0.75 && !(P.invuln > 0)) { P.impulse(new THREE.Vector3(B.C.dir * CANNON.knock, 3, 0), 'cannon'); this.well.hit(); this.well.verb('cannon'); gone = true; }
-      else if (d < 2.2) B.near = true;
-      else if (B.near && !gone) { B.near = false; this.well.verb('cannon'); }
-      if (gone) { B.m.parent?.remove(B.m); B.m.geometry.dispose(); B.m.material.dispose(); this.balls.splice(i, 1); }
-    }
-  }
+  tick_cannon(C, dt) { this.turret.tick(C, dt); }
+  tick_pulley(it, dt) { tickPulley(this, it, dt); }
+  tick_onoff(it) { tickOnOff(this, it); }
 
   /** Everything it made taken away: the crates, the movers, the seesaw's body, the balls (the room's group takes the meshes). */
   clear() {
@@ -149,7 +140,7 @@ export class WellMachine {
       try { g.physics.world.removeRigidBody(m.body); } catch { /* (gone already) */ }
     }
     for (const it of this.items) if (it.kind === 'seesaw') { try { g.physics.world.removeRigidBody(it.body); } catch { /* (gone already) */ } }
-    for (const B of this.balls) { B.m.parent?.remove(B.m); B.m.geometry.dispose(); B.m.material.dispose(); }
-    this.items = []; this.crates = []; this.movers = []; this.balls = [];
+    this.turret.clear();
+    this.items = []; this.crates = []; this.movers = [];
   }
 }

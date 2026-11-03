@@ -63,14 +63,16 @@ export function pullStep(c, to, share, wind = 0) {
   return fromXY(ax + dx - dy * wind, ay + dy + dx * wind, c.h);
 }
 
-/** Press materials in order: the colour walks each one's path in turn (`extra` more steps of each one's own pull: a spirit at work).
+/** Press materials in order: the colour walks each one's path in turn (`extra` more steps of each one's own pull: a spirit at work; a
+ *  number for all, or a function of the material for a spirit whose feeling's materials only get one: progress/spiritwork.js).
  *  Returns where it ends and every point it passed. The one walk: the press and its preview both use it, so the preview is the press. */
 export function press(colour, materials, { extra = 0 } = {}) {
   let c = { h: colour.h, s: colour.s };
   const trail = [{ ...c }];
   for (const m of materials) {
     const to = { h: m.hue, s: m.sat }, steps = [...m.path];
-    for (let i = 0; i < extra && m.path.length; i++) steps.push([m.path[0][0], 0]);
+    const more = typeof extra === 'function' ? extra(m) : extra;
+    for (let i = 0; i < more && m.path.length; i++) steps.push([m.path[0][0], 0]);
     for (const [share, wind] of steps) { c = pullStep(c, to, share, wind); trail.push({ ...c }); }
   }
   return { colour: c, trail };

@@ -3,36 +3,32 @@
 // the sea gives that is worth sailing for, beyond a find's fee paid once.
 //   SALVAGE   a wreck is a site: alongside it, with the Sondelass worn (the hook: the harpoon mount at sea), a crate is hauled up. The first
 //             salvage of a wreck gives its tier's crates; after that the sea gives one more a game day (what the swell turns up), so the
-//             open sea keeps a small faucet once it is charted (section 9's open call). A crate is cubes, mostly; sometimes a ship's part.
+//             open sea keeps a small faucet once it is charted (section 9's open call). A crate is cubes, mostly; sometimes a FRAGMENT of a
+//             ship's part (fragments.js), made into the part at a quay once there are enough.
 //   THE SHIP'S PARTS  a sail, a keel and a hull fitting, each a trade, never an upgrade (the skiff garage's rule, skiffparts.js): the sea
 //             feeds the ship you sail it in. A part is found in salvage (rare wrecks more often) or forged from the beasts sunk (forge.js); worn at a
 //             dock; it changes the polar the wind reads (wind.js `rig`), the helm's turn and way, the hull's hits.
 //
-// Prior art: Sea of Thieves (shipwrecks' crates and the harpoon that pulls them in), Subnautica (wrecks worth swimming to for what they
+// Prior art: Sea of Thieves (shipwrecks' crates and the harpoon that pulls them in), Subnautica (and its fragments, fragments.js) (wrecks worth swimming to for what they
 // hold), Mario Kart 8's parts (traded stats, none strictly better), real sail plans: a lateen points higher, a spinnaker runs, a deep keel
 // tracks through a current.
 //
-//   SALVAGE (its numbers)   cratesOf(tier, first) -> n   crateOf(r, tier) -> { cubes } | { part }   SHIP_PARTS[slot][id] = { name, does,
-//   rig?, mult?, from? }   SALVAGE_PARTS   rigOf(worn) -> wind.js's rig   multOf(worn, key) -> number   game.shipParts = new ShipParts(game)   .owned .worn
-//   .has(id) .wear(slot, id) .give(id) -> bool (new)   .rig() .mult(key)   events: sea.salvage { wreck, tier, crate }, ship.part { slot, part, how }
+//   SALVAGE (its numbers)   cratesOf(tier, first) -> n   crateOf(r, tier, owned, held) -> { cubes } | { fragment }   SHIP_PARTS[slot][id] = { name, does,
+//   rig?, mult?, from? }   SALVAGE_PARTS   rigOf(worn) -> wind.js's rig   multOf(worn, key) -> number   game.shipParts = new ShipParts(game)   .owned .worn .frags
+//   .has(id) .wear(slot, id) .give(id) -> bool (new)   .fragment(id) -> n held   .make(id) -> bool (fragments.js)   .rig() .mult(key)   events: sea.salvage { wreck, tier, crate }, ship.part { slot, part, how }
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../econ/table.js';
-
-/** crates: a wreck's on its first salvage, by tier; daily: more a game day after; cubes: a cube crate's worth (minutes of play at the aim,
- *  by tier); part: a crate's chance of a ship's part, by tier; reach: m alongside; haul: real s a crate takes to come up. */
-export const SALVAGE = {
-  crates: { common: 2, uncommon: 3, rare: 4, legend: 6 }, daily: 1,
-  cubes: { common: 1, uncommon: 1.5, rare: 2.5, legend: 4 },
-  part: { common: 0.04, uncommon: 0.08, rare: 0.15, legend: 0.35 },
-  reach: 30, haul: 2,
-};
+import { SALVAGE } from './salvagenumbers.js';
+import { fragmentChance, fragmentOf, canMake, FRAGMENTS } from './fragments.js';
+export { SALVAGE };
 
 /** A wreck's crates now: its tier's on the first salvage, `daily` after. */
 export const cratesOf = (tier, first) => (first ? SALVAGE.crates[tier] ?? 2 : SALVAGE.daily);
 
-/** One crate opened: a ship's part (one not yet owned, by `r`) or cubes. */
-export function crateOf(r, tier, owned = new Set()) {
-  if (r() < (SALVAGE.part[tier] ?? 0.04)) { const left = PART_IDS.filter((id) => !owned.has(id)); if (left.length) return { part: left[Math.floor(r() * left.length)] }; }
+/** One crate opened: a FRAGMENT of a ship's part not yet owned (fragments.js: `held` is the fragments in hand, a part begun is likelier)
+ *  or cubes. */
+export function crateOf(r, tier, owned = new Set(), held = {}) {
+  if (r() < fragmentChance(tier)) { const id = fragmentOf(r, PART_IDS, owned, held); if (id) return { fragment: id }; }
   return { cubes: Math.round((SALVAGE.cubes[tier] ?? 1) * ECON.perMinute * (0.8 + 0.4 * r())) };
 }
 
@@ -79,15 +75,26 @@ export function multOf(worn, key) {
 
 export class ShipParts {
   constructor(game) {
-    this.game = game; this.owned = new Set(); this.worn = { sail: 'stock', keel: 'stock', hull: 'stock' };
-    game.save?.section('shipParts', { scope: 'player', version: 1, dump: () => ({ owned: [...this.owned], worn: { ...this.worn } }),
-      load: (d) => { this.owned = new Set((d?.owned || []).filter((id) => slotOf(id))); this.worn = { sail: 'stock', keel: 'stock', hull: 'stock' };
+    this.game = game; this.owned = new Set(); this.frags = {}; this.worn = { sail: 'stock', keel: 'stock', hull: 'stock' };
+    game.save?.section('shipParts', { scope: 'player', version: 2, dump: () => ({ owned: [...this.owned], frags: { ...this.frags }, worn: { ...this.worn } }),
+      load: (d) => { this.owned = new Set((d?.owned || []).filter((id) => slotOf(id))); this.frags = Object.fromEntries(Object.entries(d?.frags || {}).filter(([id, n]) => PART_IDS.includes(id) && n > 0 && !this.owned.has(id))); this.worn = { sail: 'stock', keel: 'stock', hull: 'stock' };
         for (const slot of PART_SLOTS) { const id = d?.worn?.[slot]; if (id && (id === 'stock' || this.owned.has(id)) && SHIP_PARTS[slot][id]) this.worn[slot] = id; } },
-      reset: () => { this.owned = new Set(); this.worn = { sail: 'stock', keel: 'stock', hull: 'stock' }; } });
+      reset: () => { this.owned = new Set(); this.frags = {}; this.worn = { sail: 'stock', keel: 'stock', hull: 'stock' }; } });
   }
   has(id) { return id === 'stock' || this.owned.has(id); }
   /** A part found (salvage) or forged (forge.js, at a quay): true if it is new. */
   give(id, how = 'salvage') { const slot = slotOf(id); if (!slot || this.owned.has(id)) return false; this.owned.add(id); this.game.save?.dirty?.('shipParts'); this.game.events?.emit('ship.part', { slot, part: id, how, by: 'courier' }); return true; }
+  /** A fragment of a part found (a crate): the count held now; the part is made at a quay (`make`). */
+  fragment(id) {
+    if (!PART_IDS.includes(id) || this.owned.has(id)) return 0;
+    this.frags[id] = (this.frags[id] || 0) + 1; this.game.save?.dirty?.('shipParts');
+    this.game.events?.emit('ship.fragment', { part: id, held: this.frags[id], need: FRAGMENTS.need, by: 'courier' }); return this.frags[id];
+  }
+  /** A part made from its fragments (at a quay: the room takes the fee first): true if made. */
+  make(id) {
+    if (!canMake(this.frags, id).ok || this.owned.has(id)) return false;
+    delete this.frags[id]; return this.give(id, 'fragments');
+  }
   /** A part worn (at a dock: the room asks): refused if not owned. */
   wear(slot, id) { if (!SHIP_PARTS[slot]?.[id] || !this.has(id)) return false; this.worn[slot] = id; this.game.save?.dirty?.('shipParts'); this.game.events?.emit('ship.part', { slot, part: id, how: 'wear', by: 'courier' }); return true; }
   rig() { return rigOf(this.worn); }

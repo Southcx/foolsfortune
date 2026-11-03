@@ -22,7 +22,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { stream } from '../../core/rng.js';
-import { FIRE, HEAT, GIANT_FIRE, STATE, newFire, stepFire, igniteNear, igniteRay, douse, heatStep } from '../../progress/mechs/fire.js';
+import { FIRE, BURNT, HEAT, GIANT_FIRE, STATE, newFire, stepFire, igniteNear, igniteRay, douse, heatStep } from '../../progress/mechs/fire.js';
 import { MECH_BODY, heightOf } from './mech.js';
 
 /** The most burning cells the look's buffer holds (city.fire.cells: a burning shop row peaks about 170, the whole street a few thousand). */
@@ -138,10 +138,14 @@ export class CityFire {
   /** Fire on real time: the automaton at FIRE.hz, the giants, the mech's heat. */
   update(raw) {
     if (!this.city.built) return;
+    this.clock = (this.clock || 0) + raw;
     const dt = 1 / FIRE.hz; this.acc = Math.min(this.acc + raw, dt * 2);
     while (this.acc >= dt) { this.acc -= dt; for (const rec of this.city.recs) if (rec.fx.on || rec.fx.watch) this.step(rec, dt); this.giants(dt); this.gather(); }
     this.heatTick(raw);
   }
+
+  /** A building its fire burned out (BURNT: a share of it taken, the last within the minute): a felling now is a burning down. */
+  burntOut(rec) { const fx = rec.fx; return (fx.charred || 0) >= BURNT.share * rec.b.start && (this.clock || 0) - (fx.charAt ?? -Infinity) <= BURNT.within; }
 
   /** One automaton step of one building, and what it changed. */
   step(rec, dt) {
@@ -149,6 +153,7 @@ export class CityFire {
     const r = stepFire(b, dt, this.R), by = f.by || 'courier';
     if (r.away.length || r.glass.length) { // (cells burned away, glass burst by heat: the collapse a fist's carve runs, and what it threw)
       const all = r.away.concat(r.glass), at = this.at(rec, all);
+      if (r.away.length) { fx.charred = (fx.charred || 0) + r.away.length; fx.charAt = this.clock; } // (what the fire took, for BURNT)
       if (r.away.length) this.say('city.char', { building: rec.id, lot: rec.i, cells: r.away.length, at, by });
       C.chips(rec, r.away, null, { tint: C.look.fire.char, every: 3 }); C.chips(rec, r.glass, null, { tint: C.look.colour.glass });
       C.settle(rec, all, { by, cause: 'fire', chips: false, brk: { cells: r.glass.length, at, cause: r.glass.length ? 'heat' : 'fire' } });

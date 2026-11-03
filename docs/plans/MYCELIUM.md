@@ -167,6 +167,18 @@ The spirits are already caught, bound, fed, drilled, raced, sparred and merged (
   stands in the garden for good, holding its colour and a line of its song (Wanda). "Bound until released" stays literal: release is
   yours, and it leaves something behind.
 
+- **Built 2026-11-03 (G153 to G156; `node scripts/garden-life.mjs`):**
+  - a spirit set to a bed (`SporeBeds.worker`) tends it a quarter faster, and its grain bends the work (`mycelium.js` `BEND`): an orderly
+    spirit's print keeps the tier a plain print loses; a curious spirit's graft, a third of the time, comes out as the second-nearest
+    curio of the tier (a find the plain table never gives);
+  - a spirit beside a bare bed for 3 game days (bond 30) seeds its own feeling's strain there, if you hold it (`SporeBeds.seedBy`);
+  - wild spore prints (`progress/sporeprints.js`): the ridges' lichen, the Weir's koji, the ruins' inkcap, the oyster and the witches'
+    butter on the damp floors of the Great Dunemaw (2 and 3, likelier by half);
+  - the tree's fruit (marked `fruit`) fed to a spirit tints its body, its stat follows the colour's feeling, and its kind likes one
+    feeling's fruit (x1.5) and dislikes the one that overcomes it (x0.5), shown by the body (`progress/spiritdiet.js`);
+  - Myggdrasil's diary: the first visit of a game day says what it ate and how its sap moved (`progress/treediary.js`).
+  Still to land: the sporelings (cut, 2026-10-09), and Petra's hooks (`docs/handoffs/petra/2026-11-03-from-dovina-garden-life.md`).
+
 ## 6. The slice of life
 
 - **The garden's clock:**

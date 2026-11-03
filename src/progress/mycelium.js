@@ -33,7 +33,7 @@
 // the forest floor's decomposition, the spore print, koji, Newton's Opticks (a mixture is the centre of gravity of its parts).
 //
 //   SIGNATURE   signatureOf(item) -> { h, s, worth, tier }   STRAINS[feeling]   bedHours(feeling, neighbours) -> game hours
-//   digest(feeling, inputs, seed) -> { ok, why?, out: [item] }   graftOf(a, b) -> curio id   TREE   sapAfter(sap, item) -> sap
+//   digest(feeling, inputs, seed, { grain }) -> { ok, why?, out: [item], bent? }   graftOf(a, b, { other }) -> curio id   BEND   bendOf(grain, seed) -> { truer, other }   TREE   sapAfter(sap, item) -> sap
 //   BRANCHES[arcana] = { adds, strain? }   CAPS   fruit(tree, weekday, seed) -> { fruit: [material], sap }   treeGirth(fed) -> n   bodiesOpen(girth) -> n   WEEKDAY_FEELING   kindOfHue(h)
 // ---------------------------------------------------------------------------------------
 import { ECON } from './econ/table.js';
@@ -70,6 +70,7 @@ export const SIGNATURE = {
   bloom: { h: 275, s: 1.0 },      // blacklight
   koi: { h: 10, s: 0.9 },         // vermilion
   crown: { h: 70, s: 0.7 },       // the urn's slip-gold
+  fulgurite: { h: 28, s: 0.35 },  // fused sand, a lightning's tan glass (the ridges' rare find)
 };
 
 /** A thing's colour signature, worth (cubes, `worthOf`'s rule) and tier: what a fungus or the tree reads of it. */
@@ -95,6 +96,15 @@ export const STRAINS = {
 /** The numbers: rot gives back this share of a thing's worth; ferment and dissolve move saturation this far; a graft rises a tier when
  *  its two are at least this far apart on the wheel (`distance`, 0..1); the generating neighbour's and the overcoming neighbour's pace. */
 export const MYCO = { rot: 0.6, ferment: 0.25, dissolve: 0.3, marry: 0.55, generating: 1.25, overcoming: 0.75, printTier: -1 };
+/** A tending spirit's grain bends the work (G153, MYCELIUM.md 5): a dial at `at` or over (grain.c orderly, grain.o curious) and a print
+ *  loses no tier (truer); a curious spirit's graft, `odds` of the time, comes out as the second-nearest curio of the tier (the pair tried
+ *  the other way round: a find the plain table never gives). Chosen by the bed's own seed, so the same bed's seed gives the same twice. */
+export const BEND = { at: 0.3, odds: 0.34 };
+/** What a tending spirit's grain does to a bed's work: { truer, other } (other: decided by the seed). */
+export function bendOf(grain, seed = 1) {
+  const r = (Math.imul((seed >>> 0) + 17, 2654435761) >>> 0) / 4294967296;
+  return { truer: (grain?.c || 0) >= BEND.at, other: (grain?.o || 0) >= BEND.at && r < BEND.odds };
+}
 const GEN = ['wonder', 'mirth', 'desire', 'grief', 'dread'];
 const OVERCOMES = { wonder: 'desire', desire: 'dread', dread: 'mirth', mirth: 'grief', grief: 'wonder' }; // (SPIRIT-GARDEN.md section 1)
 
@@ -125,30 +135,34 @@ function materialOf(h, s, tier, seed, straight) {
 /** The curio two curios graft into: the one nearest their mixed colour (each weighed by its worth), a tier up when the two are of one
  *  tier and near complements (`MYCO.marry`: a marriage of equals and opposites), else at the higher tier of the two. A table you can
  *  learn (SMT's), never a die. (Equals only: a cheap curio married to a dear one would mint a tier from nothing: the check's x1.62.) */
-export function graftOf(a, b) {
+export function graftOf(a, b, { other = false } = {}) {
   const A = signatureOf(a), B = signatureOf(b); if (!A || !B) return null;
   const w = A.worth / (A.worth + B.worth), mix = pullStep({ h: B.h, s: B.s }, { h: A.h, s: A.s }, w, 0);
   const up = A.tier === B.tier && distance(A, B) >= MYCO.marry, tier = Math.min(4, Math.max(A.tier, B.tier) + (up ? 1 : 0));
   const pool = CURIOS.filter((c) => c.tier === tier && c.chest !== false && SIGNATURE[c.id]);
-  let best = null, d = Infinity;
-  for (const c of pool) { const dd = distance(mix, SIGNATURE[c.id]); if (dd < d) { d = dd; best = c; } }
+  const ranked = pool.map((c) => [distance(mix, SIGNATURE[c.id]), c]).sort((x, y) => x[0] - y[0]);
+  const best = (other && ranked.length > 1 ? ranked[1] : ranked[0])?.[1];
   return best ? `curio.${best.id}` : null;
 }
 
 /** What a spore bed of a strain gives for what was set in it (`inputs`: one thing, or two curios for a graft). Pure: the seed is the bed's. */
-export function digest(feeling, inputs = [], seed = 1) {
+export function digest(feeling, inputs = [], seed = 1, { grain = null } = {}) {
   const S = STRAINS[feeling]; if (!S) return { ok: false, why: 'no strain' };
   const ins = inputs.filter(Boolean);
   if (S.pair ? ins.length !== 2 : ins.length !== 1) return { ok: false, why: S.pair ? 'a graft takes two curios' : 'one thing at a time' };
   if (ins.some((x) => !S.eats.includes(x.kind))) return { ok: false, why: `this strain eats ${S.eats.join(' and ')}` };
   const sig = signatureOf(ins[0]); if (!sig) return { ok: false, why: 'it has no colour to read' };
-  if (S.verb === 'graft') { const id = graftOf(ins[0], ins[1]); return id ? { ok: true, out: [{ kind: 'curio', id }] } : { ok: false, why: 'they will not take' }; }
+  const bend = grain ? bendOf(grain, seed) : { truer: false, other: false };
+  if (S.verb === 'graft') {
+    const plain = graftOf(ins[0], ins[1]), id = bend.other ? graftOf(ins[0], ins[1], { other: true }) : plain;
+    return id ? { ok: true, out: [{ kind: 'curio', id }], bent: id !== plain ? 'other' : null } : { ok: false, why: 'they will not take' };
+  }
   if (S.verb === 'ferment' || S.verb === 'dissolve') {
     const m = { ...ins[0], path: ins[0].path.map((p) => [...p]) };
     m.sat = +Math.max(0, Math.min(1, m.sat + (S.verb === 'ferment' ? MYCO.ferment : -MYCO.dissolve))).toFixed(2);
     return { ok: true, out: [m] };
   }
-  if (S.verb === 'print') return { ok: true, out: [materialOf(sig.h, sig.s, sig.tier + MYCO.printTier, seed, true)] };
+  if (S.verb === 'print') return { ok: true, out: [materialOf(sig.h, sig.s, sig.tier + MYCO.printTier + (bend.truer ? 1 : 0), seed, true)], bent: bend.truer ? 'truer' : null };
   // rot: materials of the thing's colour, the dearest tier that fits first, until a share of its worth is spent
   const M = (n) => Math.round(n * ECON.perMinute); let left = sig.worth * MYCO.rot, k = 0; const out = [];
   for (let t = Math.min(4, sig.tier); t >= 0 && left >= M(1); ) {

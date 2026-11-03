@@ -13,12 +13,15 @@
 //
 //   game.cooking = new Cooking(game)   .practice(move)   .learn(dish, grade)   .known   .best(dishId)   .serve(result)   .fadeK()
 //   .proofing { addin, knead, n, t0 }   .startProof(addin, knead, n)   .proofValue()   .serve(res, { n, auto })   .eat(slot)   .lay(draught)
-// Events (with `by`): cook.move { move, score, hit, ruined, dish }, cook.serve { dish, label, grade, feeling, strength, hold, first, true, n, kept, auto },
+// Long step: .startLong(info) .tend(mode) .longValue() .takeLong()   Recipes found: .teach(family, addin, via) .receive(giver) .checkSlabs(L) .mend(slab, picks) (recipes.js)
+// Events (with `by`): cook.long { family, move }, cook.taste { giver, dish, label, fresh }, cook.slab { slab, state: found, tried, mended, dish }, cook.move { move, score, hit, ruined, dish }, cook.serve { dish, label, grade, feeling, strength, hold, first, true, n, kept, auto },
 //   cook.dubious { dish, n }, cook.proof { addin }, cook.learn { dish, label }, cook.eat { dish, label, grade, feeling, strength, hold }
 // A batch's servings and the auto-cook: progress/cooking/batch.js (a serving is a thing in the Pneuka Box, `dish.<dish>.<grade>`).
 // ---------------------------------------------------------------------------------------
 import { MOVES, practiceFrom } from './moves.js';
-import { gradeById } from './dishes.js';
+import { gradeById, dishFor } from './dishes.js';
+import { fermentValue } from './plays.js';
+import { GIFTS, slabOf, slabsOpen, mendSlab } from './recipes.js';
 import { servingId, servingOf, serveAt } from './batch.js';
 import { now as calNow, DAY_MS } from '../../core/calendar.js';
 const GAME_HOUR = DAY_MS / 24;
@@ -30,11 +33,11 @@ export class Cooking {
   constructor(game) {
     this.game = game; this.reset();
     game.save?.section('cooking', { scope: 'player', version: 1,
-      dump: () => ({ practice: this.s.practice, known: this.s.known, proof: this.s.proof, hold: this.s.hold }),
-      load: (d) => { this.reset(); if (d && typeof d === 'object') { Object.assign(this.s.practice, d.practice || {}); Object.assign(this.s.known, d.known || {}); this.s.proof = d.proof || null; this.s.hold = d.hold || null; } },
+      dump: () => ({ practice: this.s.practice, known: this.s.known, proof: this.s.proof, hold: this.s.hold, long: this.s.long, slabs: this.s.slabs }),
+      load: (d) => { this.reset(); if (d && typeof d === 'object') { Object.assign(this.s.practice, d.practice || {}); Object.assign(this.s.known, d.known || {}); this.s.proof = d.proof || null; this.s.hold = d.hold || null; this.s.long = d.long || null; Object.assign(this.s.slabs, d.slabs || {}); } },
       reset: () => this.reset() });
   }
-  reset() { this.s = { practice: {}, known: {}, proof: null, hold: null }; }
+  reset() { this.s = { practice: {}, known: {}, proof: null, hold: null, long: null, slabs: {} }; }
   dirty() { this.game.save?.dirty('cooking'); }
   emit(n, p) { this.game.events?.emit(n, { ...p, by: 'courier' }); }
 
@@ -101,4 +104,49 @@ export class Cooking {
   proofValue() { const p = this.s.proof; if (!p) return 0; return Math.max(0, (calNow() - p.t0) / GAME_HOUR) * MOVES.proof.rate * 0.5; }
   takeProof() { const p = this.s.proof; this.s.proof = null; this.dirty(); return p; }
   get proofing() { return this.s.proof; }
+
+  // ------------------------------------------------------------------ a long step on the game clock (the ferment; plays.js fermentValue)
+  /** A long move set going (`info`: family, addin, n, idx, scores, hits). Its warmth starts steady; `tend` changes it. */
+  startLong(info, at = calNow()) { this.s.long = { ...info, t0: at, segs: [], mode: 'steady', since: at }; this.emit('cook.long', { family: info.family, move: info.move }); this.dirty(); return this.s.long; }
+  get long() { return this.s.long; }
+  /** The warmth set (a mode of the move: cool, steady or warm), the time so far closed into its segments. */
+  tend(mode, at = calNow()) {
+    const Lg = this.s.long, M = MOVES[Lg?.move]; if (!Lg || !M?.modes?.[mode]) return false;
+    Lg.segs.push([Math.max(0, (at - Lg.since) / GAME_HOUR), M.modes[Lg.mode].mult]); Lg.mode = mode; Lg.since = at; this.dirty(); return true;
+  }
+  /** How far the long move has come now (its closed segments and the open one). */
+  longValue(at = calNow()) {
+    const Lg = this.s.long, M = MOVES[Lg?.move]; if (!Lg || !M) return 0;
+    return fermentValue([...Lg.segs, [Math.max(0, (at - Lg.since) / GAME_HOUR), M.modes[Lg.mode].mult]], M.rate);
+  }
+  takeLong() { const Lg = this.s.long; this.s.long = null; this.dirty(); return Lg; }
+
+  // ------------------------------------------------------------------ recipes found by tasting and by repair (recipes.js)
+  /** A recipe kept without cooking it (taught, or mended): a known dish with no best yet. False when already known. */
+  teach(family, addin, via) {
+    const D = dishFor(family, addin); if (!D || this.s.known[D.id]) return false;
+    this.s.known[D.id] = { label: D.label, best: null, n: 0, trues: 0, via };
+    this.emit('cook.learn', { dish: D.id, label: D.label, via }); this.dirty(); return true;
+  }
+  /** A dish one of the folk or a spirit gave you to taste (recipes.js GIFTS): its recipe kept. */
+  receive(giver) {
+    const G = GIFTS[giver]; if (!G) return null;
+    const D = dishFor(G.family, G.addin), fresh = this.teach(G.family, G.addin, 'tasting');
+    this.emit('cook.taste', { giver, dish: D.id, label: D.label, fresh });
+    return { dish: D, fresh, line: G.line };
+  }
+  /** The slabs that have turned up for the ledger `L`, each told once (`cook.slab` found); the ids found so far. */
+  checkSlabs(L) {
+    for (const id of slabsOpen(L)) if (!this.s.slabs[id]) { this.s.slabs[id] = 'found'; const S = slabOf(id); this.emit('cook.slab', { slab: id, state: 'found', dish: dishFor(S.family, S.addin).id }); this.dirty(); }
+    return Object.keys(this.s.slabs);
+  }
+  slabState(id) { return this.s.slabs[id] || null; }
+  /** A slab mended with a move for each blank: whole, the recipe is kept (via repair); otherwise how many are right, and nothing is lost. */
+  mend(id, picks) {
+    const S = slabOf(id); if (!S || this.s.slabs[id] !== 'found') return null;
+    const r = mendSlab(S, picks), D = dishFor(S.family, S.addin);
+    if (r.ok) { this.s.slabs[id] = 'mended'; this.teach(S.family, S.addin, 'repair'); this.emit('cook.slab', { slab: id, state: 'mended', dish: D.id, label: D.label }); this.dirty(); }
+    else this.emit('cook.slab', { slab: id, state: 'tried', dish: D.id, right: r.right, total: r.total });
+    return r;
+  }
 }

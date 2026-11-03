@@ -224,9 +224,9 @@ make a garden.
 - [ ] **C2. Wishes** (Spiritfarer). From bond 30, a spirit asks for one thing at a time: a feature or piece near its spot, a food, a
   plate of its kind in the wild, or a visit at an hour. Met, it gives +10 bond, +0.05 harmony (A2) and a thank-you letter (C5). Only
   one wish a spirit is open at a time, it never expires, and nothing is lost by ignoring it (no needy companions, Horseshoe).
-- [ ] **C3. A spirit notices.** It comments on the decor nearest its spot or on what you just moved, in its grain's register. These
+- [x] **C3. A spirit notices** (rule built 2026-11-03, `progress/spiritnotice.js`; the F that talks to a spirit is Petra's hook, and the dialogue box is South's ruling: a spirit has none, so the log quotes it). It comments on the decor nearest its spot or on what you just moved, in its grain's register. These
   are words in the dialogue box when you talk to it (F over it with the hand); the rest of the time, glyphs and body.
-- [ ] **C4. Folk visitors, drawn by what the garden shows** (the existing VISITORS are the wild ones). The opinion is the island
+- [x] **C4. Folk visitors, drawn by what the garden shows** (built 2026-11-03, `progress/gardenfolk.js`: Pip at a planetoid in bloom, Saggar at three pots, Raku at two lake lotuses, a sibling in the party; one a game day, a gift on a first visit of the set's visitor pieces; the briar ones are `VISITORS` with `briar`, G119) (the existing VISITORS are the wild ones). The opinion is the island
   rating said in a voice, never a number:
   - Pip at high harmony;
   - Saggar for glazes and pots;
@@ -242,7 +242,7 @@ make a garden.
 - [ ] **C6. The farewell** (Spiritfarer's Everdoor). A matured spirit at bond 100 may ask to go home. The release becomes a small
   ceremony and it is never forced: you may say "not yet", for ever. After it, postcards (C5). Release is canon already; this gives it
   its weight.
-- [ ] **C7. The dawn digest.** Myggdrasil's diary grows into the morning's log lines: who woke where, who wants what, the weather, a
+- [x] **C7. The dawn digest** (the tree's own diary built 2026-11-03, `progress/treediary.js`, G156). Myggdrasil's diary grows into the morning's log lines: who woke where, who wants what, the weather, a
   letter waiting. A Wonderful Life's morning TV, Stardew's notice board. One block of at most four lines, said on entering the garden
   for the first time each game day.
 
@@ -315,7 +315,7 @@ make a garden.
 - [ ] **E1. Four seasons of 7 game days each** (7 real hours of play a season, a garden year in 28 game days). A Wonderful Life's
   10-day seasons (unverified) and Stardew's 28 days are the bounds. 7 means a player at an hour or two a day sees a season a week:
   the week's scale. **Question Q2:** the garden's own, or the whole island's?
-- [ ] **E2. What a season changes:**
+- [x] **E2. What a season changes** (the plants and the visitors built 2026-11-03, `progress/seasonlife.js`: spring wakes the green x1.5, summer holds, autumn seeds but slows, winter rests, each ground x1.25 in its own season; glints come spring and summer, clapperjars summer and autumn, lobbers and Wisps autumn and winter; Petra's hooks in `docs/handoffs/petra/`):
   - **The look:** leaf colour, blossom in spring, snow on the poles in winter; Calissa's.
   - **The cue's arrangement:** Wanda's, B6.
   - **The plants that spread:** the existing cellular rule, but by season.
@@ -419,3 +419,12 @@ make a garden.
   its feeling's farewell glaze. Each glaze hangs on a hidden achievement over `spirit.farewell.<feeling>` (gy17 Wonder to gy21 Dread),
   so it is retroactive like every glaze; the five glazes themselves are Calissa's.
 - **Q5.** Rearranging is free: "nobody wants to pay to shuffle furniture."
+
+### Rulings on the garden's life (Dovina, 2026-11-03)
+- **A spirit's remark goes in the log, quoted.** The dialogue box stays the folk's one window; a spirit has none, as its farewell has none.
+- **A curious spirit's graft is the second-nearest curio of its tier, a third of the time.** Reversing the pair did nothing (the table is
+  near symmetric), so this is the only way to make curiosity show. The table stays the table for every other graft.
+- **An orderly spirit's print keeps its tier.** Measured by the colour road's pace when Petra's hook lands; until then it stands.
+- **A spirit seeds only a strain you hold.** The wild prints are the way to the rest. A spirit that taught strains would close the
+  world's road.
+- **The tastes, the season paces and `VISITOR_SEASONS` stand as built**, and the Great Dunemaw's floors 2 and 3 are its damp floors.

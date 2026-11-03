@@ -33,7 +33,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { stream } from '../../core/rng.js';
-import { MATERIALS, MAT, CITY, BUILDINGS, SCORE, newBuilding, carve, collapse, cellsLeft, felled, fallBlow, shatterGlass, splitChunk } from '../../progress/mechs/destruction.js';
+import { MATERIALS, MAT, CITY, BUILDINGS, SCORE, leavesBeam, newBuilding, carve, collapse, cellsLeft, felled, fallBlow, shatterGlass, splitChunk } from '../../progress/mechs/destruction.js';
 import { newFire, STATE, FIRE } from '../../progress/mechs/fire.js';
 import { CityFire } from './cityfire.js';
 import { VoxelBatch } from '../../vfx/voxels/voxelbatch.js';
@@ -44,7 +44,7 @@ import { MECH_BODY, heightOf } from './mech.js';
 /** The placeholder look (Calissa dresses it: the clay city's brick, glass and steel): a colour a material, each cell's lightness moved by
  *  up to `jitter` so a wall reads as cells, the glass paler and a touch glossier. */
 export const CITY_LOOK = {
-  colour: { glass: 0xc8e4f2, timber: 0x8a5a34, brick: 0xb0603e, stone: 0x8c8a84, steel: 0x4c5866, paper: 0xe6dcc4, furnishing: 0x4a3224 },
+  colour: { glass: 0xc8e4f2, timber: 0x8a5a34, brick: 0xb0603e, stone: 0x8c8a84, steel: 0x4c5866, paper: 0xe6dcc4, furnishing: 0x4a3224, adobe: 0xc08a5a },
   jitter: 0.09,
   // a cell in fire's state (fire.js STATE), the placeholder until Calissa dresses it: burning flushed orange (flickering as the mesh is made
   // again each fire step), scorched darkened, steel gone soft heated red, a doused cell darker; `char` the colour of what burned away
@@ -109,7 +109,7 @@ export class ToyCity {
     this.into = into; this.group = new THREE.Group(); this.group.name = 'toycity'; into.add(this.group);
     this.mat = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.88, metalness: 0.05 });
     this.recs = CITY.lots.map((L, i) => {
-      const b = newBuilding(L.id, i + 1), s = L.yaw ? -1 : 1, cx = A.x + L.x, cz = A.z + L.z;
+      const b = newBuilding(L.id, L.seed ?? i + 1), s = L.yaw ? -1 : 1, cx = A.x + L.x, cz = A.z + L.z;
       newFire(b); // (its fire state beside its cells: fire.js)
       const rec = { i, id: L.id, label: BUILDINGS[L.id].label, b, s, cx, cz, yaw: L.yaw || 0, dirty: true, felled: false, mesh: null, fx: { on: false, watch: false, burnT: 0, tick: 0 },
         x0: cx - b.w / 2, x1: cx + b.w / 2, z0: cz - b.d / 2, z1: cz + b.d / 2, y0: A.y, y1: A.y + b.h };
@@ -254,9 +254,10 @@ export class ToyCity {
     let down = false;
     if (!rec.felled && (b.fallen || felled(b))) {
       rec.felled = down = true;
-      g.events?.emit('city.felled', { building: rec.id, lot: rec.i, label: rec.label, topple: broke.length + loose >= SCORE.topple * before, ...(cause ? { cause } : {}), by });
+      const why = cause || (this.fire.burntOut(rec) ? 'fire' : null); // (a burned-out shell felled by a blow is burned down: fire.js BURNT)
+      g.events?.emit('city.felled', { building: rec.id, lot: rec.i, label: rec.label, topple: broke.length + loose >= SCORE.topple * before, ...(why ? { cause: why } : {}), by });
       this.hangar.pilot?.quake?.({ x: rec.cx, z: rec.cz }, 2); // (a building coming down shakes the cradle hardest)
-      if (BUILDINGS[rec.id].frame === MAT.steel) this.onGirder?.(new THREE.Vector3(rec.cx, PROVING.at.y, rec.cz + Math.sign(PROVING.at.z - rec.cz || 1) * (rec.b.d / 2 + 5))); // (a steel frame leaves a girder on its street side)
+      if (leavesBeam(rec.id)) this.onGirder?.(new THREE.Vector3(rec.cx, PROVING.at.y, rec.cz + Math.sign(PROVING.at.z - rec.cz || 1) * (rec.b.d / 2 + 5))); // (a steel frame leaves a girder on its street side, a large adobe its viga)
     }
     return { chunks: chunks.length, loose, felled: down };
   }

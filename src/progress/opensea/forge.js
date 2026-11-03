@@ -18,6 +18,7 @@
 //   forgePrice(partId) -> cubes   FORGE_PARTS (the ids)   (the rows themselves are SHIP_PARTS's, salvage.js, `from: 'forge'`)
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../econ/table.js';
+import { CAPTURE } from './capture.js';
 
 /** Each forged part: the beast it comes from (SEA_BEASTS id), the carves it asks, its price in minutes of play at the aim. Class 2 at
  *  3 carves and 15 minutes (a kill pays 4.5 to 7.5: three kills about the price), the kraken at 30, the legend's once a game day at 1. */
@@ -30,10 +31,11 @@ export const FORGE = {
 };
 export const FORGE_PARTS = Object.keys(FORGE);
 
-/** A beast's carves: sunk once each, twice when sunk with the hull whole. */
+/** A beast's carves: sunk once each, twice when sunk with the hull whole, twice when taken alive (capture.js). */
 export function carvesOf(L, beast) {
   const key = beast === 'seaSerpent' ? 'seaserpent.down' : `seabeast.down.${beast}`;
-  return (L?.get?.(key) || 0) + (L?.get?.(beast === 'seaSerpent' ? 'seaserpent.down.whole' : `seabeast.down.whole.${beast}`) || 0);
+  return (L?.get?.(key) || 0) + (L?.get?.(beast === 'seaSerpent' ? 'seaserpent.down.whole' : `seabeast.down.whole.${beast}`) || 0)
+    + (L?.get?.(`seabeast.captured.${beast}`) || 0) * CAPTURE.carves; // (a beast taken alive counts as a clean hunt: capture.js)
 }
 
 export const forgePrice = (id) => Math.round((FORGE[id]?.minutes ?? 0) * ECON.perMinute);

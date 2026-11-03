@@ -4,13 +4,14 @@
 // every kind of earthen building the proving ground's toy city may stand, large (blueprintslarge.js), medium (blueprintsmedium.js) and
 // small (blueprintssmall.js), and a building made from one in the shape Dovina's rules carve and collapse (progress/mechs/destruction.js
 // newBuilding's: { id, w, h, d, mat, hp, start, foot0 }), with two things more: `role` (a look role a cell, read by the dress) and
-// `props` (what hangs off its cells). Pure data: no three.js. Looks only until Dovina wires it (her BUILDINGS row taking a plan).
+// `props` (what hangs off its cells). Pure data: no three.js. Calissa's drafting (2026-11-03), moved here by Dovina's ruling the same
+// game day: the cells are the city's rules (they carve, burn and collapse), so they live beside them; her dress (vfx/mechs/city/) reads
+// the roles and props. Each kind is a row of BUILDINGS (destruction.js), its walls of adobe (MAT.adobe).
 // Prior art: her newBuilding (the layout, the hits), the house's split of a table from its kinds (vfx/mechs/parts/: one file a slot).
 //
 //   ADOBE[id] = { label, size: 'large' | 'medium' | 'small', w, d, plan(seed) }   ADOBE_IDS   SIZES
-//   adobeBuilding(id, seed) -> b { id, w, h, d, mat, hp, role, props, tint, start, foot0, fallen, dropped } | null
+//   adobePlan(id, seed) -> { w, h, d, mat, role, props, tint, dropped } | null   (destruction.js newBuilding(id, seed) makes the building)
 // ---------------------------------------------------------------------------------------
-import { MATERIALS } from '../../../progress/mechs/destruction.js';
 import { LARGE } from './blueprintslarge.js';
 import { MEDIUM } from './blueprintsmedium.js';
 import { SMALL } from './blueprintssmall.js';
@@ -19,20 +20,5 @@ export const ADOBE = { ...LARGE, ...MEDIUM, ...SMALL };
 export const ADOBE_IDS = Object.keys(ADOBE);
 export const SIZES = { large: Object.keys(LARGE), medium: Object.keys(MEDIUM), small: Object.keys(SMALL) };
 
-/** A cell's hits by material where her table on this branch has none yet (her fire branch's paper and furnishing). */
-const HP = { 1: 0.15, 2: 0.6, 3: 1.2, 4: 2.4, 5: 4, 6: 0.1, 7: 0.3 };
-/** Her foot: the cells under 3 layers (FOOT.min; her footOf for a kind with no floor). */
-const FOOT = 3;
-
-/** A building of a blueprint: its cells, their hits, its look roles and props, counted as hers are counted. */
-export function adobeBuilding(id, seed = 1) {
-  const K = ADOBE[id]; if (!K) return null;
-  const p = K.plan(seed), n = p.mat.length, hp = new Float32Array(n);
-  let start = 0, foot0 = 0;
-  for (let i = 0; i < n; i++) {
-    const m = p.mat[i]; if (!m) continue;
-    hp[i] = MATERIALS[m]?.hp ?? HP[m] ?? 1; start++;
-    if (Math.floor(i / (p.w * p.d)) < FOOT) foot0++;
-  }
-  return { id, w: p.w, h: p.h, d: p.d, mat: p.mat, hp, role: p.role, props: p.props, tint: p.tint, start, foot0, fallen: false, dropped: p.dropped };
-}
+/** A blueprint's plan for one seed (its cells, look roles and props), or null; destruction.js newBuilding gives it hits and counts. */
+export const adobePlan = (id, seed = 1) => ADOBE[id]?.plan(seed) || null;
