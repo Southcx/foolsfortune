@@ -4,13 +4,16 @@
 //   GULLS          a few circling over each wreck (the room's props, `marks` of kind 'wreck') and over each of the game day's herds (the
 //                  room's `herds.list`, round where its bodies are now, eased as they scatter and regroup): soaring in slow rings at
 //                  different heights, now and then a burst of wingbeats. One instanced mesh for every gull (`TELLS.gulls.max`), its wing
-//                  beat in the vertex shader, only the flocks within `reach` of the camera moved; fewer a flock on a phone
+//                  beat in the vertex shader, only the flocks within `reach` of the camera moved; fewer a flock on a phone. A real
+//                  gull's colours (a slate mantle, black tips, the wings' undersides in shadow) so it reads dark on the noon haze, the haze
+//                  laid on it at `haze` of the sea's, and never smaller than `floor` of the view's height across its wings
 //   BUBBLES        over a fishing spot (an islet whose secret is `fishing`, islets.js: the rod's spot at sea), on the water off the islet's
 //                  shore on the secret's side, until the secret is taken: a few bubbles welling up and a ring spreading on the crude
 //                  (`sea.tell.bubbles`, vfx/opensea/seatelleffects.js, on the shared pools), every `every` real s while near
 //   A LIGHT BELOW  over a beast's lair that waits (the fight's `lairs`, world/opensea/seafight.js: not downed today, up at this hour and
-//                  weather, nothing risen there yet): a cold violet light lying flat under the crude, breathing slowly and wandering a
-//                  little, as something large turns down there; a fat bubble now and then (`sea.tell.deep`). Gone once it rises
+//                  weather, nothing risen there yet): a dark indigo patch lying flat under the crude with a paler core
+//                  (drawn over the water, not added to it, so it reads on the bright sea at noon), its violet glow added as the light
+//                  goes (dusk and night), breathing slowly and wandering a little, as something large turns down there; a fat bubble now and then (`sea.tell.deep`). Gone once it rises
 // Cost: one draw for the gulls, one a lair's light (two at most up at once in practice), a few particles a second; nothing far is moved.
 //
 // Prior art: The Wind Waker's seagulls circling what is worth sailing to, DREDGE's bubbling fishing spots, Sea of Thieves' birds over a
@@ -24,16 +27,19 @@ import { seeded } from '../../core/rng.js';
 import { today } from '../../core/calendar.js';
 import { haloTexture } from '../lighthouselamp.js';
 import { SEA } from '../../world/opensea/seaprops.js';
+import { lightAt } from '../../progress/weather.js';
 
 export const TELLS = {
   /** max: gulls drawn at once; wreck / herd: a flock's size (phone: `phone`); r: its rings' radius (m); y: their height over the crude;
    *  w: their angular speed (rad/s); span: a gull's wingspan (m, a touch over life so it reads at the chase's distance); reach: metres
    *  from the camera a flock is moved and drawn; ease: how fast a herd's flock follows its bodies (1/s). */
-  gulls: { max: 96, wreck: 6, herd: 5, phone: 3, r: [14, 30], y: [12, 26], w: [0.18, 0.32], span: 3.4, reach: 1400, ease: 0.4 },
+  gulls: { max: 96, wreck: 6, herd: 5, phone: 3, r: [14, 30], y: [12, 26], w: [0.18, 0.32], span: 3.4, reach: 1400, ease: 0.4,
+    floor: 0.032, haze: 0.4 }, // (floor: the least wingspan as a share of the view's height; haze: how much of the sea's fog is laid on a gull)
   /** A fishing spot: metres off the shore, the real s between its bubbles, the reach it plays within. */
   bubbles: { off: 7, every: [0.45, 0.9], reach: 520 },
   /** A lair's light: its size (m), colour, breath (Hz), the wander (m, rad/s), the reach it shows within and fades over, a deep bubble's every. */
-  deep: { size: 46, core: 12, colour: 0x7c5cf0, coreColour: 0xc8b8ff, breath: 0.22, wander: [7, 0.07], reach: [700, 1100], every: [2.5, 4.5] },
+  deep: { size: 46, core: 12, colour: 0x7c5cf0, coreColour: 0xc8b8ff, breath: 0.22, wander: [7, 0.07], reach: [700, 1100], every: [2.5, 4.5],
+    shade: 0x1a1240, shadeOp: 0.62, light: 0x8e7ae8, lightOp: 0.5, glowAt: [0.55, 0.2] }, // (by day: the indigo patch and its paler core, drawn over; the glow comes up as lightAt falls from glowAt[0] to [1])
 };
 
 const hashId = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
@@ -43,7 +49,7 @@ const _v = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vect
  *  wing's vertices are lifted by the flap in the shader by their |x|. */
 function gullGeometry() {
   const P = [], C = [], col = (h) => new THREE.Color(h);
-  const W = col(0xf2f0ea), G = col(0xa4abb2), K = col(0x23252b), Wb = col(0xd8d6d0);
+  const W = col(0xe8e6e0), G = col(0x6a737e), K = col(0x121316), Wb = col(0xb4b2ac); // (a herring gull's slate mantle and black tips; the body's white a touch down so the haze does not swallow it)
   const tri = (a, b, c, ca, cb = ca, cc = ca) => { P.push(...a, ...b, ...c); for (const k of [ca, cb, cc]) C.push(k.r, k.g, k.b); };
   // the body: a slim double cone, head to tail
   const nose = [0, 0, 0.42], tail = [0, 0.02, -0.38], top = [0, 0.07, 0.02], bot = [0, -0.06, 0.02], l = [-0.07, 0, 0.04], r = [0.07, 0, 0.04];
@@ -53,7 +59,8 @@ function gullGeometry() {
   // each wing: a root, an elbow raised a little (the gull's W), a swept tip; leading and trailing edges
   for (const s of [-1, 1]) {
     const r0 = [0.06 * s, 0.02, 0.12], r1 = [0.06 * s, 0.02, -0.1], e0 = [0.5 * s, 0.09, 0.14], e1 = [0.5 * s, 0.09, -0.16], t0 = [1 * s, 0.02, -0.12], t1 = [0.82 * s, 0.03, -0.26];
-    tri(r0, e0, r1, G); tri(r1, e0, e1, G); tri(e0, t0, e1, G, K, G); tri(e1, t0, t1, G, K, K);
+    const w = (a, b, c, ca, cb = ca, cc = ca) => (s > 0 ? tri(a, b, c, ca, cb, cc) : tri(a, c, b, ca, cc, cb)); // (both wings wound the same: the top face front)
+    w(r0, e0, r1, G); w(r1, e0, e1, G, G, K); w(e0, t0, e1, G, K, K); w(e1, t0, t1, K); // (the trailing edge and the hand dark: the wing's edge reads at a distance)
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(C, 3));
@@ -66,13 +73,28 @@ function gullMaterial(u) {
   const m = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uT = u.uT;
-    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nuniform float uT;\nattribute float aPhase;')
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nuniform float uT;\nattribute float aPhase;\nvarying float vWing;')
       .replace('#include <begin_vertex>', `#include <begin_vertex>
+      vWing = smoothstep(0.06, 0.2, abs(position.x));
       float gate = smoothstep(0.25, 0.75, sin(uT * 0.45 + aPhase * 1.7));
       float f = sin(uT * 10.5 + aPhase * 6.283) * gate, ax = abs(position.x);
       transformed.y += f * (ax * 0.5 + max(ax - 0.5, 0.0) * 0.45) + ax * 0.1 * (1.0 - gate);`);
   };
-  m.customProgramCacheKey = () => 'seagull';
+  m.onBeforeCompile = ((prev) => (sh) => {
+    prev(sh);
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying float vWing;')
+      .replace('#include <color_fragment>', '#include <color_fragment>\n  diffuseColor.rgb *= gl_FrontFacing ? 1.0 : 1.0 - 0.5 * vWing; // (the wings\' underside in its own shadow: dark against the sky)')
+      .replace('#include <fog_fragment>', `#ifdef USE_FOG
+  #ifdef FOG_EXP2
+    float fogFactor = 1.0 - exp(- fogDensity * fogDensity * vFogDepth * vFogDepth);
+  #else
+    float fogFactor = smoothstep(fogNear, fogFar, vFogDepth);
+  #endif
+  gl_FragColor.rgb = mix(gl_FragColor.rgb, fogColor, fogFactor * ${TELLS.gulls.haze.toFixed(2)});
+#endif`);
+  })(m.onBeforeCompile);
+  m.customProgramCacheKey = () => 'seagull2';
   return m;
 }
 
@@ -148,7 +170,8 @@ export class SeaTells {
   }
 
   moveGulls(dt, cam) {
-    const T = TELLS.gulls, M = this.gulls(); let k = 0;
+    const T = TELLS.gulls, M = this.gulls(), C = this.game.camera; let k = 0;
+    const perM = 2 * Math.tan(THREE.MathUtils.degToRad((C?.fov ?? 60) / 2)) * T.floor; // (the least wingspan a metre off: floor of the view's height)
     for (const F of this.flocks) {
       if (F.kind === 'herd') F.at.lerp(F.aim, 1 - Math.exp(-T.ease * dt));
       if (Math.hypot(F.at.x - cam.x, F.at.z - cam.z) > T.reach) continue;
@@ -157,8 +180,9 @@ export class SeaTells {
         b.a += b.w * dt;
         const x = F.at.x + Math.cos(b.a) * b.r, z = F.at.z + Math.sin(b.a) * b.r, y = F.at.y + b.y + Math.sin(this.t * 0.4 + b.bob) * 1.2;
         const head = Math.atan2(-Math.sin(b.a) * Math.sign(b.w), Math.cos(b.a) * Math.sign(b.w)); // (along the ring, the way it turns)
-        _e.set(0, head, -0.35 * Math.sign(b.w), 'YXZ'); _q.setFromEuler(_e); // (banked into its ring)
-        M.setMatrixAt(k++, _m.compose(_v.set(x, y, z), _q, _s.setScalar(T.span / 2)));
+        _e.set(0, head, -0.55 * Math.sign(b.w), 'YXZ'); _q.setFromEuler(_e); // (banked into its ring, steep enough that a low camera sees its wings' faces, not their edge)
+        const d = Math.hypot(x - cam.x, y - cam.y, z - cam.z), span = Math.max(T.span, d * perM); // (kept legible from the chase camera's distance)
+        M.setMatrixAt(k++, _m.compose(_v.set(x, y, z), _q, _s.setScalar(span / 2)));
       }
     }
     M.count = k; M.visible = k > 0; if (k) M.instanceMatrix.needsUpdate = true;
@@ -188,18 +212,19 @@ export class SeaTells {
     for (const [id, D] of this.deeps) if (!keep.has(id)) { D.k = D.k ?? 1; D.going = true; }
   }
   makeDeep(l) {
-    const T = TELLS.deep, tex = haloTexture(), g = new THREE.Group(), flat = (size, colour, op) => {
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(size, size).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: tex, color: colour, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, fog: false, opacity: op }));
-      m.renderOrder = 2; g.add(m); return m;
+    const T = TELLS.deep, tex = haloTexture(), g = new THREE.Group(), flat = (size, colour, op, add, order) => {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(size, size).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: tex, color: colour, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending, transparent: true, depthWrite: false, fog: false, opacity: op, toneMapped: !add }));
+      m.renderOrder = order; g.add(m); return m;
     };
-    const halo = flat(T.size, T.colour, 0.5), core = flat(T.core, T.coreColour, 0.6);
+    const shade = flat(T.size * 1.3, T.shade, 0, false, 2), light = flat(T.core * 1.3, T.light, 0, false, 3), halo = flat(T.size, T.colour, 0.5, true, 4), core = flat(T.core, T.coreColour, 0.6, true, 5);
+    shade.position.y = -0.02;
     g.position.set(l.pos.x, SEA.y + 0.3, l.pos.z); g.userData.zone = 'opensea'; this.game.scene.add(g);
     const rng = seeded(hashId('deep:' + l.id));
-    return { l, group: g, halo, core, base: g.position.clone(), phase: rng() * 6, next: rng() * 2, k: 0, going: false };
+    return { l, group: g, shade, light, halo, core, base: g.position.clone(), phase: rng() * 6, next: rng() * 2, k: 0, going: false };
   }
-  dropDeep(D) { this.game.scene.remove(D.group); for (const m of [D.halo, D.core]) { m.geometry.dispose(); m.material.dispose(); } }
+  dropDeep(D) { this.game.scene.remove(D.group); for (const m of [D.shade, D.light, D.halo, D.core]) { m.geometry.dispose(); m.material.dispose(); } }
   deep(dt, cam) {
-    const T = TELLS.deep, vfx = this.game.vfx;
+    const T = TELLS.deep, vfx = this.game.vfx, glow = THREE.MathUtils.smoothstep(T.glowAt[0] - lightAt(), 0, T.glowAt[0] - T.glowAt[1]), day = 1 - 0.7 * glow; // (the glow up as the light goes; the patch kept, a little, so the night's glow has its dark round it)
     for (const [id, D] of this.deeps) {
       D.k = Math.max(0, Math.min(1, D.k + (D.going ? -dt / 1.5 : dt / 2.5))); // (it comes up slowly, and goes in a breath when the beast rises)
       if (D.going && D.k <= 0) { this.dropDeep(D); this.deeps.delete(id); continue; }
@@ -208,8 +233,9 @@ export class SeaTells {
       if (!D.group.visible) continue;
       const a = this.t * T.wander[1] + D.phase, breath = 0.6 + 0.4 * Math.sin(this.t * T.breath * Math.PI * 2 + D.phase);
       D.group.position.set(D.base.x + Math.cos(a) * T.wander[0], D.base.y, D.base.z + Math.sin(a * 1.3) * T.wander[0]);
-      D.halo.material.opacity = 0.42 * breath * D.k * far; D.core.material.opacity = 0.55 * (0.5 + 0.5 * breath) * D.k * far;
-      D.halo.scale.setScalar(0.9 + 0.15 * breath);
+      D.halo.material.opacity = 0.42 * breath * D.k * far * glow; D.core.material.opacity = 0.55 * (0.5 + 0.5 * breath) * D.k * far * glow;
+      D.shade.material.opacity = T.shadeOp * (0.8 + 0.2 * breath) * D.k * far * day; D.light.material.opacity = T.lightOp * (0.5 + 0.5 * breath) * D.k * far * (1 - glow);
+      D.halo.scale.setScalar(0.9 + 0.15 * breath); D.shade.scale.setScalar(0.92 + 0.12 * breath);
       if ((D.next -= dt) <= 0) { D.next = T.every[0] + Math.random() * (T.every[1] - T.every[0]); if (d < T.reach[0] && D.k > 0.5) vfx?.play?.('sea.tell.deep', { pos: D.group.position }); }
     }
   }

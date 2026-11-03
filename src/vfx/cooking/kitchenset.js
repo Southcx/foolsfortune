@@ -19,7 +19,7 @@ import * as THREE from 'three';
 import { Piece } from '../garden/decorpieces/kit.js';
 
 export const KITCHEN_SET = {
-  hinoki: 0xe2c08c, hinokiD: 0xb8925c, flour: 0xf6f1e6, plaster: 0xeee2c8, beam: 0x5a3a28, shoji: 0xfff3d6, brick: 0x9a4a2c, brickD: 0x6a2e1a,
+  hinoki: 0xb98a58, hinokiD: 0x7a5534, flour: 0xf6f1e6, plaster: 0xc9b896, beam: 0x5a3a28, shoji: 0xfff3d6, brick: 0x9a4a2c, brickD: 0x6a2e1a,
   clay: 0xb8673f, celadon: 0x9cc8b4, linen: 0xeae2cc, copper: 0xc8743a, bronze: 0xa07838, steel: 0xb8bcc4, bamboo: 0xc8b46a, wheat: 0xe0b45a,
   rice: 0xd8c890, pasta: 0xf0d48a, udon: 0xf4ecd6, tank: 0x8fc8d8, lachryma: 0xd8ccff, ember: 0xff8a3a, ink: 0x241c1f,
 };
@@ -76,11 +76,11 @@ export function buildKitchenSet() {
     const mesh = new THREE.Mesh(P.done(), mat); mesh.castShadow = mat.name !== 'cook-set-glow'; mesh.receiveShadow = true; parts.push(mesh);
   }
   const group = new THREE.Group(); group.name = 'cook-set'; group.add(...parts);
-  // the light: a warm key from the window, the fire's glow, a soft fill
-  const key = new THREE.DirectionalLight(0xffe2b0, 2.6); key.position.set(-4, 5, 1); key.target.position.set(0, 0, -0.3); key.castShadow = true; key.shadow.mapSize.set(1024, 1024);
+  // the light: a warm key from the window, the fire's glow, a soft fill; the worktop a mid hinoki so the dough and its flour read light on it
+  const key = new THREE.DirectionalLight(0xffdca0, 2.1); key.position.set(-4, 5, 1); key.target.position.set(0, 0, -0.3); key.castShadow = true; key.shadow.mapSize.set(1024, 1024);
   Object.assign(key.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 0.5, far: 14 }); key.shadow.bias = -0.0008;
   const fire = new THREE.PointLight(0xff8a3a, 6, 6, 1.6); fire.position.set(ox, 0.3, oz + 1.2);
-  const fill = new THREE.HemisphereLight(0xfff0d8, 0x5a3a28, 1.0);
+  const fill = new THREE.HemisphereLight(0xd8c4a8, 0x2a1810, 0.45); // (low and warm: the key from the window does the shaping, the shadows keep their depth)
   group.add(key, key.target, fire, fill);
   return {
     group, fire,

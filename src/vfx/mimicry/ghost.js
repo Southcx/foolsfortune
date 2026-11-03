@@ -16,7 +16,7 @@
 //   - THE VEIL (Below the Surface, the ridges stone): a veiled puzzle's hidden cells (`game.mimicry.veiled()`: the target's ground more
 //     than 0.2 m under the start's, not yet read) are left out of the sheet, sunk under the sand; a Layer View read (`mimic.read`, its
 //     line from `god.strata`) lifts the cells it read, their contours coming up out of the ground one after another along the read,
-//     a bright front on them as they rise (0.75 real s each, swept 0.6 real s along the line), so the read is the lesson made visible.
+//     a bright front on them as they rise past their place and settle onto it (1.1 real s each, swept 0.6 real s along the line), so the read is the lesson made visible.
 //   - THE PEN (The Flock, the shore stone): a herd puzzle's pen (`fr.pen`, Dovina's penOf, patch-local) drawn on the sheet itself, so it
 //     lies on the ground at any slope: the pen's line, a dashed inner line, a ring at each corner (a stake's place), a faint wash inside;
 //     film while the flock is out, turning gold as its share inside (herdMatchOf) climbs to clean. It stands in for the runtime's
@@ -50,7 +50,7 @@ import { VoxelGhost, prewarmVoxelGhost } from './ghostvoxels.js';
  *  movement (m) of ground no change was asked of that reads as a stray stroke; the scan's period; the demonstration's strength; the
  *  solve's and the leave's times; how often the live field is read. */
 export const GHOST_LOOK = { step: 0.2, still: [0.03, 0.07], lift: 0.05, ok: [0.35, 0.1], stray: [0.12, 0.3], scan: 3.2, demo: 0.6, solve: 1.6, leave: 0.4, read: 0.12,
-  sink: 0.9, rise: 0.75, sweep: 0.6, pen: { max: 8, inner: 0.35, stake: 0.16, share: [0.5, 0.85] } }; // (sink: m a veiled cell lies under; rise, sweep: a lift's real s; pen: its corners at most, the inner line's and a stake ring's m, the share gold from and full)
+  sink: 0.9, rise: 1.1, sweep: 0.6, over: 0.7, pen: { max: 8, inner: 0.35, stake: 0.16, share: [0.5, 0.85] } }; // (sink: m a veiled cell lies under; rise, sweep: a lift's real s; over: m a lifting cell rises past its place before it settles; pen: its corners at most, the inner line's and a stake ring's m, the share gold from and full)
 const G = GHOST_LOOK;
 
 const VERT = /* glsl */`
@@ -58,7 +58,8 @@ attribute float aD; attribute vec2 aUV; attribute vec2 aNow; attribute float aHi
 uniform float uLift;
 varying float vD; varying vec2 vUV; varying vec2 vNow; varying vec3 vW; varying vec3 vView; varying float vHide;
 void main() {
-  vec3 p = position; p.y += uLift - aHide * ${G.sink.toFixed(2)}; vHide = aHide;
+  float hh = 1.0 - aHide, up = aHide > 0.001 && aHide < 0.999 ? sin(hh * 3.14159) * hh : 0.0; // (a lifting cell: up out of the ground past its place, then settled onto it)
+  vec3 p = position; p.y += uLift - aHide * ${G.sink.toFixed(2)} + up * ${G.over.toFixed(2)}; vHide = aHide;
   vec4 w = modelMatrix * vec4(p, 1.0);
   vW = w.xyz; vView = normalize(cameraPosition - w.xyz); vD = aD; vUV = aUV; vNow = aNow;
   gl_Position = projectionMatrix * viewMatrix * w;
@@ -123,9 +124,9 @@ void main() {
   vec3 col = (lineCol * aLine * dim + c * (1.0 + band) * aFill * (1.0 - aLine)) / max(a, 1e-3);
   float fade = 1.0 - smoothstep(0.72, 1.0, uSolve);
   // a veiled cell: gone while hidden; as it is lifted, its lines come up out of the ground with a bright front on them
-  float shown = 1.0 - smoothstep(0.0, 0.95, vHide), front = vHide > 0.001 && vHide < 0.999 ? 4.0 * vHide * (1.0 - vHide) : 0.0;
-  col = mix(col, mix(film, gold, 0.4) * 1.8, front * 0.7);
-  gl_FragColor = vec4(col, clamp(a + front * aLine * 0.6, 0.0, 1.0) * uK * fade * shown);
+  float shown = 1.0 - smoothstep(0.0, 0.95, vHide), front = vHide > 0.001 && vHide < 0.999 ? pow(4.0 * vHide * (1.0 - vHide), 0.6) : 0.0;
+  col = mix(col, mix(film, gold, 0.55) * 2.6, front * 0.9); // (the front bright enough to read from the hand's height)
+  gl_FragColor = vec4(col, clamp(a + front * (aLine * 0.9 + 0.3 * inside + 0.12), 0.0, 1.0) * uK * fade * shown);
 }`;
 
 /** The ghost's material: the sheet (`xray` false: drawn where it is in front of the ground) or its x-ray (drawn where the ground

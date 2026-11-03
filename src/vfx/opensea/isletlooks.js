@@ -12,7 +12,8 @@
 // one clock of it (0 under, 1 up): low water centred on 06:00 and 19:00 game time, fully up a game hour either side, rising and sinking
 // over the game hour beyond (eased), so it is up 05:00 to 07:00 and 18:00 to 20:00. Each frame the look follows it: the bank (and its
 // secret's mesh) sunk `SANDBAR_TIDE.sink` metres under the crude at high water and hidden once there, the kit's own colliders (driftwood)
-// off while it is more under than up, its shallows ring left faint (a pale patch on the water where the bar lies under: the tell). The
+// off while it is more under than up, its shallows ring left faint and its bed come up (`SANDBAR_BED`: a pale turquoise patch on the water where
+// the bar lies under, the tell, never the crude's dark violet through it). The
 // placeholder's collider and the room's moor are Petra's (docs/handoffs/petra/2026-11-03-from-calissa-sandbar.md): read
 // `game.seaLooks.sandbarUp()` (the same number) to follow it.
 //
@@ -91,6 +92,21 @@ function shallowsGeometry({ inner, outer, colour }) {
   return g;
 }
 
+/** A sandbar's bed: the bank seen through the shallows over it while the tide has it under, a pale turquoise disc from its middle out
+ *  past its waterline (filling the shallows ring's hole), sand-pale at its heart, its alpha falling away at its edge. */
+export const SANDBAR_BED = { colour: 0x8fe0d4, heart: 0xd8f0e0, alpha: 0.82, out: 1.12 };
+function bedGeometry(R) {
+  const B = SANDBAR_BED, g = new THREE.RingGeometry(0, R, 48, 6).rotateX(-PI / 2).translate(0, -SEA.top + 0.34, 0);
+  g.deleteAttribute('uv');
+  const P = g.attributes.position.array, n = P.length / 3, col = new Float32Array(n * 4), c = new THREE.Color(B.colour), h = new THREE.Color(B.heart);
+  for (let i = 0; i < n; i++) {
+    const t = Math.min(1, Math.hypot(P[i * 3], P[i * 3 + 2]) / R), k = h.clone().lerp(c, THREE.MathUtils.smoothstep(t, 0.15, 0.75));
+    col[i * 4] = k.r; col[i * 4 + 1] = k.g; col[i * 4 + 2] = k.b; col[i * 4 + 3] = B.alpha * (1 - THREE.MathUtils.smoothstep(t, 0.6, 1));
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(col, 4));
+  return g;
+}
+
 /** One islet's look, off-scene: its geometry in its own frame (centre on its walkable top), its colliders there, its shallows. */
 export function isletLook({ kit, rad, id, away = null }) {
   const rng = seeded(hashId(String(id))), build = ISLET_LOOKS[kit] || ISLET_LOOKS.rock;
@@ -103,6 +119,7 @@ export class SeaLooks {
   constructor(game) {
     this.game = game; this.dressed = null; this.tris = {}; this.looks = []; this.body = null; this.bars = []; this.tide = -1;
     this.mat = isletMaterial(); this.wet = shallowsMaterial(); this.wetBar = shallowsMaterial(); // (the sandbars' shallows on their own copy: their alpha follows the tide)
+    this.bed = shallowsMaterial(); this.bed.opacity = 0; // (the sandbars' bed under the shallows: up as the tide covers them)
   }
 
   /** One copy of each program 50 m under the world for main.js's compile; returns what hides it again (kept, never disposed). */
@@ -133,7 +150,7 @@ export class SeaLooks {
     if (Math.abs(up - this.tide) < 1e-4) return;
     const was = this.tide; this.tide = up;
     const drop = (1 - up) * T.sink, under = up < 0.5;
-    this.wetBar.opacity = T.wet + (1 - T.wet) * up;
+    this.wetBar.opacity = T.wet + (1 - T.wet) * up; this.bed.opacity = Math.sqrt(1 - up); // (under: a pale turquoise patch where the bank lies, never the crude's dark through it)
     for (const B of this.bars) {
       B.mesh.position.y = B.y - drop; B.mesh.visible = up > 0.001;
       if (B.secret && B.secret.visible !== false) B.secret.position.y = B.secretY - drop; // (the room hides it when taken; it never shows it again)
@@ -161,6 +178,7 @@ export class SeaLooks {
       const bar = isl.islet.kit === 'sandbar' ? { mesh, y: mesh.position.y, colliders: [], secret: isl.secret.mesh || null, secretY: isl.secret.mesh?.position.y ?? 0 } : null;
       if (bar) this.bars.push(bar);
       if (L.shallows) add(new THREE.Mesh(L.shallows, bar ? this.wetBar : this.wet)).position.copy(mesh.position);
+      if (bar && L.shallows) { const bed = add(new THREE.Mesh(bedGeometry((L.shallows.parameters?.innerRadius ?? isl.islet.across / 2) * SANDBAR_BED.out), this.bed)); bed.position.copy(mesh.position); bed.renderOrder = 1; }
       (this.tris[isl.islet.kit] ||= []).push(L.tris);
       if (W) for (const c of L.colliders) {
         const d = c.cyl ? RAPIER.ColliderDesc.cylinder(c.cyl[0], c.cyl[1]) : c.ball ? RAPIER.ColliderDesc.ball(c.ball) : RAPIER.ColliderDesc.cuboid(...c.box);

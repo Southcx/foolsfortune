@@ -429,7 +429,7 @@ export class LachrimeterTube {
   // ---------- each frame it may be drawn ----------
   update(dt, slot) {
     const g = this.game, pool = g.lachryma, root = this.root;
-    const allowed = !!pool && !g.title?.active && !g.god?.controlling && !document.body.classList.contains('bztable-seated');
+    const allowed = !!pool && !g.title?.active && !g.god?.controlling && !document.body.classList.contains('bztable-seated') && !document.body.classList.contains('ui1'); // (the HUD stepped out, the log kept or not: hideui.js)
     if (!allowed) { this.shown = 0; root.userData.overlayHidden = true; return; }
     this.t += dt;
     // shown while the pool is doing something: not full, held for a charge, or moved in the last few real seconds
