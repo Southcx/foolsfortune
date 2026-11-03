@@ -15,3 +15,7 @@ Your plan and ledger, so I left them as they were. For you to set:
 | Lockheart | `Lock_Open` 0.22-0.75 s x1.5 | the tool's gesture |
 
 Each strike lands inside the 0.25 real s window (measured from the palms' path at 30 Hz). Delete this note when done.
+
+## Also: the Two-Tone knack (G314)
+Its look is built (`vfx/agatelook.js`, two marbled bands in an agate's two colours, shown while `game.knacks.on('twoTone')`); KNACKS has
+no `twoTone` row yet, so it shows only in DEBUG (`/agatelook twotone on`). The row is yours.

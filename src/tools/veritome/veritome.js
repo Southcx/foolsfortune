@@ -50,6 +50,8 @@ import { Gestures, Crossfade, standLegs } from '../toolbody.js';
 import { unwrite, inscribed } from '../soulbrush/inscribe.js';
 import { TIDES, TIDE_LEN } from '../sondelass/angling/species.js';
 import { lendHand } from '../lend.js';
+import { behaviourNow, readout } from '../../progress/safari.js';
+import { phaseAt } from '../../progress/weather.js';
 
 const HOLD = T.weapon.drawGrab;
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
@@ -216,7 +218,7 @@ export class Veritome extends Tech {
     if (this.previewT <= 0) {
       this.previewT = 0.15;
       const r = scorePhoto(g, g.camera);
-      this.preview = { stars: r.stars, brackets: r.subjects.slice(0, 8).map((s) => ({ x: s.ndc.x, y: s.ndc.y, h: s.frac, stars: s.stars, engaged: s.engaged })) };
+      this.preview = { stars: r.stars, brackets: r.subjects.slice(0, 8).map((s) => ({ x: s.ndc.x, y: s.ndc.y, h: s.frac, stars: s.stars, engaged: s.engaged, d: s.d ?? null, candid: s.candid || null })) };
     }
     // the capture circle: an engaged creature held in it charges the shot (Fatal Frame)
     const cam = g.camera, eye = cam.getWorldPosition(_v.set(0, 0, 0)).clone();
@@ -260,9 +262,11 @@ export class Veritome extends Tech {
     const B = this.book, kind = kindOf(report);
     B.pins.push({ x: +P.pos.x.toFixed(1), y: +P.pos.y.toFixed(1), z: +P.pos.z.toFixed(1), yaw: +P.yaw.toFixed(2), kind, stars: report.stars });
     if (B.pins.length > 60) B.pins.shift();
-    sfx.shutter?.();
-    const c0 = report.subjects[0]?.ref, act = c0?.brain?.action?.id ?? null, lured = c0?.brain ? !!g.safari?.luredNow?.(c0) : false; // (the safari reads the behaviour off these: safarirun.js)
-    this.pending = { shot: serial(report), held, unwritten, kind, act, lured, pos: [+P.pos.x.toFixed(1), +P.pos.y.toFixed(1), +P.pos.z.toFixed(1)], yaw: +P.yaw.toFixed(2), tide: +this.tide.toFixed(3), zone: g.zones?.current?.id ?? null };
+    sfx.shutter?.(); g.events?.emit('veritome.shutter', { held, by: 'courier' }); // (the press itself: the lens's beat starts here, ui/safarilens.js)
+    const s0 = report.subjects[0], c0 = s0?.ref, act = c0?.brain?.action?.id ?? null, lured = c0?.brain ? !!g.safari?.luredNow?.(c0) : false; // (the safari reads the behaviour off these: safarirun.js)
+    const beh = c0?.brain && kind ? behaviourNow(kind, { act, phase: phaseAt(), weather: g.weather?.here?.(P.pos)?.aspect || 'fair', candid: s0.candid === 'candid', lured }) : null;
+    const bStars = beh ? readout({ behaviour: beh }).stars : null; // (a Figment's plate wears its behaviour's stars, STEALTH.md 8.1: the safari's own rule, progress/safari.js)
+    this.pending = { shot: serial(report), held, unwritten, kind, act, lured, bStars, pos: [+P.pos.x.toFixed(1), +P.pos.y.toFixed(1), +P.pos.z.toFixed(1)], yaw: +P.yaw.toFixed(2), tide: +this.tide.toFixed(3), zone: g.zones?.current?.id ?? null };
   }
 
   /** Just after the frame is drawn: the plate is that frame (the picture inside the pages' margins). */
@@ -285,15 +289,13 @@ export class Veritome extends Tech {
       } catch { thumb = null; }
     }
     this.vf.flash(thumb);
-    const { held, unwritten, kind, act, lured, ...plate } = q; // (plate.swatch rides along)
-    const rec = this.memory.expose({ ...plate, thumb, held });
+    const { held, unwritten, kind, act, lured, bStars, ...plate } = q; // (plate.swatch rides along)
+    if (bStars != null) plate.shot = { ...plate.shot, stars: bStars };
+    this.memory.expose({ ...plate, thumb, held });
     this.book.save();
     if (thumb) this.model.setPhoto(thumb);
     const score = q.shot.subjects[0]?.score ?? 0, best = kind ? this.book.photos[kind]?.score ?? -1 : Infinity; // (the best subject's score; the Compendium's best of its kind)
-    const E = this.game.events, take = (e) => { if (rec?.shot) rec.shot.stars = e.stars; }; // (a Figment's plate wears the safari's stars, its behaviour's rarity: safarirun.js says safari.plate inside this emit)
-    const unhook = E?.on?.('safari.plate', take);
-    try { E?.emit('photo.take', { kind: kind || 'nothing', stars: q.shot.stars, n: q.shot.subjects.length, kinds: q.shot.kinds, held, unwritten, left: this.memory.left, score, fresh: score > best, candid: q.shot.subjects[0]?.candid || null, d: q.shot.subjects[0]?.d ?? null, act, lured }); } // (score, fresh: domains.js weighs them, TRAINING.md 6)
-    finally { unhook?.(); }
+    this.game.events?.emit('photo.take', { kind: kind || 'nothing', stars: bStars ?? q.shot.stars, n: q.shot.subjects.length, kinds: q.shot.kinds, held, unwritten, left: this.memory.left, score, fresh: score > best, candid: q.shot.subjects[0]?.candid || null, d: q.shot.subjects[0]?.d ?? null, act, lured }); // (score, fresh: domains.js weighs them, TRAINING.md 6)
   }
   /** Appraise plates off the roll (all of them, or those ids): the darkroom's batch (the Codex calls it). */
   appraise(ids = null) { return appraise(this.game, this.book, this.memory.take(ids)); }

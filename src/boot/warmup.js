@@ -43,6 +43,7 @@ import { WireCompass } from '../vfx/wirecompass.js';
 import { VaneHud } from '../vfx/vanehud.js';
 import { CrucibelleHud } from '../vfx/crucibellehud.js';
 import { VeritomeFrame } from '../vfx/veritomeframe.js';
+import { SafariLens } from '../ui/safarilens.js';
 import { TollReach } from '../vfx/tollreach.js';
 import { ChestFx } from '../vfx/chestfx.js';
 import { LockheartReliquary } from '../vfx/lockheartreliquary.js';
@@ -142,6 +143,7 @@ export async function bootWarmup(game, made) {
   }, { name: 'wireCompass' });
   game.veritomeFrame ||= new VeritomeFrame(game); game.tollReach ||= new TollReach(game); game.chestFx ||= new ChestFx(game); // (the lens's frame, the toll's reach, a chest's opening)
   game.systems.add('marks', game.veritomeFrame, { clock: 'raw', name: 'veritomeFrame' });
+  game.safariLens ||= new SafariLens(game); game.systems.add('marks', game.safariLens, { clock: 'raw', name: 'safariLens' }); if (game.veritome?.vf) game.veritome.vf.skin = game.safariLens; // (the raised lens as a safari camera over the viewfinder: its frame, focus, shutter and print: ui/safarilens.js)
   game.systems.add('marks', game.tollReach, { clock: 'raw', name: 'tollReach' });
   game.systems.add('marks', game.chestFx, { name: 'chestFx' });
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)

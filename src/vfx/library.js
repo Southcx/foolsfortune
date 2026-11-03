@@ -35,6 +35,7 @@ import { DAMAGE_EFFECTS } from './library/damage.js'; // (a blow's damage type l
 import { GENERIC_EFFECTS } from './library/generics.js'; // (impact, shock, poof, absorb, implode, embers, cut, crystal.strike: the old particles' shims and their callers)
 import { AURA_EFFECTS } from './library/auras.js'; // (a status held on a creature: vfx/auras.js plays them)
 import { TEMPER_EFFECTS } from './library/temper.js'; // (a creature's mental state and agitation on its body: vfx/temper.js plays them)
+import { AGATE_EFFECTS } from './library/agate.js'; // (two feelings at once on a body with no flame of its own: vfx/agatelook.js plays them)
 import { ULT_EFFECTS } from './library/ult.js'; // (the Lockheart's Opening: tools/lockheart/ultimate.js, cine/sequences.js)
 import { FEELING_EFFECTS } from './library/feelings.js'; // (the seven feelings' skins, each moment, and the Feelings shells' landings: vfx/library/feelings/)
 import { CLASS_ART_EFFECTS } from './library/classarts/index.js'; // (the 76 class arts' looks, a domain's grammar in its suit's colour: vfx/classartlooks.js plays them)
@@ -451,6 +452,7 @@ export const LIBRARY = {
   ...GENERIC_EFFECTS,
   ...AURA_EFFECTS,
   ...TEMPER_EFFECTS,
+  ...AGATE_EFFECTS,
   ...ULT_EFFECTS,
   ...FEELING_EFFECTS,
   ...CLASS_ART_EFFECTS,

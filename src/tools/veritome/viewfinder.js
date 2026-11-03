@@ -66,6 +66,7 @@ export class Viewfinder {
     this.devEl.style.opacity = String(u < 1 ? Math.min(1, u * 6) * (1 - Math.max(0, (u - 0.6) / 0.4)) : 0);
     this.devEl.style.transform = `translate(${u * u * (innerWidth * 0.36)}px, ${u * u * innerHeight * 0.32}px) rotate(${8 * u}deg) scale(${1 - 0.55 * u})`;
     if (!this.on) return;
+    if (this.skin) { if (!this.skinClear) { this.g.clearRect(0, 0, this.cv.width, this.cv.height); this.skinClear = true; } this.skin.take?.(s, this.aperture()); return; } // (a skin draws the lens in place of these pages: ui/safarilens.js)
     const W = innerWidth, H = innerHeight, c = this.cv, g = this.g;
     if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
     g.clearRect(0, 0, W, H);

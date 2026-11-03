@@ -4998,3 +4998,16 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   is blocked (it crossed a ring's lanterns for 6 frames in the probe). After: every frame of 8 runs (hero and doll, four leg types,
   front and a test ring from behind) 3 m or more from every wall and floor, and in no solid; the hero's wake now at local (8.8, 16.9, -24.3).
 - **Rule:** 401
+
+### 2026-11-03 · The things' tags stood up in the probe's data and drew nothing on screen (feedback/thingtags.js; found by Calissa's look)
+- **Seen:** round 5b's shots: the folk's tag at Pip's chevron and ten planetoid tags in the garden's overhead view were listed by
+  `game.thingTags.list`, and none of them was in the picture, on the desk or the phone.
+- **Cause, as measured:** each tag was a `div.tt` in `#hud`: display block, opacity 1, z-index 4, placed on screen (translate 582, 281;
+  its plate 112 x 29 there), `#hud` shown. But `elementFromPoint` at the plate's centre answered the canvas, and the tag's computed
+  `contain` was `strict`: the touch tiles' stylesheet (ui/touch/tile.js, installed on the desk too) styles every `.tt` with
+  `contain:strict`, and a holder of size 0 x 0 under paint containment clips all its children away. The plate and the leader were laid
+  out and never painted.
+- **Fix:** the tag's classes carry the module's whole name (`thingtag`, `thingtag-p`, `thingtag-lb` ...), so no other sheet reaches them.
+  With it, the tags are laid off one another (and off the Sight's and the Lachrimeter's corners) by the creature tags' own solver, moved
+  out of creaturetags.js into vfx/taglayout.js (`TagLayout`) and used by both.
+- **Rule:** 403
