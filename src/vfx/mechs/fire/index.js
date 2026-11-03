@@ -5,7 +5,7 @@
 //   WHAT BURNS    told by her events (`city.ignite`, `city.burn`, `city.char`, `city.douse`, `city.out`), never a scan of the city a
 //                 frame: each building told of is tracked and its cells read again from `rec.b.fire` (state, fuel, indexed as b.mat)
 //                 at most every FIRE_LOOK.rebuild real s when told it changed, every `refresh` while it burns; the burning cell list
-//                 she may expose (`city.fire.cells`, `.n`, `.ver`) only marks the read due when its version moves
+//                 she exposes (`city.fire.cells`, `.n`, `.ver`: Dovina's cityfire.js) marks the read due when its version moves
 //   ITS PARTS     a flame card on each burning cell with air beside it (flames.js), sized by its fuel left; char, its shell over each
 //                 cell by state (char.js); a smoke column and embers a burning building (smoke.js); the fire lamps (lamps.js); the
 //                 moments (vfx/library/cityfire.js, played on her events); bodies in the fire (bodies.js); the flamer's cone (flamer.js)
@@ -98,8 +98,19 @@ export class CityFireLooks {
     for (const T of this.tracks) if (T.n > 0) this.smoke.step(dt, T, k);
     this.lamps.update(dt);
   }
-  /** Her exposed burning list (city.fire.cells: indices, or { lot, i } pairs): only the buildings it names are tracked anew. */
-  adopt(F) { const L = F.lots; if (L?.length) for (let i = 0; i < L.length; i++) this.mark({ lot: L[i] }, true); }
+  /** Her exposed burning list (Dovina's world/hangar/cityfire.js: `cells`, x y z a burning cell's centre in world metres, `n` of them):
+   *  a building holding one that is not tracked yet (a spread that said no ignite) is tracked anew. */
+  adopt(F) {
+    const P = F.cells, n = Math.min(F.n | 0, P ? P.length / 3 : 0), recs = this.recs; if (!n || !recs) return;
+    const step = Math.max(1, Math.floor(n / 256));
+    for (let j = 0; j < n; j += step) {
+      const x = P[j * 3], z = P[j * 3 + 2];
+      for (let r = 0; r < recs.length; r++) {
+        const R = recs[r], b = R.b; if (!b?.fire) continue;
+        if (Math.abs(x - R.cx) <= b.w / 2 + 0.5 && Math.abs(z - R.cz) <= b.d / 2 + 0.5) { if (!this.tracks.some((T) => T.rec === R)) this.mark({ lot: r, building: R.id }, true); break; }
+      }
+    }
+  }
 
   build(C) {
     const into = this.game.scene, mobile = this.game.graphics?.machine?.mobile;
