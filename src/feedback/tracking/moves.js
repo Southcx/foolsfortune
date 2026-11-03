@@ -52,6 +52,7 @@ export function moveRules({ on, L, log, g }) {
   on('move.string.end', (e) => { if (e.by === 'courier' && e.tool === 'sondelass') L.hi('sond.string.best', e.run || 0); });
   on('skiff.glide', () => { L.inc('skiff.glide'); if (L.first('skiff.glide')) log.say('record', 'Logged: your first glide on the Solar Skiff.'); });
   on('skiff.bail', (e) => { if (e.by === 'courier') { L.inc('skiff.bail'); log.say('move', BAIL_SAYS[e.why] || 'Bailed.', { key: 'bail', throttle: 3 }); } }); // (why, said: docs/plans/SKIFF-RACING.md section 3)
+  on('geyser.launch', (e) => { L.inc('geyser.launch'); if (e.id) L.first(`geyser.ride.${e.id}`); }); // (the map's checklist: a geyser ridden, by its id: progress/areas.js)
   on('skiff.ollie', (e) => { if (e.by !== 'courier') return; L.inc('skiff.ollie'); if (e.geyser) L.inc('skiff.ollie.geyser'); });
   // the blows the unlocks count that no other rule keeps
   on('dreamvane.hit', (e) => { if ((e.by ?? 'courier') === 'courier') L.inc('dreamvane.hit'); });

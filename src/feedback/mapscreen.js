@@ -196,6 +196,10 @@ export class MapScreen {
         for (const s of g.shrines?.list || []) if (inHere(s.pos)) { m++; if (L?.get(`shrine.found.${s.id}`)) n++; }
       } else if (kind === 'ostracon') {
         for (const k of ['buried', 'loose', 'stelae']) for (const s of g.ostraca?.[k] || []) { const p = s.pos ?? s.at; if (p && inHere(p)) { m++; if (s.word && L?.get(`ostracon.${s.word}`)) n++; } }
+      } else if (kind === 'crystal') { // (a crystal sung: opened on its note, once, by its id: world/dunes/crystals.js)
+        for (const e of g.crystals?.list || []) if (e.id && inHere(e.pos)) { m++; if (L?.has(`crystal.sweet.at.${e.id}`)) n++; }
+      } else if (kind === 'geyser') { // (a geyser ridden, once, by its id: world/dunes/geysers.js)
+        for (const G of g.geysers?.list || []) if (G.id && inHere(G.pos)) { m++; if (L?.has(`geyser.ride.${G.id}`)) n++; }
       } else if (kind === 'fish') {
         m = R.of; n = Object.keys(L?.rec || {}).filter((k) => /^fish\.kg\.(?!max$)/.test(k)).length;
       } else if (kind === 'medal') {

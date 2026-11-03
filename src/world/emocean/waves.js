@@ -36,7 +36,8 @@
 //   W.onDown(foe, { returned, volley, by })   (the stage's: the score)   W.onSpawn(n)   W.HP   W.tellOf(foe) -> 0..1 (the stage's: its windup)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { OPPOSITE } from '../../progress/weather.js';
+import { OPPOSITE, stageWx } from '../../progress/weather.js';
+import { reckonLead } from '../../progress/econ/emocean.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
 import { CRUISE } from '../../courier/ship/views.js'; // (a foe drawn from above flies at the ship's cruise height, so the gun's plane meets it)
 import { railFoeBody, RAIL_FOE_ROLES, RAIL_FOE_SIZE } from '../../vfx/railfoes.js';
@@ -107,8 +108,20 @@ export class Waves {
   /** A crossing begins: its waves, and the ship's feeling (the waves alternate it and its opposite). */
   begin(plan, aspect = 'mirth') {
     this.end();
-    this.plan = plan; this.aspect = aspect; this.next = 0; this.idx = 0;
+    this.plan = plan; this.aspect = aspect; this.next = 0; this.idx = 0; this.seen = 0;
     this.waves = [...(plan?.waves || [])].sort((a, b) => a.bar - b.bar);
+    // the reckoning (G210; SLICE, PASSAGE.md): the route scouted at the sea chart shows each wave's edge mark `reckonLead` real s early
+    const g = this.game, V = g.voyage?.sailing; this.lead = V ? reckonLead(g.voyage.reckoning?.(V.from, V.to) ?? 0, g.psyche?.widen?.('divination.reckon') ?? 1, stageWx(V.from)) : 0;
+  }
+  /** The reckoning's marks: a wave not yet in, within the lead, marked at its lane on the view's far edge until it is due. */
+  foresee(bar) {
+    const M = this.game.edgeMark, ahead = this.lead / BAR_S; if (!M || !(ahead > 0)) return;
+    const B = (CARRIER_AT[this.view] || CARRIER_AT.chase).box, p = new THREE.Vector3();
+    for (let i = Math.max(this.next, this.seen); i < this.waves.length && this.waves[i].bar <= bar + ahead; i++) {
+      const w = this.waves[i]; this.seen = i + 1; if (w.from) continue; // (one hatched out of a foe comes from it: no edge to mark)
+      p.set((w.lane ?? 0) * B.x * 0.5, (B.y[0] + B.y[1]) / 2, B.z[1]);
+      M.show(p, Math.max(0.3, (w.bar - bar) * BAR_S), { kind: w.boss ? 'boss' : w.formation === 'swarm' || w.role === 'swarm' ? 'swarm' : 'foe' });
+    }
   }
   end() {
     for (const s of this.swarms) s.dispose(); this.swarms.length = 0;
@@ -126,6 +139,7 @@ export class Waves {
       if (bar - w.bar <= 1) this.spawn(w, this.idx);
       this.idx++;
     }
+    if (this.lead > 0) this.foresee(bar);
     const sixteenth = Math.floor(bar * 16);
     for (const s of this.swarms) s.step(dt); // (a swarm's flock flies before its members read where they are)
     for (let i = this.foes.length - 1; i >= 0; i--) {

@@ -24,7 +24,7 @@ export function dreamvaneRules({ on, L, log }) {
   on('crystal.harvest', (e) => {
     if (e.by !== 'courier') return;
     L.inc('crystal.harvest'); if (e.ringing) L.inc('crystal.harvest.ringing'); if (e.shard) L.inc('crystal.shard'); if (e.key) L.inc('crystal.key');
-    if (e.nature) L.inc(`crystal.harvest.${e.nature}`); if (e.sweet) { L.inc('crystal.sweet'); if (e.nature) L.inc(`crystal.sweet.${e.nature}`); }
+    if (e.nature) L.inc(`crystal.harvest.${e.nature}`); if (e.sweet) { L.inc('crystal.sweet'); if (e.id) L.first(`crystal.sweet.at.${e.id}`); if (e.nature) L.inc(`crystal.sweet.${e.nature}`); }
     log.say('find', `Crystal ${e.sweet ? 'opened on its note' : 'broken open'}${e.ringing ? ' while ringing' : ''}. Inside: ${plural(e.worth, 'cube')}${e.shard ? ' and a crystal shard' : ''}${e.key ? `, and ${an(ITEM(e.key))}` : ''}.`, {});
   });
   on('fork.throw', () => L.inc('fork.throw'));

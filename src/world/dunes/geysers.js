@@ -42,7 +42,7 @@ export class Geysers {
       const look = new SlipGeyser({ height: 22 + r() * 16, radius: LAUNCH.r, seed: i + 1 });
       look.group.position.copy(pos); look.group.userData.zone = 'dunes'; game.scene.add(look.group);
       look.onSpill = () => { game.paintmap?.slick(pos.x, pos.y, pos.z, LAUNCH.r * 1.3, 0.8); }; // (a gusher's spill: a slick round the vent, Calissa's vfx/slicks.js, and in the paint map, so the mop and Clean take it)
-      this.list.push({ look, pos, thrown: false });
+      this.list.push({ id: `g${i}`, look, pos, thrown: false }); // (its id: its place in the seeded layout: the checklist's `geyser.ride.<id>`)
     });
   }
 
@@ -65,7 +65,7 @@ export class Geysers {
       G.thrown = true;
       P.impulse(new THREE.Vector3(0, Math.max(0, LAUNCH.up - P.vel.y), 0), 'geyser');
       const T = g.techs?.active; if (T?.id === 'skiff') { T.air = true; T.spin = 0; T.airT = 0; } // (the skiff leaves its hover: skiff.js air)
-      g.events?.emit('geyser.launch', { by: 'environment' });
+      g.events?.emit('geyser.launch', { id: G.id, rider: T?.id === 'skiff' ? 'skiff' : 'courier', by: 'environment' });
     }
   }
 }

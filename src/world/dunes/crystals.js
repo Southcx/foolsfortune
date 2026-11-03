@@ -105,7 +105,7 @@ export class Crystals {
           tilt: new THREE.Quaternion().setFromEuler(new THREE.Euler((rnd() - 0.5) * (big ? 0.2 : 0.9), rnd() * 6.28, (rnd() - 0.5) * (big ? 0.2 : 0.9))) };
         e.spires.push(s); this.spires.push(s);
       }
-      this.list.push(e);
+      e.id = `c${this.list.length}`; this.list.push(e); // (its id: its place in the seeded layout, the same on every machine: the checklist's `crystal.sweet.at.<id>`)
     }
   }
 
@@ -213,7 +213,7 @@ export class Crystals {
       let fossil = false; if (g.pneuka && simRand() < CRYSTAL_FINDS.fossil[ringing ? 'ring' : 'dull']) { g.pneuka.add('fossil.lachrymite', 'crystal'); fossil = true; } // (a creature's shape in the set Lachryma: the Grove wakes it, world/garden/awaken.js)
       e.regrowT = REGROW + GROW; e.ringT = 0; e.openT = R.sweet ? OPEN_SWEET : OPEN;
       T.spot = { th: simRand() * Math.PI * 2, fret: Math.floor(simRand() * FRETS) }; // (it grows back with its spot somewhere new)
-      g.events?.emit('crystal.harvest', { by, tool, ringing, worth, shed, shard, key, fossil, sweet: R.sweet, nature: T.kind });
+      g.events?.emit('crystal.harvest', { id: e.id, by, tool, ringing, worth, shed, shard, key, fossil, sweet: R.sweet, nature: T.kind });
     }
     this.dirty(e);
     return true;
