@@ -17,10 +17,11 @@
 // and Path of Exile's cosmetic slots opened by what you played, the house's own card backs (progress/cardbacks.js) and skiff paint
 // (progress/skiffpaint.js), and the bracelet's charms (progress/bracelet.js: a count way or a feat way, whichever comes first).
 //
-//   COSMETICS[kind][id] = { opens(L), hint }   kind: toolSkins | jar | flourishes | instruments
+//   COSMETICS[kind][id] = { opens(L), hint }   kind: toolSkins | jar | flourishes | instruments | seaLooks
 //   cosmeticOpen(kind, id, L) -> bool   game.cosmeticOpen(kind, id) (main.js; the pickers' OPEN_WHEN read it: vfx/toolskinwear.js, vfx/pneukajar/look.js, vfx/flourishes.js, vfx/instrumentskins.js)
 // ---------------------------------------------------------------------------------------
 import { ASPECTS } from './weather.js';
+import { TALES, taleDone } from './opensea/tales.js';
 
 const G = (L, k) => Math.max(L?.get?.(k) || 0, L?.best?.(k) || 0); // (a counter or a record: the key's kind is the row's, this reads both)
 const did = (k, n = 1) => (L) => G(L, k) >= n;
@@ -158,7 +159,12 @@ const INSTRUMENTS = {
   mimic: row(any(did('chest.open', 100), did('curio.dupe', 10)), 'Open 100 chests.'),
 };
 
-export const COSMETICS = { toolSkins: TOOL_SKINS, jar: JAR, flourishes: FLOURISHES, instruments: INSTRUMENTS };
+// ---------------------------------------------------------------- the open sea's ship looks: a tall tale's pennant (opensea/tales.js; Calissa draws them, docs/handoffs/calissa/)
+const SEA_LOOKS = {
+  ...Object.fromEntries(TALES.map((t) => [t.reward.look, row((L) => taleDone(t.id, L), `Finish the tall tale ${t.name}.`)])),
+};
+
+export const COSMETICS = { toolSkins: TOOL_SKINS, jar: JAR, flourishes: FLOURISHES, instruments: INSTRUMENTS, seaLooks: SEA_LOOKS };
 
 /** Whether a look is open on this ledger (a kind or an id with no row: never; so an unlisted look stays shut until it is ruled). */
 export const cosmeticOpen = (kind, id, L) => !!COSMETICS[kind]?.[id]?.opens(L);

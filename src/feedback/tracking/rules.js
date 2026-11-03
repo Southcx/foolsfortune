@@ -38,6 +38,7 @@ import { lockheartRules, lockheartOutcomeRules } from './lockheart.js';
 import { raceRules } from './race.js';
 import { openSeaRules } from './opensea.js';
 import { seaSerpentRules } from './seaserpent.js';
+import { seaFoldsRules } from './seafolds.js';
 import { chatroomRules } from './chatroom.js';
 import { raceModeRules } from './racemodes.js';
 import { casinoRules } from './casino.js';
@@ -169,6 +170,7 @@ export function areaRules(ctx) {
   godRules(ctx);
   openSeaRules(ctx); // (the open sea: docs/plans/OPEN-SEA.md)
   seaSerpentRules(ctx); // (the sea serpent and the hull at the free helm: world/opensea/seafight.js)
+  seaFoldsRules(ctx); // (a song for the wind and a beast in tow: world/opensea/seafolds.js)
   chatroomRules(ctx); // (the room: coop/chatroom.js, COOP.md C7)
   raceRules(ctx); // (the Raceway's race, and the skiff's carve, pop, plates: docs/plans/SKIFF-RACING.md)
   raceModeRules(ctx); // (the Raceway's modes, cups, licences, City Trial, wager and the board's rules: SKIFF-RACING.md 12)

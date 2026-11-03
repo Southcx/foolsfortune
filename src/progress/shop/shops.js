@@ -54,7 +54,7 @@ export class Shops {
   offer(shop, id, data = null) {
     const D = SHOPS[shop], it = itemOf(id);
     if (!D || !it || !D.buys.includes(it.kind)) return 0;
-    const w = worthOf(id, data) * this.still(id, data) * this.want(shop, id) * this.fx(shop, 'sell') * this.charm() * (this.game.laidSpread?.worthK ?? 1) * (D.trade.includes(it.kind) ? 1 : S.buys), glut = this.state[shop].glut[id] || 0;
+    const w = worthOf(id, data) * this.still(id, data) * this.want(shop, id, data) * this.fx(shop, 'sell') * this.charm() * (this.game.laidSpread?.worthK ?? 1) * (D.trade.includes(it.kind) ? 1 : S.buys), glut = this.state[shop].glut[id] || 0;
     const paid = Math.max(w > 0 ? 1 : 0, Math.floor(w * Math.max(S.floor, 1 - S.glut * glut)));
     // (never above its own full-shelf ask, less a cube: charisma widens both sides, and a buy-and-sell-back must never pay)
     if (D.sells[id] == null) return paid;
@@ -65,7 +65,7 @@ export class Shops {
   /** The open counter's factor on its prices (`open`'s: the barge's mid-sea prices), 1 at a keeper's own counter. */
   fx(shop, side) { return this.cur === shop && this.factor ? this.factor[side] ?? 1 : 1; }
   /** What the shop's island wants this kind of thing, today (1 for a shop on no island): progress/econ/islands.js demand. */
-  want(shop, id) { const isl = SHOPS[shop]?.island; return isl ? demand(isl, demandKey(id), today()) * supplyMult(isl, demandKey(id)) : 1; } // (where an aspect falls, its crude is plentiful: progress/weather.js)
+  want(shop, id, data = null) { const isl = SHOPS[shop]?.island, key = demandKey(id, data); return isl ? demand(isl, key, today()) * supplyMult(isl, key) : 1; } // (where an aspect falls, its crude is plentiful: progress/weather.js)
   /** What a Cogitomap still charts (the owner, R58: a map does not rot by the clock): its Well's yield at the fill it holds now. A map of
    *  a mind still ruminating is worth its run; drawing that Well down (farming it) cheapens its maps, and letting it fill again restores
    *  them. 1 for anything else. */
