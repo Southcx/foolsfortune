@@ -98,6 +98,12 @@ add up to +25% to a slot (measured before final). **Open:** a gardener profile i
   `spirit.merge { kinds, kind }`, `spirit.out { kind, spirit }`, `spirit.release`, `spirit.visit`
 - `realm.name { realm }`, `cultivation.kiln { firing }`, `cultivation.tribulation { firing, passed, hits, parried }`
 
+## 5b. Built 2026-11-03 (G235): the growth and the water
+A bed on its own feeling's ground grows `GROWTH.ground` (x1.25) times as fast and watered with it `GROWTH.water` (x1.25): both, x1.5625
+(`progress/bedgrowth.js`; `Garden.surround`, `SporeBeds.surround`; a bed growing keeps the share done when its pace changes). A spirit in
+water of its own feeling gains `WATERS.drink` (1) a game hour in its stat, never past 999 (`progress/spiritdiet.js`). The world says what
+the ground and water at a plot are (`docs/handoffs/petra/2026-11-03-from-dovina-garden-life.md`).
+
 ## 6. Acceptance (the owner ticks these; each becomes a QAIS test)
 
 1. At a Shrine, enter the garden: you are the Pneuka Jar on the Dantian, hopping with WASD round a round planetoid, the god hand above.

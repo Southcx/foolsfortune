@@ -53,6 +53,11 @@ import { gardenBackdropOf } from '../progress/gardenbackdrop.js';
 import { Harmony } from '../progress/harmony.js';
 import { Decor } from '../progress/decor.js';
 import { SpiritLife } from '../progress/spiritlife.js';
+import { SpiritNotice } from '../progress/spiritnotice.js';
+import { GardenFolk } from '../progress/gardenfolk.js';
+import { SporePrints } from '../progress/sporeprints.js';
+import { TreeDiary } from '../progress/treediary.js';
+import { SpiritDiet } from '../progress/spiritdiet.js';
 import { Feelings } from '../progress/feelings.js';
 import { Vantages } from '../world/vantages.js';
 import { VantageFrames } from '../vfx/vantageframes.js';
@@ -112,6 +117,8 @@ export function bootProgress(game, made) {
   game.aberrantDrops = new AberrantDrops(game); // (what a won duel against an aberrant leaves: Soul Alchemy materials, progress/duel/drops.js)
   game.harmony = new Harmony(game); // (how calm or overgrown each planetoid of the Spirit Garden is: progress/harmony.js, GARDEN-COZY.md A)
   game.decor = new Decor(game); // (the garden's pieces: the catalogue, the shed's storage and the rating: progress/decor.js, GARDEN-COZY.md D)
+  game.spiritNotice = new SpiritNotice(game); game.gardenFolk = new GardenFolk(game); // (a spirit's remarks on the decor, the folk drawn by what the garden shows: progress/spiritnotice.js, gardenfolk.js, GARDEN-COZY.md C3, C4)
+  game.sporePrints = new SporePrints(game); game.treeDiary = new TreeDiary(game); game.spiritDiet = new SpiritDiet(game); // (wild spores found, the tree's diary, a spirit's fruit and water: progress/sporeprints.js, treediary.js, spiritdiet.js)
   game.spiritLife = new SpiritLife(game); // (the spirits' routines, their wishes and the morning's digest: progress/spiritlife.js, GARDEN-COZY.md C)
   game.feelings = new Feelings(game); // (the seven feelings' awakenings: progress/feelings.js, FEELINGS-AWAKENING.md)
   game.vantages = new Vantages(game); game.vantageFrames = new VantageFrames(game); game.awakening = new Awakening(game); // (Wonder's lookouts: world/vantages.js; the awakening's glitch and the body's wait: feedback/awakening.js)
@@ -125,6 +132,7 @@ export function bootProgress(game, made) {
   game.systems.add('world', game.recap, { clock: 'raw', name: 'recap', after: ['quests', 'questSplash'] });
   game.systems.add('world', game.harmony, { clock: 'raw', name: 'harmony' });
   game.systems.add('world', game.spiritLife, { clock: 'raw', name: 'spiritLife', after: 'harmony' });
+  game.systems.add('world', game.spiritDiet, { clock: 'raw', name: 'spiritDiet' }); // (a spirit in water of its own feeling drinks each game hour once the world says where: progress/spiritdiet.js)
   for (const name of ['feelings', 'vantages', 'vantageFrames']) game.systems.add('world', game[name], { clock: 'raw', name });
   game.systems.add('world', game.awakening, { clock: 'raw', name: 'awakening', after: ['feelings', 'vantages'] });
   { // the stones set the pool's terms (progress/stones.js): fired at the kiln, and by day or night (moonstone)

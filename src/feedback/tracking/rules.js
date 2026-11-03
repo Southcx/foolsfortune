@@ -69,6 +69,7 @@ import { sandboxRules } from './sandbox.js';
 import { strawmanWellRules } from './strawmanwell.js';
 import { questsRules } from './quests.js';
 import { gardenGrowthRules } from './gardengrowth.js';
+import { gardenLifeRules } from './gardenlife.js';
 import { pairSpecialsPlayRules } from './pairspecialsplay.js';
 import { touchstoneRules } from './touchstone.js';
 import { worldShellRules } from './worldshells.js';
@@ -189,6 +190,7 @@ export function areaRules(ctx) {
   lockheartRules(ctx); // (the Lockheart's Overload recoil) // (the god hand's matter, miracles, epics and the island's rejection)
   voyageRules(sea);
   gardenRules(ctx);
+  gardenLifeRules(ctx); // (the garden's life: a spirit's remarks, the folk who call, a bed's tender, the tree's diary: tracking/gardenlife.js)
   weatherRules(ctx);
   dunemawRules(ctx);
   placeRules(ctx);

@@ -23,6 +23,7 @@ import { isTraining } from './combat/throwingroom.js';
 import { ECON } from './econ/table.js';
 import { press, pullStep, distance } from './econ/materials.js';
 import { COLOR } from './weather.js';
+import { pressExtra } from './spiritwork.js';
 import { DAY_MS, now as calNow } from '../core/calendar.js';
 
 const A = ECON.alchemy, M = (n) => Math.max(1, Math.round(n * ECON.perMinute));
@@ -155,17 +156,18 @@ export class SoulAlchemy {
   /** What pressing these materials would do, without doing it: the trail the colour walks. The one walk (ruling: the preview is the
    *  press): each material's own pull (materials.js), a spirit at work's extra step, and while a draught lasts (game.draught, fading
    *  over a real minute) a pull of draughtPull x its strength toward the draught's feeling, at the swatches' saturation. */
-  walk(mats, colour = this.s.colour, { extra = this.game.realm?.press?.extra?.() ?? 0 } = {}) {
+  walk(mats, colour = this.s.colour, { extra = (m) => (this.game.realm?.press?.extra?.() ?? 0) + pressExtra(this.game.bound?.list, m) } = {}) {
     const d = this.game.draught || {}, lead = Object.keys(d).sort((a, b) => d[b] - d[a])[0], str = lead ? Math.min(1, d[lead] || 0) : 0;
     const to = lead && FEELING_HUE[lead] != null ? { h: FEELING_HUE[lead], s: A.sat } : null;
-    let c = { ...colour }; const trail = [{ ...c }]; let greyed = 0;
+    let c = { ...colour }; const trail = [{ ...c }]; let greyed = 0, worked = 0;
     for (const m of mats) {
+      if (typeof extra === 'function' ? extra(m) : extra) worked++; // (a spirit at work gave this one a step: G219)
       const before = c.s, r = press(c, [m], { extra });
       trail.push(...r.trail.slice(1)); c = { ...r.colour };
       if (c.s < before - 0.02) greyed++; // (the painter's rule, seen: a pull across the wheel passes through grey)
       if (to && str > 0) { c = pullStep(c, to, A.draughtPull * str); trail.push({ ...c }); }
     }
-    return { colour: c, trail, greyed, tinted: !!(to && str > 0) };
+    return { colour: c, trail, greyed, worked, tinted: !!(to && str > 0) };
   }
 
   /** Into the hopper: the materials in these box slots, in this order (each is used up). The colour walks their paths. */
@@ -177,7 +179,7 @@ export class SoulAlchemy {
     for (const { i } of [...mats].sort((a, b) => b.i - a.i)) box.take(i);
     this.s.colour = { h: +r.colour.h.toFixed(1), s: +r.colour.s.toFixed(3) }; this.s.cocked = true; // (pressing cocks the lever: one firing a press, ruling 5)
     this.game.save?.dirty('alchemy');
-    this.game.events.emit('alchemy.press', { count: mats.length, kinds: mats.map((x) => x.m.kind), hue: this.s.colour.h, sat: this.s.colour.s, near: this.near(), greyed: r.greyed, tinted: r.tinted, by: 'courier' });
+    this.game.events.emit('alchemy.press', { count: mats.length, kinds: mats.map((x) => x.m.kind), hue: this.s.colour.h, sat: this.s.colour.s, near: this.near(), greyed: r.greyed, worked: r.worked, tinted: r.tinted, by: 'courier' });
     return { colour: this.colour, trail: r.trail };
   }
 
