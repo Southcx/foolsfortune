@@ -16,7 +16,8 @@
 //
 //   game.temper = new Temper(game)
 //   temper.set(c, { state, emo, enrage })   whenever they change (missing keys keep their value)
-//   temper.look(c) -> { gloss 0..1, glow THREE.Color (add to emissive), tremble 0..1 }   for the body module
+//   temper.look(c) -> { gloss 0..1, glow THREE.Color (add to emissive), tremble 0..1 }   for the body module (its glow carries the
+//                                           agate's inner light too, when the creature feels one: vfx/agatelook.js)
 //   temper.update()                         every frame, after the creatures
 //   temper.throughWalls = false | true | (c) -> bool   its looks drawn over walls (off: a wall hides them, as it hides the body; the
 //                                           switch the Dreamvane's survey will throw as a psychic sonar ping: vfx/glyphs.js)
@@ -47,13 +48,14 @@ export class Temper {
 
   /** What the body should add to itself this frame: its gloss, a glow for its emissive, and how much it trembles. */
   look(c) {
-    const T = this.on.get(c);
-    if (!T) return NONE;
+    const T = this.on.get(c), ag = this.game.agateLook; // (and two feelings at once lighting it from inside: vfx/agatelook.js)
+    if (!T) return ag?.bare(c) || NONE;
     const t = this.game.events?.time ?? performance.now() / 1000;
     const heat = smooth(0.5, 1, T.emo), rage = T.enrage || T.emo >= ENRAGE ? 1 : 0;
     const pulse = 0.5 + 0.5 * Math.sin(t * (3 + 9 * heat)); // (a breath that quickens)
     T.glow.copy(_ember).multiplyScalar(0.25 * heat * (0.6 + 0.4 * pulse)).lerp(_gold, rage * 0.4 * pulse);
     const L = T.look ||= { gloss: 0.5, glow: T.glow, tremble: 0 }; // (one answer kept on the creature: nothing made a call)
+    const ga = ag?.glow(c); if (ga) T.glow.add(ga);
     L.gloss = (T.state + 2) / 4; L.tremble = Math.max(heat * 0.4, rage); return L;
   }
 

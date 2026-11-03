@@ -18,6 +18,8 @@
 //                  tipping back with it), the flame flaring, the whole of it turning slowly side to side as it scans; down, it sinks a
 //                  little and bows over the sand, its flame low. Only while it is about its own business (VIGIL_TELL.wisp.calm,
 //                  vfx/stealthmarks.js); laid over the pose the body set this frame (`layered`), never built up.
+//   AN AGATE       two feelings at once (G326; vfx/agatelook.js reads them): the flame stretched by the strength, its core in the
+//                  strongest feeling's colour and its skin in the second's, the glass and the lamp warmed toward the strongest.
 //   THE FUEL       `c.look.dim` (0..1, its share left) and `c.look.gutter` (0..1, how hard it sputters): set by a puzzle duel's secret drawing
 //                  the lantern down (vfx/duelview/aberrants/wisp.js); 1 and 0 as made.
 //
@@ -32,6 +34,7 @@
 import * as THREE from 'three';
 import { matteFrom } from './matte.js';
 import { VIGIL_TELL, layered } from './stealthmarks.js';
+import { agateFlameShader, AGATE_LOOK } from './agatelook.js';
 
 /** Its numbers. light: colour, intensity, reach (m), decay; flicker: amounts of three slow sines; flash: how fast a blow's fades (/s);
  *  mood: per pose, the flame's tint and brightness, and how quick its flicker; ember: radius (m), colour. */
@@ -47,7 +50,7 @@ export const WISP_LOOK = {
   ember: { r: 0.1, color: 0xfff0c8, emissive: 0xffc070, emissiveIntensity: 4 },
 };
 
-const _c = new THREE.Color(), _p = new THREE.Vector3();
+const _c = new THREE.Color(), _p = new THREE.Vector3(), WHITE = new THREE.Color(1, 1, 1);
 
 export class LanternWispLook {
   constructor(game) {
@@ -71,12 +74,12 @@ export class LanternWispLook {
       o.material = matteFrom(o.material); // (its own, so one wisp's flash is not every wisp's; the same program. Lambert: the model's Physical has specular 0 and roughness 1, so it showed no gloss to pay for: vfx/matte.js)
       const n = o.material.name || '';
       const into = /Flame/i.test(n) ? mats.flame : /Glow/i.test(n) ? mats.glow : mats.body;
-      into.push({ m: o.material, base: o.material.emissiveIntensity ?? 1, col: o.material.emissive.clone() });
+      into.push({ m: o.material, base: o.material.emissiveIntensity ?? 1, col: o.material.emissive.clone(), ag: into === mats.flame ? agateFlameShader(o.material) : null }); // (the flame cards' core and skin take an agate: vfx/agatelook.js)
     });
     const light = new THREE.PointLight(L.color, L.intensity, L.distance, L.decay);
     light.position.set(0, L.up, 0); c.lantern.add(light);
     this.game.lights?.adopt?.(light); // (lent by the budget at once: never counted by three.js as a light of its own)
-    c.look = { mats, light, tint: new THREE.Color(1, 1, 1), k: 1, quick: 1, phase: c.id * 1.7, ph: 0, dying: false, flare: 0 };
+    c.look = { mats, light, tint: new THREE.Color(1, 1, 1), k: 1, quick: 1, phase: c.id * 1.7, ph: 0, dying: false, flare: 0, flame: c.model.getObjectByName('flame_1'), fs: {} };
     this.dressed.push(c);
   }
 
@@ -96,6 +99,8 @@ export class LanternWispLook {
 
   tick(c, dt) {
     const S = c.look, W = WISP_LOOK, g = this.game;
+    S.ag = g.agateLook?.state(c) ?? null; // (two feelings at once: the flame's height, its core and its skin, vfx/agatelook.js)
+    this.agateFlame(c);
     // put out: the flame gutters through the clip, then the snuff as the model goes
     if (!c.alive) {
       if (c.dying != null) S.dying = true;
@@ -132,12 +137,29 @@ export class LanternWispLook {
     return 1 + V.up.flare * up - (1 - V.down.dim) * down;
   }
 
-  /** The flame and glow at `k` (1 its own), the light with them, and the clay's flash at `flash` (0..1). */
+  /** The agate's flame (G326, WHEEL.md 3): its bones stretched by the strength, laid over the pose the mixer set this frame (`layered`
+   *  on the scale's own value, so a frame the mixer skipped is never stretched twice). */
+  agateFlame(c) {
+    const S = c.look, b = S.flame; if (!b) return;
+    const A = S.ag, F = AGATE_LOOK.flame, w = A ? A.w : 0;
+    const hy = 1 + ((A ? A.h : 1) - 1) * w, wx = 1 + ((F.w[0] + (F.w[1] - F.w[0]) * (A?.k ?? 0)) - 1) * w;
+    for (const [ax, m] of [['x', wx], ['y', hy], ['z', wx]]) {
+      const st = S.fs[ax] || (S.fs[ax] = { out: NaN, base: 1 }), cur = b.scale[ax], base = cur === st.out ? st.base : cur;
+      st.base = base; st.out = base * m; b.scale[ax] = st.out;
+    }
+  }
+
+  /** The flame and glow at `k` (1 its own), the light with them, and the clay's flash at `flash` (0..1); an agate's core and skin over
+   *  the flame cards, its strongest feeling warming the glass and the lamp. */
   paint(c, k, flash) {
-    const S = c.look, L = WISP_LOOK.light;
-    for (const x of S.mats.flame) { x.m.emissiveIntensity = x.base * k; x.m.emissive.copy(x.col).multiply(S.tint); }
-    for (const x of S.mats.glow) { x.m.emissiveIntensity = x.base * (0.4 + 0.6 * k); x.m.emissive.copy(x.col).multiply(S.tint); }
+    const S = c.look, L = WISP_LOOK.light, A = S.ag, w = A ? A.w : 0;
+    const tint = w > 0 ? _c.copy(S.tint).lerp(WHITE, w) : S.tint; // (an agate's colours are its own: the pose's tint stood aside)
+    for (const x of S.mats.flame) {
+      x.m.emissiveIntensity = x.base * k; x.m.emissive.copy(x.col).multiply(tint);
+      if (x.ag) { x.ag.uAgW.value = w; if (A) { x.ag.uAgCore.value.copy(A.core); x.ag.uAgSkin.value.copy(A.skin); } }
+    }
+    for (const x of S.mats.glow) { x.m.emissiveIntensity = x.base * (0.4 + 0.6 * k); x.m.emissive.copy(x.col).multiply(tint); if (A) x.m.emissive.lerp(A.core, 0.6 * w); }
     for (const x of S.mats.body) x.m.emissive.setRGB(flash * 0.8, flash * 0.62, flash * 0.42);
-    S.light.intensity = L.intensity * k; S.light.color.set(L.color).multiply(S.tint);
+    S.light.intensity = L.intensity * k; S.light.color.set(L.color).multiply(tint); if (A) S.light.color.lerp(A.core, AGATE_LOOK.flame.light * w);
   }
 }
