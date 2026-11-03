@@ -204,7 +204,7 @@ export class Realm {
       g.events?.emit('garden.enter', { shrine: this.back.shrine, by: 'courier' });
       this.namingDue = !this.name; // (asked once the seam is back up: a page opened under the cover held it black, GARDEN-SWEEP #1)
     };
-    const took = g.seam ? g.seam.cross(go, { kind: 'shrine' }) : (go(), true);
+    const took = g.seam ? g.seam.cross(go, { kind: 'shrine', to: 'garden' }) : (go(), true); // (a loading screen: render/seam.js, case 409)
     if (took && g.seam) this.entering = true;
     return !!took; // (a seam already under way refuses: said, not pretended, GARDEN-SWEEP #11)
   }

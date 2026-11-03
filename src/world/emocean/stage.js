@@ -205,7 +205,7 @@ export class Emocean {
       if (this.showcase) { const W = V.passage.waypoints; g.events?.emit('showcase.start', { legs: V.passage.legs, hulls: W.map((w) => w.hull), by: 'courier' }); g.events?.emit('showcase.hull', { hull: V.ship, k: 0, mounts: V.mounts, note: W[0].note, by: 'environment' }); }
     };
     this.boarding = true;
-    if (g.seam) g.seam.cross(() => { this.boarding = false; go(); }, { kind: 'sea' }); else { this.boarding = false; go(); }
+    if (g.seam) g.seam.cross(() => { this.boarding = false; go(); }, { kind: 'sea', to: 'crossing' }); else { this.boarding = false; go(); } // (a loading screen: render/seam.js, case 409)
     return true;
   }
 

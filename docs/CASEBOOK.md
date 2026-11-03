@@ -1126,3 +1126,23 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 403. **A class name in the page is the module's whole name, never a short one.** A stylesheet rule is global: a short
   class (`.tt`) another module also uses takes that module's rules too (here `contain:strict`, which clips a 0 x 0 holder's children to
   nothing). Grep the class before you use it; a probe that a thing is up looks at the screenshot (`elementFromPoint` skips a `pointer-events: none` overlay), not the module's own list.
+
+404. **A radial never outlives the context that opened it.** A choice drawn on screen is taken down when what it
+  chooses for changes (a mount summoned or put away, the arc's context gone), whatever the arc's fold; and the finger that held it open
+  picks by lifting over a choice, since the tile it pressed holds that finger's capture.
+
+405. **A thing chosen by name is called by name, never by a simulated key whose length a clock reads.** A touch pick
+  that fakes a press of Y for 90 ms is a hold or a tap by the frame rate, and called the other mount.
+
+406. **A thing laid in a room stands clear of every Shrine and cradle in it.** A pot's place is a number typed
+  once; a Shrine placed later by the Courier's spawn moved under it. Before laying props by hand, look at what else stands there now.
+
+407. **A held sound is heard from where its maker is, and let go when it is out of earshot or out of play.** A
+  loop started by an event and re-armed by the next one is a drone for as long as the maker lives: level it by distance on every beat,
+  and end it when the place it belongs to is left.
+
+408. **Nothing in play asks the card to finish (getError, readPixels, a sync), not on a clock either.** Each makes
+  the CPU wait for every draw queued; on a busy frame that is a hitch the player feels. Ask at a crossing, under the cover.
+
+409. **A crossing that builds a place names it, and shows it while it builds.** A dip to the dark says
+  nothing about a load; the cover says where you are going and how far the work is.

@@ -46,6 +46,9 @@ const PROFILE_LABEL = (id) => profileOf(id).label.toUpperCase();
 export const AIR = { fog: 0x3a2618, density: 0.006 };
 const BUILDERS = { run: buildRun, climb: buildClimb, stomp: buildStomp, brawl: buildBrawl, machine: buildMachine };
 
+/** A stage's name on the loading screen (render/seam.js): the glossary's (the Run, the Climb ...), these by hand. */
+const STAGE_NAME = { wings: 'the wings', flatstage: 'the flat stage', strawmanwell: "Strawman's Well" };
+
 export class StrawmansWell {
   constructor(game) {
     this.game = game; this.built = false; this.frame = new WellFrame(game);
@@ -118,13 +121,13 @@ export class StrawmansWell {
   leave() {
     const g = this.game, C = g.course;
     const home = () => { MOD[this.stage?.id]?.leave?.(this); this.frame.remove(); g.movementProfiles?.lift(); this.listen(false); this.stage = null; C?.teleport(C.hubSpawn.v, C.hubSpawn.yaw); }; // (the stage left as a lane change leaves it: the Arena's kit taken off)
-    g.seam?.cross(home) || home();
+    g.seam?.cross(home, { to: 'hub' }) || home(); // (a loading screen: render/seam.js, case 409)
   }
   /** A stage entered (from its door in the wings), or the wings again (from a stage's door). */
   go(id) {
     const g = this.game, L = laneOf(id); if (!L) return;
     const to = () => { g.course?.teleport(new THREE.Vector3(AT.x + L.start, AT.y + 0.05, L.z), Math.PI / 2); this.enterLane(id); };
-    g.seam?.cross(to) || to();
+    g.seam?.cross(to, { to: 'strawmanwell', name: STAGE_NAME[id] || `the ${id[0].toUpperCase()}${id.slice(1)}`, edge: 'door' }) || to(); // (a loading screen: render/seam.js, case 409)
   }
   enterLane(id) {
     const g = this.game, L = laneOf(id);

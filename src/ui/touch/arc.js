@@ -100,8 +100,9 @@ export class TouchArc {
   pickItem(it) {
     this.touched = performance.now() / 1000;
     if (it.id === 'skiff' || it.id === 'skiff.jelly') { // (a mount by name: the tap calls the one preferred, JellyMount.prefer; the held choice needs Y 0.35 s, GAPS G149)
-      if (it.mount) this.game.jellyMount?.prefer?.(it.mount);
-      const B = this.game.touchUI?.topBar; B?.hold('skiff', true); setTimeout(() => B?.hold('skiff', false), ARC_PRESS.tap);
+      const J = this.game.jellyMount;
+      if (it.mount && J?.callByName) J.callByName(it.mount); // (by name: never a Y pressed for 90 ms, whose length the hold's clock read as the other mount)
+      else { const B = this.game.touchUI?.topBar; B?.hold('skiff', true); setTimeout(() => B?.hold('skiff', false), ARC_PRESS.tap); }
     }
     else this.tap(it.id);
     if (!it.pad) this.afterChoice();
@@ -188,7 +189,7 @@ export class TouchArc {
 
   update(now, on) {
     const g = this.game, setting = this.setting, ctx = on && !windowOpen(g) && !g.touch?.screenTaken?.() && setting !== 'hidden' ? arcContext(g) : null;
-    if (ctx !== this.ctx) { this.ctx = ctx; this.key = ''; if (!ctx) this.close(); }
+    if (ctx !== this.ctx) { this.ctx = ctx; this.key = ''; this.closeRadial?.(); this.closeRadial = null; if (!ctx) this.close(); } // (a radial never outlives its context: the BELT's mounts stood on screen with the skiff summoned and put away, case 404)
     if (!ctx) { this.hideAll(); return; }
     if (setting === 'folded' && this.fold === 'open' && !this.closeRadial && now - this.touched > ARC_FOLD_TIME.idle && !this.down.size) this.close();
     const { slots, face } = this.read(ctx);

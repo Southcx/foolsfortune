@@ -5011,3 +5011,61 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   With it, the tags are laid off one another (and off the Sight's and the Lachrimeter's corners) by the creature tags' own solver, moved
   out of creaturetags.js into vfx/taglayout.js (`TagLayout`) and used by both.
 - **Rule:** 403
+
+### 2026-11-03 · The mounts' choice stood on screen with the skiff put away, and JELLY called the skiff (South's report)
+- **Seen:** South: the mount selector for the Solar Skiff and the slip jelly mount stays on screen even with the skiff put away, and
+  does not summon the slip jelly mount.
+- **Cause, as measured:** three, all on the arc's BELT radial (ui/touch/arc.js, radial.js), and one on the desk.
+  (1) Picking JELLY or SKIFF by name pressed Y for 90 real ms through the top bar and let the jelly's call read the hold on its own frame
+  clock: in the probe the press ran past the hold's 0.35 game s, the choice opened on "the other one" and the let go called the skiff
+  (`last` stayed `skiff`). (2) Holding BELT opens the radial under a finger the BELT tile holds captured, so lifting it over a choice
+  reached nothing and the radial stayed up. (3) A change of the arc's context (the skiff summoned or put away) called `close()`,
+  which returns early when the arc is already folded, so the radial was never taken down. (4) On the desk, Y held on the skiff only
+  stepped down: the choice was read only on foot.
+- **Fix:** `JellyMount.callByName(id)`: the jelly asks the skiff to step down and comes once it has, the skiff asks the jelly to slump;
+  the radial's pick calls it. The radial picks on the held finger's lift over a choice, and a context change always takes it down.
+  On the skiff, with the jelly open, a Y tap steps down as before and a hold offers the two (the jelly picked is called by name); without
+  the jelly the press steps down at once, as it always has.
+- **Rule:** 404, 405
+
+### 2026-11-03 · The workshop's errant pots, one on the Bisque Shrine's gate (South's report)
+- **Seen:** South: the workshop needs fewer errant pots; one in particular spawns on top of the Shrine gate.
+- **Cause, as measured:** 137 breakables on the workshop's ground floor, mezzanine and platform. One of the five classic urns was laid
+  at (2.6, -12.4), typed before the Bisque Shrine was set 2.2 m and 1.5 m off the Courier's spawn, at (2.2, -13): 0.7 m from its gate.
+  Twelve more were three loose clusters on the walking floor.
+- **Fix:** that urn is gone; the floor clusters gone; shelves one or two pots, the benches three or four, the mezzanine edge every other
+  place, the platform's ring five. The upper floor's gallery and showroom stand as they were.
+- **Rule:** 406
+
+### 2026-11-03 · A buzz in Strawman's Well from the first door on (South's report)
+- **Seen:** South: a persistent buzzing noise that happens when entering the doors and continues as you play.
+- **Cause, as measured:** the gallery duck's rotor (audio/welltargets.js: a 110 Hz sawtooth with a 28 Hz flutter), held until the
+  next beat. The duck (world/strawmanwell/targets.js) beats `fly` each leg and every 3 real s, so the whirr never let go while a duck
+  patrolled, at full level wherever it flew (the Run's flies over its far ledge, 70 m off): one held in the Run, two in the Arsenal,
+  one still sounding back in the wings (a probe counting live oscillators by the stack that made them).
+- **Fix:** `well.target` carries `at`; the whirr's level is set by its distance from the camera on every beat (whole inside 5 m, gone
+  past 22 m, let go out of earshot), and every whirr is let go on `well.stage.enter`. Probed: held at 3 m, lowered at 15 m, let go at
+  30 m and at a change of stage; none started from a stage's door.
+- **Rule:** 407
+
+### 2026-11-03 · Strawman's Well stuttered (South's report)
+- **Seen:** South: performance in Strawman's Well is a little stuttering.
+- **Cause, as measured:** single ticks of 0.4 s to 46 s, on a different stage each run, with every system in the tick summing to about
+  1 ms. A sampling profile put them in one call: `gl.getError()` from the field report's frame (debug/fieldreport.js), which asked
+  every 15 real s and at each zone entered. getError makes the CPU wait for every draw the card has queued: on SwiftShader seconds, on
+  a real card the frame's GPU time again, a hitch every 15 s, worst where the card is busiest. It ran headless too (navigator.webdriver).
+- **Fix:** the check runs only while the report runs (`on`), at a zone entered (under the seam) and before a write, never on a clock.
+  After: the worst tick running each of the Well's 19 stages 30 ms (SwiftShader), the median 6 to 10 ms, as before.
+- **Rule:** 408
+
+### 2026-11-03 · A change of place was a fade from black, saying nothing of the load (South's report)
+- **Seen:** South: we need proper loading screens rather than just a fade from black, to let the player know the levels are being built.
+- **Cause:** the seam (render/seam.js) dipped to a plain dark cover for every crossing without a wipe of its own (the Index's rooms,
+  the rooms' ways home, Shrine travel, the Spirit Garden, the bazaar, the sea, Strawman's Well's doors); the area wipe (Calissa's
+  vfx/areawipe.js), a loading screen with the destination's card, name and a thread, was used by nothing but /areawipe.
+- **Fix:** a crossing that names where it goes (`to`, and `name` where the card has none) crosses under the area wipe, its thread filled
+  by the seam's `progress()` (the staged build, the warm-up's textures, the hold: never going back); once covered it skips the world's
+  draw as the plain cover does. The callers pass their destination (the Index by `roomCard`, world/rooms.js). One with no `to` still
+  dips to the dark (a seal, a tow, the garden's way out). `seam.busy` holds until the loading screen has opened again: the Well's
+  sweep drew the psygun while it was still lifting, and the draw was refused (nothing is played under a cover).
+- **Rule:** 409

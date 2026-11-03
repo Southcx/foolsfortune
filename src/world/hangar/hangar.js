@@ -148,7 +148,7 @@ export class Hangar {
   }
   leave() {
     const g = this.game, C2 = g.course, home = () => C2?.teleport(C2.hubSpawn.v, C2.hubSpawn.yaw);
-    g.seam?.cross(home) || home();
+    g.seam?.cross(home, { to: 'hub' }) || home(); // (a loading screen: render/seam.js, case 409)
     g.events?.emit('hangar.leave', { by: 'courier' });
   }
 

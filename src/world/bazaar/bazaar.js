@@ -135,7 +135,7 @@ export class Bazaar {
     g.events?.emit('bazaar.enter', { by: 'courier' });
   }
   /** Out through the gate to the Weir's north beach, under the seam's cover. */
-  leave() { const g = this.game; this.close(); g.seam?.cross(() => g.course?.toWeir?.()) || g.course?.toWeir?.(); g.events?.emit('bazaar.leave', { by: 'courier' }); }
+  leave() { const g = this.game; this.close(); g.seam?.cross(() => g.course?.toWeir?.(), { to: 'weir' }) || g.course?.toWeir?.(); g.events?.emit('bazaar.leave', { by: 'courier' }); }
 
   /** F at the cage, a table or the gate. Wired on the first frame (the hall is built before the interact chevron exists). */
   wire() {
@@ -193,7 +193,7 @@ export class Bazaar {
       P.latch('KeyF');
       if (it.ref === 'cage') this.openCage();
       else if (it.ref === 'gate') this.leave();
-      else if (it.ref === 'weirgate') { g.seam?.cross(() => this.arrive()) || this.arrive(); }
+      else if (it.ref === 'weirgate') { g.seam?.cross(() => this.arrive(), { to: 'bazaar' }) || this.arrive(); }
       else { const T = TABLES.find((x) => x.id === it.ref); if (T) { this.session = new TableSession(g, T); this.session.start(); } }
     }
     if (this.session) { this.session.update(g.rawDt ?? dt); if (!this.session.open && this.session.done) this.session = null; }

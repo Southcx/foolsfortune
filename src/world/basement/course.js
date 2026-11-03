@@ -24,7 +24,7 @@ import { ROOM_GLAZE_ID as RG } from '../../vfx/roomglazes.js';
 import { addOutline } from '../../render/outline.js';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { BASE_Y, HUB, CHECKPOINTS, PITS, RUBRIC, glowMat, label, signHelp } from './basement.js';
-import { indexRooms, roomSpawns, goRoom, toLab, toDunes, toWeir, toDunemaw, toShore, toSiege, toMill } from '../rooms.js';
+import { indexRooms, roomSpawns, goRoom, roomCard, toLab, toDunes, toWeir, toDunemaw, toShore, toSiege, toMill } from '../rooms.js';
 
 // ---- runtime: checkpoints, reset floors, the index console, speed gates, splits ---------
 const STORE = 'courseBests'; // (the save's section)
@@ -118,7 +118,7 @@ export class Course {
   buildConsole() {
     const S = this.game.scene, B = BASE_Y, cx = 0, cz = -6;
     this.rooms = indexRooms(); // (the rooms the menu lists: world/rooms.js)
-    this.menu = new IndexMenu(this.game, this.rooms, (id) => (!id.startsWith('debug.') && this.game.gateRing?.depart(() => this.goRoom(id))) || this.goRoom(id), () => this.calibration()); // (the gate-out under the seam: vfx/gatering.js; the DEBUG rows go at once)
+    this.menu = new IndexMenu(this.game, this.rooms, (id) => (!id.startsWith('debug.') && this.game.gateRing?.depart(() => this.goRoom(id), roomCard(this.rooms, id))) || this.goRoom(id), () => this.calibration()); // (the gate-out under the seam: vfx/gatering.js; the DEBUG rows go at once)
     this.game.indexMenu = this.menu;
     this.console = { x: cx, z: cz };
     this.game.interact?.add('index', (P) => { // (the hub's Index offers the chevron as every other F does: SWEEPS group 8)

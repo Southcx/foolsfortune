@@ -42,8 +42,8 @@ function audioOf(g) {
 
 /** every / later: real s between writes, before and after the first five real minutes; keep: loads kept; samples, moments, errors: rows kept
  *  a report (the newest samples, the first moments and errors); slow, slows: a slow frame's real ms, and how many are kept (the newest);
- *  glCheck: real s between GL error checks (getError makes the CPU wait for the card: on iOS a round trip to the GPU process). */
-export const FIELD = { every: 30, later: 120, early: 300, keep: 30, samples: 40, moments: 80, errors: 8, longFrame: 300, firsts: 60, frames: 30, slow: 100, slows: 32, glCheck: 15 };
+ *  (a GL error is checked only at a zone entered and a write: getError makes the CPU wait for the card, case 408). */
+export const FIELD = { every: 30, later: 120, early: 300, keep: 30, samples: 40, moments: 80, errors: 8, longFrame: 300, firsts: 60, frames: 30, slow: 100, slows: 32 };
 
 const rid = () => (globalThis.crypto?.randomUUID?.() || `${now()}${performance.now()}`).replace(/[^a-z0-9]/gi, '').slice(0, 12);
 const sec = () => Math.round(performance.now() / 100) / 10;
@@ -124,9 +124,10 @@ export class FieldReport {
       if (this.doc.slow.length > FIELD.slows) this.doc.slow.shift();
     }
     this.heard.clear();
-    // a GL error, every FIELD.glCheck real s and at each zone entered (getError waits on the card: never every frame, nor every second)
-    const now1 = performance.now(), z = this.game.zones?.current ?? null;
-    if (this.gl && !this.lost && (z !== this.zone || now1 - (this.errAt || 0) > FIELD.glCheck * 1000)) { this.errAt = now1; const e = this.gl.getError(); if (e && !this.gl.isContextLost()) this.error(`a GL error 0x${e.toString(16)} in ${z ?? '?'}`); }
+    // a GL error, at each zone entered (under the seam's cover) and before each write, only while the report runs: getError waits on the
+    // card, so a check every 15 real s in play was a hitch of its own, worst where the card is busiest (Strawman's Well: case 408)
+    const z = this.game.zones?.current ?? null;
+    if (this.on && z !== this.zone) this.glCheck(z);
     if (z !== this.zone) { this.zone = z; this.moment(`in ${z}`); } // (where it was, as it went)
     // the last things before a loss: each shader program linked after boot (by its material's name) and each long frame
     const P = this.r?.info?.programs;
@@ -136,10 +137,13 @@ export class FieldReport {
     const t = performance.now() / 1000;
     if (t < this.nextT) return;
     if (!this.on) { if (!this.cloud?.db || !this.cloud?.uid || navigator.webdriver) { this.nextT = t + 5; return; } this.on = true; this.start(); }
-    this.sample();
+    this.glCheck(z); this.sample();
     this.nextT = t + (t < FIELD.early ? FIELD.every : FIELD.later);
     this.write();
   }
+
+  /** One GL error check (the CPU waits on the card for it: only at a zone entered and a write, never on a clock in play). */
+  glCheck(z) { if (!this.gl || this.lost) return; const e = this.gl.getError(); if (e && !this.gl.isContextLost()) this.error(`a GL error 0x${e.toString(16)} in ${z ?? '?'}`); }
 
   sample() {
     const f = this.frames.sort((a, b) => a - b), n = f.length, g = this.game, m = this.r?.info?.memory || {};

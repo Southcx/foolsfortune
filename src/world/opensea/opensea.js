@@ -228,7 +228,7 @@ export class OpenSea {
     const isl = this.props.islets.find((i) => !this.under(i) && i.secret.pos.distanceTo(_v.copy(P.pos).setY(i.top)) < ROOM.secret);
     if (isl) return this.claim(isl);
     const home = Object.entries(this.props.quays).find(([, q]) => q.open && q.post.distanceTo(_v.copy(P.pos).setY(q.post.y)) < 3);
-    if (home) { const go = () => g.places?.travel?.('workshop'); g.seam?.cross(go) || go(); }
+    if (home) { const go = () => g.places?.travel?.('workshop'); g.seam?.cross(go, { to: 'workshop' }) || go(); }
   }
 
   // ---------------------------------------------------------------- salvage (progress/opensea/salvage.js; OPEN-SEA.md 14.4)

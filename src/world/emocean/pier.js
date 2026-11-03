@@ -139,7 +139,7 @@ export class Pier {
       // the open sea (OPEN-SEA.md 8): off the lanes, at the free helm; from a pier to its own island's quay there (world/opensea/opensea.js arrive)
       const dev = g.input?.device || 'keyboard', helmWords = deviceText(`{heUp} and {heDown} the sail, ${dev === 'keyboard' ? 'A and D' : 'the stick'} the rudder`, dev, 'helm'); // (the device's words: progress/devicewords.js)
       if (g.opensea && !V.sailing) ways.push(new ChoiceCard({ id: 'opensea', icon: 'touch.water', name: 'THE OPEN SEA', does: `off the lanes, at the helm: ${helmWords} · chart the squares · what lives out there` },
-        { onPick: () => { this.menu?.close(); const go = () => { this.castOff_(); g.opensea.arrive(at); }; g.seam?.cross(go, { kind: 'sea' }) || go(); } })); // (to this island's quay on the open sea, or Anagami's: opensea.js arrive)
+        { onPick: () => { this.menu?.close(); const go = () => { this.castOff_(); g.opensea.arrive(at); }; g.seam?.cross(go, { kind: 'sea', to: 'opensea' }) || go(); } })); // (to this island's quay on the open sea, or Anagami's: opensea.js arrive)
       // the showcase crossing (DEBUG only: progress/rail/showcase.js): what is new on the rail in one run, back to this pier, nothing counted
       const SC = g.mode === 'debug' && g.rail?.sailShowcase && !V.sailing ? showcasePassage().waypoints : [];
       const show = SC.length ? cardList([new ChoiceCard({ id: 'showcase', icon: 'touch.overhead', name: 'THE SHOWCASE CROSSING', does: `${SC.length} legs, a hull each (${SC.map((w) => w.hull).join(', ')}) · back to this pier · your pool kept full · nothing counted` },

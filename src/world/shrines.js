@@ -38,6 +38,9 @@ export const SHRINES = [
   { id: 'pearl', name: 'the Pearl Shrine', at: (g) => g.margarite?.spot('shrine') ?? null }, // (Margarite's dock: world/emocean/margarite.js)
 ];
 
+/** A Shrine's card for the loading screen (vfx/areacards.js), where it stands. */
+const SHRINE_CARD = { bisque: 'workshop', lamp: 'dunemaw', float: 'shore', pearl: 'margarite' };
+
 export class Shrines {
   constructor(game) {
     this.game = game;
@@ -130,7 +133,7 @@ export class Shrines {
     const go = () => { const f = new THREE.Vector3(Math.sin(s.yaw), 0, Math.cos(s.yaw)); const to = s.pos.clone().addScaledVector(f, 1.4).setY(s.pos.y + 0.05); if (!g.places?.stand(to, s.yaw + Math.PI)) g.course.teleport(to, s.yaw + Math.PI); }; // (into its zone first: world/places.js)
     this.menu?.close();
     g.cradles?.unseal('travel', 'courier', { now: true }); // (out of the threshold at once: the travel sets the Courier down, world/cradles.js)
-    if (g.seam) g.seam.cross(go, { kind: 'shrine' }); else go(); // (under a cover: render/seam.js)
+    if (g.seam) g.seam.cross(go, { kind: 'shrine', to: SHRINE_CARD[id] || id, name: s.name }); else go(); // (under the loading screen: render/seam.js, case 409)
     this.last = id; g.save?.dirty('shrines');
     g.events?.emit('shrine.travel', { from, to: id, by: 'courier' });
     return true;

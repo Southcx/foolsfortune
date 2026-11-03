@@ -53,6 +53,12 @@ export function roomSpawns() {
   };
 }
 
+/** Where a room's crossing goes, for the seam's loading screen (render/seam.js; the area wipe's card, vfx/areacards.js): its card's
+ *  id where it has one, else its own name from the Index (case 409). */
+const ROOM_CARD = { workshop: 'workshop', dunes: 'weir', weir: 'weir', shore: 'shore', opensea: 'opensea', raceway: 'raceway', dunemaw: 'dunemaw', siege: 'siege', bazaar: 'bazaar' };
+const said = (n) => String(n || '').toLowerCase().replace(/(^|\s)([a-z])/g, (m, s, ch) => s + ch.toUpperCase()).replace(/^The /, 'the ');
+export function roomCard(rooms, id) { const r = rooms.find((x) => x.id === id); return ROOM_CARD[id] ? { to: ROOM_CARD[id] } : { to: id, name: said(r?.name) }; }
+
 export function goRoom(c, id) {
   const r = c.rooms.find((x) => x.id === id);
   if (!r) return;

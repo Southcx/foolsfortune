@@ -14,7 +14,7 @@
 // The armillary sphere (counter-turning rings round a centre) is its older ancestor. The cover itself is the seam's (render/seam.js).
 //
 //   game.gateRing = new GateRing(game)   (after game.course: the Index's pedestal is where the hoops hang)
-//   game.gateRing.depart(fn) -> false when it cannot (no seam, a seam already under way): the caller then runs fn itself
+//   game.gateRing.depart(fn, { to, name }?) -> false when it cannot (no seam, a seam already under way): the caller then runs fn itself
 //   game.gateRing.update(rawDt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -82,11 +82,11 @@ export class GateRing {
   }
 
   /** The gate-out: the bands climb the Courier while the seam's cover closes; `fn` (the room's teleport) runs under it, then the arrival. */
-  depart(fn) {
+  depart(fn, opts = {}) { // (opts: where it goes, `to` and `name`, for the seam's loading screen: render/seam.js)
     const S = this.game.seam;
     if (!S || S.busy) return false;
     // (on the far side the bands come down, unless an arrival flourish is worn: it is drawn there instead, vfx/flourishes.js)
-    const took = S.cross(() => { try { fn(); } finally { if (this.game.flourishes?.arrive('gate')) { this.job = null; this.bands.visible = false; } else this.job = { kind: 'in', t: 0 }; } }, { kind: 'gate', out: OUT });
+    const took = S.cross(() => { try { fn(); } finally { if (this.game.flourishes?.arrive('gate')) { this.job = null; this.bands.visible = false; } else this.job = { kind: 'in', t: 0 }; } }, { kind: 'gate', out: OUT, ...opts });
     if (!took) return false;
     this.job = { kind: 'out', t: 0 };
     return true;

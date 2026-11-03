@@ -207,6 +207,7 @@ export class Skiffing extends Tech {
 
   end() {
     this.rag?.stop(); this.ragWant = null;
+    if (this.yHold != null) { this.yHold = null; const JM = this.game.jellyMount; if (JM?.choice) { JM.choice.close(); JM.choice = null; } }
     const P0 = this.P; if (this.safe && P0.embedded?.()) P0.pos.copy(this.safe); // (a phase never leaves them inside the barrier or a ruin)
     if (!this.parked) this.skiff.visible = false;
     this.wake.clear();
@@ -222,6 +223,7 @@ export class Skiffing extends Tech {
   enter(phase) {
     const P = this.P, g = this.game;
     this.phase = phase; this.phaseT = 0;
+    if (this.yHold != null) { this.yHold = null; const JM = g.jellyMount; if (JM?.choice) { JM.choice.close(); JM.choice = null; } } // (the ride's held choice never outlives the ride)
     const qr = _q1.setFromAxisAngle(UP, this.heading).multiply(qFace);
     if (phase === 'dismount' || phase === 'bail') {
       this.board.pos.copy(P.pos); this.board.heading = this.heading; this.board.v.copy(this.v).multiplyScalar(phase === 'bail' ? 0.6 : 0);
@@ -315,7 +317,19 @@ export class Skiffing extends Tech {
     const g = this.game, P = this.P, c = this.cfg, inp = P.input, D = this.dunes, W = D.wind, CD = D.condition; // (CD: the Raceway's hour and weather, conditions.js)
     if (!D.active || this.stowNow) { this.want = false; return false; }
     if (this.phase !== 'ride') return this.stepPhase(dt);
-    if (P.latch('KeyY')) { if (!this.air) this.enter('recall'); else return false; return this.stepPhase(dt); } // (in the air there is no stepping down: it is simply stowed)
+    // Y: a tap steps down (in the air it is simply stowed); with the slip jelly mount open, a hold offers the two as it does on foot, and
+    // the jelly picked is called by name (jellymount.js callByName: the skiff steps down, the jelly comes). Without the jelly, the press
+    // steps down at once as it always has.
+    const JM = g.jellyMount, choose = !!JM?.open?.();
+    if (P.latch('KeyY')) { if (this.air) return false; if (!choose) { this.enter('recall'); return this.stepPhase(dt); } this.yHold = 0; }
+    if (this.yHold != null) {
+      if (inp.isDown('KeyY')) { this.yHold += dt; if (this.yHold >= (JM.callHold ?? 0.35) && !JM.choice) JM.choice = JM.makeChoice('jelly'); JM.choice?.steer(inp, P); }
+      else {
+        const pick = JM.choice ? JM.choice.pick : null; JM.choice?.close(); JM.choice = null; this.yHold = null;
+        if (!pick) { this.enter('recall'); return this.stepPhase(dt); } // (a tap)
+        if (pick === 'jelly') { JM.callByName('jelly'); return this.stepPhase(dt); } // (the skiff steps down; the jelly comes once it has)
+      }
+    }
     if (P.latch('KeyF') && !this.air && this.v.length() < 6) { this.enter('dismount'); return this.stepPhase(dt); }
     // (what the frame interpolates from: the body is drawn between the last step and this one, like the camera is)
     this.hPrev = this.heading; this.spinPrev = this.spin; this.rollPrev = this.roll;

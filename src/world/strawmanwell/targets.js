@@ -8,7 +8,7 @@
 // blast lines and KO (`well.dummy.ko`), trophies, the same verbs heard, the same windup the parry answers; this runtime extends it,
 // adding each kind's body (vfx/strawmanwell/targets/), mind (targetminds.js), size, weight (a heavier one is thrown less far) and blow.
 // Only the stage you are in moves. The Well's area builds and takes them down with the room (boot/services.js: `populate`, `clear`).
-// Each says its moments for the ear as `well.target { kind, beat, id, by }` (Wanda's audio/welltargets.js): the hopper's hop, crouch,
+// Each says its moments for the ear as `well.target { kind, beat, id, at, by }` (Wanda's audio/welltargets.js): the hopper's hop, crouch,
 // leap and land; the quintain's wind, swing and home; the duck's fly (each leg, again every FLY_EVERY real s to keep its rotor up), tip,
 // dive and stop; any kind's struck.
 //
@@ -53,7 +53,7 @@ let NEXT = 1;
 export class TrainingTargets extends StrawDummies {
   constructor(well) { super(well); this.minds = targetMinds(this); }
   /** A moment said for the ear (no rule narrates it: it is a sound's cue). */
-  beat(c, beat) { this.game.events?.emit('well.target', { kind: c.target, beat, id: c.id, by: 'environment' }); }
+  beat(c, beat) { this.game.events?.emit('well.target', { kind: c.target, beat, id: c.id, at: c.pos, by: 'environment' }); } // (`at`: the ear holds the duck's whirr by its distance, case 407)
 
   /** Every target in its place (the room just built). */
   populate() {

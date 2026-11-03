@@ -22,7 +22,7 @@
 // Breath of the Wild's horse called by a whistle, Splatoon's squid form (fast in its own ink); the skiff's tech here (courier/skiff/skiff.js:
 // the capsule held at the seat over the ground it follows, moved by the core's own move).
 //
-//   game.jellyMount = techs.add(new JellyMount(techs))   (boot/tools.js, before the Solar Skiff: Y is read here first)   .absorb(k) -> bool
+//   game.jellyMount = techs.add(new JellyMount(techs))   (boot/tools.js, before the Solar Skiff: Y is read here first)   .absorb(k) -> bool   .callByName(id) (a mount chosen by name: touch's BELT, the held choice)
 //   .riding   .hp   .readyIn (real s until it can be called)   events mount.call, mount.ride, mount.hop, mount.hurt, mount.burst, mount.drink, mount.end
 //   (each with `by` and `mount: 'slipjelly'`)
 // ---------------------------------------------------------------------------------------
@@ -54,6 +54,8 @@ export class JellyMount extends Tech {
     this.tint = null; this.drunk = 0; this.rideT = 0; this.endWhy = null;
   }
   get riding() { return this.active; }
+  get callHold() { return J.call.hold; }
+  makeChoice(first) { return new MountChoice(this.game, first); }
   /** The Pneuka Jar rides in its saddle (South, 2026-11-02; jarrider.js): no hands, so the tools go away while it does. */
   get handsBusy() { return this.jarRides; }
   get jarRides() { return this.active && !!this._rider?.shown; }
@@ -64,14 +66,27 @@ export class JellyMount extends Tech {
   /** Where a mount may come: open ground in the Dunes or at the Raceway (the skiff's own test), never indoors. */
   allowed() { const D = this.skiff?.dunes; return !!D?.active && !this.game.seam?.covering && !this.game.god?.active; }
   open() { return jellyOpen(this.game.ledger, this.game); }
-  /** The mount the next tap of Y calls, chosen by name (touch's BELT radial, ui/touch/arc.js: a tap cannot hold Y for the choice). */
-  prefer(id) { if (id === 'skiff' || (id === 'jelly' && this.open())) this.last = id; }
+  /** A mount called by name (touch's BELT radial; the held choice on the Solar Skiff): the jelly asks the skiff to step down first, the
+   *  skiff asks the jelly to slump; what is asked is held a few real seconds, until the one being left has gone (case 405). */
+  callByName(id) {
+    if (id !== 'skiff' && !(id === 'jelly' && this.open())) return;
+    this.last = id; this.want = { id, until: this.now + 3 };
+    const S = this.skiff; if (id === 'jelly' && S?.active && S.phase === 'ride' && !S.air) S.enter('recall');
+  }
 
   // ------------------------------------------------------------------ the call (Y tapped or held)
   canStart() {
     const g = this.game, P = this.P, inp = P.input;
     if (!this.open()) return false;
     if (this.passY) { this.passY = false; return false; } // (Y handed on to the Solar Skiff this step: its canStart reads it)
+    if (this.want && this.now > this.want.until) this.want = null;
+    if (this.want) { // (a mount called by name: callByName)
+      const id = this.want.id; this.want = null;
+      if (id === 'skiff') { P.latches.KeyY = 0.15; this.passY = true; return false; }
+      if (P.mantle || P.freeze || !this.allowed()) { this.refuse(); return false; }
+      if (this.readyIn > 0) { g.log?.say('info', `Your slip jelly is still pulling itself together: ${Math.ceil(this.readyIn)} real seconds.`, { key: 'jelly.reform', throttle: 3 }); return false; }
+      return true;
+    }
     if (this.yT < 0 && P.peekLatch('KeyY')) {
       if (!this.allowed()) { if (this.last === 'jelly') { P.latch('KeyY'); this.refuse(); } return false; } // (the skiff's own refusal stands for the skiff)
       P.latch('KeyY'); this.yT = 0; this.yAt = this.now;
@@ -124,12 +139,14 @@ export class JellyMount extends Tech {
     if (this.phase === 'call') return this.stepCall(dt);
     if (this.phase === 'off') return this.stepOff(dt);
     if (!this.allowed()) return this.finish(this.game.seam?.covering ? 'seam' : 'door');
+    if (this.want?.id === 'skiff') { this.last = 'skiff'; this.want.until = this.now + 3; this.slump('skiff'); return this.stepOff(dt); } // (the skiff called by name from the ride: the want outlives the slump, and the call hands it Y once the jelly is gone)
+    if (this.want) this.want = null;
     if (P.latch('KeyY')) { this.yRide = 0; } // (Y on the ride: a tap gets off, a hold shows the two: tick)
     if (this.yRide != null) {
       if (P.input.isDown('KeyY')) { this.yRide += dt; if (this.yRide >= J.call.hold && !this.choice) this.choice = new MountChoice(g, 'skiff'); this.choice?.steer(P.input, P); }
       else {
         const pick = this.choice ? this.choice.pick : null; this.choice?.close(); this.choice = null; this.yRide = null;
-        if (pick === 'skiff') { this.last = 'skiff'; this.slump('skiff'); P.latches.KeyY = 0.15; this.passY = true; return this.stepOff(dt); }
+        if (pick === 'skiff') { this.last = 'skiff'; this.want = { id: 'skiff', until: this.now + 3 }; this.slump('skiff'); return this.stepOff(dt); }
         if (!pick) { this.slump('dismiss'); return this.stepOff(dt); }
       }
     }

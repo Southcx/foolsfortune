@@ -111,7 +111,7 @@ export class Sandbox {
   leave() {
     const g = this.game, C2 = g.course;
     const home = () => C2?.teleport(C2.hubSpawn.v, C2.hubSpawn.yaw);
-    g.seam?.cross(home) || home();
+    g.seam?.cross(home, { to: 'hub' }) || home(); // (a loading screen: render/seam.js, case 409)
     g.events?.emit('sandbox.leave', { by: 'courier' });
   }
 

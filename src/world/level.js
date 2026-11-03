@@ -527,7 +527,7 @@ export class Level {
 
     // shelves
     for (const s of this.shelves) {
-      const n = 2 + Math.floor(simRand() * 2); // (R40: fewer: a workshop, not a warehouse)
+      const n = 1 + Math.floor(simRand() * 2); // (R40: fewer: a workshop, not a warehouse; South, 2026-11-03: fewer again, one or two a shelf)
       for (let i = 0; i < n; i++) {
         const zz = s.z - s.w / 2 + (s.w / n) * (i + 0.5) + rand(-0.1, 0.1);
         const low = s.y - (s.upper ? 7 : 0) < 1;
@@ -538,9 +538,9 @@ export class Level {
     }
     // benches
     const benchLoads = [
-      ['jar', 'crown', 'bowl', 'bottle', 'cup'],
-      ['amphora', 'twist', 'melon', 'vase', 'crown'],
-      ['jar', 'bottle', 'cup', 'EMBER', 'bowl', 'twist', 'onion'],
+      ['jar', 'bowl', 'cup'],
+      ['amphora', 'melon', 'vase'],
+      ['jar', 'EMBER', 'bowl', 'onion'],
       null,
     ];
     this.surfaces.forEach((s, i) => {
@@ -597,15 +597,12 @@ export class Level {
     big('stack', -4.8, -13.8, 1.5);
     big('jomon', -2.2, -14.1, 0.9);
     // classic urns
-    for (const [x, z] of [[-7.6, -13.6], [7.6, -13.8], [-5.2, 11.9], [4.9, 11.6], [2.6, -12.4]]) {
+    for (const [x, z] of [[-7.6, -13.6], [7.6, -13.8], [-5.2, 11.9], [4.9, 11.6]]) { // (the fifth, at (2.6, -12.4), stood on the Bisque Shrine's gate: South, 2026-11-03)
       big('urn', x, z, rand(0.85, 1.05), pick([C.mid, C.wood, C.pot]));
     }
-    // little floor clusters
-    for (const [cx, cz] of [[1.8, -7.6], [-6.4, -6.2], [6.3, 5.0], [-1.0, 5.4]]) {
-      for (let i = 0; i < 3; i++) pot(pick(smalls), cx + rand(-0.45, 0.45), 0, cz + rand(-0.45, 0.45), rand(0.9, 1.2));
-    }
+    // (the little floor clusters, twelve pots strewn on the walking floor, are gone: South, 2026-11-03, "errant pots")
     // mezzanine edge
-    for (let z = -1.5; z < 14; z += 1.25) {
+    for (let z = -1.5; z < 14; z += 2.5) { // (every other one since 2026-11-03)
       if (Math.abs(z - 6.0) < 0.3) { B.spawn({ kind: 'ember', ember: true, pos: [-7.1, 2.602, z], scale: 0.9 }); continue; }
       const kind = pick([...smalls, 'amphora', 'spindle', 'onion']);
       pot(kind, -7.05 + rand(-0.1, 0.1), 2.6, z, { spindle: 0.8, onion: 0.8 }[kind] ?? rand(0.85, 1.1));
@@ -614,8 +611,8 @@ export class Level {
     big('gourd', -7.7, -2.4, 0.9, undefined, 2.6);
     // right platform cluster around an ember urn
     B.spawn({ kind: 'ember', ember: true, pos: [8.2, 1.202, 10.2], scale: 1 });
-    for (let i = 0; i < 10; i++) {
-      const a = (i / 10) * Math.PI * 2, r = rand(0.7, 1.4);
+    for (let i = 0; i < 5; i++) { // (ten until 2026-11-03)
+      const a = (i / 5) * Math.PI * 2, r = rand(0.7, 1.4);
       pot(pick([...smalls, 'amphora', 'melon']), 8.2 + Math.cos(a) * r, 1.2, 10.2 + Math.sin(a) * r * 1.6, rand(0.9, 1.2));
     }
     big('tsubo', 9.0, 13.5, 0.8, undefined, 1.2);

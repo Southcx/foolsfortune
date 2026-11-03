@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // A RADIAL (docs/plans/TOUCH-REBUILD.md 3.4): a held tile's choices fanned on an arc beside it, each a tile; a tap on one picks it,
-// a tap anywhere else closes it. One for every held pick on touch: the arc's PICK and BELT (ui/touch/arc.js) and the strip's CHAMBER
+// a tap anywhere else closes it; the held finger slid onto one and lifted picks it too. One for every held pick on touch: the arc's PICK and BELT (ui/touch/arc.js) and the strip's CHAMBER
 // and FORM (strip.js), so the two never drift apart. A `sticky` radial stays open after a pick (the Crucibelle's five notes, played
 // from it) until a tap outside it.
 //
@@ -21,7 +21,8 @@ export function openRadial(anchorEl, items, { onPick, sticky = false, size = 44,
   const r1 = Math.max(R, per > 1 ? (size + 14) * (per - 1) / span : R); // (wide enough that no two choices on a ring touch, corners included: square tiles on a curve)
   let off = null, tiles = [];
   const backs = Array.from({ length: rings }, (_, k) => radialBack(cx, cy, r1 + k * (size + 14), size, from, to)); // (the clay band each ring stands on: ui/touch/arcdress.js)
-  const close = () => { if (off) document.removeEventListener('pointerdown', off, true); off = null; for (const t of tiles) t.el.remove(); tiles = []; for (const b of backs) b.remove(); backs.length = 0; };
+  let lift = null;
+  const close = () => { if (off) document.removeEventListener('pointerdown', off, true); off = null; if (lift) document.removeEventListener('pointerup', lift, true); lift = null; for (const t of tiles) t.el.remove(); tiles = []; for (const b of backs) b.remove(); backs.length = 0; };
   tiles = items.map((it, i) => {
     const ring = Math.floor(i / per), k = i - ring * per, m = Math.min(per, n - ring * per), r = r1 + ring * (size + 14);
     const a = from + (to - from) * (m > 1 ? k / (m - 1) : 0.5);
@@ -32,5 +33,12 @@ export function openRadial(anchorEl, items, { onPick, sticky = false, size = 44,
   });
   off = (ev) => { if (!tiles.some((t) => t.el.contains(ev.target)) && !anchorEl.contains(ev.target)) close(); };
   setTimeout(() => { if (tiles.length) document.addEventListener('pointerdown', off, true); }, 0);
+  // the held finger let go over a choice picks it (slide and lift, the quick pick's way): the anchor's tile holds that pointer's capture,
+  // so the choice's own tile never hears its lift (a tap on a choice is its own tile's, and skipped here; any other lift picks nothing)
+  lift = (ev) => {
+    const i = tiles.findIndex((t) => { const r = t.el.getBoundingClientRect(); return ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom; });
+    if (i >= 0 && !tiles[i].el.contains(ev.target)) { onPick?.(items[i]); if (!sticky) close(); }
+  };
+  document.addEventListener('pointerup', lift, true);
   return close;
 }
