@@ -558,3 +558,8 @@ cells, at, by }`, `city.douse { building, lot, cells, cause, by }`, `city.out { 
 Ledger (`tracking/mechfire.js`): city.ignite(.cause), city.burned.cells, city.felled.fire, city.douse(.cause), mech.heat.full,
 giant.burn.<id>, giant.vitrify. Achievements: mk26 Kindling (opens the flamer), mk27 Burnt Down, mk28 Bucket Brigade, mk29 Bonfire,
 mk30 Glassed.
+## 13. Rulings, 2026-11-03
+- **The skate and sync** (Calissa's question, on Petra wiring the skate into the pilot: skating takes no steps). A quick boost started on the
+  stride's beat (`beatOf` on the frame's pendulum, which keeps swinging while it glides) is a stroke on the beat: sync +`SYNC.skate` 0.03,
+  three quarters of a step's 0.04. A quick boost off the beat costs nothing (unlike a step fought against the swing), and the glide between
+  strokes only settles. The pilot passes `stroke: true` to `syncStep` (Petra's call site). Sync stays rhythm, never button rate.
