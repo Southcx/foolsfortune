@@ -26,7 +26,6 @@ export const HANGAR = {
     { x0: -7.4, x1: -5, z0: -21, z1: -13.6 }, { x0: 5, x1: 7.4, z0: -21, z1: -13.6 }, // (the side runs)
     { x0: -7.4, x1: 7.4, z0: -23.4, z1: -21 }, // (the back run: the cradle between the shoulder blades reached from its middle)
   ],
-  get walk() { return this.walks[0]; }, // (the front run, kept for the gantry's dress until it reads `walks`, Calissa's: then retired)
   reach: { x: 0, z: -22.2 }, // (where F seals the Pneuka Jar in: the back run's middle, facing the mech's back)
   ramp: { x0: -29, x1: -7.4, z: -12.1, w: 3 }, // (from the floor up to the ring's west edge: 8.4 m over 21.6 m, about 21 degrees)
   lectern: { x: 10, z: -8 },

@@ -4972,7 +4972,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   never had the fault. The probe showed a second trap: stepping 120 frames in one call made the 60 ms look like 2 s of Y held.
 - **Fix:** BELT's radial offers SKIFF and JELLY by name while the jelly is open; a pick sets the mount (`JellyMount.prefer`) before
   the tap. Probed on the phone layout with real time between frames: JELLY called the slip jelly, ridden by the Pneuka Jar, 0 errors.
-- **Rule:** NEW:touch-hold-by-name
+- **Rule:** 400
 
 ### 2026-11-03 · The mount's camera went through the hangar's north wall a moment after the Pneuka Jar locked in (vfx/mechs/mount.js; found by South)
 - **Seen:** South: "the camera clips into the wall when the Pneuka Jar is loaded into the mech in the hangar after about a second."
@@ -4991,4 +4991,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   `HANGAR.walks`), the Jar flies straight in from behind. The cinema's blend in from the Courier's own view is a cut too where its line
   is blocked (it crossed a ring's lanterns for 6 frames in the probe). After: every frame of 8 runs (hero and doll, four leg types,
   front and a test ring from behind) 3 m or more from every wall and floor, and in no solid; the hero's wake now at local (8.8, 16.9, -24.3).
-- **Rule:** NEW:shot-kept-in-room
+- **Rule:** 401

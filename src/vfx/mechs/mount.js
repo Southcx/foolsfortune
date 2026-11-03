@@ -21,7 +21,7 @@
 //                  light, then eased onto the pilot's own shot. Every position is kept inside the room it is in (`keepInRoom`: the
 //                  hangar's box 2 m off its walls and roof, out of the gantry's piers, scaffold, beam, clamps and walkways; the proving
 //                  ground's square): a beat change whose line would pass through any of them, or the frame, is a cut, never a sweep
-//                  through it (CASEBOOK NEW:shot-kept-in-room). A second seal on the same visit runs at twice the speed.
+//                  through it (CASEBOOK 401). A second seal on the same visit runs at twice the speed.
 // The traces are one onBeforeCompile on the parts body's shared porcelain (vfx/mechs/partsbody.js `mats.porcelain`): the running hand
 // baked once into a tile, sampled triplanar in each plate's own space (so the writing rides the plate it is on), revealed by the
 // world distance from the cradle; the same traces carry the filigree's three channels (vfx/mechs/hydraulics.js). Looks only: the seal, the lift and the drive are Petra's. Events said for the ear: `mech.mount
