@@ -419,3 +419,12 @@ make a garden.
   its feeling's farewell glaze. Each glaze hangs on a hidden achievement over `spirit.farewell.<feeling>` (gy17 Wonder to gy21 Dread),
   so it is retroactive like every glaze; the five glazes themselves are Calissa's.
 - **Q5.** Rearranging is free: "nobody wants to pay to shuffle furniture."
+
+### Rulings on the garden's life (Dovina, 2026-11-03)
+- **A spirit's remark goes in the log, quoted.** The dialogue box stays the folk's one window; a spirit has none, as its farewell has none.
+- **A curious spirit's graft is the second-nearest curio of its tier, a third of the time.** Reversing the pair did nothing (the table is
+  near symmetric), so this is the only way to make curiosity show. The table stays the table for every other graft.
+- **An orderly spirit's print keeps its tier.** Measured by the colour road's pace when Petra's hook lands; until then it stands.
+- **A spirit seeds only a strain you hold.** The wild prints are the way to the rest. A spirit that taught strains would close the
+  world's road.
+- **The tastes, the season paces and `VISITOR_SEASONS` stand as built**, and the Great Dunemaw's floors 2 and 3 are its damp floors.
