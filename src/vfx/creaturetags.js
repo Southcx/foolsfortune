@@ -43,11 +43,13 @@ import * as THREE from 'three';
 import { readTag, plateOf } from '../tools/veritome/creaturetag.js';
 import { EMO } from '../progress/combat/emo.js';
 import { TYPES, BONUS } from '../progress/combat/types.js';
-import { poles } from '../progress/combat/temperament.js';
+import { TRAITS } from '../progress/combat/temperament.js';
+import { DAMAGE_TINT } from './library/damage.js';
 import { FONT, THEMES, theme } from '../ui/theme.js';
 import { runningHand } from '../ui/runninghand.js';
 import { cellsOf } from '../npc/neuralesespelling.js';
 import { T as TUNE } from '../core/config.js';
+import { TagLayout } from './taglayout.js';
 
 const MAX = 3, REACH = 18, POLL = 0.25, CHURN = 0.25, DECRYPT = 0.6, T_IN = 0.25, T_OUT = 0.17; // (REACH: the lens's capture, veritome.js CAPTURE.range)
 const MINIMAL = new Set(['name', 'health']); // (visual.creatureTagsMinimal: the lines kept)
@@ -241,6 +243,37 @@ function glyphPx(g, id, x, y, d, col) {
   g.fillStyle = 'rgba(13,10,18,.85)'; gl.forEach((row, j) => [...row].forEach((c, i) => { if (c === '#') g.fillRect(x + (i - 3.5) * d - d * 0.6, y + (j - 3.5) * d - d * 0.6, d * 2.2, d * 2.2); }));
   g.fillStyle = col; gl.forEach((row, j) => [...row].forEach((c, i) => { if (c === '#') g.fillRect(x + (i - 3.5) * d, y + (j - 3.5) * d, d, d); }));
 }
+// ------------------------------------------------------------------------------------------------------------ the reads added here
+// G259 and G289 (STUN-DEPTH.md, TEMPERAMENT.md, OVERLAY.md 17), read in the look until the one reader (tools/veritome/creaturetag.js)
+// carries them (the ask: docs/handoffs/petra/2026-11-03-from-calissa-tag-rows.md). The stun's depth on the statuses line from STUDIED
+// (its name, Petra's T.stun.depths, and its clock left); the grain by stars: one trait at GLIMPSED, two, three, all five at UNDERSTOOD,
+// the strongest first, each in the colour of the damage type it opens, a '?' for each not yet read (a known unknown); never photographed
+// nor met (UNKNOWN) it is absent, or latent while a plate of the kind waits in the memory.
+const GRAIN_READ = [0, 1, 2, 3, 5], GRAIN_ROW = 3, GRAIN_EVEN = 0.2;
+const DEPTH_WORD = (d) => String(TUNE.stun?.depths?.[d - 1]?.name || ['dazed', 'stunned', 'out cold'][d - 1] || 'stun').toUpperCase();
+const tint = (t) => `#${(DAMAGE_TINT[t] ?? 0xe2fff0).toString(16).padStart(6, '0')}`;
+function readMore(game, c, tag, plate) {
+  const lines = tag.lines.filter((l) => l.key !== 'grain'), lvl = Math.max(0, Math.min(4, tag.level | 0));
+  const si = lines.findIndex((l) => l.key === 'statuses' && l.read === 'plain'), depth = si >= 0 ? game.stun?.depth?.(c) || 0 : 0;
+  if (depth) lines[si] = { ...lines[si], value: { ...(lines[si].value || {}), depth, left: Math.round((game.stun.share?.(c) ?? 1) * 20) / 20 } };
+  const G = c.grain, n = GRAIN_READ[lvl];
+  if (G && n > 0) {
+    const order = TRAITS.map((t) => t).sort((a, b) => Math.abs(G[b.id] || 0) - Math.abs(G[a.id] || 0));
+    const items = order.map((t, i) => (i < n ? { word: ((G[t.id] || 0) > 0 ? t.high : t.low).toUpperCase(), tone: tint(t.type), even: Math.abs(G[t.id] || 0) < GRAIN_EVEN } : null));
+    lines.push({ key: 'grain', read: 'plain', value: { items, n } });
+  } else if (G && plate?.read === 'latent') lines.push({ key: 'grain', read: 'latent', len: 14 });
+  return { ...tag, lines };
+}
+/** The grain's words right-aligned, each in its type's colour (an even trait in the label's), '?' for one not read; one face size fits. */
+function grainWords(g, items, XR, y, h, maxW) {
+  const strs = items.map((it) => (it ? it.word : '?')), all = strs.join(' · '), f = fitFont(g, all, maxW, PX.word, FONT.sys);
+  g.font = f; const sep = g.measureText(' · ').width; let x = XR;
+  for (let i = items.length - 1; i >= 0; i--) {
+    const it = items[i], col = !it ? 'rgba(143,216,176,.55)' : it.even ? PAL.lab : it.tone;
+    x -= T(g, strs[i], x, base(y, h, PX.word), f, col, 'right', it && !it.even ? PAL.wordGlow : null);
+    if (i) { x -= sep; T(g, ' · ', x + sep, base(y, h, PX.word), f, 'rgba(143,216,176,.45)', 'right'); }
+  }
+}
 /** A plain row (row r: { key, h, line, s? }; fam the tag's level): its label, its value at the end, the bar between them. */
 function rowPlain(g, r, fam, x, y, w) {
   const h = r.h, XR = x + w, L = r.line, MX = x + LBL, mid = y + h / 2, room = (vw) => XR - vw - GAP - MX;
@@ -258,8 +291,8 @@ function rowPlain(g, r, fam, x, y, w) {
   }
   if (r.key === 'statuses') {
     if (!r.s) { label(g, 'STATUS', x, y, h); words(g, 'NONE', XR, y, h); return; }
-    const [id, v] = r.s, col = ST[id] || LIGHT; glyphPx(g, id, x + 4, mid, 1, col);
-    const s = id.toUpperCase(); T(g, s, x + 10, base(y, h, PX.label), fitFont(g, s, LBL - 12, PX.label, COUNT), col);
+    const [id, v, depth] = r.s, col = ST[id] || LIGHT; glyphPx(g, id, x + 4, mid, 1, col);
+    const s = depth ? DEPTH_WORD(depth) : id.toUpperCase(); // (a stun names its depth from STUDIED: dazed, stunned, out cold) T(g, s, x + 10, base(y, h, PX.label), fitFont(g, s, LBL - 12, PX.label, COUNT), col);
     const vw = num(g, String(v), XR, y, h, PX.num, col), bw = room(vw);
     g.fillStyle = 'rgba(13,10,18,.7)'; g.fillRect(MX - 0.5, mid - 1.5, bw + 1, 3); g.fillStyle = hexA(col, 0.35); g.fillRect(MX, mid - 1, bw, 2); g.fillStyle = col; g.fillRect(MX, mid - 1, bw * v / 100, 2); return;
   }
@@ -267,7 +300,7 @@ function rowPlain(g, r, fam, x, y, w) {
     label(g, 'WEAK', x, y, h); if (!L.value) { words(g, 'NONE', XR, y, h); return; }
     const w2 = num(g, `×${(1 + BONUS.trump).toFixed(2).replace(/0$/, '')}`, XR, y, h); words(g, (TYPES[L.value]?.name || L.value).toUpperCase(), XR - w2 - 4, y, h, w - LBL - w2 - 4); return;
   }
-  if (r.key === 'grain') { label(g, 'NATURE', x, y, h); words(g, poles(L.value || {}).slice(0, 2).map((p) => p.toUpperCase()).join('·') || 'EVEN', XR, y, h, w - LBL); }
+  if (r.key === 'grain') { if (!r.part) label(g, LABEL.grain, x, y, h); grainWords(g, r.items, XR, y, h, w - LBL); }
 }
 
 // ---------------------------------------------------------------------------------------------------------------- the tags
@@ -276,7 +309,7 @@ export class CreatureTags {
     this.game = game; this.tags = new Map(); this.sprites = new Map(); this.plates = new Map(); this.shown = []; this.sheet = null; this.panels = [];
     this.pollT = 0; this.churnT = 0; this.t = 0; this.k = 0; this.dot = 1; this.themeId = null;
     this.v = new THREE.Vector3(); this.v2 = new THREE.Vector3(); this.right = new THREE.Vector3(); this.PTS = new Float32Array(16);
-    this.rects = Array.from({ length: 40 }, () => ({ x0: 0, y0: 0, x1: 0, y1: 0 })); this.nR = 0;
+    this.lay = new TagLayout(40); // (what a tag must keep off this frame: vfx/taglayout.js, shared with the things' tags)
     const S = game.overlayScene; if (!S || typeof document === 'undefined') return;
     this.root = new THREE.Group(); this.root.name = 'creaturetags'; this.root.userData.overlayHidden = true;
     this.bounds = { x0: 0, y0: 0, x1: 1, y1: 480 };
@@ -394,6 +427,7 @@ export class CreatureTags {
     const c = T.c; let tag = readTag(this.game, c); if (!tag) return;
     if (c.head && !c.bones?.eyes) { const h = c.head(); T.eyeDy = 0.68 * Math.max(0.2, h.y - 0.35 - c.pos.y); }
     T.plate = plateOf(this.game, c.kind); const min = !!TUNE.visual?.creatureTagsMinimal;
+    tag = readMore(this.game, c, tag, T.plate); // (the stun's depth and the grain by stars: G259, G289; until the reader carries them)
     if (min) tag = { ...tag, lines: tag.lines.filter((l) => MINIMAL.has(l.key)) };
     const sig = (min ? 'm' : '') + tag.level + '|' + (T.plate?.read || '-') + (T.plate?.thumb?.length || 0) + '|' + JSON.stringify(tag.lines);
     if (sig === T.sig) return; T.sig = sig; T.tag = tag; T.dirty = true;
@@ -407,7 +441,7 @@ export class CreatureTags {
     const on = tag.lines.find((l) => l.key === 'statuses' && l.read === 'plain')?.value;
     T.motes.length = 0;
     if (on && !min) {
-      for (const n of on.on || []) T.motes.push([n, 100]);
+      for (const n of on.on || []) T.motes.push(n === 'stun' && on.depth ? [n, Math.round((on.left ?? 1) * 100), on.depth] : [n, 100]);
       for (const [t, k] of Object.entries(on.build || {})) { const n = TYPES[t]?.builds || t; if (!T.motes.some((m) => m[0] === n)) T.motes.push([n, Math.round(k * 100)]); }
     }
     T.rows = this.rows(T); T.h = Math.min(HMAX, Math.max(SH + 4, T.rows.reduce((a, r) => a + r.h, 0) + 2));
@@ -447,14 +481,14 @@ export class CreatureTags {
     // the churn: a scrambled line swaps a word a quarter of a real second (never a strobe: the ghosts move with it)
     const churn = (this.churnT -= dt) <= 0; if (churn) this.churnT = CHURN;
     // retire; then every bracket first, so no tag is laid over another creature's bracket; then the tags in turn, each adding its leader
-    this.sheet.begin(this.dot); this.nR = 0;
-    if (!scan) { this.rect(this.Wd - 182, 0, this.Wd, 178); this.rect(this.Wd - 118, 250, this.Wd, 480); } // (the Sight, the Lachrimeter: stepped out under the lens)
+    this.sheet.begin(this.dot); const lay = this.lay; lay.begin();
+    if (!scan) { lay.rect(this.Wd - 182, 0, this.Wd, 178); lay.rect(this.Wd - 118, 250, this.Wd, 480); } // (the Sight, the Lachrimeter: stepped out under the lens)
     this.shown.length = 0; const live = [];
     for (const [c, T] of this.tags) {
       T.vis = T.want ? Math.min(1, T.vis + dt / T_IN) : Math.max(0, T.vis - dt / T_OUT);
       if (!T.want && T.vis <= 0) { T.panel.owner = null; this.tags.delete(c); continue; }
       if (!T.tag || !this.bracket(T)) continue;
-      const b = T.b; this.rect(b.x0 - 3, b.y0 - 3, b.x1 + 3, b.y1 + 3); live.push(T);
+      const b = T.b; T.own = lay.rect(b.x0 - 3, b.y0 - 3, b.x1 + 3, b.y1 + 3); live.push(T);
     }
     for (const T of live) {
       this.place(T, dt);
@@ -485,30 +519,20 @@ export class CreatureTags {
   }
   /** Lay its tag out in dots, above its bracket, kept off the obstacles (tags, brackets, leaders laid so far, the instruments, the edges). */
   place(T, dt) {
-    const h = Math.max(SH + 4, T.h), b = T.b, Q = this.PTS;
+    const h = Math.max(SH + 4, T.h), b = T.b, Q = this.PTS, lay = this.lay;
     const Bd = this.bounds, clamp = (x, y) => [Math.max(Bd.x0 + 20, Math.min(Bd.x1 - W - 6, x)), Math.max(Bd.y0 + 6, Math.min(Bd.y1 - h - 6, y))];
-    const over = (x0, y0, x1, y1, skip) => { for (let i = 0; i < this.nR; i++) { const R = this.rects[i]; if (R === skip) continue; if (x0 < R.x1 && x1 > R.x0 && y0 < R.y1 && y1 > R.y0) return R; } return null; };
-    const own = this.ownRect(T);
-    const hit = (x, y) => { // (the tag's box, and its leader's straight run, which must not cross another's things)
-      const R = over(x - 16, y, x + W, y + h); if (R) return R;
-      this.leader(T, x, y, Q); return over(Q[2] - 1.5, Math.min(Q[3], Q[5]), Q[2] + 1.5, Math.max(Q[3], Q[5]), own);
+    const hit = (x, y) => { // (the tag's box, and its leader's straight run, which must not cross another's things; it may touch its own bracket)
+      const R = lay.over(x - 16, y, x + W, y + h); if (R) return R;
+      this.leader(T, x, y, Q); return lay.over(Q[2] - 1.5, Math.min(Q[3], Q[5]), Q[2] + 1.5, Math.max(Q[3], Q[5]), T.own);
     };
-    let [tx, ty] = clamp(b.ex - 74, b.y0 - RISE - SH - 64);
-    for (let n = 0; n < 6; n++) {
-      const R = hit(tx, ty); if (!R) break;
-      const opts = [[R.x0 - W - 4, ty], [R.x1 + 20, ty], [tx, R.y1 + 4], [tx, R.y0 - h - 4], [b.x1 + 24, b.ey - h / 2], [b.x0 - W - 8, b.ey - h / 2]].map(([x, y]) => clamp(x, y)).filter(([x, y]) => !hit(x, y));
-      if (!opts.length) break; opts.sort((a, c) => Math.hypot(a[0] - tx, a[1] - ty) - Math.hypot(c[0] - tx, c[1] - ty)); [tx, ty] = opts[0];
-    }
+    const [tx, ty] = lay.solve(b.ex - 74, b.y0 - RISE - SH - 64, W, h, { clamp, hit, padL: 16, extra: [[b.x1 + 24, b.ey - h / 2], [b.x0 - W - 8, b.ey - h / 2]] });
     if (!T.placed) { T.x = tx; T.y = ty; T.placed = true; } else { const a = 1 - Math.exp(-14 * dt); T.x += (tx - T.x) * a; T.y += (ty - T.y) * a; }
     // what it now takes up: its box, and its leader (the straight run, and the diagonal in three steps)
-    const x = Math.round(T.x), y = Math.round(T.y); this.rect(x - 16, y, x + W, y + h); this.leader(T, x, y, Q);
-    this.rect(Q[2] - 2, Math.min(Q[3], Q[5]), Q[2] + 2, Math.max(Q[3], Q[5]));
-    for (let i = 1; i <= 3; i++) { const u = i / 4, px = Q[0] + (Q[2] - Q[0]) * u, py = Q[1] + (Q[3] - Q[1]) * u; this.rect(px - 3, py - 3, px + 3, py + 3); }
+    const x = Math.round(T.x), y = Math.round(T.y); lay.rect(x - 16, y, x + W, y + h); this.leader(T, x, y, Q);
+    lay.rect(Q[2] - 2, Math.min(Q[3], Q[5]), Q[2] + 2, Math.max(Q[3], Q[5]));
+    for (let i = 1; i <= 3; i++) { const u = i / 4, px = Q[0] + (Q[2] - Q[0]) * u, py = Q[1] + (Q[3] - Q[1]) * u; lay.rect(px - 3, py - 3, px + 3, py + 3); }
     return true;
   }
-  /** The obstacle that is this tag's own bracket (its leader starts there, so the leader may touch it). */
-  ownRect(T) { const b = T.b; for (let i = 0; i < this.nR; i++) { const R = this.rects[i]; if (R.x0 === b.x0 - 3 && R.y0 === b.y0 - 3) return R; } return null; }
-  rect(x0, y0, x1, y1) { if (this.nR >= this.rects.length) return; const R = this.rects[this.nR++]; R.x0 = x0; R.y0 = y0; R.x1 = x1; R.y1 = y1; }
 
   /** The plane: its canvas over the tag's place, unfolding from a line as it comes (and folding as it goes). */
   show(T) {
@@ -546,6 +570,7 @@ export class CreatureTags {
   rows(T) {
     const out = [];
     for (const L of T.tag.lines) {
+      if (L.key === 'grain' && L.read === 'plain') { const it = L.value.items; for (let i = 0; i < it.length; i += GRAIN_ROW) out.push({ key: 'grain', h: ROW, line: L, part: i / GRAIN_ROW, items: it.slice(i, i + GRAIN_ROW) }); continue; }
       if (L.key === 'statuses' && L.read === 'plain' && T.motes.length) { for (const s of T.motes.slice(0, 2)) out.push({ key: 'statuses', h: ROW, line: L, s }); continue; }
       out.push({ key: L.key, h: L.key === 'name' ? NAME_H : L.key === 'functions' ? FN_H : L.read === 'plain' ? ROW : HID_H, line: L });
     }

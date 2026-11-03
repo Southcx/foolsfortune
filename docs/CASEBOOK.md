@@ -1119,3 +1119,7 @@ NEW:touch-hold-by-name. **A choice made by holding a key is offered by name on t
 NEW:shot-kept-in-room. **A shot of its own is kept in the room it is in.** A scripted camera's every position, and the path it eases along,
   is clamped inside the room its subject stands in (off the walls, under the roof, out of the solids), and a move whose line would pass
   through the set or the subject is a cut; offsets scaled by a body's size are scaled by a size measured in the body's own space.
+
+NEW:page-class-owned. **A class name in the page is the module's whole name, never a short one.** A stylesheet rule is global: a short
+  class (`.tt`) another module also uses takes that module's rules too (here `contain:strict`, which clips a 0 x 0 holder's children to
+  nothing). Grep the class before you use it; a probe that a thing is up looks at the screenshot (`elementFromPoint` skips a `pointer-events: none` overlay), not the module's own list.
