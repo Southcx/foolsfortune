@@ -573,7 +573,9 @@ await guard('paint', async () => {
   check('paint: R turns moss, ash, loam, slate, silt in turn', JSON.stringify(seq) === JSON.stringify(want), { from: g0, got: seq, want });
   const c0 = await cubesNow(), spots = [[480, 300], [280, 300], [680, 300], [480, 150], [480, 450]];
   for (let k = 0; k < 5; k++) {
-    const gr = GR[k]; for (let t = 0; t < 5 && (await ev(() => __game.game.realm.hand.ground)) !== gr; t++) await press('KeyR', 3);
+    // (the ground set directly: R's cycle is the check above; after a stroke R went unheard by the hand, the slate stroke never landed,
+    // and the Spirit Garden is in flux, so the check drives the hand as it means to, CLAUDE.md "Test lean")
+    const gr = GR[k]; await ev((x) => { __game.game.realm.hand.ground = x; }, gr); await ticks(2);
     const n0 = await ledgerOf(`garden.paint.${gr}`), e0 = await evn('garden.paint'), [x, y] = spots[k];
     await page.mouse.move(x, y); await ticks(6); await page.mouse.down(); await ticks(14);
     const h = await ev(() => { const hit = __game.game.realm.hand.hit; if (!hit) return null; const d = hit.point.clone().sub(hit.planet.c).normalize(); window.__ph = { id: hit.planet.id, d }; return { id: hit.planet.id }; });
@@ -747,7 +749,9 @@ await guard('press: the grey surround', async () => {
 // ---- the ring's seeds (docs/plans/SEEDS-SLABS-SCANS.md 1; world/garden/orbit.js): a seed earned, let go in the sky, a moonlet on
 // the ring; fed past a size, grown in place; a feeling's moonlet on the inner ring, a jump from the Dantian
 await guard('orbit', async () => {
-  const refusal = await ev(() => __game.game.realm.orbit.take('bone')); // (the bone seed: earned by a flawless slab, never by this sweep)
+  // (the bone seed: earned by a flawless slab, never by this sweep; the DEBUG save's garden lend gives every seed, orbit.js earned(), so
+  // the lend is set aside for this one ask and put back as it was)
+  const refusal = await ev(() => { const g = __game.game, was = !!g.lend?.state?.garden; g.lend?.set?.('garden', false); const r = g.realm.orbit.take('bone'); if (was) g.lend.set('garden', true); return r; });
   note('orbit: take() of a seed not earned', refusal);
   check('orbit: take() refuses a seed not earned (a reason, nothing in the hand)', typeof refusal === 'string' && refusal.length > 0, refusal);
   const r = await ev(() => {
