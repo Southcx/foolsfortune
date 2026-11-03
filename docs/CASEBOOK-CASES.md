@@ -4973,3 +4973,9 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** BELT's radial offers SKIFF and JELLY by name while the jelly is open; a pick sets the mount (`JellyMount.prefer`) before
   the tap. Probed on the phone layout with real time between frames: JELLY called the slip jelly, ridden by the Pneuka Jar, 0 errors.
 - **Rule:** NEW:touch-hold-by-name
+
+## The fulgurite curio with no colour (Dovina, 2026-11-03)
+- **Seen:** `node scripts/mycelium.mjs` failed "every curio has a colour" and then threw on the fulgurite (the ridges' rare find, a tier-3 curio).
+- **Cause, as measured:** the curio was added to the curios' table with the rare find, but not to the mycelium's `SIGNATURE`; `signatureOf` returned undefined and the rot read `[0]` of it.
+- **Fix:** a signature for it (h 28, s 0.35: fused tan glass) in `progress/mycelium.js`.
+- **Rule:** NEW:curio-signature — a new curio gets its row in the mycelium's `SIGNATURE` in the same change; `scripts/mycelium.mjs` says which lack one.

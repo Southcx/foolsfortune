@@ -70,6 +70,7 @@ export const SIGNATURE = {
   bloom: { h: 275, s: 1.0 },      // blacklight
   koi: { h: 10, s: 0.9 },         // vermilion
   crown: { h: 70, s: 0.7 },       // the urn's slip-gold
+  fulgurite: { h: 28, s: 0.35 },  // fused sand, a lightning's tan glass (the ridges' rare find)
 };
 
 /** A thing's colour signature, worth (cubes, `worthOf`'s rule) and tier: what a fungus or the tree reads of it. */

@@ -1115,3 +1115,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 
 NEW:touch-hold-by-name. **A choice made by holding a key is offered by name on touch.** A touch tile taps; a hold that opens
   a choice is a radial of the choices, each set before the tap. A probe of a timed hold steps frames with real time between them.
+
+NEW:curio-signature. **A new curio gets its colour in the mycelium in the same change.** Its row in `SIGNATURE`
+  (progress/mycelium.js) goes with the curio; `scripts/mycelium.mjs` names any curio without one.
