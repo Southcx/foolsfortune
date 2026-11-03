@@ -162,6 +162,18 @@ const MINE = {
     const b = K.block(); b.appendChild(K.line('<b>YOUR SECRET HAND</b> (★ = top number: +10)'));
     b.appendChild(K.line(x.mine.map((s, i) => `<span style="display:inline-block;margin:2px 6px 2px 0"><span style="opacity:.6;font-size:.8em">d${s}</span> <b style="font-size:1.3em">${x.faces[i]}</b>${x.faces[i] === s ? '★' : ''}</span>`).join(''), { margin: '4px 0' }));
   },
+  charity(S, C, K) {
+    const x = C.extra, b = K.block(); b.appendChild(K.line(`<b>YOUR DEPOSIT</b> <span style="font-size:1.3em;font-weight:700">${x.mine || '·'}</span> · the line <b>${x.line}</b>`));
+    const L = x.last; if (L?.deposits) b.appendChild(K.line(`Last round: the jar held <b>${L.total}</b> · ${L.deposits.map((d) => `${S.T.names[d.seat]} dropped ${d.deposit}${d.said !== d.deposit ? ` (said ${d.said})` : ''}, bet ${d.bet}${d.right ? ' ✔' : ''}`).join(' · ')}`, { opacity: 0.85 }));
+  },
+  entropy(S, C, K) {
+    const x = C.extra, B = x.board, b = K.block(); b.appendChild(K.line(`<b>THE BOARD</b> (you at the bottom) · your class: ${x.cls[0]} · ${x.passive}`));
+    const g = K.line('', { 'font-family': 'monospace', 'line-height': '1.25', 'white-space': 'pre' });
+    const rows = []; for (let z = 0; z < B.size; z++) { let row = ''; for (let c = 0; c < B.size; c++) { const t = B.tokens.find((k) => k.x === c && k.z === z), bomb = B.bomb.x === c && B.bomb.z === z; row += `[${bomb ? '*' : ' '}${t ? `${'wrmh'[['warrior', 'rogue', 'mage', 'healer'].indexOf(t.kind)] || '?'}`[t.owner === 0 ? 'toUpperCase' : 'toLowerCase']() + t.hp : '  '}]`; } rows.push(row); }
+    g.textContent = rows.join('\n'); b.appendChild(g);
+    b.appendChild(K.line('Capitals are yours (W warrior, R rogue, M mage, H healer, then health); * is the Grand Bomb.', { opacity: 0.7 }));
+    if (x.hand.length) b.appendChild(K.line(`<b>YOUR HAND</b> ${x.hand.map((c) => `${(c >> 2) + 1}${x.suits[c & 3][0]}`).join('  ')} (1 ace .. 11 page, 12 knight, 13 queen, 14 king)`, { margin: '4px 0' }));
+  },
 };
 /** A game whose choices are made on its pieces above (the buttons would repeat them): true to skip the list. */
 const SELF = { eventhorizon: (C) => !!C.extra.select, querent: (C) => C.turn.kind === 'discard' || C.turn.kind === 'wheel' };
