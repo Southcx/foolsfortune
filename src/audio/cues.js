@@ -269,6 +269,13 @@ const RULES = {
   'challenge.start': (s) => s.challengeStart?.(),
   'challenge.score': (s, e) => s.challengeScore?.(e.id, e.what),
   'challenge.end': (s, e) => s.challengeEnd?.(e.medal),
+  'giant.grab': (s) => s.giantGrab?.(),
+  'giant.throw': (s, e) => s.giantThrow?.(e.hit),
+  'giant.slam': (s) => s.giantSlam?.(),
+  'giant.slip': (s, e) => s.giantSlip?.(e.why),
+  'mech.sync': (s, e) => s.mechSync?.(e.v),
+  'pool.low': (s, e) => s.poolLow?.(e.share), // (two small tells: audio/tells.js)
+  'creature.look': (s, e, g) => lookVoice(s, e, g)?.creatureLook?.(e.kind),
   'city.ignite': (s) => s.cityIgnite?.(),
   'city.burn': (s, e) => s.cityBurn?.(e.k),
   'city.char': (s) => s.cityChar?.(),
@@ -614,6 +621,11 @@ const RULES = {
   'keepsake.pot': (s, e) => s.keepsakeSong?.({ feeling: e.feeling || feelingOfKind(e.kind) }, 1),
 };
 
+/** A head coming up heard from where it is, close only (creature.look's `at`: a Vector3). */
+function lookVoice(s, e, g) {
+  const p = e.at; if (!p || !s.voiceAt) return null;
+  return s.voiceAt(() => p, { listener: () => g.camera, tag: 'look', gain: 1, near: 3, far: 18 });
+}
 /** A sentinel's body heard from where it stands: `at` when the event carries it, else where it last stood (the slam and the sink carry none). */
 const SENTINEL_AT = { x: 0, y: 0, z: 0, known: false };
 function sentinelVoice(s, e, g) {

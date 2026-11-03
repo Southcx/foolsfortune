@@ -1,9 +1,9 @@
 **Wanda's open list** (the notes it replaces are deleted; each line names who asked).
 
-- **GAPS rows waiting on an event** (2026-11-03): G240 a creature's head coming up (no event for the watch's bout), G167 a low pool (no event), G208 the sail's trim (no event), G75 the Dunemaw's beat (`dunemaw.beat` not emitted), G291 the creature voice (`creature.call` not emitted). Asked of Petra.
+- **GAPS rows waiting** (2026-11-03): G75 the Dunemaw's beat (`dunemaw.beat` waits on the stalactite runs), G291 the creature voice (mine to design first: tell Petra its `creature.call` shape), G208 the sail's trim (an event only if I ask). G167 and G240 are in (`audio/tells.js`).
 
 - **The crossing's five borrowed sounds** (Petra's call sites): built (`audio/crossing.js`), waiting on the swap: `docs/handoffs/petra/2026-11-02-from-wanda-crossing-sounds.md`.
-- **The mech's last moments** (Dovina's mech notes, 2026-11-02): the mount, city, ring, moves, props, joints, the frame's life, the giants, the challenges and fire are in (`audio/mechs.js`, `mechmoves.js`, `mechlife.js`); still to come the generator's whine falling with the battery (`mech.sync` or a battery event), giant wrestling (`giant.grab`, `.throw`, `.slam`, `.slip`, not emitted yet), the ring's shadow frame's cue and the hangar's march.
+- **The mech's last moments** (Dovina's mech notes, 2026-11-02): the mount, city, ring, moves, props, joints, the frame's life, the giants, the challenges and fire are in (`audio/mechs.js`, `mechmoves.js`, `mechlife.js`); the generator's whine (`mech.sync`) and giant wrestling are in; still to come the ring's shadow frame's cue and the hangar's march.
 - **The settings' save sections** (Petra, 2026-10-05): `foolsfortune.voice`, `.music`, `.rhythm` into `game.save` sections, scope
   `settings`, once the save can carry an adopted key's value.
 - **The Dunemaw's places, the geysers and Strawman:** `docs/handoffs/everyone/2026-10-06-from-wanda-the-dunemaw-s-sound.md`.

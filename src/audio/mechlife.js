@@ -20,6 +20,10 @@
 //                 lifted, the wave's sand gathering); a stagger; its fall in straw or sand; the call at its post
 //   A CHALLENGE   (challenge.start, challenge.score { what }, challenge.end { medal }) the starter's bell; a score's tick, the pins'
 //                 clatter, a STRIKE's or SPARE's cheer; the medal's sting by its tier (none, bronze, silver, gold)
+//   GRAPPLE       (giant.grab, giant.throw { hit }, giant.slam, giant.slip { why }) the frame taking the weight with a hydraulic groan, the
+//                 throw's heave and its landing (through a building, rubble), the powerbomb's quake, a slip's servos whining as legs can't lift
+//   THE GENERATOR (mech.sync { v }, once a real second while piloting) a held whine under the frame, rising with sync and dying away once
+//                 the events stop (the frame let go)
 //   FIRE          (city.ignite, city.burn { k }, city.char, city.douse, city.out, mech.heat { k }) a building catching with a whoomph,
 //                 its burning crackle by how much burns, the char's settling, water on it hissing, the fire out; the frame's heat
 //                 ticking up through its plates
@@ -30,6 +34,7 @@
 //   sfx.mechStep(beat, legs, mass) .mechSkate(k) .mechLand(k) .mechTurn(k, pivot) .mechBoost(kind) .mechJump(sup) .mechCable(plugged, jolt)
 //   .mechLaunch() .mechHurt(k) .mechBerserk() .mechFail(why) .mechSpecial(kind) .mechBarrier(neutralised)
 //   .giantWake() .giantWindup(move) .giantStagger() .giantDown() .giantCall() .challengeStart() .challengeScore(id, what) .challengeEnd(medal)
+//   .giantGrab() .giantThrow(hit) .giantSlam() .giantSlip(why) .mechSync(v)
 //   .cityIgnite() .cityBurn(k) .cityChar() .cityDouse() .cityOut() .mechHeat(k)
 // ---------------------------------------------------------------------------------------
 
@@ -67,7 +72,7 @@ const MEDAL = [[60, 58], [60, 64, 67], [60, 64, 67, 72], [60, 64, 67, 72, 76, 79
 /** Each moment's level against the parry's clang (set by ear in the probe). */
 const LEVEL = { step: 1.32, fought: 1, skate: 3.3, land: 1.9, turn: 6.3, 'boost.quick': 2, 'boost.assault': 1.75, jump: 2.1, cable: 2.6, jolt: 1,
   launch: 3.75, hurt: 6.5, berserk: 5, fail: 1.55, barrier: 1.9, giantWake: 2.2, giantStagger: 4.6, giantDown: 0.35, giantCall: 1,
-  start: 1.85, pins: 1.7, tick: 4.5, medal: 2.35, ignite: 2.1, burn: 1.56, douse: 0.88, char: 2.5, out: 5.6, heat: 3.5,
+  start: 1.85, grab: 7, throw: 0.37, powerbomb: 0.45, 'slip.heavy': 4.4, 'slip.struggle': 0.8, sync: 0.63, pins: 1.7, tick: 4.5, medal: 2.35, ignite: 2.1, burn: 1.56, douse: 0.88, char: 2.5, out: 5.6, heat: 3.5,
   scan: 2.6, ward: 3, hasten: 3.9, sunder: 0.9, pull: 2.7, gust: 1.4, quake: 1.2, blink: 2.2,
   swipe: 3, sweep: 2.9, slam: 2.1, burrow: 1.1, hurl: 1.45, wave: 1.4 };
 
@@ -220,5 +225,48 @@ export class MechLifeSounds {
     if (!this.ok() || !this.allow('mechHeat', 1)) return;
     const t = this.ctx.currentTime, d = this.lifeOut('heat', 0.3, 0.3), n = Math.round(2 + clamp(k, 0, 1) * 6);
     for (let i = 0; i < n; i++) this.tone(t + i * (0.18 - clamp(k, 0, 1) * 0.1), 0.04, { f0: 3000 + i * 50, gain: 0.04, dest: d }); // (the plates ticking as they heat)
+  }
+  giantGrab() {
+    if (!this.ok() || !this.allow('giantGrab', 1)) return;
+    const t = this.ctx.currentTime, d = this.lifeOut('grab', 0.4, 0.5);
+    this.noise(t, 0.12, { type: 'lowpass', f0: 900, gain: 0.4, dest: d }); this.tone(t + 0.05, 1, { f0: 80, f1: 55, type: 'sawtooth', gain: 0.06, dest: d }); // (the weight taken; the hydraulics groan)
+    this.noise(t + 0.1, 0.9, { type: 'bandpass', f0: 500, f1: 350, q: 5, gain: 0.15, attack: 0.2, dest: d });
+  }
+  giantThrow(hit = 'ground') {
+    if (!this.ok() || !this.allow('giantThrow', 1)) return;
+    const t = this.ctx.currentTime, d = this.lifeOut('throw', 0.45, 0.7);
+    this.noise(t, 0.6, { type: 'bandpass', f0: 300, f1: 1200, q: 0.7, gain: 0.4, attack: 0.25, dest: d }); // (the heave)
+    this.tone(t + 0.7, 1, { f0: 55, f1: 25, gain: 0.55, dest: d }); this.noise(t + 0.7, 1.4, { type: 'lowpass', f0: 1000, f1: 200, gain: 0.45, dest: d }); // (it lands)
+    if (hit === 'building') for (let i = 0; i < 10; i++) this.noise(t + 0.75 + Math.random() * 0.9, 0.05, { type: 'bandpass', f0: 600 + Math.random() * 1400, q: 1.5, gain: 0.3, dest: d }); // (through a wall: rubble)
+  }
+  giantSlam() {
+    if (!this.ok() || !this.allow('giantSlam', 1)) return;
+    const t = this.ctx.currentTime, d = this.lifeOut('powerbomb', 0.45, 0.8);
+    this.noise(t, 0.3, { type: 'bandpass', f0: 400, f1: 1500, q: 0.7, gain: 0.35, attack: 0.25, dest: d }); this.tone(t + 0.3, 1.6, { f0: 45, f1: 22, gain: 0.7, dest: d }); // (overhead, and down)
+    this.noise(t + 0.3, 1.8, { type: 'lowpass', f0: 600, f1: 120, gain: 0.5, dest: d }); // (the ground's roll)
+  }
+  giantSlip(why = 'heavy') {
+    if (!this.ok() || !this.allow('giantSlip', 1)) return;
+    const t = this.ctx.currentTime, d = this.lifeOut(why === 'heavy' ? 'slip.heavy' : 'slip.struggle', 0.35, 0.5);
+    if (why === 'heavy') { this.tone(t, 0.8, { f0: 300, f1: 180, type: 'sawtooth', gain: 0.05, dest: d }); this.tone(t + 0.1, 0.7, { f0: 304, f1: 170, type: 'sawtooth', gain: 0.04, dest: d }); return; } // (servos straining, giving up)
+    this.noise(t, 0.4, { type: 'lowpass', f0: 800, gain: 0.35, dest: d }); this.tone(t + 0.2, 0.6, { f0: 70, f1: 40, gain: 0.35, dest: d }); // (it wrenches free and drops)
+  }
+  /** The generator's whine under the frame (mech.sync once a real second): one held voice, its pitch and level following sync, let go when the events stop. */
+  mechSync(v = 0) {
+    if (!this.ok()) return;
+    const c = this.ctx, t = c.currentTime, k = clamp(+v || 0, 0, 1);
+    if (!this.genWhine) {
+      const d = this.lifeOut('sync', 1, 0.2), o = c.createOscillator(), o2 = c.createOscillator(), g = c.createGain(), f = c.createBiquadFilter();
+      o.type = 'sawtooth'; o2.type = 'sine'; f.type = 'bandpass'; f.Q.value = 3; g.gain.value = 0;
+      o.connect(f); o2.connect(f); f.connect(g).connect(d); o.start(); o2.start();
+      this.genWhine = { o, o2, g, f, d };
+    }
+    const W = this.genWhine, hz0 = 180 + k * 260;
+    W.o.frequency.setTargetAtTime(hz0, t, 0.4); W.o2.frequency.setTargetAtTime(hz0 * 2.01, t, 0.4); W.f.frequency.setTargetAtTime(hz0 * 2, t, 0.4);
+    W.g.gain.setTargetAtTime(0.015 + k * 0.025, t, 0.3);
+    clearTimeout(W.off); W.off = setTimeout(() => { // (no sync for a while: the frame let go, the whine dies away)
+      const n = c.currentTime; W.g.gain.setTargetAtTime(0, n, 0.4);
+      setTimeout(() => { try { W.o.stop(); W.o2.stop(); W.d.disconnect(); } catch { /* already gone */ } }, 2500); this.genWhine = null;
+    }, 2500);
   }
 }
