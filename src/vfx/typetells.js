@@ -11,6 +11,8 @@
 // Prior art: Pokemon's "super effective" spark and Shin Megami Tensei's and Persona's WEAK / RESIST (scouting a weakness is the play);
 // the duel's juice (the house's own form of them).
 //
+// A status a creature resists (`creature.resist { at }`) shows the same deflect at its chest.
+//
 //   const tells = new TypeTells(game)   tells.hit(ent, type, point)   TYPE_TELL (its numbers)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -25,7 +27,11 @@ export const TYPE_TELL = { glyphEvery: 1.6, glyphSize: 0.42, glyphUp: 0.35 };
 const _v = new THREE.Vector3();
 
 export class TypeTells {
-  constructor(game) { this.game = game; this.said = new WeakMap(); }
+  constructor(game) {
+    this.game = game; this.said = new WeakMap();
+    // A status the creature shrugged off (creatures.js's `creature.resist`, carrying `at`): the same dull deflect at its chest.
+    game.events?.on?.('creature.resist', (e) => { if (e?.at && game.vfx) game.vfx.play('tell.resist', { pos: _v.set(e.at.x, e.at.y + 1, e.at.z).clone() }); });
+  }
 
   /** A typed blow landed on `ent` at `point`: its trump's flash or its resist, if the chart says either. */
   hit(ent, type, point) {
