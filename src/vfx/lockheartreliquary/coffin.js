@@ -201,3 +201,33 @@ export function drawChain(x, phi, S, t, al) {
   for (let i = 0; i < 3; i++) { const s = FPOS[i], st = F.st > i && lit >= s - 0.001 ? 'struck' : i === F.next ? 'next' : 'ahead'; notch(x, dx * CH_L * s, dy * CH_L * s, FEFF[i], st, i === F.st - 1 ? F.hitAge : 9); }
   x.restore();
 }
+
+// ---------------------------------------------------------------- the Overload's recoil (BRACELET.md: a pressurized vessel when taking out)
+/** The recoil on the coffin (`S.recoil` { u 0..1 over its life, n its tolls }), in the coffin's own frame over its body: the pressure
+ *  building (the seams lit, the outline swelling), then cracks of white-gold light shot from the lid's heart to its edges (two and two
+ *  more a toll, each forked), fading through the Mind's violet; the seams glow last. */
+export function drawRecoil(x, S, t) {
+  const R = S.recoil; if (!R || R.u >= 1) return;
+  const u = R.u, build = C01(u / 0.18), burst = C01((u - 0.16) / 0.84), a = u < 0.18 ? build : 1 - burst * burst;
+  x.save(); x.globalCompositeOperation = 'lighter';
+  coffinPath(x); x.lineWidth = 0.6 + 1.4 * build * (1 - burst); x.strokeStyle = `rgba(255,236,190,${0.9 * a})`; x.stroke(); // (the seams straining)
+  if (u > 0.16) {
+    x.save(); coffinPath(x); x.clip();
+    const n = 2 + 2 * Math.max(1, R.n | 0), r = rng(R.seed | 0), reach = 0.35 + 0.65 * C01(burst / 0.25);
+    for (let i = 0; i < n; i++) {
+      const ang = (i / n) * TAU + (r() - 0.5) * 0.8, len = (14 + 14 * r()) * reach;
+      let px = 0, py = 22, dx = Math.cos(ang), dy = Math.sin(ang);
+      x.beginPath(); x.moveTo(px, py);
+      const pts = [];
+      for (let j = 1; j <= 4; j++) { const kk = (r() - 0.5) * 0.9; const c = Math.cos(kk), sn = Math.sin(kk); [dx, dy] = [dx * c - dy * sn, dx * sn + dy * c]; px += dx * len / 4; py += dy * len / 4; x.lineTo(px, py); pts.push([px, py]); }
+      const w = (1.1 - burst * 0.6);
+      x.lineWidth = w * 1.8; x.strokeStyle = `rgba(127,92,240,${0.55 * a})`; x.stroke(); // (the violet's bloom round it)
+      x.lineWidth = w * 0.7; x.strokeStyle = `rgba(255,246,220,${a})`; x.stroke(); // (its white-gold line)
+      const f = pts[1 + ((r() * 2) | 0)]; if (f) { x.beginPath(); x.moveTo(f[0], f[1]); x.lineTo(f[0] + (r() - 0.5) * 9 * reach, f[1] + (r() - 0.5) * 9 * reach); x.lineWidth = w * 0.45; x.strokeStyle = `rgba(255,214,106,${0.8 * a})`; x.stroke(); } // (a fork)
+    }
+    const g = x.createRadialGradient(0, 22, 0.5, 0, 22, 18 * reach); g.addColorStop(0, `rgba(255,250,235,${0.85 * a * (1 - burst)})`); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(-10, 0, 20, 46); // (the heart let out)
+    x.restore();
+  }
+  x.restore();
+}
+
