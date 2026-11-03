@@ -38,6 +38,7 @@ import { bootChatCommands, bootMoreChatCommands } from './boot/chatcommands.js';
 import { bootTitle } from './boot/title.js';
 import { bootWarmup } from './boot/warmup.js';
 import { bootFrame } from './boot/frame.js';
+import { installMechFeel } from './world/hangar/mechskate.js';
 
 // boot timings: window.__boot (ms at each stage since the page began), for profiling the load
 const BOOT = (window.__boot = []);
@@ -66,6 +67,7 @@ async function main() {
   bootCoop(game, made);                        // (the party, the guests, the answers, the letters, the chatroom: boot/coop.js)
   bootProgress(game, made);                    // (the systems of progress: boot/progress.js)
   bootChatCommands(game, made);                // (the first chat commands: boot/chatcommands.js)
+  installMechFeel(game);                       // (the mech's feel knob: /mechfeel and its settings section, world/hangar/mechskate.js)
   bootSaveKeeping(game, made);                 // (the save's writers, the page watch, the cloud save attached: boot/save.js)
   make(bootDebug(game, made));                 // (the replay recorder, /goto, QAIS: boot/debug.js)
   bootMoreChatCommands(game, made);            // (the rest of the chat commands, the rhythm mode, the debug chests, the busker's mats: boot/chatcommands.js)

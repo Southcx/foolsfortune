@@ -14,6 +14,9 @@
 //     feedback said (`mech.feedback { k, region }`, cracking your Pneuka Jar at the region it echoes to, never past a shatter); a blow shakes the view (visual.shake); a region broken as MECHS.md 4.7; the core broken or the cracks past the line, it fails,
 //     unless the berserk is rolled (4.8: 12 real s on its own toward the giant, then it kneels and the Jar is out uncracked)
 // The camera pulled out by the mech's height, swung by the mouse (a cinema shot, as the helm's chase).
+// v3 (South, 2026-11-02: the skate as the movement): with the booster lit on the ground the frame skates (Calissa's mechskate.js: lit
+//   by a quick boost or an assault let go, facing the camera, carving, a pivot's skid; it writes the velocity and takes no steps),
+//   its turn rate, the quick boost's lock, the landing's shake, the camera's ease, kick and pull, and the body's animator input its.
 // v2 (MECHS.md 9): the toy city stops the frame above its step and is floor where it stands (city.js solidAt, topAt; a roof said as
 // mech.roof); the techniques and the prop in hand take their keys first (mechtech.js, props.js: F picks up before it plugs); a prop's
 // mass is load; every blow strains the frame's joints (joints.js strainBlow: a snapped part hidden and thrown off as a limb), a
@@ -25,7 +28,7 @@
 //   const M = new MechPilot(hangar)   M.toGantry()   M.toField(at, yaw)   M.onSeal()   M.onUnseal(why)   M.update(dt) (sealed: the
 //   cradle's update)   M.idle(dt) (unsealed)   M.hurt(region, k, by)   M.mode ('gantry' | 'lift' | 'pilot' | 'parked')   M.sync M.battery
 //   M.cable (a socket index or null)   M.berserk (real s left)   M.pos M.yaw M.speed   M.target() (what the giant reads)   PILOT   CLAIM
-//   events: mech.seal, mech.unseal { why }, mech.launch, mech.step { beat }, mech.boost { kind }, mech.hurt { region, k, broke },
+//   events: mech.seal, mech.unseal { why }, mech.launch, mech.step { beat, legs, mass, at }, mech.boost { kind }, (the skate's: mech.skate, mech.land, mech.turn), mech.hurt { region, k, broke },
 //   mech.cable { plugged }, mech.berserk, mech.fail { why }, mech.feedback { k, region }, mech.sync { v } (at most once a real second),
 //   mech.roof { by }, mech.joint { who: 'mech', joint, to, label, by }   M.tech (MechTech)   M.armLock(side | part)   M.strain(region, k, by)
 //   JOINT_PILOT   MECH_PARTS
@@ -33,7 +36,7 @@
 import * as THREE from 'three';
 import { shakeOf } from '../../core/config.js';
 import { stream } from '../../core/rng.js';
-import { G as GRAV, DRAG, QB } from '../../progress/mechs/frame.js';
+import { G as GRAV, DRAG } from '../../progress/mechs/frame.js';
 import { SYNC, syncCeiling, beatOf, syncStep, outputK, feedbackK, ENERGY, POOL_KJ, energyStep, BERSERK, berserkRoll } from '../../progress/mechs/rules.js';
 import { blowOn, crackSum, breakLine, FORMS } from '../../progress/combat/vessel.js';
 import { HANGAR, PROVING, SOCKET_REACH, clampProving } from './layout.js';
@@ -43,12 +46,13 @@ import { MechTech } from './mechtech.js';
 import { MechSpecials } from './mechspecials.js';
 import { strainBlow, lockOf, headOff, legsLeft, past } from '../../progress/mechs/joints.js';
 import { GIANT_LOOK } from './giant.js';
+import { MechSkate } from './mechskate.js';
 
 /** The pilot's own numbers (placeholders for feel, South's to judge): the camera's stand-off as shares of the mech's height (behind,
- *  above, where it looks); the mouse's swing (rad a pixel); the mech's turn (rad a real s, a tank's on the spot quicker); a Shift
+ *  above, where it looks); the mouse's swing (rad a pixel); a Shift
  *  held longer than `tap` real s is the assault boost; a heading change sharper than `fight` rad starts a step where it is; the hover's
  *  rise cap (m/s); the kneel's ease (a real s); the speed under which the frame stands. */
-export const PILOT = { cam: { back: 2.3, up: 0.95, look: 0.62, ease: 14, clear: 1.5 }, swing: 0.0026, pitch: 0.002, turn: 1.4, tankTurn: 2, tap: 0.22, fight: 0.7, rise: 8, kneel: 1, still: 0.4 };
+export const PILOT = { cam: { back: 2.3, up: 0.95, look: 0.62, ease: 14, clear: 1.5 }, swing: 0.0026, pitch: 0.002, tap: 0.22, fight: 0.7, rise: 8, kneel: 1, still: 0.4 };
 /** The keys taken while sealed (core/input.js claim): the walk, boosts, jump, the arms, the back unit, the barrier, the cable, unseal,
  *  and the Courier's own verbs that would otherwise wake under them (the belt's R and X, the emotes' and the god hand's keys). */
 export const CLAIM = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'Space', 'Mouse0', 'Mouse1', 'Mouse2', 'KeyG', 'KeyV', 'KeyF', 'KeyX', 'KeyQ', 'KeyE', 'KeyR', 'KeyC', 'KeyY'];
@@ -70,6 +74,7 @@ export class MechPilot {
     this.pos = new THREE.Vector3(); this.vel = new THREE.Vector3(); this.yaw = 0; this.vy = 0;
     this.camYaw = 0; this.camPitch = 0.28; this.shake = 0; this.mode = 'gantry'; this.kneel = 0; this.dt = 0;
     this.mech = null; this.weapons = new MechWeapons(this); this.tech = new MechTech(this); this.specials = new MechSpecials(this); this.cableLine = null;
+    this.skate = new MechSkate(this.game); // (the skate as the movement: Calissa's, mechskate.js)
     this.resetRun();
   }
   get stats() { return this.state.stats; }
@@ -81,7 +86,7 @@ export class MechPilot {
   resetRun() {
     this.sync = SYNC.start; this.battery = this.stats.capacity; this.cable = null; this.berserk = 0; this.phase = 0; this.gait = 0; this.walking = false;
     this.shiftT = -1; this.assault = false; this.boostT = 0; this.grounded = true; this.lastWish = null; this.faceT = 0; this.syncSaid = 0; this.spentKJ = 0;
-    this.prevDown = {}; this.pressing = false; this.weapons.reset(); this.tech?.reset(); this.specials?.reset(); this.peakY = null;
+    this.prevDown = {}; this.pressing = false; this.weapons.reset(); this.tech?.reset(); this.specials?.reset(); this.peakY = null; this.skate?.reset();
   }
 
   /** The body built (or rebuilt on assembling) into the scene. */
@@ -167,9 +172,10 @@ export class MechPilot {
     const pm = this.hangar.props?.heldMass || 0, loadK = (S.mass / (S.mass + pm)) * (S.mass + pm > S.load ? 0.5 : 1); // (a prop held is load: frame.js's overweight rule past the legs' load)
     const top = S.walkTop * this.specials.hasteK * out * (legsOut ? 0.5 : 1) * legK * loadK, moving = wish.lengthSq() > 0.01;
     // turning: toward the wish, or the giant a beat after a blow (faceGiant)
-    let want = moving ? Math.atan2(wish.x, wish.z) : null;
+    const sk = this.skate.drive(this, { wx: wish.x, wz: wish.z, moving, out, legK, loadK, dt }); // (the skate: Calissa's, mechskate.js; it writes this.vel while it skates)
+    let want = sk.want ?? (moving ? Math.atan2(wish.x, wish.z) : null);
     if (this.faceT > 0 && this.giant) { this.faceT -= dt; want = Math.atan2(this.giant.pos.x - this.pos.x, this.giant.pos.z - this.pos.z); }
-    if (want !== null) { const d = Math.atan2(Math.sin(want - this.yaw), Math.cos(want - this.yaw)), rate = (S.legType === 'tank' ? PILOT.tankTurn : PILOT.turn) * (this.faceT > 0 ? 2 : 1); this.yaw += Math.sign(d) * Math.min(Math.abs(d), rate * dt); }
+    if (want !== null) { const d = Math.atan2(Math.sin(want - this.yaw), Math.cos(want - this.yaw)), rate = sk.rate * (this.faceT > 0 ? 2 : 1); this.yaw += Math.sign(d) * Math.min(Math.abs(d), rate * dt); }
     // the boosts: a tap, or held
     let boosting = this.boostT > 0; this.boostT -= dt;
     if (K.pressed('ShiftLeft') || K.pressed('ShiftRight')) this.shiftT = 0;
@@ -177,7 +183,8 @@ export class MechPilot {
     if (this.shiftT >= 0) {
       if (shift) { this.shiftT += dt; if (!this.assault && this.shiftT > PILOT.tap && S.boostTop > 0) { this.assault = true; g.events?.emit('mech.boost', { kind: 'assault', by: 'courier' }); } }
       else {
-        if (!this.assault && S.qb > 0) { const dir = moving ? wish : this.forward(_s); this.vel.addScaledVector(_s.copy(dir).normalize(), S.qb * out); this.boostT = QB.t; boosting = true; g.events?.emit('mech.boost', { kind: 'quick', by: 'courier' }); }
+        if (!this.assault && S.qb > 0 && this.skate.canQuick()) { const d = _s.copy(moving ? wish : this.forward(_s)).normalize(), lock = this.skate.quick(this, d.x, d.z); this.vel.addScaledVector(d, S.qb * out); this.boostT = lock; boosting = true; g.events?.emit('mech.boost', { kind: 'quick', by: 'courier' }); }
+        else if (this.assault) this.skate.light(); // (an assault let go glides on as a skate)
         this.assault = false; this.shiftT = -1;
       }
     }
@@ -185,7 +192,7 @@ export class MechPilot {
     if (this.assault) {
       const f = this.forward(_s), along = this.vel.dot(f), m = S.mass + pm, a = (S.thrust * out) / m - (DRAG * Math.max(0, along)) / m;
       this.vel.addScaledVector(f, a * dt); boosting = true;
-    } else {
+    } else if (!sk.on) {
       const sp = this.speed;
       if (sp > top + 0.5 && this.boostT <= 0) this.vel.multiplyScalar(Math.exp(-dt / S.tau)); // (past the walk it coasts down by its own τ = m / C)
       else if (this.boostT <= 0) { const acc = top / Math.max(0.5, S.step || 1); _c.copy(wish).multiplyScalar(top).sub(this.vel).setY(0); const n = _c.length(); if (n > 0) this.vel.addScaledVector(_c, Math.min(1, (acc * dt) / n)); }
@@ -201,7 +208,7 @@ export class MechPilot {
     if (!this.grounded && !hover) this.vy -= GRAV * dt;
     this.tech.ram(dt); // (the Battering Ram carves the path before the walls are asked)
     this.move(dt);
-    this.stride(dt, wish, moving);
+    if (!sk.on) this.stride(dt, wish, moving); // (skating takes no steps)
     // the techniques and the prop in hand first (mechtech.js, props.js), then the arms, the back unit, the barrier, the cable
     const used = this.tech.drive(K, dt);
     if (!used.L) this.weapons.arm('L', { down: K.down('Mouse0'), pressed: K.pressed('Mouse0'), released: K.released('Mouse0') });
@@ -211,7 +218,7 @@ export class MechPilot {
     this.specials.drive(K, dt); // (each worn part's special on its slot's key: mechspecials.js)
     this.pressing = K.down('KeyV');
     if (K.pressed('KeyF')) { const P = this.hangar.props; if (P?.held) P.drop(); else if (!P?.grab()) this.plug(); } // (F: a prop in reach picked up, the one held put down, else the cable)
-    if (this.assault && this.giant && this.weapons.gap() < 1.5) { this.weapons.charge(this.speed); this.vel.multiplyScalar(0.2); this.assault = false; this.shiftT = -1; }
+    if (this.assault && this.giant && this.weapons.gap() < 1.5) { this.weapons.charge(this.speed); this.vel.multiplyScalar(0.2); this.assault = false; this.shiftT = -1; this.skate.light(); }
     this.weapons.update(dt);
     // sync and the battery
     const mind = g.courierMind, ceiling = syncCeiling(mind?.v ?? 0.5, !!mind?.brimming);
@@ -224,7 +231,7 @@ export class MechPilot {
   /** Moved by its velocity, kept out of the knee-high blocks (unless above them), the giant and the yard's walls; landed on the
    *  ground or a block's top. */
   move(dt) {
-    const A = PROVING.at, r = MECH_BODY.radius, H = PROVING.blockH, p = this.pos, ox = p.x, oz = p.z, wasGrounded = this.grounded;
+    const A = PROVING.at, r = MECH_BODY.radius, H = PROVING.blockH, p = this.pos, ox = p.x, oz = p.z, wasGrounded = this.grounded, vyIn = this.vy;
     p.addScaledVector(this.vel, dt); p.y += this.vy * dt;
     let floor = A.y, roof = false;
     const C = this.hangar.city;
@@ -247,7 +254,7 @@ export class MechPilot {
     if (!this.grounded) this.peakY = Math.max(this.peakY ?? p.y, p.y);
     else if (!wasGrounded) { // (landed: the Elbow Drop comes down, a roof stood on is said once a landing)
       const fall = Math.max(0, (this.peakY ?? p.y) - p.y); this.peakY = null;
-      this.tech.landed(fall);
+      this.tech.landed(fall); this.skate.landed(this, vyIn);
       if (roof) this.game.events?.emit('mech.roof', { by: 'courier' });
     }
   }
@@ -290,6 +297,8 @@ export class MechPilot {
     this.netKW = this.stats.draw + (boosting ? this.stats.fire : 0) - (this.cable !== null ? this.stats.output : 0); // (the readout's seconds left)
     if (this.berserk > 0) { this.spentKJ = 0; return; }
     const e = energyStep(this.battery, this.stats, { dt, cable: this.cable !== null, boosting, spentKJ: this.spentKJ, pool: pool?.value ?? 0 });
+    const Hy = this.mech?.hydraulics; // (the joints' Lachryma at the battery's share, the traces' channels: vfx/mechs/hydraulics.js)
+    if (Hy) { Hy.set({ fill: this.battery / Math.max(1, this.stats.capacity), absorb: e.battery > this.battery + 1e-6 }); if (boosting) Hy.channel(0.6); if (this.spentKJ > 0) Hy.channel(Math.min(1, 0.4 + this.spentKJ / 40)); }
     this.spentKJ = 0; this.battery = e.battery;
     if (e.poolKJ > 0 && pool) pool.drain(e.poolKJ / POOL_KJ, 'mech');
     if (e.dry || (e.poolKJ > 0 && (pool?.value ?? 0) <= 0.01)) this.fail('dry');
@@ -319,6 +328,7 @@ export class MechPilot {
     if (this.giant && by === 'creature' && this.hangar.props?.shieldTake(this.giant.pos)) return; // (the slab held up takes it: props.js)
     const kk = k * this.specials.wardK * (S.armour[region] ?? 1) * (this.giant ? this.weapons.blockK(this.giant.pos) : 1);
     this.mech?.jiggle?.(Math.min(2, 1.5 * kk)); // (the doll's chest plates kicked by the blow: partsbody.js BUST_SPRING)
+    this.mech?.hydraulics?.hurt(Math.min(1, kk)); // (the traces flashed, the joints' Lachryma thrown about)
     const was = this.broken(region), r = blowOn(this.state.vessel, { region, k: kk, pool: this.pressing ? null : pool?.available ?? null }, 'mech');
     if (r.shield > 0) pool?.drain(r.shield, 'mech');
     this.state.hurt(r.state);
@@ -379,7 +389,7 @@ export class MechPilot {
     const walk = this.stats.step > 0 ? Math.min(1, this.speed / Math.max(1, this.stats.walkTop)) * (this.grounded ? 1 : 0.2) : 0;
     this.mech.pose({ pos: this.pos, yaw: this.yaw, gait: this.gait, walk, kneel: this.kneel, armL: this.weapons.swing('L'), armR: this.weapons.swing('R'),
       sealed: this.game.cradles?.sealed === this.hangar.cradle, barrier: this.pressing ? 1 : 0, joints: this.state.joints, holding: this.hangar.props?.held ? 'R' : null,
-      lean: legsLeft(this.state.joints) === 1 ? (past(this.state.joints, 'hipL') ? 0.22 : -0.22) : 0 }); // (a leg gone: it kneels to that side)
+      lean: legsLeft(this.state.joints) === 1 ? (past(this.state.joints, 'hipL') ? 0.22 : -0.22) : 0, anim: this.mode === 'pilot' && !this.hangar.bout?.active ? this.skate.anim(this) : null }); // (the skate's animator input; a bout poses its own) // (a leg gone: it kneels to that side)
     if (this.mode === 'gantry' || this.mode === 'lift') this.hangar.deck?.position.set(this.pos.x, this.pos.y - 0.5, this.pos.z);
   }
   /** The cradle where the seat is now; reached from the walkway in the gantry, from the ground beside it in the field. */
@@ -401,21 +411,22 @@ export class MechPilot {
   camera(dt) {
     const g = this.game, I = g.input, h = heightOf(this.stats), C = PILOT.cam;
     this.shake = Math.max(0, this.shake - dt * 2.8); // (eased out in every mode, so none waits for the launch)
+    const SK = this.skate.camera(this, dt); // (the skate's ease, kick, pull and shake: mechskate.js)
     if (this.mode === 'lift') {
       const A = HANGAR.at; _c.set(A.x + 6, A.y + 3, A.z + HANGAR.gantry.z + 30); _l.copy(this.pos).setY(this.pos.y + h * 0.6);
       g.cinema?.shot('mech', { pos: _c, look: _l, bars: 0, ease: C.ease }); return;
     }
     this.camYaw -= (I?.dx || 0) * PILOT.swing; this.camPitch = Math.max(-0.15, Math.min(0.9, this.camPitch + (I?.dy || 0) * PILOT.pitch));
-    const back = h * C.back, a = this.camYaw;
+    const back = h * C.back * SK.back, a = this.camYaw;
     _c.set(this.pos.x - Math.sin(a) * back * Math.cos(this.camPitch), this.pos.y + h * C.up + Math.sin(this.camPitch) * back, this.pos.z - Math.cos(a) * back * Math.cos(this.camPitch));
     _l.copy(this.pos).setY(this.pos.y + h * C.look);
     this.clearCity(_l, _c, C.clear);
     this.mech?.fade?.(_l.distanceTo(_c) / back); // (the frame dithered away as the arm shortens: Calissa's, vfx/mechs/partsbody.js fade)
     if (this.shake > 0) { // (a blow felt in the cradle: the view knocked by its weight, scaled by the setting visual.shake)
-      const m = this.shake * this.shake * h * 0.035 * shakeOf();
+      const m = this.shake * this.shake * h * 0.035 * shakeOf() * SK.shake;
       _c.x += (SHAKE_R() - 0.5) * m; _c.y += (SHAKE_R() - 0.5) * m; _c.z += (SHAKE_R() - 0.5) * m;
     }
-    g.cinema?.shot('mech', { pos: _c, look: _l, bars: 0, ease: C.ease });
+    g.cinema?.shot('mech', { pos: _c, look: _l, bars: 0, ease: SK.ease, fov: SK.fov });
   }
   /** The view kept out of the toy city's buildings: a building between the frame and the camera brings the camera in to `clear` metres
    *  short of it (a third-person camera's spring arm, Unreal's; the cells are the city's own, world/hangar/city.js raycast). */

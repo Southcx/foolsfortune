@@ -64,6 +64,8 @@ export class JellyMount extends Tech {
   /** Where a mount may come: open ground in the Dunes or at the Raceway (the skiff's own test), never indoors. */
   allowed() { const D = this.skiff?.dunes; return !!D?.active && !this.game.seam?.covering && !this.game.god?.active; }
   open() { return jellyOpen(this.game.ledger, this.game); }
+  /** The mount the next tap of Y calls, chosen by name (touch's BELT radial, ui/touch/arc.js: a tap cannot hold Y for the choice). */
+  prefer(id) { if (id === 'skiff' || (id === 'jelly' && this.open())) this.last = id; }
 
   // ------------------------------------------------------------------ the call (Y tapped or held)
   canStart() {

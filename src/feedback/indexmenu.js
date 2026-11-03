@@ -2,11 +2,12 @@
 // The index: the console in the hub. Stand at it, press F, and pick a room; one teleport per room
 // (the rooms' own stations are checkpoints: R takes you back to the last one). Under the rooms, the
 // calibration numbers: the live movement values and the measured chains every space is sized from
-// (the same ones as the hub's metrics board). Like the Codex it pauses the game while it's open.
+// (the same ones as the hub's metrics board); over the rooms, the game day's firsts still to take. Like the Codex it pauses the game while it's open.
 // It also opens on a PAGE of its own: the Throwing Room's console shows its page (the drills, their bests, Strawman) in it.
 //   menu.show()   menu.showPage(name, render(im, el), { title, sub, aside })   menu.close()   (aside: 'left' | 'right', the page set in a column to that side, no veil, the world left in view)
 // ---------------------------------------------------------------------------
 import { sfx } from '../audio/sfx.js';
+import { FIRST_TODAY } from '../progress/firsttoday.js';
 
 /** A page's line in the words of the device last touched: on touch a click is a tap, and the keys' parts go (CLOSE stands in the
  *  corner). Plain placeholders until Espada's words (MOBILE.md 8.3). */
@@ -40,6 +41,10 @@ const CSS = `
 #indexmenu .room .n { font-size: 18px; width: 34px; text-align: center; color: var(--accent); }
 #indexmenu .room b { display: block; font-weight: normal; letter-spacing: .08em; font-size: 13px; }
 #indexmenu .room s { text-decoration: none; display: block; font-size: 10px; opacity: .65; }
+#indexmenu .firsts { display: flex; flex-wrap: wrap; gap: 6px; }
+#indexmenu .firsts .f { font-size: 11px; letter-spacing: .06em; padding: 3px 8px; border: 1px solid var(--accent); border-radius: 3px; color: #fff1dc; }
+#indexmenu .firsts .f.done { opacity: .35; border-color: rgba(255,178,122,.25); text-decoration: line-through; }
+#indexmenu .fline { font-size: 10px; opacity: .6; margin: 6px 0 4px; }
 #indexmenu .cal { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 18px; font-size: 11px; }
 @media (max-width: 560px) { #indexmenu .cal { grid-template-columns: 1fr; } }
 #indexmenu .cal div { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px dotted rgba(255,178,122,.15); padding: 2px 0; }
@@ -121,6 +126,18 @@ export class IndexMenu {
     this.go(r.id);
   }
 
+  /** Under the rooms: the game day's firsts still to take (progress/firsttoday.js, GAPS G46), each a minute of play's cubes the first time
+   *  a game day; the ones taken dimmed. Placeholder words (Espada's to rule): a genre label and one line, the count as a stat. */
+  firsts(im) {
+    const F = this.game.firstToday; if (!F?.left) return;
+    const left = new Set(F.left()), mods = Object.entries(FIRST_TODAY.modules);
+    im.appendChild(el('div', 'grp', `DAILY FIRSTS · ${left.size} OF ${mods.length} LEFT`));
+    const row = el('div', 'firsts');
+    for (const [id, m] of mods) row.appendChild(el('span', left.has(id) ? 'f' : 'f done', m.label));
+    im.appendChild(row);
+    im.appendChild(el('div', 'fline', 'The first of each today pays a minute of play in cubes.'));
+  }
+
   render() {
     const r = this.root;
     r.innerHTML = '';
@@ -134,6 +151,7 @@ export class IndexMenu {
     x.onclick = () => this.close();
     head.appendChild(x);
     im.appendChild(head);
+    if (!this.page) this.firsts(im); // (first, over the rooms: what today still pays)
     let group = null, grid = null;
     if (this.page) this.page.render(im, el);
     else this.rooms.forEach((room, i) => {
