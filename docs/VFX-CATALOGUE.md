@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-11-02). 691 effects in 45 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-11-03). 691 effects in 45 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -8,7 +8,7 @@ Every effect the game can play, read from the code by `node scripts/vfxcatalogue
 
 | block | what there is |
 |---|---|
-| sprite shapes (`vfx/sprites.js`) | soft, core, star4, sparkle, streak, ring, ringthin, puff, shard, diamond, glint, swirl, petal, crescent, chip, bubble, hex, facet, drip, ripple, disc, talisman, moth, leaf, die, comb |
+| sprite shapes (`vfx/sprites.js`) | soft, core, star4, sparkle, streak, ring, ringthin, puff, shard, diamond, glint, swirl, petal, crescent, chip, bubble, hex, facet, drip, ripple, disc, talisman, moth, leaf, die, comb, cloud, tongue |
 | decal textures | circle_lotus, circle_swirl, shockring (drawn), scorch (drawn), pentacle (drawn) |
 | baked effect meshes (`src/assets/vfx/*.glb`, Mesh Create) | chest_circle, chest_helix, chest_shock, ult_crown, ult_dome, ult_helix, ult_pillar, ult_vortex |
 | caster shaders (`vfx/caster/`) | bubble, corrupted, frostbisque, heathaze, hologram, lensing, lightning, molten, portal, timegrade |
@@ -581,7 +581,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
 | `mech.blink.step` | one-shot | shape:ring, shape:pillar, sprites:star4 |  | vfx/mechs/speciallooks.js |
-| `mech.flamer.fire` | held | caster:heathaze, sprites:soft, sprites:streak, sprites:puff |  | vfx/mechs/fire/flamer.js |
+| `mech.flamer.fire` | held | caster:heathaze, sprites:cloud×2, sprites:star4 |  | vfx/mechs/fire/flamer.js |
 | `mech.gust` | one-shot | shape:wave, sprites:puff, sprites:chip, sprites:streak |  | vfx/mechs/speciallooks.js |
 | `mech.gust.cone` | one-shot | shape:cone×2 |  | vfx/mechs/speciallooks.js |
 | `mech.gust.ground` | one-shot | shape:beam×2 | the wind's track on the ground: a long dark scour and streaks of light along it, `dir` the gust, `scale` its reach | vfx/mechs/speciallooks.js |
@@ -622,7 +622,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `giant.sand.slump` | one-shot | sprites:puff, sprites:chip, shake |  | vfx/mechs/giants/colossus.js |
 | `giant.slam` | one-shot | shape:ring×2, sprites:puff, sprites:chip, shake, hitstop | a giant driven into the ground at the mech's feet: the powerbomb | feedback/tracking/mechnight.js, vfx/mechs/giants/grapple.js, world/hangar/giantgrapple.js |
 | `giant.strain.spark` | one-shot | sprites:streak, sprites:puff | the frame's joint under a held giant: embers spat from it | vfx/mechs/giants/grapple.js |
-| `giant.straw.burn` | held | sprites:streak, sprites:soft, sprites:puff |  | vfx/mechs/fire/bodies.js |
+| `giant.straw.burn` | held | sprites:streak, sprites:tongue, sprites:star4, sprites:cloud |  | vfx/mechs/fire/bodies.js |
 | `giant.straw.burst` | one-shot | sprites:streak, sprites:puff |  | vfx/mechs/giants/straw.js |
 | `giant.straw.dust` | one-shot | sprites:puff, shake |  | vfx/mechs/giants/straw.js |
 | `giant.straw.spill` | one-shot | sprites:streak, sprites:puff |  | vfx/mechs/giants/straw.js |
@@ -735,12 +735,12 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `city.chunk.split` | one-shot | sprites:chip, sprites:puff |  | vfx/mechs/fire/index.js |
+| `city.chunk.split` | one-shot | sprites:chip, sprites:cloud |  | vfx/mechs/fire/index.js |
 | `city.dust.hang` | one-shot | sprites:puff |  | vfx/mechs/fire/index.js |
-| `city.fire.char` | one-shot | sprites:streak, sprites:chip, sprites:puff |  | vfx/mechs/fire/index.js |
-| `city.fire.douse` | one-shot | sprites:puff, sprites:drip, sprites:streak |  | vfx/mechs/fire/index.js |
-| `city.fire.felled` | one-shot | sprites:soft, sprites:streak, sprites:puff×2, shake |  | vfx/mechs/fire/index.js |
-| `city.fire.ignite` | one-shot | sprites:core, sprites:soft, sprites:streak, sprites:puff |  | vfx/mechs/fire/index.js |
+| `city.fire.char` | one-shot | sprites:star4, sprites:chip, sprites:cloud |  | vfx/mechs/fire/index.js |
+| `city.fire.douse` | one-shot | sprites:cloud, sprites:drip, sprites:star4 |  | vfx/mechs/fire/index.js |
+| `city.fire.felled` | one-shot | sprites:star4, sprites:tongue, sprites:cloud, sprites:puff, shake |  | vfx/mechs/fire/index.js |
+| `city.fire.ignite` | one-shot | shape:sphere, sprites:tongue, sprites:star4, sprites:cloud |  | vfx/mechs/fire/index.js |
 | `city.glass.burst` | one-shot | sprites:star4, sprites:facet, sprites:glint, shape:hoop |  | vfx/mechs/fire/index.js |
 
 ### garden (7)

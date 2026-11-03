@@ -1,21 +1,22 @@
 // ---------------------------------------------------------------------------------------
 // CHAR (plain name; the city's fire's look, vfx/mechs/fire/): a cell's fire state worn on the building, drawn as a shell a hair
 // larger than the cell (FIRE_LOOK.char.size) over each cell with a face to the air, so only what shows is drawn: SCORCHED brick or
-// stone soot-blackened, SOFT steel glowing a dull red that breathes, WET darkened and glossy, a BURNING cell charring toward charcoal
-// as its fuel goes, an ember's light running in its cracks. A cell burned away is emptied by the runtime and drawn by nothing.
+// stone soot-blackened, SOFT steel glowing a dull red that breathes, WET darkened and glossy, a BURNING cell charring toward matte
+// charcoal as its fuel goes, cut into plates by hard cracks of Fury's light (Fury's paint motif, vfx/paintmotifs.js: "plates parted
+// by cracks of light, charred within"; the cracks a world-space Voronoi edge, cut flat as a cartoon's, their colour Fury's ramp). A cell burned away is emptied by the runtime and drawn by nothing.
 // One InstancedMesh, lit (so a wet face catches the sun), its per-cell colour the instance colour and its glow and roughness one
 // small attribute; written only when the burning set is read again (index.js), never a frame.
 // Why a shell: the city's own mesh (Dovina's world/hangar/city.js) is one merged mesh a building, vertex-coloured by material at its
 // re-mesh, with no per-cell colour to tint; a shell draws the state without touching her file (the handoff asks for a cell's state
 // in her vertex colour, docs/handoffs/dovina/2026-11-02-from-calissa-fire-looks.md).
-// Prior art: Far Cry 2's burnt ground and Red Faction Guerrilla's scorched walls (a char decal by heat), Battlefield's wet decals
+// Prior art: The Wind Waker's charred logs (flat black, lit cracks), Fury's paint motif (vfx/paintmotifs.js), Far Cry 2's burnt ground and Red Faction Guerrilla's scorched walls (a char decal by heat), Battlefield's wet decals
 // (a darker, glossier surface), the forge's colour of hot steel (a dull cherry red long before it is soft).
 //
 //   const C = new CharShell(parent, max)   C.begin()   C.add(x, y, z, yaw, colour (a THREE.Color), glow, rough)   C.end()   C.mesh   C.dispose()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { FIRE_LOOK } from './table.js';
-import { FLAME_TIME } from './flames.js';
+import { FLAME_TIME, furyHex } from './flames.js';
 
 const K = FIRE_LOOK.char;
 const _c = new THREE.Color();
@@ -24,20 +25,24 @@ const _c = new THREE.Color();
 function charMaterial() {
   const m = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: 0, name: 'fire-char' });
   m.onBeforeCompile = (sh) => {
-    sh.uniforms.uTime = FLAME_TIME; sh.uniforms.uEmber = { value: new THREE.Color(K.ember) };
+    sh.uniforms.uTime = FLAME_TIME; sh.uniforms.uEmber = { value: new THREE.Color(furyHex(K.emberAt)) }; sh.uniforms.uCracks = { value: K.cracks };
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec2 aChar; varying vec2 vChar; varying vec3 vCW;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvChar = aChar; vCW = (modelMatrix * instanceMatrix * vec4(position, 1.0)).xyz;');
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
-uniform float uTime; uniform vec3 uEmber; varying vec2 vChar; varying vec3 vCW;
-float chash(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
-float cnoise(vec3 p) { vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-  return mix(mix(mix(chash(i), chash(i + vec3(1,0,0)), f.x), mix(chash(i + vec3(0,1,0)), chash(i + vec3(1,1,0)), f.x), f.y),
-             mix(mix(chash(i + vec3(0,0,1)), chash(i + vec3(1,0,1)), f.x), mix(chash(i + vec3(0,1,1)), chash(i + vec3(1,1,1)), f.x), f.y), f.z); }`)
+uniform float uTime; uniform vec3 uEmber; uniform float uCracks; varying vec2 vChar; varying vec3 vCW;
+vec3 chash3(vec3 p) { p = vec3(dot(p, vec3(127.1, 311.7, 74.7)), dot(p, vec3(269.5, 183.3, 246.1)), dot(p, vec3(113.5, 271.9, 124.6))); return fract(sin(p) * 43758.5453); }
+// the distance to the nearest Voronoi edge (Fury's cracks), in cells of 1 / uCracks m
+float cedge(vec3 p) { vec3 i = floor(p), f = fract(p); float d1 = 8.0, d2 = 8.0;
+  for (int z = -1; z <= 1; z++) for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++) { vec3 g = vec3(float(x), float(y), float(z)), o = g + chash3(i + g) - f; float d = dot(o, o);
+    if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) d2 = d; }
+  return sqrt(d2) - sqrt(d1); }`)
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = vChar.y;')
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-{ float cr = 1.0 - abs(cnoise(vCW * 2.3) * 2.0 - 1.0); cr = smoothstep(0.82, 0.97, cr);
-  float br = 0.75 + 0.25 * sin(uTime * 2.2 + dot(vCW, vec3(0.7, 1.3, 0.9)));
-  totalEmissiveRadiance += uEmber * vChar.x * br * (0.18 + 2.4 * cr); }`);
+{ float e = cedge(vCW * uCracks), aa = max(fwidth(e), 1e-3);
+  float wide = 0.05 + 0.12 * vChar.x; // (the more it glows, the wider its cracks open)
+  float cr = 1.0 - smoothstep(wide - aa, wide + aa, e);
+  float br = 0.8 + 0.2 * step(0.5, fract(uTime * 1.5 + dot(floor(vCW * uCracks), vec3(0.31, 0.57, 0.73)))); // (a plate's cracks flaring in steps)
+  totalEmissiveRadiance += uEmber * vChar.x * (0.1 + 3.2 * cr * br); }`);
   };
   return m;
 }

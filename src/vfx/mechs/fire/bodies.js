@@ -3,8 +3,10 @@
 // world/hangar/cityfire.js), three bodies answering her events, looks only:
 //   the frame heated     `mech.heat { k }`: a heat shimmer round your mech's legs (the caster shells' heat haze, vfx/caster/heathaze.js)
 //                        and embers and an ember's glow coming off its leg joints, by k
-//   the straw giant ablaze  `giant.burn { id, k }`: flame cards (flames.js) standing out of its seams on its own body (so its pose
-//                        carries them), burning straw flung, its burlap and straw charring toward black with an ember's glow in it
+//   the straw giant ablaze  `giant.burn { id, k }`: the cel flame cards (flames.js) standing out of its seams on its own body (so
+//                        its pose carries them), set out past its sack and drawn after its AT field (giants/atfield.js, order 7)
+//                        so the field never veils them; burning straw flung, its burlap and straw charring toward black with
+//                        Fury's ember glowing in it
 //   the colossus vitrified  `giant.vitrify { id, on }`: the dune colossus's fired clay glazing to a glassy sheen over FIRE_LOOK
 //                        .bodies.vitrify.turn real s (roughness down, a celadon-ash tint, a stronger reflection), flakes of the glaze
 //                        cracking off it while it holds, and the glaze shattering off as it ends
@@ -17,9 +19,12 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { FIRE_LOOK } from './table.js';
-import { FlameCards } from './flames.js';
+import { FlameCards, furyHex } from './flames.js';
 
 const BK = FIRE_LOOK.bodies, EM = FIRE_LOOK.embers;
+const EMBER = EM.at.map(furyHex), EMBER_END = furyHex(EM.endAt), GLOW = furyHex(0.62), GLOW_END = furyHex(0.36);
+/** The straw cards drawn after the AT field's shell (giants/atfield.js: 7, your own 8). */
+const OVER_FIELD = 9;
 /** Where the straw giant's flames stand (its body's frame, metres: its seams, its shoulders, its crown; vfx/mechs/giants/straw.js). */
 const STRAW_SEAMS = [[3.75, 8.2, 0.4], [-3.4, 10.6, -1.2], [0, 13.3, 0.5], [2.6, 5, 1.6], [-2.4, 5, 1.8], [0, 9, 2.4], [3.1, 11.6, 0.2],
   [-3.6, 7, 0.8], [1.4, 14.6, 0], [-1.2, 6, -2.2], [2.2, 12.6, -1.6], [-2.6, 12.4, 1], [0.6, 4.4, -2], [-0.8, 10.2, 2.5], [3.4, 6.4, -1], [-3.2, 9.2, -2]];
@@ -67,8 +72,8 @@ export class FireBodies {
       const glow = this.glowAcc >= 1; if (glow) this.glowAcc -= 1; else this.heatAcc -= 1;
       legs[(Math.random() * legs.length) | 0].getWorldPosition(E.pos);
       E.pos.x += (Math.random() - 0.5) * 1.2; E.pos.y += (Math.random() - 0.5) * 1.2; E.pos.z += (Math.random() - 0.5) * 1.2;
-      if (glow) { E.vel.set(0, 0.3, 0); E.life = 0.5 + Math.random() * 0.3; E.size = 1.4 + Math.random() * 0.8; E.sizeEnd = 0.6; E.color = 0xff5a1a; E.colorEnd = 0x8a1a06; E.alpha = 0.35 + 0.35 * k; E.twinkle = 0; }
-      else { E.vel.set((Math.random() - 0.5) * 1.5, 1 + Math.random() * 3, (Math.random() - 0.5) * 1.5); E.life = 0.9 + Math.random() * 0.8; E.size = 0.14 + Math.random() * 0.14; E.sizeEnd = 0; E.color = EM.colours[(Math.random() * 3) | 0]; E.colorEnd = 0x7a1a08; E.alpha = 1; E.twinkle = 6; }
+      if (glow) { E.vel.set(0, 0.3, 0); E.life = 0.5 + Math.random() * 0.3; E.size = 1.4 + Math.random() * 0.8; E.sizeEnd = 0.6; E.color = GLOW; E.colorEnd = GLOW_END; E.alpha = 0.35 + 0.35 * k; E.twinkle = 0; E.shape = 'soft'; }
+      else { E.vel.set((Math.random() - 0.5) * 1.5, 1 + Math.random() * 3, (Math.random() - 0.5) * 1.5); E.life = 0.9 + Math.random() * 0.8; E.size = 0.24 + Math.random() * 0.2; E.sizeEnd = 0; E.color = EMBER[(Math.random() * EMBER.length) | 0]; E.colorEnd = EMBER_END; E.alpha = 1; E.twinkle = 6; E.shape = 'star4'; }
       P.add.emit(E);
     }
   }
@@ -84,15 +89,15 @@ export class FireBodies {
     if (!this.burnFor) {
       this.burnFor = D; this.cardK = -1;
       this.burnMats = matsOf(D).map((m) => ({ m, col: m.color.clone(), em: m.emissive.clone(), ei: m.emissiveIntensity }));
-      this.burnCards = new FlameCards(Gi.body, STRAW_SEAMS.length, 'fire.straw.flames');
+      this.burnCards = new FlameCards(Gi.body, STRAW_SEAMS.length, 'fire.straw.flames'); this.burnCards.mesh.renderOrder = OVER_FIELD;
     }
     const S = BK.straw;
     if (Math.abs(k - this.cardK) > 0.04) { // (the cards written again only as the fire grows or dies)
       const n = Math.max(1, Math.round(STRAW_SEAMS.length * Math.min(1, 0.25 + k)));
-      for (let i = 0; i < n; i++) { const [x, y, z] = STRAW_SEAMS[i]; this.burnCards.set(i, x, y - 0.6, z, S.width * (0.7 + 0.5 * k), S.minH + (S.maxH - S.minH) * k * (0.7 + 0.3 * ((i * 7) % 5) / 4), i * 1.3, (i * 0.618) % 1, 0.25 * k, 0.6); }
+      for (let i = 0; i < n; i++) { const [x, y, z] = STRAW_SEAMS[i], r = Math.hypot(x, z) || 1, o = S.out / r; this.burnCards.set(i, x + x * o, y - 0.9, z + z * o, S.width * (0.7 + 0.5 * k), S.minH + (S.maxH - S.minH) * k * (0.7 + 0.3 * ((i * 7) % 5) / 4), i * 1.3, (i * 0.618) % 1, 0.25 * k, 0.6); }
       this.burnCards.commit(n); this.cardK = k;
     }
-    _c.setHex(S.char); _e.setHex(S.ember);
+    _c.setHex(S.char); _e.setHex(furyHex(S.emberAt));
     const fl = 0.75 + 0.25 * Math.sin(this.t * 7.3) * Math.sin(this.t * 3.1 + 1.2);
     for (const r of this.burnMats) { r.m.color.copy(r.col).lerp(_c, 0.7 * k); r.m.emissive.copy(_e); r.m.emissiveIntensity = 0.45 * k * fl; }
     Gi.body.updateMatrixWorld(true); Gi.body.localToWorld(_w.set(0, 9.5, 0.5));
