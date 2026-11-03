@@ -12,6 +12,8 @@ import { SkiffParts } from '../progress/skiffparts.js';
 import { SkiffPaint } from '../progress/skiffpaint.js';
 import { TrackEditor } from '../world/raceway/editor.js';
 import { Haunt } from '../world/raceway/haunt.js';
+import { TrackShelf } from '../world/raceway/trackshelf.js';
+import { Endless } from '../world/raceway/endless.js';
 import { PoolCaps } from '../progress/poolcaps.js';
 import { SkiffSettings } from '../courier/skiff/skiffsettings.js';
 import { PerfReadout } from '../debug/perfreadout.js';
@@ -52,7 +54,7 @@ export function bootChat(game, made) {
   installCollectionsLook(); // (the Codex's COLLECTIONS shelf dressed: Dovina's codex/collections.js classes, ui/collectionslook.js)
   installSealBookLook(game); // (the Codex's SEAL BOOK shelf dressed as a goshuincho, by island: Petra's codex/sealbook.js classes, ui/sealbooklook.js)
   installCalibrateButtons(game); // (the Sight's TRACK buttons, set by a plate's pick and a charted room: ui/calibratebutton.js)
-  game.skiffParts = new SkiffParts(game); game.skiffPaint = new SkiffPaint(game); skiffSetCommands(game); game.trackEditor = new TrackEditor(game); game.haunt = new Haunt(game); // (made tracks and the haunt mode: world/raceway/editor.js, haunt.js; TRACK-EDITOR.md)
-  game.systems.add('world', game.trackEditor, { clock: 'raw', name: 'trackEditor', after: 'race' }); game.systems.add('world', game.haunt, { name: 'haunt', after: 'trackEditor' }); // (core/systems.js)
+  game.skiffParts = new SkiffParts(game); game.skiffPaint = new SkiffPaint(game); skiffSetCommands(game); game.trackEditor = new TrackEditor(game); game.haunt = new Haunt(game); game.trackShelf = new TrackShelf(game); game.endless = new Endless(game); // (made tracks and the haunt mode: world/raceway/editor.js, haunt.js; TRACK-EDITOR.md)
+  game.systems.add('world', game.trackEditor, { clock: 'raw', name: 'trackEditor', after: 'race' }); game.systems.add('world', game.haunt, { name: 'haunt', after: 'trackEditor' }); game.systems.add('world', game.endless, { name: 'endless', after: 'haunt' }); // (core/systems.js)
   game.skiffSettings = new SkiffSettings(game); game.poolCaps = new PoolCaps(game); // (the Solar Skiff's garage and settings, after the chat line they speak on: progress/skiffparts.js, courier/skiff/skiffsettings.js; caps on the pool, a cracked region 5% of its max until mended: progress/poolcaps.js)
 }

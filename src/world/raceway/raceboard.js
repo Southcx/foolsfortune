@@ -28,7 +28,7 @@ import { CUPS } from './cups.js';
 import { LICENCES } from './licences.js';
 import { PARTS, SLOTS } from '../../progress/skiffparts.js';
 import { PAINT } from '../../progress/skiffpaint.js';
-import { isValidated, budgetOf, hauntOf } from '../../progress/trackdef.js';
+import { isValidated, budgetOf, hauntOf, hashOf } from '../../progress/trackdef.js';
 import { TUNE, SETUPS, SLIDE, tuneMult } from '../../progress/skifftune.js';
 import { tuneSheet, runTrace } from '../../ui/garagesheet.js';
 import { skiffPaintPreview } from '../../vfx/skiffpaintlook.js';
@@ -180,6 +180,10 @@ export class RaceBoard {
       row(rows, '☠', 'Haunted race', kept ? `Three laps against the clapperjars, haunted by ${kept.by}: the traps fire where they fired them (${kept.wrecks} wrecks in their haunt).` : 'Three laps against the clapperjars; the siblings possess its traps against you.', run(i, 'haunted'), !v || !D.traps.length);
       row(rows, '◎', 'Haunt', 'The clapperjars race it; you possess its traps (LMB on one, or Space for the next ahead; Q / E its lane or side).', run(i, 'haunt'), !v || !D.traps.length);
     }
+    const S = g.trackShelf, shelf = grp(`SHELF · ${S?.entries.length || 0} of 10 · best streak ${g.ledger?.best?.('endless.best') ?? 0}`);
+    row(shelf, '∞', 'Endless', 'Ride your shelf\'s tracks one after another, one lap each against its pace: three lives, one skip (/endless skip). Needs two tracks.', (menu) => { menu.close(); g.endless?.start(); }, (S?.entries.length || 0) < 2);
+    for (const e of S?.entries || []) row(shelf, '▤', `${e.name}${e.best != null ? ` · best ${e.best} s` : ''}`, 'Take it off the shelf (the track itself stays in your slot, if it is in one).', (menu) => { S.drop(e.hash); this.open('build'); });
+    for (let i = 0; i < 3; i++) { const D = E.slots[i]; if (D && isValidated(D) && !S?.entries.some((x) => x.hash === hashOf(D))) row(shelf, '+', `Shelve ${D.name}`, 'Put this validated track on the shelf: it rides in an endless run, and its code is there to copy.', (menu) => { if (!S.addDef(D)) g.log?.say('warn', S.last === 'full' ? 'The shelf is full.' : 'Already on the shelf.', { key: 'shelf.cmd', throttle: 1 }); this.open('build'); }); }
     row(grp('SHARED TRACKS'), '⇩', 'Load a code', 'Paste a track code (FF2-...): it loads into the first empty slot, with its maker\'s ghost and haunt if it carries them.', (menu) => { menu.close(); const i = E.slots.findIndex((x) => !x); E.open(i >= 0 ? i : E.slot); E.act('loadcode'); });
   }
 }

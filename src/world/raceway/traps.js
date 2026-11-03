@@ -15,19 +15,30 @@
 //   .haunt(mode: null | 'bots' | 'courier' | 'recorded', plan?)   .fire(i, opts?) -> bool
 //   .gripAt(x, z) -> multiplier   .update(dt)   .nearest(lx, lz) (park-local) -> index | -1   events: trap.tell { kind, i, by }, trap.fire { kind, i, by,
 //   possessor }, trap.hit { kind, target: 'courier' | 'rival', who, by, possessor }, trap.parry { by }, trap.stun { kind, by }, trap.warp { from, to, back, by }
+//   The six later traps (G305, trapkinds.js): trap.bolt { kind, i, mark, by }, trap.lob { kind, i, by }, trap.land { kind, i, smashed, by },
+//   trap.smash { kind, by }, trap.break { kind, by }. READ (G308): .reads [{ i, kind, from: 'bot' | 'recorded', in, lane, dir, origin, to }] (the
+//   possessor's aim a beat early, to a rider with the power) and trap.read { kind, i, from, by }. The grip also asks the paint map (G312).
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RW } from './track.js';
 import { TRAPS, TRAP, TrapClock, autoPhase } from '../../progress/traps.js';
 import { HAUNTERS, wantsFire } from '../../progress/trapbot.js';
 import { stream } from '../../core/rng.js';
+import { isNew, LANED, placeNew, showNew, tickNew, actNew } from './trapkinds.js';
+import { READ, secondsToFire } from '../../progress/trapbot.js';
+import { powerOpen } from '../../progress/godpowers.js';
+import { laneLat } from '../../progress/trapzones.js';
+import { paintGrip, paintActive } from '../../progress/trackpaint.js';
 
 const rand = stream('raceway/traps');
 const HIT_AGAIN = 1.2; // (real seconds before one trap may hit the same racer again)
 const GLOW = { idle: 0x3a2a24, tell: 0xffb04a, active: 0xff4a2a, red: 0xc0102a, lit: 0x7fdcff };
 
 export class Traps {
-  constructor(R) { this.R = R; this.list = []; this.t = 0; this.mode = null; this.group = null; this.balls = []; }
+  constructor(R) {
+    this.R = R; this.list = []; this.t = 0; this.mode = null; this.group = null; this.balls = []; this.reads = []; this.shoulderAt = -9;
+    R.game?.events?.on?.('skiff.shoulder', () => { this.shoulderAt = this.t; }); // (the boulder is broken by the shoulder: trapkinds.js)
+  }
   get game() { return this.R.game; }
 
   /** A track's traps up (rebuilt only if it is another track), or with null the made track's again (or none). */
@@ -91,6 +102,7 @@ export class Traps {
   // ---------------------------------------------------------------- the placeholders (dressed by Calissa's vfx/racewaytraps.js; these stand if it is not there)
   place(Tp) {
     const dressed = this.game.racewayTraps?.place?.(Tp, this); if (dressed) return dressed;
+    if (isNew(Tp.kind)) return placeNew(this, Tp); // (the six later traps' placeholders: trapkinds.js)
     const K = Tp.K, root = new THREE.Group(), { F, pos } = this.frameAt(Tp.s, 0); root.position.copy(pos); root.rotation.y = Math.atan2(F.fx, F.fz); this.group.add(root);
     const mat = (c, o = 1) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.8, transparent: o < 1, opacity: o, flatShading: true });
     const glow = new THREE.MeshBasicMaterial({ color: GLOW.idle, transparent: true, opacity: 0.55, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 });
@@ -107,12 +119,14 @@ export class Traps {
   }
   show(Tp) {
     if (Tp.look.show) { Tp.look.show(Tp, this.t); return; } // (a dressed look draws its own phase)
+    const six = isNew(Tp.kind);
     const L = Tp.look, active = Tp.phase === 'active', red = Tp.kind === 'portal' && Tp.red;
     L.glow.color.setHex(Tp.stun > 0 ? GLOW.idle : red ? GLOW.red : Tp.kind === 'portal' && active ? GLOW.lit : active ? GLOW.active : Tp.phase === 'tell' ? GLOW.tell : GLOW.idle);
     L.glow.opacity = Tp.phase === 'tell' ? 0.45 + 0.4 * Math.abs(Math.sin(this.t * 14)) : 0.6;
     if (Tp.kind === 'pillars') { const h = Tp.K.size.h; L.parts.forEach((m, l) => { const want = l !== Tp.lane ? -h / 2 : active ? h / 2 : Tp.phase === 'tell' ? -h / 2 + 0.5 : -h / 2; m.position.y += (want - m.position.y) * 0.35; }); } // (sunk: its top at the floor; told: peeking; up: standing)
     if (L.arm) L.arm.rotation.z = (Tp.swing ?? 0) * 1.0;
     if (L.fan) L.fan.rotation.x += (active ? 0.9 : 0.05) * Tp.dir;
+    if (six) showNew(this, Tp);
   }
 
   // ---------------------------------------------------------------- firing
@@ -144,28 +158,61 @@ export class Traps {
         if (this.mode === 'bots' && Tp.haunter && you) this.decide(Tp, you, L);
       } else {
         const A = autoPhase(Tp.kind, Tp.period, Tp.offset, this.t); Tp.phase = Tp.stun > 0 ? 'idle' : A.phase; Tp.k = A.k; Tp.swing = A.swing;
-        if (Tp.kind === 'pillars' && was !== 'tell' && Tp.phase === 'tell') Tp.lane = Tp.fires++ % 3;
+        if (LANED.has(Tp.kind) && was !== 'tell' && Tp.phase === 'tell') Tp.lane = Tp.fires++ % 3;
       }
       if (Tp.phase === 'tell' && was !== 'tell') g.events?.emit('trap.tell', { kind: Tp.kind, i: Tp.i, by: 'environment' });
+      if (isNew(Tp.kind)) tickNew(this, Tp, was, racers);
       this.show(Tp);
       if (Tp.phase === 'active' || Tp.kind === 'pendulum') for (const x of racers) this.act(Tp, x, dt, L);
       if (Tp.kind === 'turret' && Tp.phase === 'active' && was !== 'active') this.cast(Tp, racers);
     }
     if (this.mode === 'recorded' && this.plan && you) this.replay(you, L);
+    this.readings(you, L);
     this.stepBalls(dt, you);
   }
+  /** The metres a rider is short of a trap, and whether it stands within a gate's grace (the trap's own law). */
+  gapOf(Tp, you, L) { const gap = ((Tp.s - you.s) % L + L) % L, gates = [this.T.line, ...this.T.gates]; return { gap, inGrace: gates.some((gs) => ((Tp.s - gs) % L + L) % L < TRAP.grace) }; }
+  /** What a bot possessor aims: the lane the rider is in and the side to blow it from. */
+  aimAt(Tp, you) { const w = this.T.frame(Tp.s).w; return { lane: Math.max(0, Math.min(2, Math.floor(((you.lat + w) / (2 * w)) * 3))), dir: you.lat > 0 ? -1 : 1 }; }
   /** A bot haunter's choice for one trap this frame (progress/trapbot.js): the rider's gap to it and speed, its grace, its roll. */
   decide(Tp, you, L) {
-    const gap = ((Tp.s - you.s) % L + L) % L, gates = [this.T.line, ...this.T.gates], inGrace = gates.some((gs) => ((Tp.s - gs) % L + L) % L < TRAP.grace);
+    const { gap, inGrace } = this.gapOf(Tp, you, L);
     if (gap > 160) return;
-    const extra = Tp.kind === 'turret' ? Math.hypot(gap, Tp.K.size.range * 0.2) / Tp.K.ball.speed : 0;
-    if (wantsFire({ kind: Tp.kind, gapM: gap, speed: you.v, ready: Tp.clock.ready && Tp.stun <= 0, inGrace, haunter: Tp.haunter, rand, extra })) this.fire(Tp.i, { lane: Math.max(0, Math.min(2, Math.floor(((you.lat + this.T.frame(Tp.s).w) / (2 * this.T.frame(Tp.s).w)) * 3))), dir: you.lat > 0 ? -1 : 1 });
+    const extra = this.extraOf(Tp, gap);
+    if (wantsFire({ kind: Tp.kind, gapM: gap, speed: you.v, ready: Tp.clock.ready && Tp.stun <= 0, inGrace, haunter: Tp.haunter, rand, extra })) this.fire(Tp.i, this.aimAt(Tp, you));
+  }
+  /** Seconds a trap's shot flies before it matters (the turret's flame; the rest act at once). */
+  extraOf(Tp, gap) { return Tp.kind === 'turret' ? Math.hypot(gap, Tp.K.size.range * 0.2) / Tp.K.ball.speed : 0; }
+  /** READ (Divination, G308; TRACK-EDITOR.md 6): to a rider who has the power, each possessed trap about to fire shows its possessor's aim a
+   *  beat early (`READ.early` real seconds: a bot's by its own sum, the maker's recorded haunt by its next fire), as a line from the trap
+   *  to where it will fall. `this.reads` is the drawn list (Calissa's ghost line reads it); event trap.read { kind, i, from, by } when a
+   *  trap first shows. A trap you hold yourself shows nothing: you know your own aim. */
+  readings(you, L) {
+    this.reads = []; if (!you || !this.mode || this.mode === 'courier' || !powerOpen('read', this.game)) return;
+    const lap = Math.max(0, (this.game.race?.lap ?? 1) - 1), from = this.mode === 'bots' ? 'bot' : 'recorded';
+    for (const Tp of this.list) {
+      let show = false;
+      if (Tp.clock?.ready && Tp.stun <= 0) {
+        const { gap, inGrace } = this.gapOf(Tp, you, L); let aim = null, inS = null;
+        if (gap <= READ.range) {
+          if (from === 'bot') { aim = this.aimAt(Tp, you); inS = secondsToFire({ kind: Tp.kind, gapM: gap, speed: you.v, ready: true, inGrace, extra: this.extraOf(Tp, gap) }); }
+          else { const F = this.plan?.find((q) => q.i === Tp.i && !q.done && q.lap === lap); if (F) { aim = { lane: F.lane, dir: F.dir }; inS = (gap - F.gap) / Math.max(2, you.v); } }
+          if (aim && inS != null && inS <= READ.early && inS > -READ.early) {
+            show = true; const W = this.T.frame(Tp.s).w, lat = LANED.has(Tp.kind) || Tp.kind === 'ward' || Tp.kind === 'hasten' ? laneLat(aim.lane, W) : aim.dir * W;
+            this.reads.push({ i: Tp.i, kind: Tp.kind, from, in: +inS.toFixed(2), lane: aim.lane, dir: aim.dir, origin: Tp.look.root.position.clone(), to: this.frameAt(Tp.s, lat, 0.6).pos });
+            if (!Tp.reading) this.game.events?.emit('trap.read', { kind: Tp.kind, i: Tp.i, from, by: 'courier' });
+          }
+        }
+      }
+      Tp.reading = show;
+    }
   }
   along(Tp, x, L) { const d = ((x.s - Tp.s + L * 1.5) % L) - L / 2; return d; } // (metres the racer is past the trap: negative before it)
   /** One trap on one racer, while it acts. */
   act(Tp, x, dt, L) {
     const K = Tp.K, a = this.along(Tp, x, L), F = this.T.frame(Tp.s), grow = 1 + TRAP.wrath.k * Tp.wrath;
     let hit = false;
+    if (isNew(Tp.kind)) { if (Tp.kind !== 'storm' && Tp.kind !== 'catapult') actNew(this, Tp, x, dt, a, F, grow); return; } // (the storm's and the pot's moments are tickNew's)
     if (Tp.kind === 'pillars') { const band = (2 * F.w) / 3, lane = Math.floor((x.lat + F.w) / band); hit = Math.abs(a) < K.size.len / 2 + 0.6 && lane === Tp.lane && !x.air; if (hit) this.strike(Tp, x, K.hit); return; }
     if (Tp.kind === 'pendulum') { const bobLat = (Tp.swing ?? 0) * Math.min(F.w, K.size.reach) * -1; hit = Math.abs(a) < K.size.len && Math.abs(x.lat - bobLat) < K.size.bob * grow + 0.8; if (hit) this.strike(Tp, x, K.hit, Math.sign(x.lat - bobLat) || 1); return; }
     if (Tp.kind === 'gust') { if (Math.abs(a) < K.size.len / 2) { const push = K.push * grow * Tp.dir * dt; if (x.S) { x.S.v.x += -F.fz * push; x.S.v.z += F.fx * push; } else if (x.r) x.r.lat += push * 0.5; if (!Tp.hitT.has(x.who)) { Tp.hitT.set(x.who, HIT_AGAIN); this.said(Tp, x); } } return; }
@@ -211,6 +258,8 @@ export class Traps {
   /** The board's grip here: a live gusher's slick takes it down (the board's rules ask: boardrules.js surfaceGrip). */
   gripAt(x, z) {
     let k = 1; for (const Tp of this.list) { if (Tp.kind !== 'gusher' || Tp.phase !== 'active') continue; const { pos } = this.frameAt(Tp.s, Tp.lat); if (Math.hypot(x - pos.x, z - pos.z) < Tp.K.size.r * (1 + TRAP.wrath.k * Tp.wrath)) k = Math.min(k, Tp.K.grip); }
+    const pm = this.game.paintmap, race = this.game.race; // (paint the line: the Soul Brush's feeling on the sand grips or slides, in practice and outside a race: trackpaint.js, G312)
+    if (pm && this.R.active && paintActive({ running: !!race?.running, modeId: race?.modeId })) k *= paintGrip(pm.at(x, this.R.heightAt(x, z), z));
     return k;
   }
 

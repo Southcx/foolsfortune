@@ -114,7 +114,7 @@ export class TrackEditor {
   load(code, slot = null) {
     const def = readCode(code); if (!def) { this.game.log?.say('warn', 'That is not a track code.', { key: 'edit.code', throttle: 1 }); return false; }
     const i = slot ?? (this.slots.findIndex((s) => !s) >= 0 ? this.slots.findIndex((s) => !s) : this.slot);
-    def.loaded = true; this.slots[i] = def; this.slot = i; this.game.save?.dirty('madeTracks');
+    def.loaded = true; this.slots[i] = def; this.slot = i; this.game.save?.dirty('madeTracks'); this.game.trackShelf?.addDef(def, String(code).trim()); // (a code loaded goes on the shelf too: trackshelf.js, G307)
     this.game.events?.emit('track.load', { from: 'code', by: 'courier' }); return true;
   }
 

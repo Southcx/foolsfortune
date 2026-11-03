@@ -92,7 +92,14 @@ export function racewayAchievements({ C, H, F }) {
   C('mt5', 'skiff', B, 3, 'mechanic', 'Home Ground', 'Take gold on a made track.', 'race.made.gold', 1);
   F('mt6', 'skiff', B, 3, 'mechanic', 'House Rules', 'Win a haunted race, or finish 10.', any(['race.haunted.win', 1], ['race.haunted', 10]), 1);
   C('mt7', 'skiff', B, 2, 'count', 'Things That Go Bump', 'Wreck 10 riders with traps you hold.', 'trap.wreck', 10);
-  F('mt8', 'skiff', B, 4, 'collect', 'Seven Ways Down', 'Wreck a rider with each of the seven traps.', (L) => KINDS.filter((k) => L.get(`trap.wreck.${k}`) > 0).length, 7);
+  F('mt8', 'skiff', B, 4, 'collect', 'Seven Ways Down', 'Wreck a rider with seven different traps.', (L) => KINDS.filter((k) => L.get(`trap.wreck.${k}`) > 0).length, 7);
+  F('mt12', 'skiff', B, 5, 'collect', 'Every Trap in the Box', 'Wreck a rider with each of the thirteen traps.', (L) => KINDS.filter((k) => L.get(`trap.wreck.${k}`) > 0).length, KINDS.length);
+  C('mt13', 'skiff', B, 2, 'mechanic', 'Rockbreaker', 'Break 3 boulders with the shoulder.', 'trap.break', 3);
+  C('mt14', 'skiff', B, 2, 'mechanic', 'Pot Luck', 'Pop 5 catapult pots in the air.', 'trap.smash', 5);
+  C('mt15', 'skiff', B, 3, 'mechanic', 'Reading the Room', 'Read a possessed trap\'s aim 10 times before it fires.', 'trap.read', 10);
+  F('mt17', 'skiff', B, 3, 'mechanic', 'Streak', 'Clear 5 shelved tracks in one endless run.', (L) => Math.min(5, L.best?.('endless.best') ?? 0), 5);
+  C('mt18', 'skiff', B, 4, 'mechanic', 'The Whole Shelf', 'Ride a shelf through to its end in an endless run.', 'endless.cleared', 1);
+  C('mt16', 'skiff', B, 3, 'mechanic', 'In Time', 'Cross 20 boost pads on the beat.', 'plate.beat.perfect', 20);
   F('mt9', 'skiff', B, 4, 'mechanic', 'Hold the Line', 'In the haunt, keep every rival outside par, or wreck 12 in one haunt.', any(['haunt.held', 1], ['haunt.wrecks.best', 12]), 1, { title: 'Poltergeist' });
   C('mt11', 'skiff', B, 3, 'mechanic', 'Unfinished Business', 'Keep a haunt with a track you made: its code carries it to whoever races it.', 'haunt.kept', 1);
   C('mt10', 'skiff', B, 3, 'mechanic', 'Return to Sender', 'Parry a Wisp turret\'s flame home 10 times.', 'trap.parry', 10);
