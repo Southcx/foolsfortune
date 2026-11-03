@@ -5,7 +5,7 @@ need more interesting trap hazards, and the ability to take control of them via 
 them to interfere with your run. Crawl (Powerhoof) used this to great effect. What do you think, what would you add, and what games have
 the best track customization tooling?"
 
-Dovina's plan. Status: **a plan, nothing built.** Plain names throughout (CLAUDE.md, "Plain names until settled"): **the track editor**,
+Dovina's plan. Status: **built (sections 12 to 14).** Plain names throughout (CLAUDE.md, "Plain names until settled"): **the track editor**,
 **a trap**, **possessing a trap**, **the build lot**, **the party mode**, **the haunt mode**. The rail's "a hazard" (a pillar, arch or gate
 on the crossing) is a different thing; these are traps.
 
@@ -104,7 +104,7 @@ The core movement is never touched: a trap is a modifier with a source you can s
 | **A pot catapult** | Muster (Possession) | clapperjars lob pots onto the line | aim the lob | smash it for combo points (the pot smash's) or dodge | `pottrial.js` |
 | **A siphon** | (built) | drinks the pool to a quarter | open it on a rider | ride a vein lane after it | `siphons.js` |
 
-Fourteen traps, every domain represented and no new domain (the law). The first wave is four (section 10).
+Fourteen traps, every domain represented and no new domain (the law). The first wave is four (section 10). **All fourteen are built** (the siphon is the licence's; section 14).
 
 ## 5. A track's rules (Spellscription)
 
@@ -214,7 +214,7 @@ pieces added on top of the ground. Now a made track IS a house track:
   against a par of 421 (the reference race 468 s): broken through easily, so HAUNT.parK (0.9) wants tuning per track, likely lower on the
   long tracks, once the owner has played it.
 - **Not yet:** the traps' and pieces' looks and tells beyond placeholders (Calissa), their sounds (Wanda), their names (Espada), the
-  party mode and live guests (W4, W5), Read showing a possessed trap's next intent, fords and bridges on a made track (the lot's ground is only raised, never cut).
+  party mode and live guests (W4, W5), fords and bridges on a made track (the lot's ground is only raised, never cut).
 
 ## 13. Asynchronous haunts (round of 2026-10-24, the owner: "Both")
 
@@ -233,3 +233,47 @@ Dark Souls' messages, Mario Maker's shared levels):
 - **Measured** (`drive.mjs --made ... --mode validate --haunt --code-out`, then a fresh page `--made <that code> --mode haunted`): the
   maker's validate lap 61.4 s (132 ghost frames), a haunt of 7 wrecks kept with 28 fires; the code 3,651 characters (13,667 before the
   ghost was packed). The friend's race: the maker's ghost loaded, 25 traps fired by "the maker", 9 hits, three laps 53.2, 51.9, 52.2 s.
+
+## 14. The other six traps, Read, plates on the beat, paint the line, the shelf (round of 2026-11-03, South: "build any outstanding unbuilt features")
+
+**The six later traps** (G305; `progress/traps.js` data, `progress/trapzones.js` geometry, `world/raceway/trapkinds.js` the world). Each has
+the first seven's shape: a cycle with a tell of at least 0.6 real s, an answer, a possessed mode (the possessor's lane, Q / E), a trapbot
+timing, its palette entry in the editor (the editor lists every trap kind) and its ledger (`trap.wreck.<kind>`). Opened by haunted races, one
+a rung after the turret (11 to 16: the whole box of thirteen in about 55 real minutes), or a feat (the chain of wrecks, `trap.break`, `trap.smash`).
+
+| trap | cycle (period, tell, act) | what it does | answer | possessed | feat |
+| --- | --- | --- | --- | --- | --- |
+| **Antlion** (Take) | 7 s, 1.0, 1.2 | a maw surfaces 22 m behind the trap and lunges 72 m along one lane (r 4.5), a bail | out-run it, leave the lane, hop it | the lane (Q / E), when | wreck 3 with a turret |
+| **Boulder** (Telekinesis) | 8 s, 1.0, 1.6 | a rock rolls from 44 m past the trap back down a lane (r 2.6), a wall hit (speed x0.3) | the shoulder within 7 m breaks it (`trap.break`), a hop, another lane | the lane, when | wreck 3 with an antlion |
+| **Hasten field** (Hasten) | 10 s, 0.9, 3.0 | a patch (r 9) where the board's speed drags away (1.6 a second): the board's clock lags | go round, or cross before it shuts | the lane it sits over | break a boulder once |
+| **Storm cell** (Miracle) | 8 s, 1.2, 1.5 | three marks, three depths (8 m apart), no two in a lane; a bolt falls on each at a quarter, half and three quarters of the act (r 3.5), a bump | read the marks, take a free lane (a hop does not help) | the lane of the middle strike | wreck 3 with a hasten field |
+| **Ward gate** (Ward) | 8 s, 1.0, 1.2 | a circle (r 7) shuts: a rider in it hits a wall (speed x0.2) | time it, or go round | the lane it shuts over | wreck 3 with a storm cell |
+| **Pot catapult** (Muster) | 7 s, 1.1, 1.2 | a pot flies from the track's edge to a landing ring 36 m on, in a lane (r 4), a bump | pop it in the air (`trap.smash`, within 3.5 m), dodge the ring, or hop the landing | the lane it lands in | pop 3 pots |
+
+Every sweeping or standing trap is a modifier through the traps' own verbs (`strike`, a drag on the board's speed as the gust pushes), so the
+core movement and the Solar Skiff's handling are untouched. The seventh the plan names (the siphon) is the licence's, built; thirteen traps
+ride the lot. `TrapClock` now reports `k = 0` on the act's first frame (it reported the tell's last 1).
+
+**Read** (G308; `trapbot.js secondsToFire`, `READ`; `traps.js readings`): to a rider with Read (`powerOpen('read')`), a possessed trap about to
+fire shows `READ.early` (0.8) real s early, within 120 m: a bot's by the same sum as its firing (without its roll), the maker's recorded haunt by
+its next fire; a trap you hold yourself shows nothing. `raceway.traps.reads` is the list (`origin`, `to`, the lane and side) and `trap.read`
+says it once a trap (Calissa draws the ghost line).
+
+**Plates on the beat** (G312.1; `progress/platebeat.js`, `world/raceway/platebeat.js`, hooked in `raceway.js plateAt`): a sun plate crossed
+within 70 ms of the cue's heard beat (`game.music.clock()`) pushes x1.35 (perfect), within 140 ms x1.15 (good); the grade is struck once, on
+entry, and kept while on the plate; dark plates and vein lanes are never graded. `skiff.plate.beat { plate, grade, off, by }`.
+
+**Paint the line** (G312.2; `progress/trackpaint.js`, asked by `Traps.gripAt`): the paint map's cell under the board multiplies the sand's
+grip: Wonder 1.25, Desire 1.15, Mirth 1.1, Fury 0.85, Dread 0.8, Gall 0.7, Grief 0.55, crude 0.5, eased by coverage; asked in practice and when no
+race is running, never in a race. The Soul Brush is untouched (its paint is the map's already). A sibling painting against you waits for the
+party mode (W4).
+
+**The shelf and the endless run** (G307; `progress/trackshelf.js`, `world/raceway/trackshelf.js`, `endless.js`, the `endless` mode): up to ten
+share codes kept in the save (`trackShelf`): a code loaded in the editor goes on by itself, a validated slot by SHELVE on the race board's
+BUILD tab. ENDLESS (or `/endless`, `/endless skip`, `/endless stop`) rides the shelf's tracks, shuffled once, each once, as one flying lap alone
+against the track's one-lap pace (a third of its reference race): 0.9 gold, 1.05 silver, 1.3 bronze, slower fails; three lives, one skip; ends
+at no lives or the shelf's end. Ledger: `endless.*`, `shelf.add`. **Not built:** a guest riding the host's track live (Petra's room, W5).
+
+**Proofs** (`node scripts/trapproof.mjs`: the rules, 90 checks; `node scripts/trapworld.mjs`: the world traps on a real made track with a
+stand-in game, all thirteen built, the six struck, the bots fired twelve kinds, Read listed them). Not measured: the six's balance
+on a real board (speeds, the maw's 60 m/s lunge, the hasten's drag), the shoulder's break, the pot popped by a real hop.

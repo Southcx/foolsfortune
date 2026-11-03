@@ -10,7 +10,7 @@
 //   trackEditorRules({ on, L, log })   (tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
 const clock = (s) => { const m = Math.floor(s / 60), r = s - m * 60; return `${m}:${r < 10 ? '0' : ''}${r.toFixed(2)}`; };
-const LABEL = { pillars: 'rising pillars', pendulum: 'pendulum', gust: 'gust gate', sinkhole: 'sinkhole', gusher: 'crude gusher', portal: 'portal', turret: 'Wisp turret' };
+const LABEL = { pillars: 'rising pillars', pendulum: 'pendulum', gust: 'gust gate', sinkhole: 'sinkhole', gusher: 'crude gusher', portal: 'portal', turret: 'Wisp turret', antlion: 'antlion', boulder: 'boulder', hasten: 'hasten field', storm: 'storm cell', ward: 'ward gate', catapult: 'pot catapult' };
 
 export function trackEditorRules({ on, L, log }) {
   on('editor.open', () => { L.inc('editor.open'); log.say('skiff', 'The build lot: lay a line, raise its pieces, set its traps.', { key: 'editor.open', throttle: 30 }); });
@@ -20,7 +20,7 @@ export function trackEditorRules({ on, L, log }) {
   on('track.load', (e) => { L.inc('track.load'); if (e.from === 'code') L.inc('track.load.code'); });
   on('race.finish', (e) => {
     if (e.mode === 'haunted' && !e.validate) { L.inc('race.haunted'); if (e.place === 1) L.inc('race.haunted.win'); } // (a haunted race on any track: TRACK-EDITOR.md 7)
-    if (e.track !== 'made' || e.validate) return;
+    if (e.track !== 'made' || e.validate || e.mode === 'endless') return;
     L.inc('race.made.finish'); if (e.medal) L.inc(`race.made.${e.medal}`);
     if (e.of > 1 && e.place === 1) L.inc('race.made.win');
     if (e.loaded) L.inc('race.made.shared.finish');
@@ -31,6 +31,15 @@ export function trackEditorRules({ on, L, log }) {
   });
   on('trap.parry', () => { L.inc('trap.parry'); log.say('skiff', 'Flame sent back. The turret is stunned.', { key: 'trap.parry', throttle: 2 }); });
   on('trap.warp', (e) => { if (e.target !== 'courier') return; L.inc(e.back ? 'trap.warp.back' : 'trap.warp.on'); log.say('skiff', e.back ? 'The portal throws you back.' : 'The portal carries you on.', { key: 'trap.warp', throttle: 2 }); });
+  on('trap.break', (e) => { if (e.by !== 'courier') return; L.inc('trap.break'); log.say('skiff', 'Boulder broken.', { key: 'trap.break', throttle: 2 }); });
+  on('trap.smash', (e) => { if (e.by !== 'courier') return; L.inc('trap.smash'); log.say('skiff', 'Pot popped in the air.', { key: 'trap.smash', throttle: 2 }); });
+  on('trap.read', (e) => { if (e.by !== 'courier') return; L.inc('trap.read'); log.say('skiff', `Read: ${LABEL[e.kind] || 'a trap'} ahead, about to fire.`, { key: 'trap.read', throttle: 6 }); });
+  on('skiff.plate.beat', (e) => { if (e.by !== 'courier') return; L.inc(`plate.beat.${e.grade}`); if (e.grade === 'perfect') log.say('skiff', 'Boost pad on the beat.', { key: 'plate.beat', throttle: 12 }); });
+  on('shelf.add', () => { L.inc('shelf.add'); log.say('info', 'Track put on the shelf.', { key: 'shelf.add', throttle: 2 }); });
+  on('endless.start', (e) => { L.inc('endless.start'); log.say('skiff', `Endless run: ${e.tracks} tracks, three lives, one skip.`, { key: 'endless.start', throttle: 2 }); });
+  on('endless.track', (e) => { L.inc('endless.track'); L.inc(`endless.${e.grade}`); L.hi('endless.streak', e.streak || 0); log.say('record', `${e.title} cleared: ${e.grade}. Streak ${e.streak}.`, { key: 'endless.track', throttle: 1 }); });
+  on('endless.fail', (e) => { L.inc('endless.fail'); log.say('warn', e.why === 'slow' ? `${e.title} too slow. ${e.lives} ${e.lives === 1 ? 'life' : 'lives'} left.` : `${e.title} failed. ${e.lives} ${e.lives === 1 ? 'life' : 'lives'} left.`, { key: 'endless.fail', throttle: 1 }); });
+  on('endless.end', (e) => { L.inc('endless.end'); L.hi('endless.best', e.streak || 0); if (e.why === 'cleared') L.inc('endless.cleared'); log.say('record', e.why === 'cleared' ? `The shelf is cleared. Streak ${e.streak}.` : `Endless run over. Streak ${e.streak}.`, { key: 'endless.end', throttle: 2 }); });
   on('haunt.end', (e) => {
     L.inc('haunt.end'); L.hi('haunt.wrecks.best', e.wrecks || 0); if (e.held) L.inc('haunt.held');
     log.say('record', (e.held ? `Haunt won. No rival finished under par (${clock(e.par)}). ${e.wrecks} wrecks.` : `Haunt lost. ${e.winner} finished in ${clock(e.seconds)}. ${e.wrecks} wrecks.`) + (e.kept ? ' Haunt saved to the track\'s share code.' : ''), { key: 'haunt.end', throttle: 2 });

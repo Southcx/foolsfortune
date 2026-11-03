@@ -49,6 +49,7 @@ import { Buoys } from './buoys.js';
 import { Siphons } from './siphons.js';
 import { MadeTrack } from './madetrack.js';
 import { Traps } from './traps.js';
+import { PlateBeat } from './platebeat.js';
 import { markWorld, ownedSince, takeAway } from '../areaown.js';
 
 const WIND = { speed: 8 }; // (the course wind's strength; its way is the track's, turned by the track's own angle)
@@ -66,7 +67,7 @@ export class Raceway {
     this.sun = 1; this.condition = null; this.condT = 0; this.pitT = 0;
     this.wind = { dir: new THREE.Vector2(1, 0), speed: WIND.speed, gust: 1 };
     this.built = false; this.releasers = [];
-    this.made = new MadeTrack(this); this.traps = new Traps(this); // (a made track on the build lot, and its traps: TRACK-EDITOR.md; madetrack.js, traps.js)
+    this.made = new MadeTrack(this); this.traps = new Traps(this); this.platebeat = new PlateBeat(game); // (a made track on the build lot, and its traps: TRACK-EDITOR.md; madetrack.js, traps.js)
     this.gaps = new Gaps(this); this.buoys = new Buoys(this); this.siphons = new Siphons(this); // (the named jumps, the buoy runs, the siphons: gaps.js, buoys.js, siphons.js)
     this.geysers = []; this.plates = []; this.rails = []; this.rings = []; this.decks = []; this.pits = []; this.sandfalls = []; this.pillars = [];
     const F = this.T.frame(this.T.line);
@@ -240,13 +241,14 @@ export class Raceway {
   /** A sun plate under the Courier (riding its stretch of its line, within its width), or null. Its `power` (0..1): a sun plate's the
    *  sun's (conditions.js), a crystal vein's always whole. */
   plateAt(pos) {
-    if (!this.plates.length || this.d > 30) return null;
+    if (!this.plates.length || this.d > 30) { this.platebeat.leave(); return null; }
     const T = this.track, L = T.length;
     for (const P of this.plates) {
       if (P.track !== T.id || P.line !== this.line) continue;
       const u = P.line === 'cavern' ? this.sb - P.s0 : ((this.s - P.s0) % L + L) % L;
-      if (u >= 0 && u <= P.s1 - P.s0 && Math.abs(this.lat - P.lat) < P.w && pos.y - this.heightAt(pos.x, pos.z) < 2) { P.power = P.vein ? 1 : this.sun * (P.track === 'made' && this.made.def?.rules?.includes('plates2') ? 2 : 1); return P; }
+      if (u >= 0 && u <= P.s1 - P.s0 && Math.abs(this.lat - P.lat) < P.w && pos.y - this.heightAt(pos.x, pos.z) < 2) { P.power = P.vein ? 1 : this.sun * (P.track === 'made' && this.made.def?.rules?.includes('plates2') ? 2 : 1); if (!P.vein && P.power > 0.05) P.power *= this.platebeat.mult(P); else this.platebeat.leave(); return P; } // (a plate crossed on the beat pays more: platebeat.js, G312)
     }
+    this.platebeat.leave();
     return null;
   }
   /** What a near miss is counted past, round a point (kit.js). */
