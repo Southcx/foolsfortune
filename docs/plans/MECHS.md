@@ -493,3 +493,9 @@ Achievement mk25 (hidden, the title Dreamer).
 - **Calissa:** the colossus's body, the lane's lectern, the rings, the pins and the finish line's looks, over the placeholders
   (handoff in `docs/handoffs/calissa/`).
 - **Wanda:** a pin's clatter, a strike's roar, a medal's sting, the colossus's sand.
+
+## 13. Rulings, 2026-11-03
+- **The skate and sync** (Calissa's question, on Petra wiring the skate into the pilot: skating takes no steps). A quick boost started on the
+  stride's beat (`beatOf` on the frame's pendulum, which keeps swinging while it glides) is a stroke on the beat: sync +`SYNC.skate` 0.03,
+  three quarters of a step's 0.04. A quick boost off the beat costs nothing (unlike a step fought against the swing), and the glide between
+  strokes only settles. The pilot passes `stroke: true` to `syncStep` (Petra's call site). Sync stays rhythm, never button rate.

@@ -16,14 +16,20 @@
 // Prior art: Neon Genesis Evangelion (sync ratio, the cable, the AT Field and its neutralising, the berserk), Armored Core 6 (stagger and
 // the critical), Sekiro's posture (a second bar, ebbing), the pendulum (a walk in step costs least).
 //
-//   SYNC   syncCeiling(mindV, brimming)   beatOf(phase, window?) -> 'beat' | 'fought' | null   syncStep(sync, { dt, beat, fought, hitK, staggerHit, low, ceiling })
+//   SYNC   syncCeiling(mindV, brimming)   beatOf(phase, window?) -> 'beat' | 'fought' | null   syncStep(sync, { dt, beat, stroke, fought, hitK, staggerHit, low, ceiling })
 //   outputK(sync)   feedbackK(sync)   ENERGY   POOL_KJ   energyStep(state, stats, { dt, cable, boosting, spentKJ }) -> { battery, poolKJ, dry }
 //   BARRIER   barrierStep(b, { dt, pressing, near })   STAGGER   staggerStep(s, { dt, add })   blowMult(s, heavy)   BERSERK   berserkRoll(sync, rand)
 // ---------------------------------------------------------------------------------------
 
 /** Sync's numbers: where it starts on sealing and rests; its moves a step, a blow, a stagger hit; its settling (a real s); the beat's
  *  window (a share of the step either side of its start); the floor of the ceiling when agitated. */
-export const SYNC = { start: 0.3, rest: 0.4, settle: 0.02, beat: 0.04, fought: 0.06, hit: 0.05, staggerHit: 0.03, low: 0.01, window: 0.2, floor: 0.6 };
+export const SYNC = { start: 0.3, rest: 0.4, settle: 0.02, beat: 0.04, fought: 0.06, hit: 0.05, staggerHit: 0.03, low: 0.01, window: 0.2, floor: 0.6, skate: 0.03 };
+/** The skate (world/hangar/mechskate.js: the boosters' glide, no steps) keeps sync's one rule, the frame's rhythm (Dovina's ruling,
+ *  2026-11-03, on Calissa's question): a quick boost started on the stride's beat (beatOf, read off the frame's pendulum, which keeps
+ *  swinging while it glides) is a stroke on the beat and raises sync `skate` (three quarters of a step's: a glide asks less of the body
+ *  than a step); a quick boost off the beat costs nothing (a boost does not fight the swing as a step against it does), and the glide
+ *  between strokes only settles. So the skater who boosts in time keeps the walker's sync, and one who mashes neither gains nor loses
+ *  (Jet Set Radio's and the speed skater's stroke on the count; Evangelion's sync as rhythm, never as button rate). */
 
 /** Sync's ceiling from the Courier's mental state (`courierMind.v`: 0.5 at rest, 1 at its most stirred) and overflow: calm, 1; stirred to
  *  the top or brimming, `floor`. A dish served before a launch settles it (Spirit Cooking's draught): a reason to cook. */
@@ -37,9 +43,10 @@ export function beatOf(phase, window = SYNC.window) {
 }
 
 /** The next sync from this frame's moments. */
-export function syncStep(sync, { dt = 0, beat = false, fought = false, hitK = 0, staggerHit = false, low = false, ceiling = 1 } = {}) {
+export function syncStep(sync, { dt = 0, beat = false, stroke = false, fought = false, hitK = 0, staggerHit = false, low = false, ceiling = 1 } = {}) {
   let s = sync + (SYNC.rest - sync) * Math.min(1, SYNC.settle * dt);
   if (beat) s += SYNC.beat;
+  if (stroke) s += SYNC.skate; // (a quick boost on the beat while skating: the ruling above)
   if (fought) s -= SYNC.fought;
   if (hitK) s -= SYNC.hit * hitK;
   if (staggerHit) s += SYNC.staggerHit;
