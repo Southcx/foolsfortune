@@ -11,7 +11,7 @@
 // Prior art: Armored Core's paint and decal page beside its assembly (a look kept apart from the parts), the Pneuka Jar's look
 // (vfx/pneukajar/look.js: slots of looks over one model, one save section).
 //
-//   installMechStyle(game) -> game.mechStyle { form, figure (the doll's D, A, B or C), harness (the doll's: parts/femharness.js), pauldron, hip, helm, cape, cradle (the cradle's mount, parts/cradles.js), gunblade (the blade weapon's look, parts/gunblades.js), set(slot, id), wear(body) }   `/mechstyle form|figure|harness|pauldron|hip|helm|cape|cradle|gunblade <id>`
+//   installMechStyle(game) -> game.mechStyle { form, figure (the doll's D, A, B or C), harness (the doll's: parts/femharness.js), pauldron, hip, helm, cape, cradle (the cradle's mount, parts/cradles.js), gunblade (the blade weapon's look, parts/gunblades.js), set(slot, id), wear(body) }   `/mechstyle form|figure|harness|pauldron|hip|helm|cape|cradle|gunblade <id>`   `/mechstyle` alone: the style window (ui/mechs/stylewindow.js)
 // ---------------------------------------------------------------------------------------
 import { formOf } from './parts/kit.js';
 import { CAPES } from './capes.js';
@@ -69,7 +69,7 @@ export function installMechStyle(game) {
     reset: () => Object.assign(L, MECH_STYLE) });
   // a frame built or rebuilt (the assembly page, the gantry) wears the kept looks
   game.systems?.add?.('looks', () => { const B = body(); if (B && (L.worn !== B || B.form !== L.form)) L.wear(B); }, { clock: 'raw', name: 'mechStyle' });
-  game.chat?.add?.('mechstyle', { help: `a mech's style: /mechstyle form hero|doll, /mechstyle figure ${FIGURES.join('|')} (the doll's), /mechstyle harness ${HARNESS_IDS.join('|')} (the doll's), /mechstyle pauldron <id|none>, /mechstyle hip ${Object.keys(HIPS).join('|')}|none, /mechstyle helm <id|none>, /mechstyle cape ${Object.keys(CAPES).join('|')}|none, /mechstyle cradle ${CRADLE_IDS.join('|')}, /mechstyle gunblade ${GUNBLADE_IDS.join('|')} (the blade weapon's look)`, run: ([slot, id]) => { L.set(slot, id ?? null); } });
+  game.chat?.add?.('mechstyle', { help: `a mech's style: /mechstyle alone opens its window; /mechstyle form hero|doll, /mechstyle figure ${FIGURES.join('|')} (the doll's), /mechstyle harness ${HARNESS_IDS.join('|')} (the doll's), /mechstyle pauldron <id|none>, /mechstyle hip ${Object.keys(HIPS).join('|')}|none, /mechstyle helm <id|none>, /mechstyle cape ${Object.keys(CAPES).join('|')}|none, /mechstyle cradle ${CRADLE_IDS.join('|')}, /mechstyle gunblade ${GUNBLADE_IDS.join('|')} (the blade weapon's look)`, run: ([slot, id]) => { if (!slot) { game.mechStyleWindow?.open?.(); return; } L.set(slot, id ?? null); } }); // (alone: the style window, ui/mechs/stylewindow.js)
   game.mechStyle = L;
   return L;
 }

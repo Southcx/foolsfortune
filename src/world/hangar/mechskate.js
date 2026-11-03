@@ -32,7 +32,7 @@ import { G as GRAV, QB } from '../../progress/mechs/frame.js';
 
 /** The feel knob (0 the kaiju .. 1 the arcade). */
 export const MECH_FEEL = { k: 0.65 };
-/** The pilot's turn rate today (rad a real s; mechpilot.js PILOT.turn, tank 2), the base the feel multiplies. */
+/** The turn rate the feel multiplies (rad a real s; the tank's 2): the skate's own base, mechpilot.js turning through it. */
 export const TURN = { base: 1.4, tank: 2 };
 /** What the knob does, each a modifier over the base: the skate's turn (x TURN), the walk's turn, the skate's accel (x thrust / mass),
  *  the carve (rad/s), the quick boost's lock (x QB.t) and its cooldown (x the lock), the share of the old motion against a quick boost

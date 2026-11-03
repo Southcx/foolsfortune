@@ -13,16 +13,19 @@
 //                  the kept frame's fill a faint ghost under it, so a choice reads as a move
 //   THE NUMBERS    kept and chosen in the counts face, the chosen one's arrow (better in the film's cyan, worse in ember)
 //   A REFUSAL      an ember plaque with its mark; the mend line and MEND a kintsugi seam; DONE the gold-rimmed tile
+//   STYLE          a vermilion lacquer tile beside DONE and MEND that opens the mech's style window (ui/mechs/stylewindow.js: the looks
+//                  the frame wears beside its parts), its BACK returning here with the draft as it was
 //
 // Prior art: Armored Core's assembly screen (the slot list, a part's spec sheet, the AP, load and EN bars with their limits and the
 // overweight warnings), Medabots' part swap, the house's choice cards and the collection log's dress (ui/collectionslook.js).
 //
-//   installAssemblyLook(game)   (once: the style, and a watch on the index window for the page)   ASSEMBLY_LOOK
+//   installAssemblyLook(game)   (once: the style, a watch on the index window for the page, and the style window: game.mechStyleWindow)   ASSEMBLY_LOOK
 // ---------------------------------------------------------------------------------------
 import { SLOTS, PARTS, LEG_TYPES } from '../../progress/mechs/parts.js';
 import { assemble } from '../../progress/mechs/frame.js';
 import { uiIcon } from '../icons/icons.js';
 import { weaponGlyph } from './mechfaces.js';
+import { installMechStyleWindow } from './stylewindow.js';
 
 export const ASSEMBLY_LOOK = { ember: '#ff6a3a', cyan: '#7fdcff', gold: '#ffd36a', retry: 1, tries: 60 };
 const L = ASSEMBLY_LOOK, GOLD = L.gold;
@@ -87,6 +90,8 @@ ${S} .mk-btn{min-width:96px;border:0;border-radius:5px 8px 4px 7px;color:#2a140c
   box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -3px 0 rgba(0,0,0,.25),0 0 0 1px #2a140c,0 0 0 3px ${GOLD},0 4px 8px rgba(0,0,0,.4)}
 ${S} .mk-btn:nth-child(2){color:#fff1dc;text-shadow:0 1px 0 #1c0d08;box-shadow:inset 0 1px 0 rgba(255,240,220,.4),inset 0 -3px 0 rgba(0,0,0,.35),0 0 0 1px #1c0d08,0 4px 8px rgba(0,0,0,.4);
   background:linear-gradient(100deg,transparent 47%,${GOLD} 48% 50%,transparent 51%),linear-gradient(62deg,transparent 30%,${GOLD} 31% 32.5%,transparent 33.5%),linear-gradient(180deg,#7a4630,#4e2a1c)}
+${S} .mk-btn.mkg-style{color:#fff1dc;text-shadow:0 1px 0 #1c0d08;background:linear-gradient(180deg,rgba(255,220,190,.18),transparent 40%),linear-gradient(180deg,#b23a1e,#6e1c0c);
+  box-shadow:inset 0 2px 0 ${GOLD},inset 0 -3px 0 rgba(0,0,0,.35),0 0 0 1px #1c0d08,0 0 0 3px ${GOLD},0 4px 8px rgba(0,0,0,.4)}
 `;
 
 const t = (v) => `${(+v).toFixed(v >= 10 ? 0 : 1)} t`;
@@ -144,11 +149,14 @@ function dress(game, root) {
     gauge('ARM LOAD', kept.armMass, now.armMass, now.armLoad, 't', 'ARMS HEAVY'),
     gauge('ENERGY', kept.draw, now.draw, now.output, 'kW', 'UNDERPOWERED'));
   side.prepend(el('div', 'grp', 'THE FRAME CHOSEN'), box);
+  const row = side.querySelector('.mk-row'); // (the style window's tile: the looks beside the parts)
+  if (row && game.mechStyleWindow) { const b = el('button', 'mk-btn mkg-style', 'STYLE'); b.title = "The mech's looks: its form, helm, pauldrons, harness, hip piece, back piece, cradle mount and gunblade."; b.onclick = (e) => { e.stopPropagation(); game.mechStyleWindow.open({ from: 'gantry' }); }; row.appendChild(b); }
 }
 
 let installed = false;
 export function installAssemblyLook(game) {
   if (installed || typeof document === 'undefined' || typeof MutationObserver === 'undefined') return; installed = true;
+  installMechStyleWindow(game); // (the style window the STYLE tile opens, and `/mechstyle` alone)
   const st = document.createElement('style'); st.id = 'mech-assembly-look'; st.textContent = CSS; document.head.appendChild(st);
   let tries = 0;
   const watch = () => { // (the index window may be built after the hangar: looked for again until it stands)

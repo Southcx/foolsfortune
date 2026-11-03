@@ -4972,10 +4972,29 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   never had the fault. The probe showed a second trap: stepping 120 frames in one call made the 60 ms look like 2 s of Y held.
 - **Fix:** BELT's radial offers SKIFF and JELLY by name while the jelly is open; a pick sets the mount (`JellyMount.prefer`) before
   the tap. Probed on the phone layout with real time between frames: JELLY called the slip jelly, ridden by the Pneuka Jar, 0 errors.
-- **Rule:** NEW:touch-hold-by-name
+- **Rule:** 400
 
 ## The fulgurite curio with no colour (Dovina, 2026-11-03)
 - **Seen:** `node scripts/mycelium.mjs` failed "every curio has a colour" and then threw on the fulgurite (the ridges' rare find, a tier-3 curio).
 - **Cause, as measured:** the curio was added to the curios' table with the rare find, but not to the mycelium's `SIGNATURE`; `signatureOf` returned undefined and the rot read `[0]` of it.
 - **Fix:** a signature for it (h 28, s 0.35: fused tan glass) in `progress/mycelium.js`.
 - **Rule:** NEW:curio-signature — a new curio gets its row in the mycelium's `SIGNATURE` in the same change; `scripts/mycelium.mjs` says which lack one.
+
+### 2026-11-03 · The mount's camera went through the hangar's north wall a moment after the Pneuka Jar locked in (vfx/mechs/mount.js; found by South)
+- **Seen:** South: "the camera clips into the wall when the Pneuka Jar is loaded into the mech in the hangar after about a second."
+- **Cause, as measured:** the mount's shot laid its beats in the cradle's own frame (its axis tilted 20 degrees back, so "forward" leans
+  up) at fixed offsets scaled by the frame's height, with no notion of the room. The wake's "three-quarter rear" landed at local
+  (10.5, 8.8, -35.4) for the 13.2 m hero: 5.4 m behind the north wall (z -30); the camera eased toward it from the lock and crossed the
+  wall about 0.2 real s after it. On the doll it was worse: `body.height` (vfx/mechs/partsbody.js) is a world box's top, and a form
+  rebuilt in the gantry (its group at y 200) read 213 m, so every beat was laid 14 times too far out (the wake at z -318) and the wave's
+  reach ran 266 m. The front walkway also forced the flight over the shoulder, and the ease from the side shot to the screw passed
+  through a clamp.
+- **Fix:** the beats are laid in the frame's horizontal basis and every position (and the eased path, each frame) is kept in the room the
+  frame stands in (`keepInRoom`: the hangar's box 2 m off its walls and roof, pushed out of the piers, scaffold, beam, clamps and
+  walkways; the proving ground's square); a beat change whose line crosses a solid or the frame is a cut; the wake is a high
+  three-quarter rear inside the hall, the eyes a cut to the three-quarter front, then the shot eases onto the pilot's. The frame's
+  height is measured by the mount from its shown meshes less the group's height. Folded behind the frame (a walkway round its back,
+  `HANGAR.walks`), the Jar flies straight in from behind. The cinema's blend in from the Courier's own view is a cut too where its line
+  is blocked (it crossed a ring's lanterns for 6 frames in the probe). After: every frame of 8 runs (hero and doll, four leg types,
+  front and a test ring from behind) 3 m or more from every wall and floor, and in no solid; the hero's wake now at local (8.8, 16.9, -24.3).
+- **Rule:** 401

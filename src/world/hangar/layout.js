@@ -6,20 +6,28 @@
 // Prior art: the Sandbox's and the Touchstone's tables (progress/sandbox.js SANDBOX, world/touchstone/touchstone.js TOUCHSTONE): a room
 // as one object of spots, read by its builder and its runtime alike.
 //
-//   HANGAR { at, w, d, h, gantry, walkY, walk, ramp, lectern, door, arrive, lift, hole }
+//   HANGAR { at, w, d, h, gantry, walkY, walks (the ring's runs, the ramp's landing first), reach, ramp, lectern, door, arrive, lift, hole }
 //   PROVING { at, half, wall, launch, sockets, giant, door, blocks [{ x, z, w, d }], ring { x, z, half } }   SOCKET_REACH   inProving(p)   clampProving(p, r)
 // ---------------------------------------------------------------------------------------
 
 /** The hangar: a tall hall (60 x 60 m, a 40 m roof) far east of the Sandbox (x 3080), Strawman's Well (x 3350 .. 3700) and the Touchstone
  *  (x 3000). The gantry against its north wall with the mech standing in it facing the hall (yaw 0: +z); the walkway at the clay frame's
- *  chest, reached up a ramp along the west; the lectern at the gantry's foot; the door back to the hub in the south wall. `lift`: the
+ *  chest as a ring round it, reached up a ramp along the west, the cradle entered from behind; the lectern at the gantry's foot; the door back to the hub in the south wall. `lift`: the
  *  launch's ride up the shaft (real s, m); `hole`: the roof's opening over the gantry (half its side, m). */
 export const HANGAR = {
   at: { x: 3800, y: 200, z: -3000 }, w: 60, d: 60, h: 40,
   gantry: { x: 0, z: -16, yaw: 0 },
   walkY: 8.4, // (the walkway's top: the clay frame's seat stands at 9 m, MECH_BODY in mech.js; a frame of other legs is raised or lowered on the lift to meet it)
-  walk: { x0: -2.5, x1: 2.5, z0: -13.6, z1: -10.6 }, // (the walkway before the chest; the cradle reached from its middle)
-  ramp: { x0: -26.5, x1: -2.5, z: -12.1, w: 3 }, // (from the floor up to the walkway's west edge: 8.4 m over 24 m, about 19 degrees)
+  // the walkway a ring round the mech at its chest (South, 2026-11-03: "The platform should surround the mecha so we can enter from behind
+  // as opposed to doing a flip from the front"): the front run where the ramp lands, a run down each side between the arms (x 4.6) and
+  // the gantry's towers (x 7.5), and the back run between the mech's back and the north wall, under the clamps (3.1 m over it)
+  walks: [
+    { x0: -7.4, x1: 7.4, z0: -13.6, z1: -10.6 }, // (the front run: the ramp's landing)
+    { x0: -7.4, x1: -5, z0: -21, z1: -13.6 }, { x0: 5, x1: 7.4, z0: -21, z1: -13.6 }, // (the side runs)
+    { x0: -7.4, x1: 7.4, z0: -23.4, z1: -21 }, // (the back run: the cradle between the shoulder blades reached from its middle)
+  ],
+  reach: { x: 0, z: -22.2 }, // (where F seals the Pneuka Jar in: the back run's middle, facing the mech's back)
+  ramp: { x0: -29, x1: -7.4, z: -12.1, w: 3 }, // (from the floor up to the ring's west edge: 8.4 m over 21.6 m, about 21 degrees)
   lectern: { x: 10, z: -8 },
   door: { x: 0, z: 29.5 },
   arrive: { x: 0, z: 22, yaw: Math.PI },
