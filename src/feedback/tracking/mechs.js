@@ -31,6 +31,9 @@ export function mechRules({ on, L, log }) {
     log.say('warn', e.why === 'core' ? 'Mech core broken. Your Pneuka Jar is thrown clear.' : 'Mech battery and pool empty. Your Pneuka Jar is thrown clear.', { key: 'mech.fail', throttle: 2 });
   });
   on('mech.step', (e) => { if (mine(e) && e.beat === 'beat') L.inc('mech.step.beat'); });
+  // the skate (world/hangar/mechskate.js; Espada's, 2026-11-03): moves in play, no line; a skate's best share kept; a full-weight landing said
+  on('mech.skate', (e) => { if (mine(e) && e.k > 0) L.hi('mech.skate.best', Math.round(e.k * 100) / 100); });
+  on('mech.land', (e) => { if (mine(e) && e.k >= 1) log.say('info', 'Hard landing.', { key: 'mech.land', throttle: 4 }); });
   on('mech.boost', (e) => { if (mine(e)) L.inc('mech.boost'); });
   on('mech.cable', (e) => {
     if (!mine(e)) return; cable = !!e.plugged;

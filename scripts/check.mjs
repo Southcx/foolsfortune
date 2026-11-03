@@ -17,6 +17,7 @@
 //   npm run check -- --adopt=rule[,rule]  a NEW rule's findings as they stand today become its baseline (once, the day the rule lands)
 // ---------------------------------------------------------------------------------------
 import fs from 'fs';
+import { spawnSync } from 'node:child_process';
 import path from 'path';
 import { transformSync } from 'esbuild';
 
@@ -292,6 +293,9 @@ if (args.has('--update') || adopt.size) {
   console.log(`baseline written: ${Object.keys(next).length} rule/file pairs`);
 }
 if (newRules) console.log(`\ncasebook: ${newRules} new rule${newRules === 1 ? '' : 's'} (NEW:<slug>) to be numbered at the gate (scripts/casebook-number.mjs)`);
-const ok = !hard.length && !fresh.length;
+// ---- 16. clarity (scripts/clarity.mjs, CLARITY.md; GAPS G37): every player-facing table has its label and its one line
+const clarity = spawnSync(process.execPath, [path.join(path.dirname(new URL(import.meta.url).pathname), 'clarity.mjs')], { encoding: 'utf8' });
+if (clarity.status !== 0) console.log(`\nCLARITY FAILED:\n${(clarity.stdout + clarity.stderr).split('\n').filter((l) => !l.startsWith('PASS')).join('\n')}`);
+const ok = !hard.length && !fresh.length && clarity.status === 0;
 console.log(ok ? '\ncheck: OK (no new debt)' : '\ncheck: FAILED');
 process.exit(ok ? 0 : 1);

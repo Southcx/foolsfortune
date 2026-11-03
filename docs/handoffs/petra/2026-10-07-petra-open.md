@@ -7,6 +7,10 @@ seeds, slabs and scans landed, and v353's phone round (the sweeps' touch pages d
 - **The garden's seeds' shapes** (read 2026-11-01): every seed already walks its look's own shape (world/garden/place.js `P.base`:
   the crystal faceted, the coral reefed, the bowl dished, the ring dimpled). Left: ground that is not seen whole from the heart (a bowl
   walked inside, a torus through its hole), a new body for PlanetBody; built when South asks for it.
+- **Gall's linger** (Dovina, 2026-11-02): the garden water's shares never fade (world/garden/water.js), so `fadeK` has nothing to slow;
+  it goes in when they do.
+- **The agate on a body** (Calissa, 2026-11-03 note): the look is built; it needs a creature's own feelings (`shown()`), which waits on
+  South's ruling of where they come from (Dovina's digest).
 - **The laptop's audio since v351** (Wanda's fix): waits on South's test.
 
 ## The heap (closed 2026-10-30; measured, not cut)

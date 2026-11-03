@@ -451,7 +451,7 @@ export class Realm {
     if (M.planet && J.planet === M.planet) sfx.myggDrone?.(g.myggdrasil?.tincture ?? null, Math.max(0, J.pos.distanceTo(M.planet.c) - M.planet.r)); // (every frame: it fades by itself half a real second after the last)
   }
 
-  /** The shed: the Pneuka Box (P opens it anywhere), the ring's seeds waiting to be carried up, and each of the ring's planetoids to feed
+  /** The shed: the Pneuka Box (P opens it anywhere), the mailbox, the ring's seeds waiting to be carried up, and each of the ring's planetoids to feed
    *  (world/garden/orbit.js). Words plain, Espada's to come. */
   shed() {
     const g = this.game, menu = g.indexMenu || g.course?.menu; if (!menu?.showPage) { g.pneukaUI?.toggle(); return; }
@@ -459,6 +459,8 @@ export class Realm {
     menu.showPage('garden.shed', (im, el) => {
       const rows = el('div', 'rooms'), row = (t, sub, run, dim = false) => { const d = el('div', 'room', `<span class="n">◇</span><span><b>${t}</b><s>${sub}</s></span>`); if (dim) d.style.opacity = 0.4; if (run) d.onclick = run; rows.appendChild(d); };
       row('The Pneuka Box', 'P opens it anywhere', () => { menu.close(); g.pneukaUI?.toggle(); });
+      const mail = g.spiritLife?.s?.mail || [], unread = mail.filter((m) => !m.read).length; // (the mailbox, GAPS G116: its letters, postcards and gifts' notes, read here as well as by /letters)
+      row('The mailbox', unread ? `${unread} unread` : mail.length ? 'Nothing new. Read the last few again.' : 'Empty.', mail.length ? () => { menu.close(); g.spiritLife.read(); } : null, !mail.length);
       for (const id of O.waiting()) row(`A planetoid's seed: ${SEEDS[id].kind}`, `${SEEDS[id].line} Take it in the god hand, and let it go in the open sky.`, () => { const r = O.take(id); say(r); if (!r) menu.close(); });
       for (const r of O.planted.values()) if (!SEEDS[r.seed].inner) row(cap(O.nameOf(r.seed)), sizeLine(r), r.size < SIZES.length - 1 ? () => this.feedPage(r.seed) : null, r.size >= SIZES.length - 1);
       im.appendChild(el('div', 'grp', 'THE SHED')); im.appendChild(rows);
