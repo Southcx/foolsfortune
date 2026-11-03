@@ -114,7 +114,7 @@ export function duelCluster(g) {
     s.style === 'pve' ? null : E('du.end', 'endturn', 'END TURN', { dim: !mine, charge: mine && S.ap > 0 ? s.apLeft / S.ap : 0 }), // (its rim the action points left)
     broken ? E('du.finish', 'finisher', 'FINISHER', { dim: !mine }) : null,
     E('du.flee', 'flee', 'FLEE', { dim: !mine }),
-    oneGesture(s) && S.whistles > 0 ? E('du.whistle', null, 'WHISTLE', { dim: !mine }) : null, // (the Wake Whistle, while one is held; its glyph Calissa's to draw)
+    oneGesture(s) && S.whistles > 0 ? E('du.whistle', 'whistle', 'WHISTLE', { dim: !mine }) : null, // (the Wake Whistle, while one is held)
     s.style === 'pve' ? null : E('du.undo', 'undo', 'UNDO', { dim: !mine || !s.undo?.length }), // (the PvE duel's drag is committed: no undo, PUZZLE-DUELS.md 23.1) // (the last action this turn taken back: dim with nothing to take back)
     oneGesture(s) ? null : S.form === 'hand' ? E('du.form', 'formcourier', 'COURIER', { dim: !mine, lit: askedOf(s) === 'form' }) : E('du.form', 'grab', 'HAND', { dim: !mine }),
   ];
