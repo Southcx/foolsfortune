@@ -31,4 +31,10 @@ And v413:
   The find bursts out as cubes worth `CLEAN.worth`, which falls back to a minute of play (8) until you name "a pot's worth";
   `stain.find { what, worth, at, by }` is counted. An ostracon or a cache in its place is yours to rule.
 
+And v414:
+- **G316 built:** a light term in `photo.js` (`LIGHT`, `lightOf`). Out in the Dunes, front-lit counts half and the hour (`phaseAt`:
+  dawn and dusk 1, day 0.6, night 0.25) the other half. Elsewhere it reads 0.5, so it moves nothing. It is worth +-20 points about
+  the middle, so stars are not inflated. `photo.take` carries `light` (0..1); measured 0.31 shot into the sun at day, 0.79 with it
+  behind the lens. TRAINING.md's "light reading trains Divination" is yours: `domains.js` can read `photo.take.light` as a source.
+
 Delete this note when done.

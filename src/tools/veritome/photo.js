@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // PHOTOGRAPHS: what a shutter of the Veritome makes of the view. Every subject in the frame (subjects.js) is found, checked for being
-// seen (not behind a wall), and scored the way Pokémon Snap scores a photograph: SIZE (how much of the frame it fills: a subject is best
+// seen (not behind a wall), and scored the way Pokémon Snap scores a photograph: LIGHT (`lightOf`: front-lit, at a golden hour), SIZE (how much of the frame it fills: a subject is best
 // at a third to two thirds of the frame's height), POSE (what it is doing: a clapperjar in the air, dancing, mending), TECHNIQUE (how
 // it sits on a third, with room ahead of it, and whether it faces the lens: `placement`) and a bonus for more than one of the same kind. The best subject's score sets
 // the stars (one to four). Two kinds of photograph have no subject: the open sky, and the sun.
@@ -13,12 +13,13 @@
 // the moment).
 //
 //   scorePhoto(game, camera) -> { subjects: [...], best, stars, kinds, sky, sun }     (best: { kind, ref, score, stars, states })
-//   serial(report) -> { subjects: [{ kind, sub, states: [..], score, stars, frac, aware, engaged }], stars, kinds, sky, sun }
+//   serial(report) -> { subjects: [{ kind, sub, states: [..], score, stars, frac, aware, engaged }], stars, kinds, sky, sun, light }
 //   sits(report or serial, sitting) -> bool
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { SUBJECTS } from './subjects.js';
 import { candidOf } from '../../progress/stealth.js';
+import { phaseAt } from '../../progress/weather.js';
 
 const POSE = { wind: 60, chase: 20, sleep: 30, melt: 30, infight: 80, air: 60, dance: 50, bite: 50, fight: 50, mend: 40, nap: 30, stunned: 20, greed: 20, raider: 30, celebrate: 30, taunt: 30, cower: 25, forage: 20, inspect: 30, heavy: 30, light: 30, still: 30, bounce: 30, ember: 30, gold: 20 };
 const _l = new THREE.Vector3();
@@ -40,6 +41,18 @@ function placement(s, ndc, camera) {
     if (Math.abs(ahead) > 0.01) p += Math.sign(ahead) === -Math.sign(ndc.x) ? 0.1 : -0.1;
   }
   return Math.max(0, Math.min(1, p));
+}
+
+/** LIGHT (TRAINING.md 6, ruled with the placement term; G316): out in the open, the sun behind the lens lights what it faces (front-lit 1,
+ *  shot into the sun 0) and the hour colours it (the golden hours of dawn and dusk 1, daytime 0.6, night 0.25); indoors and in a Well,
+ *  0.5, so the term moves nothing there. It is worth +-20 points about the middle, so a photograph's stars are not inflated: reading the
+ *  light is a lesson (Divination's, through `photo.take { light }`), not a tax. Prior art: every photographer's "sun over your shoulder"
+ *  and golden hour; Pokémon Snap's pictures made at dusk. */
+export const LIGHT = { worth: 40, hour: { dawn: 1, dusk: 1, day: 0.6, night: 0.25 } };
+function lightOf(game, fwd) {
+  const sd = game.dunes?.active ? game.dunes.sunDir : null; if (!sd) return 0.5;
+  const front = Math.max(0, Math.min(1, 0.5 - 0.5 * fwd.dot(sd))); // (fwd away from the sun: the sun behind the lens)
+  return 0.5 * front + 0.5 * (LIGHT.hour[phaseAt()] ?? 0.6);
 }
 
 export function scorePhoto(game, camera, { maxDist = 45 } = {}) {
@@ -72,10 +85,10 @@ export function scorePhoto(game, camera, { maxDist = 45 } = {}) {
       out.push({ kind, ref: s.ref, sub: s.sub || null, aware, candid: candid?.word || null, candidK: candid?.k ?? 1, d: +d.toFixed(1), engaged: !!s.engaged, states: s.states, size, centre, facing, pose, z, frac, ndc: { x: ndc.x, y: ndc.y }, score: 0 });
     }
   }
-  const counts = {};
+  const counts = {}, light = lightOf(game, fwd);
   for (const s of out) counts[s.kind] = (counts[s.kind] || 0) + 1;
   for (const s of out) {
-    s.score = Math.round((100 * s.size + 50 * s.centre + 50 * s.facing + s.pose + Math.min(60, 20 * (counts[s.kind] - 1))) * s.candidK * (game.classArtsRun?.photoK?.() ?? 1)); // (unseen pays: candidOf; Radiance, a class's art)
+    s.light = light; s.score = Math.round((100 * s.size + 50 * s.centre + 50 * s.facing + s.pose + LIGHT.worth * (light - 0.5) + Math.min(60, 20 * (counts[s.kind] - 1))) * s.candidK * (game.classArtsRun?.photoK?.() ?? 1)); // (unseen pays: candidOf; Radiance, a class's art)
     s.stars = starsOf(s.score);
   }
   out.sort((a, b) => b.score - a.score);
@@ -84,7 +97,7 @@ export function scorePhoto(game, camera, { maxDist = 45 } = {}) {
   const sky = !out.length && fwd.y > 0.45 && !skyHit;
   const sunDir = game.dunes?.sunDir;
   const sun = !!(game.dunes?.active && sunDir && fwd.dot(sunDir) > Math.cos((18 * Math.PI) / 180) && !skyHit);
-  return { subjects: out, best: out[0] || null, stars: out[0]?.stars || (sky || sun ? 3 : 0), kinds: Object.keys(counts).length, counts, sky, sun, eye: eye.clone(), fwd: fwd.clone() };
+  return { subjects: out, light: +light.toFixed(2), best: out[0] || null, stars: out[0]?.stars || (sky || sun ? 3 : 0), kinds: Object.keys(counts).length, counts, sky, sun, eye: eye.clone(), fwd: fwd.clone() };
 }
 
 /** Does a photograph satisfy a card's sitting? (arcana.js) The sitting must be what the photograph is OF: one of its main subjects
@@ -95,7 +108,7 @@ const has = (states, st) => (states.has ? states.has(st) : states.includes(st));
 export function serial(r) {
   return {
     subjects: r.subjects.slice(0, 12).map((s) => ({ kind: s.kind, sub: s.sub || null, states: [...s.states], score: s.score, stars: s.stars, frac: +s.frac.toFixed(3), ndc: s.ndc ? { x: +s.ndc.x.toFixed(3), y: +s.ndc.y.toFixed(3) } : null, aware: (s.aware ?? 0) >= 0.35, candid: s.candid || null, engaged: !!s.engaged })),
-    stars: r.stars, kinds: r.kinds, sky: !!r.sky, sun: !!r.sun,
+    stars: r.stars, kinds: r.kinds, sky: !!r.sky, sun: !!r.sun, light: r.light ?? 0.5,
   };
 }
 
