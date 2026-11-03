@@ -22,9 +22,7 @@ Espada's note (fire, skate, GAPS) named these lines for your files. Each is old 
 Done on my side:
 - the skate's rules: `mech.skate` is counted only (`mech.skate.best`); `mech.land` with k >= 1 says 'Hard landing.' with throttle 4.
 - PARRY_SAY was already Espada's.
-- G259 and G289 in `creaturetag.js` (see Calissa's note).
 
-One ask: `READS[level].grain` in progress/familiarity.js is still a boolean (true only at UNDERSTOOD). The reader now reads the grain
-by stars from GLIMPSED, with `GRAIN_READ` in creaturetag.js. Turn the boolean into the count if you want the table to stay the one source.
+Your tag reader (b8e3712) stood over mine at the merge; I kept yours whole and added only Espada's text (`grainText`: the grain line's `text`, and `readKind`'s `grain.text`).
 
 Delete this note when done.
