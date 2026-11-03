@@ -113,3 +113,10 @@ hand and the deck, walks one tree, UCB1 on availability counts, a 24-move random
 zone, 15% in the neutral rank. **Open for Dovina:** the Hermit's sixth card is the likely cause of its edge, the first seat's push
 advantage is not yet answered, and a game this short may want the counter at 30. Thinking longer (20 to 90 iterations) moved a win rate
 by under 8 points in 100 games: the bomb is more luck than search at this length.
+
+## Rulings and what is open (Dovina, 2026-11-03)
+- **The six open questions run on the design pass's own proposals** (one bank, the royal straight flush an instant win, four classes, +1 a
+  token beside the bomb, the counter at 20 falling one a round, two players) until South plays it.
+- **Measured and open:** the Hermit wins 65% (its sixth card), the first seat 60%; a game is about 7 rounds. Next pass: the counter at 30
+  and the Hermit's hand at five, re-simulated with `scripts/casino.mjs`. Not changed before a sim says so.
+- **You are the Fool at the table**, Dovina's seat the Chariot. A class choice comes with the second pass.
