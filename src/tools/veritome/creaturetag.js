@@ -24,36 +24,23 @@
 // settling one by one), Persona's Analyze (a weakness known only once found).
 //
 //   readTag(game, c) -> { kind, level, levelName, plate: 'plain'|'latent'|null, lines: [{ key, read, text?, len?, value? }] } | null
-//   readKind(game, kind) -> { kind, level, levelName, name, reads, grain, facts: [{ id, read, text?, len, battle }], plate }   (the bestiary page)
-//   grainLine(grain, level) -> the grain line by stars (G289), or null
+//   (statuses' value carries { on, build, depth?, left? } while stunned; the grain line's value is { items: [{ id, word, type, even } | null x 5], n })
+//   readKind(game, kind) -> { kind, level, levelName, name, reads, grain: { items, n } | null, facts: [{ id, read, text?, len, battle }], plate }   (the bestiary page)
 //   plateOf(game, kind) -> { read: 'plain', thumb, box, stars } | { read: 'latent' } | null   (the sprite: the Compendium's best plate of the kind,
 //     `box` where the creature sits in it, 0..1; latent while a plate of it waits in the memory; null: never photographed, a shadow)
 // ---------------------------------------------------------------------------------------
 import { familiarityOf, readHealth, READS } from '../../progress/familiarity.js';
 import { EMO } from '../../progress/combat/emo.js';
 import { TRUMPS, TYPES } from '../../progress/combat/types.js';
+import { TRAITS, SPECIES } from '../../progress/combat/temperament.js';
+import { T } from '../../core/config.js';
 import { st } from '../../creatures/creatures.js';
 import { CREATURES, creatureOf } from './bestiary.js';
 import { SUBJECTS } from './subjects.js';
 import { FUNCTIONS, known } from './mind/functions.js';
-import { TRAITS, SPECIES } from '../../progress/combat/temperament.js';
-import { T } from '../../core/config.js';
 
 const plain = (key, text, value) => ({ key, read: 'plain', text, ...(value !== undefined ? { value } : {}) });
 const hidden = (key, len, read = 'scrambled') => ({ key, read, len });
-
-/** The grain by stars (G289; TEMPERAMENT.md, OVERLAY.md 17): one trait at GLIMPSED, two, three, all five at UNDERSTOOD, the strongest read
- *  first; `items` strongest first (null for one not yet read, a known unknown), each its pole, the damage type it opens and whether it is
- *  near even; the text Espada's (2026-11-03), the read traits in the five traits' order, an unread one as '?'. */
-export const GRAIN_READ = [0, 1, 2, 3, 5], GRAIN_EVEN = 0.2;
-export function grainLine(G, level) {
-  const n = GRAIN_READ[Math.max(0, Math.min(4, level | 0))];
-  if (!G || !n) return null;
-  const order = [...TRAITS].sort((a, b) => Math.abs(G[b.id] || 0) - Math.abs(G[a.id] || 0)), read = new Set(order.slice(0, n).map((t) => t.id));
-  const word = (t) => ((G[t.id] || 0) > 0 ? t.high : t.low);
-  const items = order.map((t) => (read.has(t.id) ? { id: t.id, word: word(t), type: t.type, even: Math.abs(G[t.id] || 0) < GRAIN_EVEN } : null));
-  return plain('grain', `Grain: ${TRAITS.map((t) => (read.has(t.id) ? word(t) : '?')).join(', ')}.`, { items, n });
-}
 
 /** The facts of a kind held, unappraised, in the Veritome's memory (what the darkroom would teach: two stars or more). */
 function latentFacts(game, kind) {
@@ -100,6 +87,17 @@ function takes(c, f) {
   return f.kind === 'status' || f.kind === 'rel' || f.kind === 'mem';
 }
 
+const GRAIN_EVEN = 0.2; // (a trait this near the middle reads as even: no pole worth a word)
+
+/** The grain by stars: `n` traits read, strongest first (|g| descending, TRAITS order on a tie), the rest null (not yet read). */
+export function grainItems(grain, n) {
+  const order = TRAITS.map((t, i) => ({ t, i, a: Math.abs(grain[t.id] || 0) })).sort((x, y) => y.a - x.a || x.i - y.i);
+  return order.map(({ t, a }, k) => (k < n ? { id: t.id, word: (grain[t.id] || 0) >= 0 ? t.high : t.low, type: t.type, even: a < GRAIN_EVEN } : null));
+}
+
+/** The grain line's words (Espada's, 2026-11-03): the five traits in their own order, an unread one '?'. */
+export const grainText = (items) => { const by = Object.fromEntries(items.filter(Boolean).map((x) => [x.id, x.word])); return `Grain: ${TRAITS.map((t) => by[t.id] || '?').join(', ')}.`; };
+
 /** The tag on a living creature: every line it carries, and how each reads. */
 export function readTag(game, c) {
   if (!c?.kind) return null;
@@ -121,15 +119,18 @@ export function readTag(game, c) {
   } else lines.push(hidden('emo', 7));
   if (R.statuses) {
     const on = [...(c.status?.keys() || [])].filter((n) => st(c, n)), build = Object.entries(c.build || {}).filter(([, k]) => k > 0.05);
-    const depth = game.stun?.depth?.(c) || 0, left = depth ? Math.round((game.stun.share?.(c) ?? 1) * 20) / 20 : undefined; // (G259: the stun's depth and its clock left, from STUDIED)
-    lines.push(plain('statuses', [...on.map((n) => (n === 'stun' && depth ? T.stun?.depths?.[depth - 1]?.name || n : n)), ...build.map(([t, k]) => `${TYPES[t]?.builds || t} ${Math.round(k * 100)}%`)].join(' · ') || null, { on, build: Object.fromEntries(build), ...(depth ? { depth, left } : {}) }));
+    const depth = game.stun?.depth?.(c) || 0, value = { on, build: Object.fromEntries(build) };
+    if (depth > 0) { value.depth = depth; value.left = Math.round((game.stun.share?.(c) ?? 1) * 20) / 20; } // (G259: dazed | stunned | out cold, and its clock left)
+    const dname = depth > 0 ? T.stun?.depths?.[depth - 1]?.name : null;
+    lines.push(plain('statuses', [...(dname && !on.includes('stun') ? [dname] : []), ...on.map((n) => (n === 'stun' && dname ? dname : n)), ...build.map(([t, k]) => `${TYPES[t]?.builds || t} ${Math.round(k * 100)}%`)].join(' · ') || null, value));
   } else lines.push(hidden('statuses', 9));
   if (R.multiplier) {
     const weak = c.affinity ? Object.keys(TRUMPS).find((t) => TRUMPS[t] === c.affinity) : null;
     lines.push(plain('weak', weak ? `weak to ${TYPES[weak]?.name || weak}` : null, weak));
   } else lines.push(hidden('weak', 11));
-  const grain = grainLine(c.grain, F.level);
-  if (grain) lines.push(grain); else if (c.grain && plateRead(game, c.kind) === 'latent') lines.push(hidden('grain', 14, 'latent'));
+  // the grain by stars (G289): the level opens the traits one by one; absent at UNKNOWN unless a plate of the kind waits in the memory
+  if (c.grain && R.grain > 0) { const items = grainItems(c.grain, R.grain); lines.push(plain('grain', grainText(items), { items, n: R.grain })); }
+  else if (c.grain && plateRead(game, c.kind) === 'latent') lines.push(hidden('grain', 14, 'latent'));
   // the neuralese its mind would take: at UNDERSTOOD, while it is stunned
   if (F.level >= 4 && (game.stun?.stunned?.(c) ?? st(c, 'stun') > 0)) {
     const fit = Object.entries(FUNCTIONS).filter(([, f]) => f.word && takes(c, f));
@@ -146,5 +147,7 @@ export function readKind(game, kind) {
     const read = factRead(game, kind, f, latent);
     return { id: f.id, read, battle: !!f.battle, len: f.text.length, ...(read === 'plain' ? { text: f.text } : {}) };
   });
-  return { kind, level: F.level, levelName: F.name, name: READS[F.level].name ? (C?.name || kind) : null, reads: READS[F.level], grain: grainLine(SPECIES[kind], F.level), facts, plate: plateRead(game, kind) }; // (the page's grain: the kind's own, its species' mean)
+  const mean = SPECIES[kind], n = READS[F.level].grain; // (the kind's mean grain, read the same way: "Grain: curious, bold, steady")
+  const items = mean && n > 0 ? grainItems(mean, n) : null, grain = items ? { items, n, text: grainText(items) } : null;
+  return { kind, level: F.level, levelName: F.name, name: READS[F.level].name ? (C?.name || kind) : null, reads: READS[F.level], facts, grain, plate: plateRead(game, kind) };
 }

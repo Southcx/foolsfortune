@@ -31,13 +31,14 @@ export const FAMILIARITY = {
   names: ['UNKNOWN', 'GLIMPSED', 'OBSERVED', 'STUDIED', 'UNDERSTOOD'],
 };
 
-/** What each level lets the overlay read out (a tag's lines, a blow's readout). */
+/** What each level lets the overlay read out (a tag's lines, a blow's readout). `grain` is how many of the five traits are read, strongest first
+ *  (0 none .. 5 all: G289, TEMPERAMENT.md). */
 export const READS = [
-  { tag: true, name: false, health: null, blow: null, statuses: false, multiplier: false, emo: false, grain: false }, // (the tag says ???)
-  { tag: true, name: true, health: 'quarters', blow: 'mark', statuses: false, multiplier: false, emo: false, grain: false },
-  { tag: true, name: true, health: 'eighths', blow: 'rounded', statuses: false, multiplier: false, emo: 'band', grain: false },
-  { tag: true, name: true, health: 'bar', blow: 'exact', statuses: true, multiplier: false, emo: 'band', grain: false },
-  { tag: true, name: true, health: 'numbers', blow: 'exact', statuses: true, multiplier: true, emo: 'value', grain: true },
+  { tag: true, name: false, health: null, blow: null, statuses: false, multiplier: false, emo: false, grain: 0 }, // (the tag says ???)
+  { tag: true, name: true, health: 'quarters', blow: 'mark', statuses: false, multiplier: false, emo: false, grain: 1 },
+  { tag: true, name: true, health: 'eighths', blow: 'rounded', statuses: false, multiplier: false, emo: 'band', grain: 2 },
+  { tag: true, name: true, health: 'bar', blow: 'exact', statuses: true, multiplier: false, emo: 'band', grain: 3 },
+  { tag: true, name: true, health: 'numbers', blow: 'exact', statuses: true, multiplier: true, emo: 'value', grain: 5 },
 ];
 
 const get = (L, k) => (L?.get?.(k) || 0);
