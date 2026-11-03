@@ -17,7 +17,7 @@
 //
 //   game.hangar = new Hangar(game)   .build()   .teardown()   .built   .here   .arrive()   .leave()   .update(dt)   .light()
 //   .state (MechState: the frame and its cracks, save section `mech`)   .pilot (MechPilot)   .giant (Giant: the straw giant, or the dune colossus once called)   .post (GiantPost)   .field (ProvingGround)   .bout (RingBout)
-//   .city (ToyCity: the voxel buildings, city.js)   .props (MechProps: what the mech picks up, props.js)   .challenges (SmashChallenges: the lane's lectern and five smash challenges, challenges.js)
+//   .city (ToyCity: the voxel buildings, city.js; .city.fire its fire, cityfire.js)   .props (MechProps: what the mech picks up, props.js)   .challenges (SmashChallenges: the lane's lectern and five smash challenges, challenges.js)
 //   .cradle (the mech's body cradle while built)   .deck (the lift's deck)   events: hangar.enter, hangar.leave { by }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';

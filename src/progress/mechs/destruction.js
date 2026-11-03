@@ -16,6 +16,7 @@
 // left unsupported falling whole), Spectrobes and Fossil Fighters (the carve by verb), Giant Clank's toy city, Minecraft (hardness by block).
 //
 //   MATERIALS[id] = { hp (full blows to break a cell), density (t a m³ of cell: a chunk's mass), span (cells a cell of it may bridge over air), look }
+//   SOFT (fire.js's heated steel: half its span)   FURNISH[id]   GLASS   shatterGlass(b, at, r) -> [i]   SPLIT   splitChunk(chunk, fell) -> [chunk]
 //   BUILDINGS[id] = { label, w, h, d, floors, shell, frame, glass }   CITY = { cell, lots: [{ x, z, id, yaw }] }
 //   newBuilding(id, seed) -> b { id, w, h, d, mat: Uint8Array, hp: Float32Array }   at(b, x, y, z)   cellsLeft(b)
 //   carve(b, shape, k) -> { broke: [i], cracked: [i] }  (shape: { kind: 'ball'|'capsule'|'cone'|'ray', at, to?, r, dir?, angle? } in the building's cells)
@@ -33,8 +34,13 @@ export const MATERIALS = {
   3: { id: 'brick', hp: 1.2, density: 1.2, span: 2, look: 'brick' },      // the clay walls (Anagami's: fired brick)
   4: { id: 'stone', hp: 2.4, density: 2.2, span: 1, look: 'stone' },      // plinths, the tower's base
   5: { id: 'steel', hp: 4, density: 1.6, span: 6, look: 'steel' },        // the frame of the tall ones: what holds floors over a hole
+  6: { id: 'paper', hp: 0.1, density: 0.1, span: 1, look: 'paper' },      // a lantern stall's walls: oiled paper on a timber frame (fire's fodder)
+  7: { id: 'furnishing', hp: 0.3, density: 0.3, span: 0, look: 'furnishing' }, // what is in the rooms: shelves, beds, crates; a carved facade shows them, and they burn
 };
-export const MAT = { glass: 1, timber: 2, brick: 3, stone: 4, steel: 5 };
+export const MAT = { glass: 1, timber: 2, brick: 3, stone: 4, steel: 5, paper: 6, furnishing: 7 };
+/** A steel cell heated through (fire.js STATE.soft) holds half its span and half its hits: the frame sags under a fire. */
+export const SOFT = 3;
+const spanAt = (b, i) => { const s = MATERIALS[b.mat[i]].span; return b.fire && b.fire.state[i] === SOFT ? Math.floor(s / 2) : s; };
 
 /** The building kinds (cells; a cell 1 m, the mech 14 m tall): a wall material, a frame (columns at the corners and every `bay` cells,
  *  floors every `floor` cells), windows in the walls. Sized so a fist takes a room, the charge goes through a house and stops in a tower. */
@@ -44,13 +50,19 @@ export const BUILDINGS = {
   block:  { label: 'Block', w: 12, h: 20, d: 12, floor: 4, bay: 4, shell: MAT.brick, frame: MAT.steel, glass: 0.35 },
   tower:  { label: 'Tower', w: 10, h: 34, d: 10, floor: 4, bay: 3, shell: MAT.glass, frame: MAT.steel, glass: 0, base: { h: 4, mat: MAT.stone } },
   kiln:   { label: 'Bottle kiln', w: 10, h: 16, d: 10, floor: 0, bay: 0, shell: MAT.brick, frame: 0, glass: 0, round: true }, // (a bottle kiln: a round brick shell, nothing inside to hold it once its foot goes)
+  stall:  { label: 'Lantern stall', w: 6, h: 5, d: 6, floor: 0, bay: 5, shell: MAT.paper, frame: MAT.timber, glass: 0 }, // (a matsuri stall: paper walls on four timber posts under a timber roof; what fire takes first)
 };
+/** What fills a building's rooms (`furnish`: the share of a room's floor-level cells, MAT.furnishing): a lived-in house the most, an
+ *  office tower the least; a kiln none. A carved facade shows them (Ultimate Destruction's interiors), and they are a fire's fuel inside
+ *  brick (fire.js), so a brick house burns from within. */
+export const FURNISH = { house: 0.12, shop: 0.14, block: 0.06, tower: 0.04, kiln: 0, stall: 0.18 };
 
 /** The proving ground's lots (metres from the yard's middle, PROVING.at): a street of the toy city between the launch (x -130) and the
  *  straw giant (x 70), and a few on the flanks, so a walk to the giant goes through it and a fight beside it has walls to go through. */
 export const CITY = {
   cell: 1,
   lots: [
+    { x: -112, z: -18, id: 'stall' }, { x: -112, z: 18, id: 'stall' }, { x: -100, z: -16, id: 'stall' }, { x: -100, z: 16, id: 'stall' }, // (a matsuri's lantern stalls either side of the launch street: the first thing to burn)
     { x: -90, z: -30, id: 'house' }, { x: -90, z: 30, id: 'house' }, { x: -70, z: -32, id: 'shop' }, { x: -70, z: 32, id: 'shop', yaw: Math.PI },
     { x: -45, z: -35, id: 'block' }, { x: -45, z: 35, id: 'block' }, { x: -20, z: -40, id: 'tower' }, { x: -20, z: 42, id: 'kiln' },
     { x: 10, z: -36, id: 'shop' }, { x: 10, z: 36, id: 'block' }, { x: 30, z: -60, id: 'tower' }, { x: 35, z: 60, id: 'house' },
@@ -92,6 +104,7 @@ export function newBuilding(id, seed = 1) {
       if (col || (B.floor && y > 0 && y % B.floor === 0)) m = B.frame;
     }
     if (y === B.h - 1 && !B.round && !m) m = B.frame || B.shell; // (the roof)
+    if (!m && !edge && !B.round && (FURNISH[id] || 0) > 0 && (y === 0 || (B.floor && y % B.floor === 1)) && r() < FURNISH[id]) m = MAT.furnishing; // (the rooms: on the ground floor and on each floor's cells)
     const i = idx(b, x, y, z); b.mat[i] = m; b.hp[i] = m ? MATERIALS[m].hp : 0;
   }
   b.start = cellsLeft(b); b.foot0 = footCells(b); b.fallen = false;
@@ -150,7 +163,7 @@ export function collapse(b) {
       const i = q.shift(), [x, y2, z] = xyz(b, i);
       for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         if (!inside(b, x + dx, y2, z + dz)) continue; const j = idx(b, x + dx, y2, z + dz); if (!b.mat[j] || held[j]) continue;
-        const r = reach[i] + 1; if (r > MATERIALS[b.mat[j]].span) continue;
+        const r = reach[i] + 1; if (r > spanAt(b, j)) continue;
         held[j] = 1; reach[j] = r; q.push(j);
       }
     }
@@ -177,6 +190,36 @@ export const chunkMass = (mats) => { let m = 0; for (const v of mats) m += MATER
  *  is a 14 m mech's fist at its boost top: about 900 kJ, frame.js P0): a house's roof (20 t from 7 m, 1.4 MJ) a blow and a half, capped at 3
  *  (a tower's top on a giant: what fells it). */
 export const fallBlow = (mass, height) => Math.min(3, (mass * 9.81 * Math.max(0, height)) / 900);
+
+/** A steel-framed building's glass goes with a blow (Red Faction's, Ultimate Destruction's showering towers): every glass cell within
+ *  `GLASS.shatter` cells of the blow's reach breaks with it. Returns the broken indices (the runtime throws them as a shower). */
+export const GLASS = { shatter: 4 };
+export function shatterGlass(b, at, r) {
+  const B = BUILDINGS[b.id], out = []; if (!B || B.frame !== MAT.steel) return out;
+  const R = r + GLASS.shatter, x0 = Math.max(0, Math.floor(at[0] - R)), x1 = Math.min(b.w - 1, Math.ceil(at[0] + R)), y0 = Math.max(0, Math.floor(at[1] - R)), y1 = Math.min(b.h - 1, Math.ceil(at[1] + R)), z0 = Math.max(0, Math.floor(at[2] - R)), z1 = Math.min(b.d - 1, Math.ceil(at[2] + R));
+  for (let y = y0; y <= y1; y++) for (let z = z0; z <= z1; z++) for (let x = x0; x <= x1; x++) {
+    const i = idx(b, x, y, z); if (b.mat[i] !== MAT.glass || Math.hypot(x - at[0], y - at[1], z - at[2]) > R) continue;
+    b.mat[i] = 0; b.hp[i] = 0; out.push(i);
+  }
+  return out;
+}
+
+/** A chunk landing hard splits (Ultimate Destruction's slabs breaking in two, Teardown's): one that fell `SPLIT.fall` m or more and has
+ *  `SPLIT.min` cells or more is cut across its longest axis into up to `SPLIT.pieces` slabs, each its own mass and centre, so a wall that
+ *  came down leaves pieces to pick up (the ones of PROPS' slab mass are kept: city.js CHUNK.keep). */
+export const SPLIT = { fall: 8, min: 24, pieces: 3 };
+export function splitChunk(c, fell) {
+  if (fell < SPLIT.fall || c.cells.length < SPLIT.min) return [c];
+  const ext = [0, 1, 2].map((a) => { let lo = Infinity, hi = -Infinity; for (const p of c.cells) { lo = Math.min(lo, p[a]); hi = Math.max(hi, p[a]); } return [lo, hi]; });
+  const ax = [0, 1, 2].reduce((m, a) => (ext[a][1] - ext[a][0] > ext[m][1] - ext[m][0] ? a : m), 0), [lo, hi] = ext[ax], n = Math.min(SPLIT.pieces, hi - lo + 1);
+  if (n < 2) return [c];
+  const parts = Array.from({ length: n }, () => ({ cells: [], mats: [] }));
+  c.cells.forEach((p, k) => { const j = Math.min(n - 1, Math.floor(((p[ax] - lo) / (hi - lo + 1)) * n)); parts[j].cells.push(p); parts[j].mats.push(c.mats[k]); });
+  return parts.filter((q) => q.cells.length).map((q) => {
+    let sx = 0, sy = 0, sz = 0, m = 0; q.cells.forEach((p, k) => { const w = MATERIALS[q.mats[k]].density; sx += p[0] * w; sy += p[1] * w; sz += p[2] * w; m += w; });
+    return { cells: q.cells, mats: Uint8Array.from(q.mats), mass: +m.toFixed(1), at: [sx / m, sy / m, sz / m] };
+  });
+}
 
 /** Is a building felled (fewer than SCORE.felled of its cells stand)? */
 export const felled = (b) => cellsLeft(b) < b.start * SCORE.felled;

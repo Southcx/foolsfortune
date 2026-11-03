@@ -67,6 +67,10 @@ export const PARTS = {
   // back units
   missiles:  { slot: 'back', label: 'Missiles', line: 'Six motes of Lachryma, homing.', mass: 3, tool: null, k: 0.2, stagger: 3, cost: 900, range: 260, volley: 6, earn: 'mk3' },
   shield:    { slot: 'back', label: 'Shield', line: 'Raised, it takes blows from the front.', mass: 4, tool: null, cost: 0, hold: 300, block: 0.25, earn: 'mk2' },
+  // the flamer (MECHS.md 12; South, 2026-11-02: fire as a mechanic): G held, a cone of fire ahead `range` m long and `angle` rad wide; it
+  // lights timber, paper and furnishing (fire.js FIRE.light.flame a real second), sets the straw giant alight and vitrifies the dune colossus.
+  // `cost` kJ a real second held (a minute of it about half the clay battery: fire is a commitment). Opened by the first fire you start (mk26).
+  flamer:    { slot: 'back', label: 'Flamer', line: 'Hold G: fire in a cone ahead. It lights timber, paper and straw.', mass: 3, tool: null, cost: 400, range: 30, flame: { angle: 0.35 }, earn: 'mk26' },
 };
 
 /** The frame every hangar starts with (given at the first visit: MECHS.md 6). */

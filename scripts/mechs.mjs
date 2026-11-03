@@ -106,3 +106,23 @@ for (const p of ['post', 'girder', 'chunk', 'tower']) console.log(`  ${pad(p, 7)
 console.log(`  javelin bars ${CHALLENGES.javelin.medals.join(' / ')} m; bullseye's bull at ${CHALLENGES.bullseye.target} m; the head pin ${PINS.at - CHALLENGES.bowling.from} m past bowling's own line`);
 const P = pinSpots();
 console.log('  the pins fall (pinChain, the ball straight down the lane):', [['head', [0]], ['the pocket', [0, 1]], ['the front three', [0, 1, 2]], ['a corner', [6]], ['the middle', [4]]].map(([n, s]) => `${n} ${pinChain(P, s, [1, 0]).size}`).join(', '));
+
+// ---- FIRE (MECHS.md 12): each building lit at its ground floor's front (a shot through a window), stepped at FIRE.hz until out, 8 seeds
+{
+  const { newBuilding, collapse, cellsLeft, felled } = await import('../src/progress/mechs/destruction.js');
+  const { newFire, stepFire, igniteNear, FIRE } = await import('../src/progress/mechs/fire.js');
+  const rng = (seed) => { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
+  console.log('\nFIRE: a building lit at its ground floor\'s front, burned to its end (8 seeds: mean)');
+  for (const id of ['stall', 'house', 'shop', 'block', 'tower', 'kiln']) {
+    const R = [];
+    for (let s = 1; s <= 8; s++) {
+      const b = newBuilding(id, s), rnd = rng(s * 7); newFire(b); const n0 = cellsLeft(b);
+      igniteNear(b, [b.w / 2, 1, 0], 3, 1, rnd, 'courier');
+      let t = 0, fell = null, peak = 0;
+      while (t < 300) { t += 1 / FIRE.hz; const r = stepFire(b, 1 / FIRE.hz, rnd); peak = Math.max(peak, r.burning); if (r.away.length || r.glass.length) collapse(b); if (!fell && felled(b)) fell = t; if (r.burning === 0) break; }
+      R.push({ t, fell, peak, left: cellsLeft(b) / n0 });
+    }
+    const m = (k) => R.reduce((a, r) => a + (r[k] ?? 0), 0) / R.length, F = R.filter((r) => r.fell);
+    console.log(`  ${id.padEnd(6)} out in ${m('t').toFixed(0)} real s, peak ${m('peak').toFixed(0)} cells burning, ${(m('left') * 100).toFixed(0)}% left standing, burned down ${F.length}/8${F.length ? ` (at ${(F.reduce((a, r) => a + r.fell, 0) / F.length).toFixed(0)} s)` : ''}`);
+  }
+}
