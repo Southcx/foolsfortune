@@ -13,15 +13,18 @@
 //
 //   const W = new MechWeapons(pilot)   W.reset()   W.arm(side, { down, pressed, released })   W.backUnit(pressed)   W.update(dt)
 //   W.swing(side) -> 0..1 (the pose)   W.charge(speed)   W.blockK(fromPos) -> the shield's share of a blow from there   TIMING   REGION_OF
-//   W.later(t, fn, side?)   W.cancel(side) (an arm's blow still to land called back)   W.cityBlow(P, kind, k, heavy)
+//   W.later(t, fn, side?)   W.cancel(side) (an arm's blow still to land called back)   W.cityBlow(P, kind, k, heavy)   W.flaming (the flamer's trigger held)
 // v2 (MECHS.md 9): every blow also strikes the toy city where it lands (city.js: a fist a ball on the first cell along the arms' aim, a
 // shot the first cell on its line, the beam a ray through everything); an arm past a fractured joint works at its lock
 // (joints.js lockOf: k and timing), an arm gone at a joint has no weapon, the back mount snapped no back unit.
-//   events: mech.hit { weapon, region, staggered, pierced, arm?, crit, blocked?, felled?, by }
+// Fire (MECHS.md 12): a shot that strikes a building cell lights what burns there, the charged beam lights what it passes through; the back
+// unit `flamer` (fire.js, parts.js) held on G spends its cost a real second and lights a cone ahead (cityfire.js flame), said as mech.flame.
+//   events: mech.hit { weapon, region, staggered, pierced, arm?, crit, blocked?, felled?, by }, mech.flame { on, by } (on the trigger's press and release)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { outputK } from '../../progress/mechs/rules.js';
 import { chargeK } from '../../progress/mechs/frame.js';
+import { FIRE } from '../../progress/mechs/fire.js';
 import { MECH_BODY } from './mech.js';
 import { GIANT_LOOK } from './giant.js';
 
@@ -36,7 +39,7 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _f = new THREE.Vector3
 export class MechWeapons {
   constructor(pilot) { this.p = pilot; this.game = pilot.game; this.tracers = []; this.mat = null; this.reset(); }
   reset() {
-    this.arms = { L: this.newArm(), R: this.newArm() }; this.pending = []; this.chargeCool = 0; this.backCool = 0; this.shieldUp = false; this.marked = false; // (marked: a head's special, Scan, has the giant's weak point shown: mechspecials.js)
+    this.arms = { L: this.newArm(), R: this.newArm() }; this.pending = []; this.chargeCool = 0; this.backCool = 0; this.shieldUp = false; this.marked = false; if (this.flaming) this.game.events?.emit('mech.flame', { on: false, by: 'courier' }); this.flaming = false; this.flameT = 0; // (marked: a head's special, Scan, has the giant's weak point shown: mechspecials.js)
     for (const T of this.tracers) { T.line.parent?.remove(T.line); T.line.geometry.dispose(); T.line.material.dispose(); } this.tracers = [];
   }
   newArm() { return { cool: 0, n: 0, sinceT: 9, hold: 0, swing: 0 }; }
@@ -106,8 +109,8 @@ export class MechWeapons {
     const armK = this.p.armLock(side) || 1, C = this.p.hangar.city;
     if (C?.built) { // (the toy city in the way: a shot strikes the first cell on its line and stops there; the beam carves a ray through everything)
       const dir = _f.subVectors(to, from).normalize(), len = from.distanceTo(to);
-      if (beam) C.strike({ kind: 'ray', at: from, dir, r: 1.5 }, P.charge.k * this.out() * armK, 'courier');
-      else { const hit = C.raycast(from, dir, len); if (hit) { C.strike({ kind: 'ball', at: hit.point, r: 1.2 }, P.k * this.out() * armK, 'courier'); to = hit.point; this.tracer(from, to, 0xffc070, 0.12); return; } }
+      if (beam) { C.strike({ kind: 'ray', at: from, dir, r: 1.5 }, P.charge.k * this.out() * armK, 'courier'); C.fire.igniteRay(from, dir, FIRE.light.beam, 'beam', 'courier'); } // (the beam lights what it passes through)
+      else { const hit = C.raycast(from, dir, len); if (hit) { C.strike({ kind: 'ball', at: hit.point, r: 1.2 }, P.k * this.out() * armK, 'courier'); C.fire.igniteAt(hit.point, 1, FIRE.light.shot, 'shot', 'courier'); to = hit.point; this.tracer(from, to, 0xffc070, 0.12); return; } }
     }
     this.tracer(from, to, beam ? 0xfff2b0 : 0xffc070, beam ? 0.5 : 0.12);
     if (locked && d <= P.range) this.land(P, beam ? 'beam' : 'shot', beam ? { k: P.charge.k * armK, pierce: true, stagger: P.stagger * 3, arm: side } : { k: P.k * armK, stagger: P.stagger, arm: side });
@@ -138,9 +141,23 @@ export class MechWeapons {
     const line = new THREE.Line(g, m); line.frustumCulled = false; into.add(line); this.tracers.push({ line, t: life, life });
   }
 
+  /** The flamer on G, held (the back unit with `flame`): its cost a real second while the trigger is down, its cone lit at each fire step. */
+  flame(dt) {
+    const P = this.p, B = P.broken('back') || !P.armLock('back') ? null : this.stats.parts.back, I = this.game.input;
+    const sealed = P.mode === 'pilot' && this.game.cradles?.sealed === P.hangar.cradle;
+    const on = !!B?.flame && sealed && !!I?.enabled && !this.game.log?.typing && I.rawDown('KeyG') && P.battery > 0;
+    if (on !== !!this.flaming) { this.flaming = on; this.flameT = 0; this.game.events?.emit('mech.flame', { on, by: 'courier' }); }
+    if (!on) return;
+    const raw = this.game.rawDt ?? dt; P.spend(B.cost * raw); this.flameT += raw;
+    if (this.flameT < 1 / FIRE.hz) return;
+    const step = this.flameT; this.flameT = 0;
+    P.hangar.city?.fire?.flame(P.tech.chest(_a), P.tech.aim(_f), B.range, B.flame.angle, step, 'courier');
+  }
+
   update(dt) {
     for (const A of Object.values(this.arms)) { A.cool -= dt; A.swing = Math.max(0, A.swing - dt * 2.2); }
     this.chargeCool -= dt; this.backCool -= dt;
+    this.flame(dt);
     for (let i = this.pending.length - 1; i >= 0; i--) { const q = this.pending[i]; q.t -= dt; if (q.t <= 0) { this.pending.splice(i, 1); q.fn(); } }
     for (let i = this.tracers.length - 1; i >= 0; i--) {
       const T = this.tracers[i]; T.t -= dt; T.line.material.opacity = Math.max(0, T.t / T.life);

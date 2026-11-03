@@ -9,7 +9,8 @@ Everything below is on `claude/dovina-design` (MECHS.md 11), and on main once Pe
    - **Demolition** (60 s, cells broken) and **Wrecking Crew** (2 min, buildings felled).
 2. **Giant wrestling.** Stagger a giant, walk up, F: you lift it overhead. RMB throws it where you look (try a tower), LMB slams it down. It struggles free after 3 s.
 3. **The dune colossus.** At the giant post (west of the giant's spot), F calls it. It wakes as you come close and makes you move: jump its sweep, dash out of the ring when it burrows, dash across its hurled clod, back out of its sand wave. Only crab legs or the tread can lift it: a light frame gets "too heavy for these legs".
-4. **The shadow frame.** The ring has a secret fourth boxer after the champion, offered once you've won a bout untouched. Every rival's moves in one frame.
+4. **Fire** (MECHS.md 12). Shoot a lantern stall on the launch street with the blaster: it catches, burns away and falls. A house's floors burn out and leave a brick shell that crumbles at a fist. Your first fire opens the **Flamer** back unit (hold G): set the straw giant alight (barrier down, stagger climbing) or fire the colossus's sand to glass (brittle, and it can't burrow). Stand in fire and the mech overheats. A thrown water tower puts it out.
+5. **The shadow frame.** The ring has a secret fourth boxer after the champion, offered once you've won a bout untouched. Every rival's moves in one frame.
 
 What I want to hear: is the javelin's arc fun to read, does the bowling roll feel fair, is the colossus's burrow readable, and does lifting a giant feel heavy enough. Every bar and number has its reason in `progress/mechs/challenges.js` and `giants.js`; they're one-line retunes.
 
