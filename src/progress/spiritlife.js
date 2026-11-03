@@ -12,19 +12,23 @@
 //   set placed, a meal that raises its own stat, a plate of its kind in the wild, or you in the garden at an hour. Met, it gives
 //   WISH.bond back to the spirit, tends the Mulberry Grove (progress/harmony.js) and is counted. A wish never expires and nothing is lost
 //   by leaving it (no needy companions); the next comes a game day after.
+// - THE THREE SETS OF NO FEELING (G117): every second gift and decor wish takes the set a spirit grain leans to (TASTE), once its lake lotus has opened.
 // - THE DIGEST: the first visit of a game day says the season, who wishes for what, and the garden's state, in four lines at most (A
 //   Wonderful Life's morning television, Stardew Valley's notice board).
 //
 //   ROUTINE, PLACES, WISH, WISH_KINDS   routineOf(sheet, grain, { phase, raining }) -> { place, stay }   wishFor(key, n, sheet, open) -> wish
 //   game.spiritLife = new SpiritLife(game)   .wishOf(entry) -> wish | null   .update(dt)
-//   events: spirit.wish { spirit, kind, wish }   spirit.wish.done { spirit, kind, wish, bond }   garden.digest { season, day, left, wishes, briar, bloom, mail }
+//   events: spirit.wish { spirit, kind, wish }   spirit.wish.done { spirit, kind, wish, bond }   garden.digest { season, visitors (the wild kinds that call in this season: seasonlife.js), day, left, wishes, briar, bloom, mail }
 //           spirit.farewell.ask { spirit, kind, feeling }   spirit.farewell { spirit, kind, feeling, statue }
 //           spirit.letter { from, kind, about }   spirit.letters { letters }   spirit.gift { spirit, kind, id }   /letters
 // ---------------------------------------------------------------------------------------
 import { today, now as calNow } from '../core/calendar.js';
 import { phaseAt } from './weather.js';
 import { seasonOf } from './seasons.js';
-import { DECOR } from './decor.js';
+import { DECOR, SETS } from './decor.js';
+import { leadPole } from './spiritnotice.js';
+import { VISITORS } from './realm.js';
+import { visitorsIn } from './seasonlife.js';
 import { formOf } from './spirits.js';
 
 /** The places a spirit's day is spent at (the world finds the nearest of each on the spirit's planetoid, else wanders). */
@@ -54,18 +58,28 @@ export const WISH_KINDS = {
   photo: {}, // (a plate of its kind taken in the wild: photo.take's kinds)
   visit: { phases: ['dawn', 'dusk', 'night'] },
 };
+/** The three sets of no feeling (decor.js SETS with a `lotus`) and which a spirit leans to, by the pole of its grain (G117): the
+ *  orderly and the steady to the Tea Path's careful lines, the bold, the erratic and the hostile to the Kiln Yard's fire and clay, the
+ *  curious, the shy and the skittish to the Stargazer's lawn. A grain near the middle has no taste (its own feeling's set only). A
+ *  spirit's gift and its wish take its taste's set every second time, once that set's lake lotus has opened. */
+export const TASTE = { orderly: 'teapath', steady: 'teapath', gentle: 'teapath', wary: 'teapath', bold: 'kilnyard', erratic: 'kilnyard', hostile: 'kilnyard', curious: 'stargazer', shy: 'stargazer', skittish: 'stargazer' };
+export const tasteOf = (grain) => TASTE[leadPole(grain)] || null;
 const ORDER = ['food', 'feature', 'photo', 'decor', 'visit']; // (the first wish is a meal: the easiest to meet; then the rest by a seeded draw)
 
 function seeded(str) { let h = 2166136261; for (const ch of String(str)) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return () => { h = (h + 0x6d2b79f5) | 0; let t = Math.imul(h ^ (h >>> 15), 1 | h); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 /** A spirit's `n`th wish (pure, seeded by the spirit's key: the same spirit asks the same things in the same order). `open`: the decor
  *  sets and features there are to ask for (so it never wishes for what cannot yet be had). */
-export function wishFor(key, n = 0, sheet = {}, { features = WISH_KINDS.feature.features, decorSets = [] } = {}) {
+export function wishFor(key, n = 0, sheet = {}, { features = WISH_KINDS.feature.features, decorSets = [], grain = null } = {}) {
   const r = seeded(`${key}#${n}`);
-  let kind = n === 0 ? 'food' : ORDER[1 + Math.floor(r() * (ORDER.length - 1))];
-  if (kind === 'decor' && !decorSets.includes(sheet.feeling)) kind = 'feature';
+  let kind = n === 0 ? 'food' : ORDER[1 + Math.floor(r() * (ORDER.length - 1))], set = sheet.feeling;
+  if (kind === 'decor') { // (its own feeling's set, or every second time the set its grain leans to, where that is open: G117)
+    const taste = tasteOf(grain);
+    if (taste && decorSets.includes(taste) && (n % 2 === 1 || !decorSets.includes(sheet.feeling))) set = taste;
+    if (!decorSets.includes(set)) kind = 'feature';
+  }
   if (kind === 'food') return { kind, stat: sheet.feeling || 'wonder' };
   if (kind === 'feature') return { kind, feature: features[Math.floor(r() * features.length)] || 'lantern' };
-  if (kind === 'decor') return { kind, set: sheet.feeling };
+  if (kind === 'decor') return { kind, set };
   if (kind === 'photo') return { kind, of: sheet.kind || null };
   return { kind, phase: WISH_KINDS.visit.phases[Math.floor(r() * WISH_KINDS.visit.phases.length)] };
 }
@@ -123,7 +137,7 @@ export class SpiritLife {
       if ((e.sp.bond || 0) < WISH.bond) continue;
       const k = keyOf(e), W = (this.s.wishes[k] ||= { n: 0, open: null, since: null });
       if (W.open || (W.since != null && day - W.since < WISH.after)) continue;
-      W.open = wishFor(k, W.n, { ...e.sp, kind: e.kind }, { decorSets: sets });
+      W.open = wishFor(k, W.n, { ...e.sp, kind: e.kind }, { decorSets: sets, grain: e.traits || e.grain });
       this.game.events?.emit('spirit.wish', { spirit: e.name || null, kind: e.kind, wish: W.open, by: 'courier' });
       this.game.save?.dirty('spiritLife');
     }
@@ -153,7 +167,8 @@ export class SpiritLife {
   gift() {
     const day = today(); if (this.s.giftDay != null && day - this.s.giftDay < MAIL.giftEvery) return;
     const e = this.entries().filter((x) => (x.sp.bond || 0) >= MAIL.giftBond).sort((a, b) => b.sp.bond - a.sp.bond)[0]; if (!e || !this.game.decor) return;
-    const k = keyOf(e), had = (this.s.given[k] ||= []), set = e.sp.feeling;
+    const k = keyOf(e), had = (this.s.given[k] ||= []), taste = tasteOf(e.traits || e.grain), open = (x) => SETS[x]?.lotus != null && (this.game.ledger?.best?.('garden.lotuses') || 0) >= SETS[x].lotus;
+    const set = taste && open(taste) && had.length % 2 === 1 && Object.keys(DECOR).some((id) => DECOR[id].set === taste && DECOR[id].from.includes('gift') && !had.includes(id)) ? taste : e.sp.feeling; // (every second gift the set its grain leans to, once that set is open: G117)
     const pool = Object.keys(DECOR).filter((id) => DECOR[id].from.includes('gift') && (DECOR[id].set === set || DECOR[id].set === 'plain') && !had.includes(id));
     const id = pool.find((x) => DECOR[x].set === set) || pool[0]; if (!id) return;
     had.push(id); this.s.giftDay = day; this.game.decor.give(id, 'gift');
@@ -184,7 +199,7 @@ export class SpiritLife {
     const S = seasonOf(day), H = this.game.harmony;
     const wishes = this.entries().map((e) => ({ spirit: e.name || null, kind: e.kind, wish: this.wishOf(e) })).filter((x) => x.wish);
     const list = H?.list?.() || [];
-    this.game.events?.emit('garden.digest', { day, season: S.id, seasonDay: S.day + 1, left: S.left, wishes, mail: this.s.mail.filter((m) => !m.read).length, briar: list.filter((p) => p.band === 'briar').map((p) => p.planetoid), bloom: list.filter((p) => p.band === 'bloom').map((p) => p.planetoid), phase: phaseAt(calNow()), by: 'courier' });
+    this.game.events?.emit('garden.digest', { day, season: S.id, visitors: visitorsIn(S.id, Object.keys(VISITORS)), seasonDay: S.day + 1, left: S.left, wishes, mail: this.s.mail.filter((m) => !m.read).length, briar: list.filter((p) => p.band === 'briar').map((p) => p.planetoid), bloom: list.filter((p) => p.band === 'bloom').map((p) => p.planetoid), phase: phaseAt(calNow()), by: 'courier' });
     this.game.save?.dirty('spiritLife');
   }
   update(dt = 0) { if ((this.lookT -= dt) > 0) return; this.lookT = WISH.look; if (this.game.realm?.active) { this.ask(); this.askHome(); } }

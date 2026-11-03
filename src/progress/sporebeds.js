@@ -13,16 +13,20 @@
 //
 //   game.sporeBeds = new SporeBeds(game, { itemOf })   .beds -> [{ strain, set, at, hours, near, tend, plot }]   .strains -> { feeling: true }
 //   .grant(plot?)   .bedOf(plot) -> i   .moved(from, to)   .learn(feeling)   .inoculate(i, feeling) -> { ok, why? }   .set(i, boxSlots) -> { ok, why? }   .back(i) -> { ok, why? }
-//   .near(i, feelings)   .tend(i, on)   .ready(i) -> bool   .left(i) -> real ms   .harvest(i) -> { ok, why?, out }
+//   .near(i, feelings)   .tend(i, on)   .worker(i, entry|null)   .workerOf(i)   .seedBy()   .surround(i, { ground, water }) -> k   .ready(i) -> bool   .left(i) -> real ms   .harvest(i) -> { ok, why?, out }
 // events: spore.bed, spore.learn { strain }, spore.inoculate { bed, strain }, spore.set { bed, strain, things }, spore.back { bed },
-//         spore.harvest { bed, strain, verb, made, things, tier, up, pair }, each with `by`
+//         spore.tend { bed, spirit, kind, on }, spore.seeded { bed, strain, spirit, kind }, spore.harvest { bed, strain, verb, made, things, tier, up, pair, bent }, each with `by`
 // ---------------------------------------------------------------------------------------
 import { STRAINS, digest, bedHours, signatureOf } from './mycelium.js';
 import * as calendar from '../core/calendar.js';
+import { growthK } from './bedgrowth.js';
 
 const clock = calendar.now, GAME_HOUR = (calendar.DAY_MS ?? 3600000) / 24;
 /** The numbers: the first strains given, how long a thing set may be taken back, what a tending spirit adds to the pace. */
 export const SPORE = { first: ['grief', 'desire'], takeBack: 1, tend: 0.25 };
+/** A spirit at a bare bed (G155): after `days` game days beside it, a spirit of `bond` or more whose own feeling's strain you hold seeds
+ *  that strain there (the colony takes in its own time; nothing is spent). A spirit tending a bed is `worker`, its entry's key kept. */
+export const SEED = { days: 3, bond: 30 };
 const fresh = () => ({ beds: [], strains: {}, seed: 1 });
 
 /** A thing out of the Pneuka Box as the mycelium reads it (a material's own kind kept as `of`). `itemOf` is the box's (pneuka/items.js),
@@ -44,6 +48,8 @@ export class SporeBeds {
     game.save?.section('sporebeds', { scope: 'player', version: 1, dump: () => this.s, load: (d) => { this.s = { ...fresh(), ...(d || {}) }; }, reset: () => { this.s = fresh(); } });
     game.events?.on?.('garden.place', (e) => { if (e.by === 'courier' && e.feature === 'sporebed') { const i = this.grant(e.plot); if (STRAINS[e.feeling] && this.s.strains[e.feeling]) this.inoculate(i, e.feeling); } }); // (placed in a feeling you hold spores of: that strain)
     game.events?.on?.('garden.move', (e) => { if (e.feature === 'sporebed') this.moved(e.from, e.to); });
+    game.events?.on?.('spirit.release', (e) => { if (e.by === 'courier') this.beds.forEach((b, i) => { if (b.worker && (e.spirit ? b.worker.name === e.spirit : !b.worker.name && b.worker.kind === e.kind)) this.worker(i, null); }); }); // (a spirit let go leaves its bed)
+    game.events?.on?.('garden.enter', (e) => { if ((e?.by ?? 'courier') === 'courier') this.seedBy(); });
   }
   dirty() { this.game.save?.dirty('sporebeds'); }
   get beds() { return this.s.beds; }
@@ -74,7 +80,36 @@ export class SporeBeds {
   /** The strains of the beds beside this one (the world's layout says; they pace it: mycelium.js bedHours). */
   near(i, feelings = []) { const b = this.s.beds[i]; if (b) { b.near = feelings.filter((f) => STRAINS[f]); if (b.set) b.hours = this.hoursOf(b); this.dirty(); } }
   tend(i, on = true) { const b = this.s.beds[i]; if (b) { b.tend = !!on; if (b.set) b.hours = this.hoursOf(b); this.dirty(); } }
-  hoursOf(b) { return bedHours(b.strain, b.near) / (b.tend ? 1 + SPORE.tend : 1); }
+  hoursOf(b) { return bedHours(b.strain, b.near) / (b.tend ? 1 + SPORE.tend : 1) / (b.k || 1); }
+
+  /** A spirit set to work a bed (G153; `entry` from game.bound.list, or null to let it go): the bed is tended, a quarter faster, and the
+   *  spirit's grain bends what it makes (mycelium.js BEND). The world's page does the assigning; a spirit standing by one does it too. */
+  worker(i, entry = null) {
+    const b = this.s.beds[i]; if (!b) return { ok: false, why: 'There is no such bed.' };
+    if (entry && !entry.sp) return { ok: false, why: 'It has not been raised yet.' };
+    const was = b.worker; b.worker = entry ? { name: entry.name || null, kind: entry.kind, key: entry.name || `${entry.kind}@${entry.at ?? 0}`, day: calendar.today() } : null;
+    b.tend = !!entry; if (b.set) b.hours = this.hoursOf(b);
+    this.dirty(); this.emit('spore.tend', { bed: i, spirit: entry?.name || was?.name || null, kind: entry?.kind || was?.kind || null, on: !!entry });
+    return { ok: true };
+  }
+  /** The bound entry working a bed, if it is still bound. */
+  workerOf(i) { const w = this.s.beds[i]?.worker; return w ? (this.game.bound?.list || []).find((e) => (e.name || `${e.kind}@${e.at ?? 0}`) === w.key) || null : null; }
+  /** The game day's look at the bare beds: a spirit that has been beside one for SEED.days seeds its own feeling's strain in it. */
+  seedBy(day = calendar.today()) {
+    this.s.beds.forEach((b, i) => {
+      const e = b.worker && !b.strain && !b.set ? this.workerOf(i) : null, f = e?.sp?.feeling;
+      if (!e || !STRAINS[f] || !this.s.strains[f] || (e.sp.bond || 0) < SEED.bond || day - (b.worker.day ?? day) < SEED.days) return;
+      if (this.inoculate(i, f).ok) this.emit('spore.seeded', { bed: i, strain: f, spirit: e.name || null, kind: e.kind });
+    });
+  }
+  /** The ground and water at a bed (the world's, whenever they change): a bed on its own strain's ground or watered with it grows faster
+   *  (realm.js GROWTH; bedgrowth.js). What is set keeps the share of its work done when the pace changes. */
+  surround(i, ctx = {}) {
+    const b = this.s.beds[i]; if (!b) return 1;
+    const k = growthK({ feeling: b.strain, ground: ctx.ground, water: ctx.water }), was = b.k || 1;
+    if (k !== was) { if (b.set) { const done = (clock() - b.at) / (b.hours * GAME_HOUR); b.k = k; b.hours = this.hoursOf(b); b.at = clock() - done * b.hours * GAME_HOUR; } else b.k = k; this.dirty(); }
+    return k;
+  }
 
   /** Set what you give it from the box (one slot, or two for the lichen's graft): checked against its strain first, taken only if good. */
   set(i, boxSlots = []) {
@@ -107,12 +142,12 @@ export class SporeBeds {
   harvest(i) {
     const b = this.s.beds[i];
     if (!this.ready(i)) return { ok: false, why: b?.set ? 'It is still working.' : 'There is nothing set in it.' };
-    const seed = (this.s.seed = (this.s.seed * 48271) % 2147483647), r = digest(b.strain, b.set, seed);
+    const seed = (this.s.seed = (this.s.seed * 48271) % 2147483647), r = digest(b.strain, b.set, seed, { grain: this.workerOf(i)?.traits || this.workerOf(i)?.grain || null });
     if (!r.ok) { for (const x of b.set) give(this.game, x); b.set = null; this.dirty(); return { ok: false, why: r.why }; } // (cannot happen once set; given back if it does)
     for (const x of r.out) give(this.game, x);
     const verb = STRAINS[b.strain].verb, things = b.set.map((x) => x.id), was = Math.max(...b.set.map((x) => signatureOf(x)?.tier ?? 0));
     b.set = null; this.dirty();
-    this.emit('spore.harvest', { bed: i, strain: b.strain, verb, made: r.out.map((x) => x.id), names: r.out.map((x) => this.itemOf(x.id)?.name || x.id), things, tier: Math.max(0, ...r.out.map((x) => this.itemOf(x.id)?.tier ?? x.tier ?? 0)), up: verb === 'graft' && (this.itemOf(r.out[0].id)?.tier ?? 0) > was, pair: verb === 'graft' ? `${[...things].sort().join('+')}>${r.out[0]?.id}` : null }); // (pair: the Grimoire's line, a graft's two and what it made)
+    this.emit('spore.harvest', { bed: i, strain: b.strain, verb, made: r.out.map((x) => x.id), names: r.out.map((x) => this.itemOf(x.id)?.name || x.id), things, tier: Math.max(0, ...r.out.map((x) => this.itemOf(x.id)?.tier ?? x.tier ?? 0)), up: verb === 'graft' && (this.itemOf(r.out[0].id)?.tier ?? 0) > was, pair: verb === 'graft' ? `${[...things].sort().join('+')}>${r.out[0]?.id}` : null, bent: r.bent || null }); // (pair: the Grimoire's line, a graft's two and what it made)
     return { ok: true, out: r.out };
   }
 }

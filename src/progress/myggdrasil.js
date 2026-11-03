@@ -84,7 +84,7 @@ export class Myggdrasil {
   pick() {
     this.dawn();
     const n = this.s.crown.length;
-    for (const m of this.s.crown) this.game.pneuka?.add(`mat.${m.of}`, 'garden', 0, { kind: m.of, tier: m.tier, hue: m.hue, sat: m.sat, path: m.path });
+    for (const m of this.s.crown) this.game.pneuka?.add(`mat.${m.of}`, 'garden', 0, { kind: m.of, tier: m.tier, hue: m.hue, sat: m.sat, path: m.path, fruit: true }); // (`fruit`: a spirit fed it takes its colour, spiritdiet.js)
     this.s.crown = []; if (n) { this.dirty(); this.emit('myggdrasil.pick', { n }); }
     return n;
   }

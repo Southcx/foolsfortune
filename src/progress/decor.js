@@ -39,7 +39,8 @@ export const SETS = {
   dread: { name: 'Koi Pond' }, sound: { name: 'Sound' }, season: { name: 'Seasons' }, briar: { name: 'Briar' }, keepsake: { name: 'Keepsakes' },
   // three sets that are no feeling's (Calissa's 24 pieces, 2026-10-24): each opens at a lake lotus (`lotus`: the lotuses open, GARDEN-COZY.md D6,
   // "a decor set's recipe at each lotus"), its shop pieces and its centrepiece then bought; the garden's rating is the key, and no spirit's
-  // feeling is theirs, so neither a gift nor a wish brings them (spiritlife.js draws by the spirit's feeling)
+  // feeling is theirs, so a spirit's gift and wish reach them by its grain's taste (spiritlife.js TASTE, every second time, once the lotus has
+  // opened) and the folk leave their visitor pieces (gardenfolk.js)
   teapath: { name: 'Tea Path', lotus: 1 }, kilnyard: { name: 'Kiln Yard', lotus: 2 }, stargazer: { name: 'Stargazer', lotus: 3 },
 };
 const P = (name, set, size, tints, from, season) => ({ name, set, size, tints, from, ...(season ? { season } : {}) });
