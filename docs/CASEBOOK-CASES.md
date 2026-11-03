@@ -4964,3 +4964,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   counts every gain.
 - **Rule:** 399
 
+
+### 2026-11-03 · The slip jelly mount could never be chosen on a phone (ui/touch/arc.js; GAPS G149 and G304, Dovina's touch audit)
+- **Seen:** on touch, BELT's SKIFF called the Solar Skiff every time, even with the slip jelly open; the mounts' choice never showed.
+- **Cause, as measured:** the arc's pick tapped the mount's key for 60 ms (`ARC_PRESS.tap`), and the choice between the two mounts
+  needs Y held 0.35 s (`JELLY_MOUNT.call.hold`), so a tap called the last mount used. The old strip held the key with the finger and
+  never had the fault. The probe showed a second trap: stepping 120 frames in one call made the 60 ms look like 2 s of Y held.
+- **Fix:** BELT's radial offers SKIFF and JELLY by name while the jelly is open; a pick sets the mount (`JellyMount.prefer`) before
+  the tap. Probed on the phone layout with real time between frames: JELLY called the slip jelly, ridden by the Pneuka Jar, 0 errors.
+- **Rule:** NEW:touch-hold-by-name

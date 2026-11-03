@@ -26,6 +26,8 @@ import * as THREE from 'three';
 import { st } from './creatures.js';
 import { Dizzy } from '../vfx/dizzy.js';
 import { T } from '../core/config.js';
+/** The first stun's beat of hit-stop (game time at `scale` for `real` real s, eased back over `release`): the burst window's signal (STUN-DEPTH.md). */
+export const STUN_STOP = { scale: 0.05, real: 0.09, release: 0.15 };
 
 const K = () => T.stun; // (read live: the tuning panel moves them)
 
@@ -56,6 +58,7 @@ export class Stun {
     const g = this.game, s = this.state(t), D = K().depths[Math.min(depth, K().depths.length) - 1];
     const dur = t.stunFor === 0 ? 0 : D.len * Math.max(1, (t.stunFor ?? 4.5) / 4.5); // (a long-stunned kind is down longer; a short one never under the depth's length; 0: never stunned, Dovina's ruling)
     if (!(dur > 0)) return;
+    const first = !this.stunned(t); // (the first stun: a beat of hit-stop, the moment to notice: STUN-DEPTH.md, GAPS G260)
     if (this.stunned(t)) this.hold(t, dur); // (deeper: the clock reset, the status kept)
     else if (t.type === 'creature') g.creatures.apply(t, 'stun', dur, 1, by);
     else if (t.type === 'clapper') g.clappers.stun(t, dur, g.shells?.glowOutline, g.shells?.xray);
@@ -66,6 +69,7 @@ export class Stun {
     g.glyphs?.pop('star', p, { color: 0xffd76a, size: 0.7, life: 0.9, burst: true, ring: true });
     g.ai?.stimuli.emit('pain', t.pos, { radius: 14, strength: 0.8, by, source: t });
     g.events?.emit('creature.stun', { kind: kindOf(t), seconds: +dur.toFixed(1), depth: s.depth, by, cause });
+    if (first && by === 'courier' && !g.duel?.active) g.time?.pulse?.('stun', STUN_STOP.scale, STUN_STOP.real, { release: STUN_STOP.release });
   }
 
   stunned(t) { return t?.type === 'creature' ? st(t, 'stun') > 0 : t?.type === 'clapper' ? t.alive && t.state === 'stunned' : false; }
