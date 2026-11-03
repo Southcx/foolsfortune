@@ -183,7 +183,10 @@ export class MechPilot {
     if (this.shiftT >= 0) {
       if (shift) { this.shiftT += dt; if (!this.assault && this.shiftT > PILOT.tap && S.boostTop > 0) { this.assault = true; g.events?.emit('mech.boost', { kind: 'assault', by: 'courier' }); } }
       else {
-        if (!this.assault && S.qb > 0 && this.skate.canQuick()) { const d = _s.copy(moving ? wish : this.forward(_s)).normalize(), lock = this.skate.quick(this, d.x, d.z); this.vel.addScaledVector(d, S.qb * out); this.boostT = lock; boosting = true; g.events?.emit('mech.boost', { kind: 'quick', by: 'courier' }); }
+        if (!this.assault && S.qb > 0 && this.skate.canQuick()) {
+          if (sk.on && beatOf(this.phase) === 'beat') this.sync = syncStep(this.sync, { stroke: true, ceiling: this.ceiling() }); // (a stroke on the stride's beat while skating: Dovina's ruling, MECHS.md 13)
+          const d = _s.copy(moving ? wish : this.forward(_s)).normalize(), lock = this.skate.quick(this, d.x, d.z); this.vel.addScaledVector(d, S.qb * out); this.boostT = lock; boosting = true; g.events?.emit('mech.boost', { kind: 'quick', by: 'courier' });
+        }
         else if (this.assault) this.skate.light(); // (an assault let go glides on as a skate)
         this.assault = false; this.shiftT = -1;
       }
@@ -209,6 +212,7 @@ export class MechPilot {
     this.tech.ram(dt); // (the Battering Ram carves the path before the walls are asked)
     this.move(dt);
     if (!sk.on) this.stride(dt, wish, moving); // (skating takes no steps)
+    else if (S.step > 0) this.phase = (this.phase + dt / S.step) % 1; // (the pendulum keeps swinging under a glide: a stroke's beat is read off it)
     // the techniques and the prop in hand first (mechtech.js, props.js), then the arms, the back unit, the barrier, the cable
     const used = this.tech.drive(K, dt);
     if (!used.L) this.weapons.arm('L', { down: K.down('Mouse0'), pressed: K.pressed('Mouse0'), released: K.released('Mouse0') });
@@ -395,7 +399,7 @@ export class MechPilot {
   /** The cradle where the seat is now; reached from the walkway in the gantry, from the ground beside it in the field. */
   placeCradle(c) {
     this.mech?.seat(c.pos);
-    if (this.mode === 'gantry') { const A = HANGAR.at, W = HANGAR.walk; c.at.set(A.x + (W.x0 + W.x1) / 2, A.y + HANGAR.walkY, A.z + (W.z0 + W.z1) / 2); c.yaw = Math.PI; c.reach = 2.6; return; }
+    if (this.mode === 'gantry') { const A = HANGAR.at, R = HANGAR.reach; c.at.set(A.x + R.x, A.y + HANGAR.walkY, A.z + R.z); c.yaw = 0; c.reach = 2.6; return; } // (from behind, on the ring's back run)
     const side = _c.set(Math.cos(this.yaw), 0, -Math.sin(this.yaw)); // (the mech's left)
     c.at.copy(this.pos).addScaledVector(side, MECH_BODY.radius + 2.5).setY(PROVING.at.y); c.yaw = this.yaw + Math.PI / 2;
     c.reach = this.state.broken('core') ? 0 : 4; // (a failed mech cannot be sealed until mended at the gantry)

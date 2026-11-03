@@ -35,10 +35,10 @@ export function movementArtRules({ on, L, log, where, track }) {
   on('move.stomp', (e) => { L.inc('move.stomp'); stomp3(e); L.inc(`stomp.${e.what}`); log.say('move', `Stomped on the ${e.what}.`, { key: 'stomp', win: 1.5, fmt: (n) => `Stomped on the ${e.what} (×${n}).` }); });
   on('kick.swing', () => L.inc('kick.swing'));
   on('kick.hit', (e) => { L.inc('kick.hit', e.hits); L.hi('kick.best', e.hits); if (e.hits >= 2) log.say('battle', `Kick hit ${e.hits} targets.`, { key: 'kick', win: 1 }); });
-  // the parry, with every tool (docs/plans/PARRY.md): counted all together and by tool; one line a way (Espada's words to come)
+  // the parry, with every tool (docs/plans/PARRY.md): counted all together and by tool; one line a way (Espada's, 2026-11-03)
   const PARRY_SAY = {
     return: 'Shot parried.', turn: 'Shot turned aside.', soak: 'Shot absorbed by the Soul Brush.', gulp: 'Shot swallowed by the Lockheart.',
-    shatter: 'Shot shattered by the Crucibelle.', stagger: 'Shot down. Its thrower staggers.', shutter: "Blow parried by the Veritome's shutter.",
+    shatter: 'Shot shattered by the Crucibelle.', stagger: 'Shot knocked down. The shooter staggers.', shutter: "Blow parried by the Veritome's shutter.",
   };
   let parryRun = 0; // (parries without a miss: the feat's run, TRAINING.md 6; a miss is an outlined windup run out with you in reach)
   on('parry.missed', () => { L.inc('parry.missed'); parryRun = 0; });
