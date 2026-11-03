@@ -22,7 +22,8 @@
 // real seconds, `range` m, `angle` degrees, `always`; a blow's `power`, `reach` m and `speed`, real seconds a blow) and the card's own
 // (`icon` an icon id, `key` a string or a list of them or 'passive', `state` 'equipped' | 'ready' | 'locked', `opens` the locked card's
 // line, `keywords` [ids], `lent` true | false in the DEBUG save: the lend panel's hollow or solid mark, ui/lendpanel.js; `media` a function
-// (row) -> element drawn under the chips across the card, a picture of the thing in use: a mount's views, ui/mountviews.js). A table in
+// (row) -> element drawn under the chips across the card, a picture of the thing in use: a mount's views, ui/mountviews.js; `ways` a locked
+// card's ways to open it, [{ kind: 'count' | 'feat', line, have, need, done }], each a line with the ledger's number and a groove: `waysEl`). A table in
 // bars is turned to seconds before it comes here (ui/mountcards.js). The words on the card are the row's: the state's words are
 // placeholders for Espada's.
 //
@@ -35,7 +36,7 @@
 //   slotRow({ slots, filled: [row | null], always: row?, onPick(i), keys: [cap], closed: [{ opens }], sel: i, pickEmpty }) -> element
 //     (keys: each slot's cap, its number by default; closed: slots past `slots` not yet open, a padlock and what opens each; sel: the slot
 //     picked, lit; pickEmpty: an empty slot can be picked, to fill it; id: the row's name, where a window has two)
-//   STATE_WORDS (placeholders)      installChoiceCards()
+//   STATE_WORDS (placeholders)      installChoiceCards()      waysEl(ways) -> element (a locked thing's two ways, also the Codex's tree's)
 // ---------------------------------------------------------------------------------------
 import { iconEl, hasIcon } from './icons/icons.js';
 import { keyworded, keywordEl, installKeywords, KEYWORDS } from './keywords.js';
@@ -86,6 +87,14 @@ const CSS = `
 .cc .cc-state { display: inline-flex; align-items: center; gap: 3px; font: 800 10px/1 var(--f-ui, sans-serif); letter-spacing: .1em; color: #f3e2cc; opacity: .85; white-space: nowrap; }
 .cc.equipped .cc-state { color: #ffd98a; opacity: 1; }
 .cc .cc-opens { grid-column: 2 / span 2; margin-top: 3px; color: #f3e2cc; font-size: 11px; }
+.cc .cc-ways, .cc-ways { grid-column: 2 / span 2; display: grid; gap: 3px; margin-top: 4px; }
+.cc-way { display: grid; grid-template-columns: 44px 1fr auto; gap: 1px 7px; align-items: baseline; font: 500 11px/1.25 var(--f-ui, sans-serif); color: #f3e2cc; }
+.cc-way .cc-wk { font: 800 9px/1.3 var(--f-ui, sans-serif); letter-spacing: .14em; color: #ffd98a; text-align: right; }
+.cc-way .cc-wn { font: 800 10.5px/1.25 var(--f-ui, sans-serif); color: #fff3df; white-space: nowrap; }
+.cc-way .cc-wb { grid-column: 2 / span 2; position: relative; height: 3px; border-radius: 2px; background: rgba(0,0,0,.4); box-shadow: inset 0 0 0 1px rgba(255,230,200,.14); overflow: hidden; }
+.cc-way .cc-wb::after { content: ''; position: absolute; inset: 0 auto 0 0; width: calc(var(--k, 0) * 100%); background: linear-gradient(90deg, #a8761e, #ffd36a); }
+.cc-way.done .cc-wn::after { content: ' \\2713'; color: #9fe0a0; }
+.cc.locked .cc-ways { opacity: .92; }
 .cc .cc-detail { display: none; position: absolute; left: -1px; right: -1px; top: calc(100% - 2px); z-index: 5; padding: 6px 9px 7px; box-sizing: border-box;
   background: linear-gradient(180deg, rgba(var(--jtop, 104,50,32), .98), rgba(var(--jbot, 34,15,9), .98)); border: 1px solid var(--jhi, #f1d2b0); border-top: none; border-radius: 0 0 4px 4px;
   box-shadow: 0 8px 18px rgba(0,0,0,.5); font-size: 11.5px; color: #f6ead8; }
@@ -235,6 +244,7 @@ export class ChoiceCard {
     const media = typeof r.media === 'function' ? r.media(r) : null; // (a picture of the thing in use, the card's width: a mount's views, ui/mountviews.js)
     if (media) { media.classList.add('cc-media'); el.append(media); }
     if (locked && r.opens) el.append(make('div', 'cc-opens', r.opens));
+    if (locked && r.ways?.length) el.append(waysEl(r.ways));
     // the detail: only on hover, focus or a held press
     if (r.lore || r.detail) {
       const d = make('div', 'cc-detail');
@@ -249,6 +259,23 @@ export class ChoiceCard {
   /** Compare against what it would replace (a row), or stop comparing (null). */
   compareTo(base) { this.base = base; return this.set(this.row); }
 }
+
+/** A locked thing's ways to open it (`ways` [{ kind: 'count' | 'feat', line, have, need, done }]): each kind's tag once, its lines
+ *  under it joined by "or", each with the ledger's number of what it asks and a groove filling to it (never colour alone: the numbers). */
+export function waysEl(ways) {
+  const box = make('div', 'cc-ways'); let last = null;
+  for (const w of ways) {
+    const li = make('div', `cc-way${w.done ? ' done' : ''}`);
+    li.append(make('span', 'cc-wk', w.kind === last ? 'OR' : WAY_WORDS[w.kind] || w.kind.toUpperCase()), make('span', 'cc-wl', w.line));
+    const n = make('span', 'cc-wn', `${fmtN(w.have)} / ${fmtN(w.need)}`), bar = make('i', 'cc-wb'); bar.style.setProperty('--k', String(Math.max(0, Math.min(1, w.need ? w.have / w.need : 0))));
+    li.append(n, bar); li.title = `${WAY_WORDS[w.kind] || w.kind}: ${w.line} (${fmtN(w.have)} of ${fmtN(w.need)})`;
+    box.append(li); last = w.kind;
+  }
+  return box;
+}
+/** The ways' words (placeholders for Espada's). */
+export const WAY_WORDS = { count: 'COUNT', feat: 'FEAT' };
+const fmtN = (v) => (+v).toLocaleString('en-GB');
 
 /** A list of cards in the window's grid; the arrow keys move between them (up and down by the row; the first arrow comes in from nothing:
  *  installChoiceCards). Drawn again after a keyboard pick, the card that was picked is given its focus back. */

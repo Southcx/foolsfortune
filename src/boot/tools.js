@@ -41,6 +41,7 @@ import { Kick } from '../courier/moves/kick.js';
 import { Recoil } from '../courier/moves/recoil.js';
 import { KeyLocomotion } from '../courier/anim/keylocomotion.js';
 import { RacewayLooks } from '../vfx/racewaylooks.js';
+import { skiffSetCards } from '../ui/skiffsetcards.js';
 import { SkiffSlipArc } from '../vfx/skiffsliparc.js';
 import { WorldLooks } from '../vfx/worldshells.js';
 import { RacewayCavern } from '../vfx/racewaycavern.js';
@@ -80,6 +81,7 @@ export function bootTools(game, made) {
   game.vfx = new Vfx(game);
   game.skiffSlipArc = new SkiffSlipArc(game); // (the slip arc under the board while you ride: vfx/skiffsliparc.js)
   game.worldLooks = new WorldLooks(game); // (the World shells' draw and alterations: vfx/worldshells.js; the draw itself tools/psygun/worlddraw.js)
+  game.skiffSetCards = (parent, opts) => skiffSetCards(parent, { game, ...opts }); // (the skiff sets as choice cards with their livery's swatch, for the race board's PAINT tab: ui/skiffsetcards.js, GAPS G207)
   game.racewayLooks = new RacewayLooks(game); // (the Raceway's sun plates, countdown lamps, gates' marks, carve sparks and ghost: dressed by the Raceway, vfx/racewaylooks.js)
   game.racewayCavern = new RacewayCavern(game); game.racewayFog = new RacewayFog(game); game.racewayPark = new RacewayPark(game); game.racewayProps = new RacewayProps(game); game.racewaySiphons = new RacewaySiphons(game); // (the cavern's stone, crystals, veins and dark, and Dread's fog on the course: vfx/racewaycavern.js, vfx/racewayfog.js)
   game.racewayMade = new RacewayMade(game); game.racewayTraps = new RacewayTraps(game); game.trackEditorMarks = new TrackEditorMarks(game); game.trackEditorLook = new TrackEditorLook(); // (a made track's dress, its traps' bodies and tells, the editor's marks and its panel's dress: TRACK-EDITOR.md)

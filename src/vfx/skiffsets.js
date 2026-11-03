@@ -16,6 +16,8 @@
 //
 //   SKIFF_SETS [{ id, label, line, slots: { hull, dye, pattern, cut, trail, ribbon, pennant, length, wrap } }]   SKIFF_SET_SLOTS
 //   setOf(id)   applySkiffSet(game, id, { previewHull }) -> { set, worn, skipped, refused } | null   skiffSetCommands(game)  (/skiffset)
+//   setPicks(game, id) -> { kind: id }  (what the set would put on each slot the catalogue has)   setWorn(game, id) -> bool (every pick worn)
+//   skiffSetPreview(game, id | null)  (the set shown whole on the board, never chosen: the race board's SET cards, ui/skiffsetcards.js)
 // ---------------------------------------------------------------------------------------
 // TODO: import SET_RULES[id].pieces from progress/skiffpaint.js (Dovina's ask) once it reaches the default branch.
 import { PAINT } from '../progress/skiffpaint.js';
@@ -44,6 +46,17 @@ export const setOf = (id) => SKIFF_SETS.find((s) => s.id === id) || null;
 
 /** The catalogue's choices of a kind (the dyes with your glazes, as the race board lists them), or null if it has no such kind. */
 function rowsOf(game, kind) { return kind === 'dye' ? (game.skiffPaint?.dyes?.() ?? PAINT.dye) : PAINT[kind] ?? null; }
+
+/** What the set would put on each slot the catalogue has (the first of its choices there). */
+export function setPicks(game, id) {
+  const set = setOf(id), out = {}; if (!set) return out;
+  for (const kind of SKIFF_SET_SLOTS) { const rows = rowsOf(game, kind); if (!rows) continue; const pick = (set.slots[kind] || []).find((w) => rows.some((r) => r.id === w)); if (pick) out[kind] = pick; }
+  return out;
+}
+/** The set worn now: every slot it would fill is worn as it would fill it. */
+export function setWorn(game, id) { const w = game?.skiffPaint?.worn, p = setPicks(game, id), ks = Object.keys(p); return !!w && ks.length > 0 && ks.every((k) => w[k] === p[k]); }
+/** The set shown whole on the Courier's board (a look, not chosen); null gives the worn back. */
+export function skiffSetPreview(game, id) { return skiffPaintPreview(game, id ? setPicks(game, id) : null); }
 
 /** Wear a set whole: each slot through `game.skiffPaint.choose` (the first of its choices the catalogue has); a kind it lacks skipped. With
  *  `previewHull`, a hull painting the catalogue has no kind for yet is worn as the race board's preview is (a look, never chosen). */
