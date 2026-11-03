@@ -17,6 +17,11 @@
 //     the wall's gap behind it).
 //   - THE PROPS: a wheel of fortune spinning on the north wall over the Treasury's slot, a clay carousel of jars, a giant d20 on a plinth.
 //   - THE PLINTHS of the three tables wear the hall's glaze (a sleeve and gold bands); their tops are not this module's.
+//   - THE ALL-OUT (CASINO-CLARITY.md 8, a tier 3 hand: the score ceremony's `table.ceremony.beat { kind: 'flourish', tier: 3 }`): the whole
+//     hall goes labradorite for a few real seconds: the four neon bands fall into one phase and walk the film fast and twice as bright,
+//     the dome and the lanterns take the film, the mosaic and the stalls wash in it, Dovina's lamps turn to it; then it all eases back.
+//     No mesh, no program added (the materials' colours only). While a seat is taken the table view ticks the hall (`update(dt,
+//     'table')`, vfx/bazaartable.js), since the table's page pauses the world's phases.
 // Dovina's dome and neon tori are taken out of the scene (these replace them); her six lamps are retinted to the lanterns' warmth, still
 // the light budget's (render/lightbudget.js). The Treasury's slot (BAZAAR.treasury: 34 m by 8 m) is left clear.
 // Every material is one already built: the kit's vertex-coloured flat standard (vfx/racewaypark.js's parameters) and the vertex-coloured
@@ -58,6 +63,9 @@ export const BAZAAR_HALL = {
   lantern: [0xff5a3c, 0xffb347, 0xffe9b0, 0xff6fa8],
   wheel: { y: 9.5, z: -56.0, r: 5 }, carousel: { x: -32, z: 28, r: 5 }, d20: { x: 32, z: 28 },
   lamps: [0xffb060, 0xff7a6a, 0xffd27a, 0xff8fb0, 0xffb060, 0xffd27a],
+  // the all-out (real s: up, held, down; the film's walk then, a loop a real second; the neon's brightness; how far the dome and lanterns,
+  // the stone's wash and the lamps go into the film)
+  allOut: { rise: 0.25, hold: 3.0, fall: 1.8, walk: 0.55, bright: 3.2, glow: 0.8, stone: 0.14, lamps: 0.75 },
 };
 const H = BAZAAR_HALL, G = H.glaze, TAU = Math.PI * 2, UP = new THREE.Vector3(0, 1, 0), ZAX = new THREE.Vector3(0, 0, 1);
 const _c = new THREE.Color(), _e1 = new THREE.Vector3(), _e2 = new THREE.Vector3(), _m = new THREE.Vector3(), _q = new THREE.Quaternion();
@@ -132,6 +140,8 @@ export class BazaarHall {
     this.stone = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.5, flatShading: true }); // (the kit's parameters: its program)
     this.glowMat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, vertexColors: true }); // (the rope's and the chest model's: their program)
     this.neonMats = [0, 1, 2, 3].map(() => new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, vertexColors: true }));
+    this.out = -1; this.outPh = 0; // (the all-out: real s since it began, -1 at rest; the film's walk it adds)
+    game.events?.on?.('table.ceremony.beat', (e) => { if (e?.kind === 'flourish' && e.tier === 3) this.allOut(); });
     this.build(game);
   }
 
@@ -385,13 +395,34 @@ export class BazaarHall {
     ico.dispose();
   }
 
-  update(dt) {
+  /** A tier 3 hand: the whole hall goes labradorite (again from the top if it already is). */
+  allOut() { this.out = 0; }
+  /** The all-out's strength now, 0..1 (eased up, held, eased down). */
+  outK() {
+    const A = H.allOut, t = this.out; if (t < 0) return 0;
+    const k = t < A.rise ? t / A.rise : t < A.rise + A.hold ? 1 : 1 - (t - A.rise - A.hold) / A.fall;
+    const c = Math.max(0, Math.min(1, k)); return c * c * (3 - 2 * c);
+  }
+
+  /** `from` 'table': the table view's tick while a seat is taken (the page pauses the world's phases); the systems' tick stands aside then. */
+  update(dt, from = null) {
+    if (from !== 'table' && this.game.bazaarTable?.s) return;
     if (!this.built || zoneOf(this.game.camera.position) !== 'bazaar') return;
-    const t = (this.t += dt);
+    const t = (this.t += dt), A = H.allOut;
     this.dome.rotation.y = t * 0.006;
     this.wheel.rotation.z = -(t * 0.5 + Math.sin(t * 0.21) * 1.2);
     this.rotor.rotation.y = t * 0.28;
-    this.neon.forEach((n, k) => featTint((t * SCHILLER.rate + k * 0.25) % 1, n.material.color, { bright: H.neon.bright }));
+    let k = 0;
+    if (this.out >= 0) { this.out += dt; k = this.outK(); this.outPh += dt * A.walk * k; if (this.out > A.rise + A.hold + A.fall) this.out = -1; }
+    const bright = H.neon.bright + (A.bright - H.neon.bright) * k;
+    this.neon.forEach((n, i) => featTint((t * SCHILLER.rate + i * 0.25 * (1 - k) + this.outPh) % 1, n.material.color, { bright }));
+    if (k > 0 || this.washed) { // (the dome, the lanterns, the stone and the lamps into the film, and back to as they were)
+      const ph = (t * SCHILLER.rate + this.outPh + 0.5) % 1;
+      featTint(ph, _c, { bright: 1.3 }); this.glowMat.color.setRGB(1, 1, 1).lerp(_c, A.glow * k);
+      featTint(ph + 0.25, _c, { bright: 1 }); this.stone.emissive.copy(_c).multiplyScalar(A.stone * k);
+      this.game.bazaar?.lamps?.forEach((l, i) => { l.color.setHex(H.lamps[i % H.lamps.length]).lerp(featTint(ph + i / 6, _c, { bright: 1 }), A.lamps * k); });
+      this.washed = k > 0;
+    }
   }
 }
 

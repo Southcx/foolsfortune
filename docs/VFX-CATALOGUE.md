@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-11-03). 697 effects in 48 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-11-03). 700 effects in 49 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -844,6 +844,14 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `overture.crack` | one-shot | sprites:streak, sprites:sparkle | the FUSE: the mend's gold breaking across the dark, a crack of light | cine/overture.board.js |
 | `overture.draw` | one-shot | sprites:ringthin, sprites:glint, flash | a tool drawn on the half bar: a flash of the Mind at the hand, a ring out | cine/overture.board.js |
 | `overture.ring` | held | mesh:ult_vortex, sprites:streak, sprites:sparkle | the CLIMB's ring: the Mind's labradorite wound round the Courier as the tools are drawn, faster and brighter to the snare roll | cine/overture.board.js |
+
+### well (3)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `well.warp.let` | one-shot | sprites:chip, sprites:puff, shape:ring |  | vfx/wellwarp.js |
+| `well.warp.pot` | one-shot | sprites:chip, sprites:puff |  | vfx/wellwarp.js |
+| `well.warp.rise` | held | sprites:chip, sprites:puff, sprites:sparkle |  | vfx/wellwarp.js |
 
 ### wisp (3)
 

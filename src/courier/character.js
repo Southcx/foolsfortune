@@ -492,6 +492,7 @@ export class Character {
     st.keyPlant = null; // (a key move's planted soles, said again each frame by the move that owns the legs: anim/keyposes.js plantFeet)
     s.techs?.animate(this, base, dt, s);
     this.lendGesture.pose(dt, base); // (the sub's verb lent on R, over the stance, the air and any tech: anim/lendgesture.js)
+    this.parryGesture.pose(dt, base); // (V's body with a tool in the hands, on parry.try: anim/parrygesture.js)
     // (hitlag: the pose held as it was on the frame `hold` was asked, its 60 Hz frames run out in game time: KEY-POSES.md 3, FIGHTER.md)
     const HL = st.hold; if (HL) { HL.f -= dt * 60; if (HL.f <= 0) st.hold = null; else if (HL.pose) base.copy(HL.pose); else HL.pose = this.clips.pose().copy(base); }
     this.applyPose(base);

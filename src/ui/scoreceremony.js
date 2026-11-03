@@ -12,7 +12,9 @@
 //   REEL      Nebula's reveal ('against') and a Supernova's doubling ('x' with no tier) spin on a reel centred above the boxes.
 //   SLAM      the boxes close on each other and merge into the TOTAL: the biggest thing on screen, rolling up from 0.
 //   FILM      only a tier 3 total wears the labradorite film (featTint, never a second iridescence), laid on a plain overlay once the
-//             number has settled (background-clip:text does not paint through the rolling digits' transforms), and the hall floods with it.
+//             number has settled (background-clip:text does not paint through the rolling digits' transforms), and the hall floods with it
+//             (vfx/bazaarhall.js goes labradorite on the flourish's beat); the total then HOLDS BIG (TIMING.big, swelling a little and back)
+//             before it banks into your seat plate.
 //   SHAKE     the stage and the HUD shake in proportion to `scale` (0 the least, 1 the median, 2 the 90th percentile and beyond).
 //   SKIPPING  a click or Esc jumps to the final total at once (no shake, the flourish still sounds); the promise still resolves.
 //
@@ -33,7 +35,7 @@ import { Reel } from './reel.js';
 import { featTint } from '../vfx/oxidation.js';
 
 export const TONES = { score: '#f4ecd8', mult: '#d4412e', money: '#e8b923', loss: '#8a8a90' };
-export const TIMING = { name: 0.3, base: 0.3, add: 0.2, mult: 0.32, face: 0.16, reel: 0.7, slam: 0.22, roll: 0.5, hold: 1.4, fly: 0.22, lit: 0.06 };
+export const TIMING = { name: 0.3, base: 0.3, add: 0.2, mult: 0.32, face: 0.16, reel: 0.7, slam: 0.22, roll: 0.5, hold: 1.4, fly: 0.22, lit: 0.06, big: 1.6 }; // (big: a tier 3 total held big before it banks)
 const PLATE = '#12163a';
 
 /** The coach's scale (0..2) -> the shake: seconds, pixels, degrees, the HUD's 0..1 power. */
@@ -262,6 +264,11 @@ export class ScoreCeremony {
       });
     }
     if (run !== this.run) return false;
+    if (tier === 3 && !skipped && !this.skipped) { // (the number holds big before it banks: CASINO-CLARITY.md 8)
+      tbox.animate?.([{ transform: 'scale(1)' }, { transform: 'scale(1.16)', offset: 0.3 }, { transform: 'scale(1.1)', offset: 0.8 }, { transform: 'scale(1)' }], { duration: TIMING.big * 1000 / speed, easing: 'ease-in-out' });
+      await this.sleep(TIMING.big);
+      if (run !== this.run) return false;
+    }
     if (target && stage.animate && !skipped && !this.skipped) await this.flyTo(stage, target, speed);
     this.ended = true;
     this.emit('table.ceremony.end', { ...tag, total: c.total, skipped, scale: c.scale, tier });

@@ -52,6 +52,7 @@ import { installHangarDress } from '../vfx/mechs/hangardress/index.js';
 import { installMechSpecialLooks } from '../vfx/mechs/speciallooks.js';
 import { installGiantLooks } from '../vfx/mechs/giants/index.js';
 import { SentinelLook } from '../vfx/sentinellook.js';
+import { WellWarpLook } from '../vfx/wellwarp.js';
 import { PalmDieLook } from '../vfx/godhand/palmdie.js';
 import { MawWipe } from '../vfx/mawwipe.js';
 import { AreaWipe } from '../vfx/areawipe.js';
@@ -123,6 +124,7 @@ export async function bootWorld(game, made) {
   mark('dunes');
   game.seam = new Seam(game); // (a place changed under a cover: render/seam.js)
   game.well = new Dunemaw(game); // (the Great Dunemaw: the Well in the Dunes, its mouth out on the sand: world/well/dunemaw.js)
+  game.wellWarp = new WellWarpLook(game); game.systems.add('fx', game.wellWarp, { name: 'wellWarp' }); // (a warped pocket's look round each floor's warped artifact: the tear, sand falling upward, a pot floating; vfx/wellwarp.js)
   game.systems.add('world', game.well, { name: 'well' }); // (core/systems.js)
   // what the environmental movement techs read: water, ladders, slip (built with the level)
   const movers = new Movers(game);
