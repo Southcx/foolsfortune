@@ -6,6 +6,7 @@
 // THE RULE THE NUMBERS KEEP: every tool's sustained damage stays about 2.6 power a real second at full uptime
 // (progress/combat/greatjelly.js SUSTAINED), so a raid's health holds whatever the Courier carries. A string's total power over its total
 // time is about that; a launcher and a dash trade damage for position; a special is a burst that costs Lachryma, not a free raise.
+// A Sondelass row's `unlock` and `ways` come from one call, `...way(count, feat)`, so the cards' words cannot drift from the gate.
 // UNLOCKS are predicates over the ledger, as the achievements are (retroactive, never flags): the string, the alternate string, the
 // charge and the dash come with the tool; the launcher and the air string come from using the tool; each special from that tool's
 // mastery (Devil May Cry's shop of moves, here earned by doing, as OSRS unlocks are).
@@ -21,11 +22,20 @@
 
 const always = () => true;
 const uses = (key, n) => (L) => (L.get(key) || 0) >= n;      // (a count in the ledger)
-const best = (key, n) => (L) => (L.best(key) || 0) >= n;     // (a record)
-const hits = (move, n) => uses(`sond.move.${move}.hit`, n);       // (a Sondelass move's blows landed: tracking/moves.js)
-const finishes = (move, n) => uses(`sond.move.${move}.finish`, n); // (its strings finished on a creature)
-const either = (...ways) => (L) => ways.some((w) => w(L));          // (the count way or the feat way, whichever first)
+const H = (move, n) => ({ key: `sond.move.${move}.hit`, n });   // (a Sondelass move's blows landed: tracking/moves.js)
+const F = (move, n) => ({ key: `sond.move.${move}.finish`, n }); // (its strings finished on a creature)
+const U = (key, n) => ({ key, n });                               // (a count in the ledger)
+const B = (key, n) => ({ key, n, best: true });                 // (a record in the ledger)
+const have = (w, L) => (w.best ? L.best(w.key) : L.get(w.key)) || 0;
 
+/** A Sondelass row's two ways, from one place: `way(count, feat)` -> `{ unlock, ways }` to spread into the row. Each way is
+ *  `{ key, n, best? }` (a count at n, or a record at n with `best`); the move opens by any one of either list, as the achievements
+ *  do (retroactive, never flags). `ways` is what the loadout editor and the Codex's tree read (tools/sondelass/loadoutways.js
+ *  `waysOf`), so what a card says and what opens the move cannot drift apart. */
+export const way = (count = [], feat = []) => ({
+  unlock: (L) => count.some((w) => have(w, L) >= w.n) || feat.some((w) => have(w, L) >= w.n),
+  ways: { count, feat },
+});
 /** Each move: `power` per hit (creatures.strike's power; a slip jelly bursts at 8), `hits` in the move, `time` real seconds of the move
  *  (its clip at the speed it plays), `cost` Lachryma, `status` it puts on what it strikes (creatures.apply; each creature decides what
  *  it means), `unlock` a ledger predicate. Strings are listed stroke by stroke ('combo1'..): their sum over their time is the dps. */
@@ -37,9 +47,9 @@ export const MOVES = {
     pause3: { power: 2.6, time: 0.9, unlock: always, status: 'stagger' },                                    // (the pause string's finisher staggers: j3)
     thrust2: { power: 0.9, hits: 3, time: 0.9, unlock: always, status: 'stagger' },                         // (t2, Sond_ThrustCombo: the held thrust stabs three times; pause3's 2.6 as three, Calissa 2026-10-10)
     charge: { power: 4.0, time: 1.3, shatter: 0.25, unlock: always },                                                        // (a full charge, the psygun's 0.85 s and the swing)
-    launcher: { power: 0.8, time: 0.55, status: 'airborne', unlock: uses('cut.hit', 50) },                    // (position, not damage; after 50 cutlass blows)
-    air1: { power: 0.9, time: 0.35, unlock: uses('move.launch', 10) }, air2: { power: 1.0, time: 0.38, unlock: uses('move.launch', 10) },
-    plunge: { power: 2.0, time: 0.6, status: 'stagger', unlock: uses('move.launch', 10) },                   // (2.9 a second over the air string: short, and earned)
+    launcher: { power: 0.8, time: 0.55, status: 'airborne', ...way([U('cut.hit', 50)], []) },                    // (position, not damage; after 50 cutlass blows)
+    air1: { power: 0.9, time: 0.35, ...way([U('move.launch', 10)], []) }, air2: { power: 1.0, time: 0.38, ...way([U('move.launch', 10)], []) },
+    plunge: { power: 2.0, time: 0.6, status: 'stagger', ...way([U('move.launch', 10)], []) },                   // (2.9 a second over the air string: short, and earned)
     dash: { power: 1.6, time: 0.5, unlock: always },
     counter: { power: 0.8, hits: 4, time: 1.7, unlock: always },                                             // (the spin from the guard, Sond_SpinSlash: four turns of the blade, a read guard's reward; it borrowed combo3's)
     stinger: { power: 3.0, time: 0.7, cost: 6, unlock: always },                                             // (RMB tapped: the lunge, as today; paid in Lachryma, so not a free raise)
@@ -49,37 +59,39 @@ export const MOVES = {
     // its parent finishing a string on a creature 5 times, or the feat its effect names. A special: its parent landed 30 times (60 when
     // the parent is itself earned: the counts double along the tree), or its feat once. The numbers are Calissa's measured `stats`
     // (every normal in any slot -2.9..+2.2% of today's string a second; every special -8.5..+6%).
-    quickSlash: { power: 1.0, time: 0.34, parent: 'c1', unlock: either(hits('c1', 60), finishes('c1', 5)) },
-    bodyBlow: { power: 0.9, time: 0.3, parent: 'c1', unlock: either(hits('c1', 60), finishes('c1', 5)) },
-    backhand: { power: 1.1, time: 0.38, parent: 'c2', unlock: either(hits('c2', 60), finishes('c2', 5)) },
-    guardBreak: { power: 1.1, time: 0.42, status: 'stagger', parent: 'c2', unlock: either(hits('c2', 60), finishes('c2', 5), uses('sond.effect.guardBreak', 3)) },
-    lungeSlash: { power: 1.4, time: 0.5, parent: 'c3', unlock: either(hits('c3', 60), finishes('c3', 5)) },
-    lowSweep: { power: 1.35, time: 0.55, status: 'trip', parent: 'c3', unlock: either(hits('c3', 60), finishes('c3', 5), uses('sond.effect.trip', 3)) },
-    heavyChop: { power: 2.4, time: 0.92, status: 'stagger', parent: 'c4', unlock: either(hits('c4', 60), finishes('c4', 5)) },
-    pushKick: { power: 1.45, time: 0.6, parent: 'c4', unlock: either(hits('c4', 60), finishes('c4', 5), uses('sond.effect.knock', 5), uses('kick.hit', 60)) }, // (a kick: the unarmed kick's blows open it too)
-    spinSlash: { power: 0.85, hits: 4, time: 1.17, cost: 8, parent: 'backhand', unlock: either(hits('backhand', 60), best('sond.struck.best', 3)) }, // (three struck by one blow)
-    powerSlash: { power: 3.0, time: 1.2, cost: 8, parent: 'heavyChop', unlock: either(hits('heavyChop', 60), finishes('heavyChop', 5)) },
-    risingCut: { power: 2.3, time: 0.9, cost: 6, status: 'airborne', parent: 'quickSlash', unlock: either(hits('quickSlash', 60), uses('move.launch', 10)) },
-    guardCrush: { power: 2.8, time: 1.11, cost: 6, shatter: 0.3, status: 'stagger', parent: 'stinger', unlock: either(uses('cut.stinger', 30), uses('sond.effect.guardBreak', 1)) },
-    backstepSlash: { power: 2.5, time: 1.0, cost: 5, parent: 'c3', unlock: either(hits('c3', 30), uses('parry.sondelass', 10)) }, // (out of reach and back in: ten parries with the Sondelass know when to leave)
+    quickSlash: { power: 1.0, time: 0.34, parent: 'c1', ...way([H('c1', 60)], [F('c1', 5)]) },
+    bodyBlow: { power: 0.9, time: 0.3, parent: 'c1', ...way([H('c1', 60)], [F('c1', 5)]) },
+    backhand: { power: 1.1, time: 0.38, parent: 'c2', ...way([H('c2', 60)], [F('c2', 5)]) },
+    guardBreak: { power: 1.1, time: 0.42, status: 'stagger', parent: 'c2', ...way([H('c2', 60)], [F('c2', 5), U('sond.effect.guardBreak', 3)]) },
+    lungeSlash: { power: 1.4, time: 0.5, parent: 'c3', ...way([H('c3', 60)], [F('c3', 5)]) },
+    lowSweep: { power: 1.35, time: 0.55, status: 'trip', parent: 'c3', ...way([H('c3', 60)], [F('c3', 5), U('sond.effect.trip', 3)]) },
+    heavyChop: { power: 2.4, time: 0.92, status: 'stagger', parent: 'c4', ...way([H('c4', 60)], [F('c4', 5)]) },
+    pushKick: { power: 1.45, time: 0.6, parent: 'c4', ...way([H('c4', 60), U('kick.hit', 60)], [F('c4', 5), U('sond.effect.knock', 5)]) }, // (a kick: the unarmed kick's blows open it too)
+    spinSlash: { power: 0.85, hits: 4, time: 1.17, cost: 8, parent: 'backhand', ...way([H('backhand', 60)], [B('sond.struck.best', 3)]) }, // (three struck by one blow)
+    powerSlash: { power: 3.0, time: 1.2, cost: 8, parent: 'heavyChop', ...way([H('heavyChop', 60)], [F('heavyChop', 5)]) },
+    risingCut: { power: 2.3, time: 0.9, cost: 6, status: 'airborne', parent: 'quickSlash', ...way([H('quickSlash', 60)], [U('move.launch', 10)]) },
+    guardCrush: { power: 2.8, time: 1.11, cost: 6, shatter: 0.3, status: 'stagger', parent: 'stinger', ...way([U('cut.stinger', 30)], [U('sond.effect.guardBreak', 1)]) },
+    backstepSlash: { power: 2.5, time: 1.0, cost: 5, parent: 'c3', ...way([H('c3', 30)], [U('parry.sondelass', 10)]) }, // (out of reach and back in: ten parries with the Sondelass know when to leave)
     // THE CMU PASS (Calissa's, 2026-10-29: 7 normals and 6 specials of kicks and off-hand blows; MELEE-LOADOUT-EARNING.md 2): the same
     // two ways as the rows above, and a third the plan gives every CMU row, the unarmed kick's blows (`kick.hit`: 60 a normal, 150 a
     // special), since feet trained bare carry over to the blade. A special's parent is itself earned, so its count doubles (60).
     // Calissa's measured `stats` (every normal -2.8..-0.6% of the string's 1.945 a second; every special from rest -4.3..+3.8%).
-    frontKick: { power: 1.45, time: 0.58, parent: 'c2', unlock: either(hits('c2', 60), finishes('c2', 5), uses('kick.hit', 60)) },
-    roundKick: { power: 1.35, time: 0.52, parent: 'c1', unlock: either(hits('c1', 60), finishes('c1', 5), uses('sond.effect.knock', 5), uses('kick.hit', 60)) },
-    sideKick: { power: 1.3, time: 0.5, parent: 'c4', unlock: either(hits('c4', 60), finishes('c4', 5), uses('sond.effect.knock', 5), uses('kick.hit', 60)) },
-    kneeStrike: { power: 1.35, time: 0.52, parent: 'c3', unlock: either(hits('c3', 60), finishes('c3', 5), uses('kick.hit', 60)) },
-    lowKick: { power: 1.6, time: 0.63, status: 'trip', parent: 'c3', unlock: either(hits('c3', 60), finishes('c3', 5), uses('sond.effect.trip', 3), uses('kick.hit', 60)) },
-    straightPunch: { power: 1.35, time: 0.52, parent: 'c3', unlock: either(hits('c3', 60), finishes('c3', 5), uses('kick.hit', 60)) },
-    hookPunch: { power: 1.1, time: 0.43, parent: 'c2', unlock: either(hits('c2', 60), finishes('c2', 5), uses('kick.hit', 60)) }, // (never `hook`: the Sondelass's hook is its form)
-    flyingKick: { power: 3.6, time: 1.45, cost: 7, parent: 'pushKick', unlock: either(hits('pushKick', 60), uses('sond.effect.knock', 10), uses('kick.hit', 150)) },
-    tornadoKick: { power: 3.6, time: 1.45, cost: 8, parent: 'roundKick', unlock: either(hits('roundKick', 60), best('sond.struck.best', 3), uses('kick.hit', 150)) }, // (all round: three struck by one blow)
-    spinHeelKick: { power: 3.8, time: 1.55, cost: 7, status: 'stagger', parent: 'sideKick', unlock: either(hits('sideKick', 60), finishes('sideKick', 5), uses('kick.hit', 150)) },
-    risingKick: { power: 2.7, time: 1.1, cost: 6, status: 'airborne', parent: 'frontKick', unlock: either(hits('frontKick', 60), uses('move.launch', 10), uses('kick.hit', 150)) },
-    flurry: { power: 1.0, hits: 3, time: 1.05, cost: 5, status: 'stagger', parent: 'bodyBlow', unlock: either(hits('bodyBlow', 60), finishes('bodyBlow', 5), uses('kick.hit', 150)) },
-    breakKick: { power: 2.7, time: 1.18, cost: 6, status: 'stagger', parent: 'guardBreak', unlock: either(hits('guardBreak', 60), uses('sond.effect.guardBreak', 3), uses('kick.hit', 150)) },
-    special: { id: 'tidecutter', power: 7, time: 2.63, cost: 12, shatter: 0.35, unlock: uses('cut.hit', 500) },             // (a line of slip: the Sondelass mastered; its clip's 2.63 real s, the strike at 1.80)
+    frontKick: { power: 1.45, time: 0.58, parent: 'c2', ...way([H('c2', 60), U('kick.hit', 60)], [F('c2', 5)]) },
+    roundKick: { power: 1.35, time: 0.52, parent: 'c1', ...way([H('c1', 60), U('kick.hit', 60)], [F('c1', 5), U('sond.effect.knock', 5)]) },
+    sideKick: { power: 1.3, time: 0.5, parent: 'c4', ...way([H('c4', 60), U('kick.hit', 60)], [F('c4', 5), U('sond.effect.knock', 5)]) },
+    kneeStrike: { power: 1.35, time: 0.52, parent: 'c3', ...way([H('c3', 60), U('kick.hit', 60)], [F('c3', 5)]) },
+    lowKick: { power: 1.6, time: 0.63, status: 'trip', parent: 'c3', ...way([H('c3', 60), U('kick.hit', 60)], [F('c3', 5), U('sond.effect.trip', 3)]) },
+    straightPunch: { power: 1.35, time: 0.52, parent: 'c3', ...way([H('c3', 60), U('kick.hit', 60)], [F('c3', 5)]) },
+    hookPunch: { power: 1.1, time: 0.43, parent: 'c2', ...way([H('c2', 60), U('kick.hit', 60)], [F('c2', 5)]) }, // (never `hook`: the Sondelass's hook is its form)
+    flyingKick: { power: 3.6, time: 1.45, cost: 7, parent: 'pushKick', ...way([H('pushKick', 60), U('kick.hit', 150)], [U('sond.effect.knock', 10)]) },
+    tornadoKick: { power: 3.6, time: 1.45, cost: 8, parent: 'roundKick', ...way([H('roundKick', 60), U('kick.hit', 150)], [B('sond.struck.best', 3)]) }, // (all round: three struck by one blow)
+    spinHeelKick: { power: 3.8, time: 1.55, cost: 7, status: 'stagger', parent: 'sideKick', ...way([H('sideKick', 60), U('kick.hit', 150)], [F('sideKick', 5)]) },
+    risingKick: { power: 2.7, time: 1.1, cost: 6, status: 'airborne', parent: 'frontKick', ...way([H('frontKick', 60), U('kick.hit', 150)], [U('move.launch', 10)]) },
+    flurry: { power: 1.0, hits: 3, time: 1.05, cost: 5, status: 'stagger', parent: 'bodyBlow', ...way([H('bodyBlow', 60), U('kick.hit', 150)], [F('bodyBlow', 5)]) },
+    breakKick: { power: 2.7, time: 1.18, cost: 6, status: 'stagger', parent: 'guardBreak', ...way([H('guardBreak', 60), U('kick.hit', 150)], [U('sond.effect.guardBreak', 3)]) },
+    special: { id: 'tidecutter', power: 7, time: 2.63, cost: 12, shatter: 0.35, ...way([U('cut.hit', 500)], [B('sond.struck.best', 5)]) }, // (a line of slip: the Sondelass mastered; its clip's 2.63 real s, the strike at 1.80)
+    // Wave Cut's feat way: five struck by one blow (ledger record sond.struck.best, tracking/moves.js, already counted). A line of slip is
+    // for a crowd, so its skill way is to catch one; the spin slash and the tornado kick ask three of the same record, and this, the dearest special, asks five.
     // THE PAID CUT (working name; Calissa's price, the owner's to tune in play, 2026-10-10): in a blow's recovery, once its strike is
     // past, a press pays `cost` and the next move begins at once (tools/moveset.js). The reasoning: a fresh pool is 100 (core/config.js
     // lachryma.max; the maker's stone, progress/stones.js, leaves it so; a stone moves it by -15..+30 and the cost by x0.85..1.15). A paid
@@ -105,7 +117,7 @@ export const MOVES = {
     combo3: { power: 2.4, time: 1.3, unlock: always },                                                        // (the club's today: 2.6 a second)
     spin: { power: 0.8, hits: 3, time: 0.9, unlock: uses('brush.hit', 100) },                               // (a crowd clearer: 2.7 a second, wide)
     airSlam: { power: 2.4, time: 0.8, unlock: always },                                                       // (the slam, as today: not on the combo engine)
-    air1: { power: 0.9, time: 0.35, unlock: uses('move.launch', 10) }, air2: { power: 1.0, time: 0.38, unlock: uses('move.launch', 10) },
+    air1: { power: 0.9, time: 0.35, ...way([U('move.launch', 10)], []) }, air2: { power: 1.0, time: 0.38, ...way([U('move.launch', 10)], []) },
     air3: { power: 1.4, time: 0.5, unlock: uses('move.launch', 10) },                                        // (the brush's air string: 2.7 a second, as the cutlass's; earned the same way)
     dash: { power: 1.2, time: 0.6, unlock: always },
   },

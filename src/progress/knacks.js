@@ -72,7 +72,9 @@ export const KNACKS = {
   thermometer: { name: 'Thermometer', does: 'Shows a cooking move\'s value as a number, and its heart, beside the food\'s own tells', // (SPIRIT-COOKING.md 4: "the tell is the interface, never a thermometer ... a late-earned knack"; G231; plain name, Espada's to rule)
     opens: (L) => G(L, 'cook.serve') >= 150 || G(L, 'cook.true') >= 20, // (late: 150 dishes served, or 20 True cooks: by then you read the tells, and the number only confirms them)
     switch: "world/garden/kitchen.js (the cooking window: the move's value 0..1 on its unit and the heart's mark beside the tells, while game.knacks.on('thermometer'): Petra's)", number: 'the value and its heart shown' },
-  // Two-Tone (an agate's two colours on a creature's body) waits for the agate named at appraisal (`appraise.mood`), which it counts.
+  twoTone: { name: 'Two-Tone', does: "Shows an agate's two feelings on a creature's body as two marbled bands, each in its own colour", // (G314; placeholder words for Espada; plain name until the owner calls it settled)
+    opens: (L) => under(L, 'weather.agate.') >= 2, // (standing under two different agates, two moods in one sky; the weather's tracking counts weather.agate.<agate> a block: feedback/tracking/weather.js. Achievement sk8 asks five different)
+    switch: "vfx/agatelook.js (Calissa's: both colours marbled over the body as two veins, shown while game.knacks.on('twoTone'))", number: 'two bands, the strongest feeling and the second' },
 };
 
 /** A knack as the player types it: its label in one lower-case word (Last Straw: laststraw), never its code id in player text. */
