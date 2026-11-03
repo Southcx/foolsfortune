@@ -339,3 +339,44 @@ on the game clock are still to come; the batch and auto-cook are family-blind.
 
 Achievement: **Ten at Once** (hi `cook.batch.size` 10).
 
+
+## 16. The other families, played in the window (built 2026-11-03, G222 to G225, G229)
+
+South, 2026-11-03: "build any outstanding unbuilt features". Rice, broth and tea (G222 to G224), the other moves played with the sear, sauce,
+emulsion, sweet, ferment and smoke families (G225), and recipes found by tasting and repair (G229) are playable in the hearth's window, in
+plain placeholder drawing. Rules in `progress/cooking/`; the window's side in `world/garden/kitchenfamily.js` (kitchen.js hooks it: a
+family row on the choose page, `begin` handing on, `finish` stepping to the family's next move). Proved headless by `node scripts/cookingfamilies.mjs`.
+
+**The plays** (`progress/cooking/plays.js`, pure: the window only draws them and wires buttons, so a script can cook a dish). One gesture each:
+
+| move | gesture | what you do | ruined by |
+|---|---|---|---|
+| simmer | dial (a range: a thumb drag) | the pot starts too hot (0.75): turn the dial to the heart (0.6) and hold it; the wall answers late; scored on the mean heat after a 3 s warm-up of 12 s | a boil (heat 0.8) for 1.5 s |
+| rice | rinse taps, then a drag | RINSE until the water clears (heart 0.85), pour off, then drag the water to the line (1 : 1.15); 3/5 the rinse, 2/5 the line | never |
+| steep | wait, then a tap | the water heats by itself with bubble tells (shrimp, crab, fish eyes); POUR at the leaf's heat | the boil |
+| sugar | taps | the syrup climbs unseen; DROP A SPOON IN WATER reads its stage; TAKE IT OFF at the stage asked | burnt (0.95) |
+| roux | taps | STIR or the bottom scorches at 2.2x; STOP at the colour | scorched |
+| emulsion | a range and a tap rhythm | POUR (drag) against WHISK (taps): a pour past what the whisk takes (cap 0.1 + 1.1 x whisk) splits it; A FRESH YOLK rescues for 0.08 of the score | a full split |
+| smoke | taps | FEED THE FIRE a little at a time, 14 s; thin blue smoke good | white smoke (fire 0.8) for 2 s |
+| sear, cut, bleed | a tap; a range and taps; a tap on a beat | as the 3D moves' rules, now also in the window: sear lifts at the crust, cut draws a width and cuts at least 3 even ribbons (spread costs 2x), bleed presses in the fish's stillness | black; never; never |
+| ferment | the game clock (`Cooking.long`) | set the warmth (cooler 0.6, steady 1, warmer 1.6 x 0.25 a game hour), leave, return, SMELL IT, TAKE IT OUT before 0.85 | sporing |
+
+A move's heart moves with the leaf or the family where the real one does (`moveFor`): the broth's steep 0.4 (kombu out at the first wisp), a mint tea
+0.45, a bitter leaf 0.7, honey candy 0.7 (the hard crack). `MOVES` itself is never changed.
+
+**The families** (`FAMILIES`, all `built`): rice (rice, simmer), broth (simmer, steep; a fish is the katsuobushi and doubles the umami with kombu), tea (steep),
+sear (cut, sear), sauce (roux, simmer), emulsion (emulsion, simmer), sweet (sugar), ferment (ferment), smoke (smoke); a fish may be the add-in of broth, sear and smoke. The
+3D stage's seafood (bleed, sear) is also playable here, a fish needed. New pantry staples: sugar and tea leaf. Pasta, sheets and noodles (roll, laminate, pull, boil) stay on
+Calissa's stage only. `serve` is not a scored move: the taste-and-adjust and the serve page are it.
+
+**Recipes found** (`progress/cooking/recipes.js`, kept in `Cooking`):
+- **By tasting:** `Cooking.receive(giver)` keeps the recipe of a dish a folk or a spirit gave (`GIFTS`: five placeholder givers); `cook.taste`.
+- **By repair:** `SLABS` (six): a slab turns up at the hearth by a ledger predicate (`cook.checkSlabs`, never a flag); the window's RECIPE SLABS page shows each line hinted
+  and blank lines you fill by tapping through the choices (the hidden moves and two decoys); MEND says how many fit, costs nothing, and a whole slab keeps the recipe (`cook.slab`).
+- A recipe known gates nothing today (any combination can be cooked); it fills the list. A taught or mended dish is a known dish with no best and `via`.
+
+**Ledger:** `cook.family.<family>` as before, `cook.taste`, `cook.taste.new`, `cook.slab.found`, `cook.slab.tried`, `cook.slab.mend`. Achievements: Every Pot, Taste and Learn, Whole Again.
+
+**Left, and why:** nothing calls `receive` yet (the folk's lines that hand over a dish are Espada's: `docs/handoffs/espada/2026-11-03-from-dovina-cooking-gifts.md`); the long steps for the broth's
+and rice's own waits on the game clock (only the ferment is); a sibling at the pot and bonds (G227); a pot's wall (thick or thin) as a modifier on the dial's lag; the rice's medome ritual.
+Not priced: `scripts/cooking.mjs` still prices only the bread lifts; the new draughts use the same `dishDraught`, so the same ceiling holds.

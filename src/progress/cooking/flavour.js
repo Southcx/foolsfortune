@@ -37,6 +37,8 @@ export const INGREDIENTS = {
   starter: { taste: { sour: 0.08, kokumi: 0.1 }, pantry: true, line: 'A sourdough starter kept alive at the hearth: wild yeast and lactic bacteria.' },
   rice:    { taste: { sweet: 0.1 }, pantry: true, line: 'Short-grain rice: wash it until the water runs almost clear.' },
   egg:     { taste: { rich: 0.2, umami: 0.05 }, pantry: true, line: 'Egg: its yolk is what makes fresh pasta silky and gold.' },
+  sugar:   { taste: { sweet: 0.5 }, pantry: true, line: 'Sugar: boiled with water it passes thread, ball and crack, each a stage you can read in cold water.' },
+  tealeaf: { taste: { bitter: 0.12, umami: 0.05 }, pantry: true, line: 'A tea leaf: green wants gentle water, black wants it boiling, and over-steeped any of them turns bitter.' },
   kansui:  { taste: { bitter: 0.04 }, pantry: true, line: 'Kansui: alkaline water. It makes noodles springy and yellow (the gluten tightens; the flour\'s flavones turn gold).' },
   // the add-ins: one a feeling (a creature of that feeling drops its own: progress/creaturedrops.js)
   mint:       { taste: { cool: 0.8 }, from: 'wonder', line: 'Mint: menthol tricks the cold receptor (TRPM8), so it tastes cool without being cold.' },
