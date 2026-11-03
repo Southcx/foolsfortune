@@ -13,9 +13,11 @@
 //
 //   STAGES [{ id, wave, family, verbs: [id], par }]   VERB (id -> { name, from })   PERCENT   launchOf(power, percent) -> { speed, angle }
 //   GRID   CELL   PIT   rankOf({ t, par, hits, string }) -> 'SS' .. 'D'   starsOf(rank) -> 0..3
+//   ROPE POGO GRAB PULLEY FLOAT GUIDE TURRET (the room-side verbs' numbers, below)
 //   events (the room's, each with `by`): well.stage.enter { stage }, well.stage.clear { stage, t, hits, string, rank, stars },
 //   well.dummy.ko { stage, percent }, well.dummy.trophy { kind }, well.pit.death { stage, cause }, well.flood.fill { stage, cells },
-//   well.verb { verb } (a verb used for the first time in the Well: the bench's checklist)
+//   well.verb { verb } (a verb used for the first time in the Well: the bench's checklist), well.pogo { stage, on }, well.grab { stage }, well.throw { stage, slam },
+//   well.guide { stage, kind: 'guide' | 'rival', beat? }
 // ---------------------------------------------------------------------------------------
 
 /** The verbs, each with its prior art: the plan's section 3, one row a verb, the checklist the stages are measured by. */
@@ -25,6 +27,7 @@ export const VERB = {
   wallJump: { name: 'Wall jump', from: 'Mega Man X' }, wallRun: { name: 'Back-wall run', from: 'Prince of Persia' }, mantle: { name: 'Ledge grab', from: 'Prince of Persia' },
   dropThrough: { name: 'Drop through', from: 'Super Mario Bros 2' }, spring: { name: 'Spring', from: 'Sonic' }, slope: { name: 'Slope speed', from: 'Sonic' },
   ice: { name: 'Ice', from: 'Super Mario Bros 3' }, goo: { name: 'Goo', from: 'Super Meat Boy' },
+  ropeLaunch: { name: 'Rope launch', from: 'Bionic Commando, Donkey Kong Country' }, rival: { name: 'Beat the rival', from: 'Mario Kart, Celeste' },
   ladder: { name: 'Ladder', from: 'Donkey Kong' }, vine: { name: 'Vine', from: 'Tomba!' }, swingRope: { name: 'Rope swing', from: 'Donkey Kong Country' },
   hang: { name: 'Monkey bars', from: 'Bionic Commando' }, beam: { name: 'Balance beam', from: 'Prince of Persia' }, pole: { name: 'Pole swing', from: 'Strider' },
   stomp: { name: 'Stomp', from: 'Super Mario Bros' }, groundPound: { name: 'Ground pound', from: 'Super Mario 64' }, pogo: { name: 'Pogo', from: 'Shovel Knight' },
@@ -64,7 +67,7 @@ const FIGHTER_VERBS = ['shield', 'spotDodge', 'roll', 'airDodge', 'wavedash', 's
 /** The stages, in the wings' order, and the wave each is built in (the plan's section 4). `par` real seconds for a rank. */
 export const STAGES = [
   { id: 'run', wave: 1, family: 'The Run', par: 60, verbs: ['run', 'jump', 'doubleJump', 'dash', 'slide', 'crawl', 'wallJump', 'wallRun', 'mantle', 'dropThrough', 'spring', 'slope', 'ice', 'goo'] },
-  { id: 'climb', wave: 1, family: 'The Climb', par: 60, verbs: ['ladder', 'vine', 'swingRope', 'hang', 'beam', 'pole'] },
+  { id: 'climb', wave: 1, family: 'The Climb', par: 60, verbs: ['ladder', 'vine', 'swingRope', 'ropeLaunch', 'hang', 'beam', 'pole'] },
   { id: 'stomp', wave: 1, family: 'The Stomp', par: 50, verbs: ['stomp', 'groundPound', 'pogo', 'bonk'] },
   { id: 'brawl', wave: 1, family: 'The Brawl', par: 90, verbs: ['string', 'juggle', 'launch', 'ringOut', 'grabThrow', 'trophy'] },
   { id: 'machine', wave: 1, family: 'The Machine', par: 90, verbs: ['push', 'seesaw', 'pulley', 'conveyor', 'crumble', 'mover', 'switch', 'onOff', 'key', 'cannon', 'carry'] },
@@ -72,7 +75,7 @@ export const STAGES = [
   { id: 'arsenal', wave: 2, family: 'The Arsenal', par: 60, verbs: ['shoot8', 'chargeShot', 'bomb'] },
   { id: 'swing', wave: 2, family: 'The Swing', par: 60, verbs: ['grapple', 'elastic', 'zip'] },
   { id: 'flip', wave: 2, family: 'The Flip', par: 60, verbs: ['flip', 'flick', 'portal'] },
-  { id: 'pit', wave: 2, family: 'The Pit', par: 120, verbs: ['retry', 'shootSave', 'troll', 'ghosts'] },
+  { id: 'pit', wave: 2, family: 'The Pit', par: 120, verbs: ['retry', 'shootSave', 'troll', 'ghosts', 'rival'] },
   { id: 'jar', wave: 2, family: 'The Jar', par: 60, verbs: ['jarRoll', 'jarThrow'] },
   { id: 'troupe', wave: 3, family: 'The Troupe', par: 150, verbs: ['jobs'] },
   { id: 'script', wave: 3, family: 'The Script', par: 150, verbs: ['rules', 'drawLine'] },
@@ -111,6 +114,23 @@ export const MATTER = {
   lachryma: { falls: true, flows: true, spread: 6, heavy: 1, freezes: 'ice' },
   crude: { falls: true, flows: true, spread: 2, heavy: 0.8, burns: true },
 };
+
+/** The room-side verbs added after wave 1 (STRAWMANS-WELL.md 4, GAPS G250 to G254), each a modifier with a source you can see in the stage:
+ *  the rope's swing `ROPE` (A and D pump it, `pump` rad/s each real s; let go with Space and its tip's speed x `launch` is added to the kick, at
+ *  most `cap` m/s, counted a launch from `min`), the pogo `POGO` (a downward blow over a foe's head or a spike's row within `reach` m above it
+ *  and `side` m beside it throws you up at `speed` m/s, `cd` real s apart), grab and throw `GRAB` (a dummy within `reach` m held over the head
+ *  up to `hold` real s, thrown as a blow of `power`, or slammed down at `slam` m/s), the pulley `PULLEY` (a platform's load: the Courier 1, a
+ *  crate `crate`; it moves `speed` m/s while someone stands on it), a crate in a liquid `FLOAT` (its lift x `lift` of gravity at full depth, the
+ *  water's damping `damp` 1/s), Strawman's guide and rival `GUIDE` (the ghost's pace `speed` m/s, hop height `hop` m, opacity `alpha`, how far
+ *  ahead of you it starts `lead` real s) and the cannon as the Wisp's turret `TURRET` (a ball every `every` real s, its speed, how long a parried
+ *  ball stuns it `stun`, the knock on you). */
+export const ROPE = { pump: 1.6, launch: 0.95, cap: 12, min: 2 };
+export const POGO = { speed: 11.5, reach: 2.2, side: 0.9, cd: 0.25 };
+export const GRAB = { reach: 1.0, hold: 6, power: 2, slam: 14 };
+export const PULLEY = { speed: 1.8, crate: 2, courier: 1 };
+export const FLOAT = { lift: 1.9, damp: 3 };
+export const GUIDE = { speed: 5, hop: 0.6, alpha: 0.4, lead: 0 };
+export const TURRET = { every: 2.6, speed: 7, stun: 6, knock: 6.5, r: 0.32 };
 
 /** The Pit's retry (Super Meat Boy): a fall puts you back at the last checkpoint in `retry` real s, never a shatter (a test bench). */
 export const PIT = { retry: 0.4, ghosts: 64 };

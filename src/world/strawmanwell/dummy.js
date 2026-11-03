@@ -12,6 +12,7 @@
 // Prior art: Super Smash Bros.' damage percent, knockback and blast zones; the Lantern Wisp's body (creatures/wisp/lanternwisp.js: a
 // kinematic capsule, a mind that sets `want`, a body that moves and poses).
 //
+//   a lifted dummy (dummygrab.js) has `c.held` (a function: where the hands are) and is placed there, not simulated
 //   const D = new StrawDummies(well)   D.spawn(at, arena, { kind, name, body, mind, size })   D.swipe(c)   D.update(dt)   D.clear()   D.list
 //   arena: { x0, x1, top, z, stage }   events: well.dummy.ko { stage, percent, by }, well.dummy.trophy { kind, by }
 // ---------------------------------------------------------------------------------------
@@ -157,6 +158,12 @@ export class StrawDummies {
       const A = c.arena;
       if (c.out > 0) { if ((c.out -= dt) <= 0) this.back(c); continue; }
       if (c.tag.shown < 0) this.drawTag(c);
+      if (c.held) { // (lifted by the Courier: dummygrab.js; it goes where the hands are, hanging, and thinks of nothing)
+        const h = c.held(); c.pos.copy(h); c.vel.set(0, 0, 0); c.grounded = false; c.attack = null; c.tumble = 0;
+        c.rb.setNextKinematicTranslation({ x: c.pos.x, y: c.pos.y + c.height / 2, z: c.pos.z });
+        c.model.group.position.copy(c.pos); c.model.group.rotation.z = 0; c.model.update?.(dt); c.tag.s.position.set(c.pos.x, c.pos.y + c.height + 0.45, c.pos.z + 0.4);
+        continue;
+      }
       if (c.tumble > 0) c.tumble -= dt;
       if (!c.attack && c.tumble <= 0 && !st(c, 'stun')) c.brain.update(dt); else c.brain.mem?.tick?.(dt);
       if (c.attack && (c.attack.t -= dt) <= 0) this.release(c);

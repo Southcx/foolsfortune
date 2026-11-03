@@ -235,10 +235,28 @@ the endless Well of ENDGAME.md 2. Subspace Emissary's Great Maze revisited every
 - The Machine's crates, springs, thin platforms, conveyors and switches
 - The Flood's grid with the god hand's Pour and Carve
 
-**Wave 1 as built (2026-10-31):** all of the above, at placeholder looks (`src/world/strawmanwell/`). Not built yet from wave 1's
-verbs: the rope's swing launch (the rope is climb-only), pogo, grabbing and throwing a dummy, the pulley, on/off blocks, a crate that
-floats (liquids are not solid to props), raising at a lectern (only the hand's Sculpt), and Strawman's ghost guide. The cannon is a
-placeholder, not the Wisp turret; the key is a plain key, not a Possibilikey. The dummies are training bodies: the Well's own events
+**Wave 1 as built (2026-10-31):** all of the above, at placeholder looks (`src/world/strawmanwell/`). **Wave 1, finished (2026-11-03,
+GAPS G250 to G254):**
+- **The rope's swing launch** (`verbs.js`): A and D pump a rope, and the speed of the rope at the hands is added to the Space kick (ROPE:
+  `launch` 0.95, at most 12 m/s). The Climb's rope has a `LAUNCH` shelf above the goal ledge.
+- **Pogo** (`verbs.js`): a downward blow in the air (S held, or falling hard) over a dummy's head or a row of spikes (the Pit's) within 2.2 m
+  throws you up at 11.5 m/s and gives the air jump back (POGO). It rides the tools' own blow events, so no tool is changed.
+- **Grab and throw** (`dummygrab.js`): F beside a dummy in the Brawl lifts it over the head (the chevron: GRAB); F again throws it as a blow
+  of power 2 along the facing, S held slams it down. The KO is the Courier's. Held longer than 6 real s it is set down.
+- **The pulley and the on/off blocks** (`machinepulley.js`, `machineonoff.js`): the Machine runs on past the cannon. Two platforms on a rope,
+  the heavier side falling (the Courier 1, a crate 2), braked until someone stands on one: the crate on the high side is the weight. Then
+  red and green blocks swapped by a toggle pad.
+- **A crate that floats** (`floatcrate.js`): a crate in a liquid is lifted by the share of its height under it, so a crate pushed into the
+  Flood's basin rises as the basin fills; and **raising clay at a lectern**: the Flood's RAISE lectern raises three clay stepping stones
+  across the basin (Sculpt's raise).
+- **Strawman's guide and the rival** (`guide.js`): a ghost of straw runs each stage's authored route (its checkpoints, then its goal) as you
+  enter; in the Pit, once it has been cleared clean, it is the rival that runs your own best line, and a clear before its end beats it
+  (`rival`). Kept for the session only, never the save.
+- **The cannon is the Wisp turret** (`turret.js`): a ball of the Lantern Wisp's flame, a parryable shot; sent back by V it stuns the turret
+  6 real s. The key is a Possibilikey by kind (`key.brass`, its colour and name from the Lockheart's table); it is the room's, never an item
+  in the Pneuka Box (the Well writes no kit), so it opens only the Machine's lock. Whether the lock should need a real Box key is Dovina's
+  to rule.
+The dummies are training bodies: the Well's own events
 count them, familiarity and the creature counts do not. The in-plane wall kick (Mega Man X's) is a room-side modifier
 (`mechanics.js`), since the core's wall jump comes only off a wall run. Liquids: under a full stream the basin mounds 3 m and is flat
 about 5 real s after the pour stops (the grid's visit rate, the phone's budget, is the limit; measured).

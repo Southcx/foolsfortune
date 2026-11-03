@@ -22,6 +22,7 @@
 //   the combat wing (combatwing.js, TR.wing): through the arcade in the south wall, Strawman's sparring circle and the other stations
 //   Strawman's stance (still, guard) is chosen on the sparring circle's lectern with its strings (the owner, 2026-10-11): F at Strawman
 //   does nothing; it is a lock target added here (game.lock.add: the lock lists no training body of its own)
+//   the tunable Strawman (strawmanrig.js; rules progress/combat/strawmanrig.js): its console by the circle, presets, /strawman; events strawman.rig, strawman.run, strawman.ask
 //   events: strawman.mode, strawman.bout; Strawman's moves and attack strings (strawmanstrings.js, Calissa's): strawman.windup,
 //   strawman.strike { move, landed, cleared }, strawman.parried { move }, strawman.string, strawman.tempo
 // ---------------------------------------------------------------------------------------
@@ -35,6 +36,7 @@ import { PaintRange } from './paintrange.js';
 import { buildCombatWing } from './combatwing.js';
 import { StrawmanStrings } from './strawmanstrings.js';
 import { StatusBench } from './statusbench.js';
+import { StrawmanRig } from './strawmanrig.js';
 import { Drills } from './drills.js';
 import { TR } from './layout.js';
 import { sfx } from '../../audio/sfx.js';
@@ -104,6 +106,7 @@ export class ThrowingRoom {
     if (built?.wallCol) g.physics.register(built.wallCol, this.wall);
     this.strawman = this.makeStrawman();
     this.drills = new Drills(g, this);
+    this.rig = new StrawmanRig(g, this); // (the tunable Strawman: its console by the sparring circle, its presets and scripted runs, /strawman: strawmanrig.js)
     this.paintRange = new PaintRange(g); // (the floor rings at 3, 6 and 9 m: painting at range, paintrange.js)
     this.statusBench = new StatusBench(g); // (the combat wing's status bench: eleven roly-polies, each a status: statusbench.js)
     // F: the console opens the Index on its page (Strawman's stance is the sparring circle's lectern's: strawmanstrings.js)
@@ -152,7 +155,7 @@ export class ThrowingRoom {
         // (from in front: judged by where the striker stands, within 60 degrees of its facing, +z; the blow's `dir` is each tool's own
         // convention and missed them all: the owner's T51, v131)
         const src = from?.pos ?? (by === 'courier' || !by ? g.player.pos : null) ?? (point && dir ? _src.copy(point).addScaledVector(dir, -2) : null);
-        const dx = src ? src.x - at.x : 0, dz = src ? src.z - at.z : 0, y = model.yaw, front = !!src && dx * Math.sin(y) + dz * Math.cos(y) > 0.5 * Math.hypot(dx, dz); // (its front is where it faces: it turns on its ball in a string)
+        const dx = src ? src.x - at.x : 0, dz = src ? src.z - at.z : 0, y = model.yaw, front = !!src && dx * Math.sin(y) + dz * Math.cos(y) > Math.cos(((S.guardArc ?? 60) * Math.PI) / 180) * Math.hypot(dx, dz); // (its front is where it faces: it turns on its ball in a string)
         const blocked = mode === 'guard' && front && open <= 0, dmg = blocked ? 0 : power;
         hits.push({ at: clock, dmg, type: blocked ? 'blocked' : type || cause || 'shot' });
         lastHit = clock;
@@ -175,7 +178,7 @@ export class ThrowingRoom {
         clock += raw; open = Math.max(0, open - dt); // (the guard's break on the sim clock, as the sleeves' (vfx/strawman.js): a hit-stop holds both)
         model.update?.(dt);
         S.strings.update(dt); S.yaw = model.yaw;
-        if (hits.length && clock - lastHit > STRAWMAN.boutGap) { const b = bout(hits); if (b) b.blocked = hits.filter((h) => h.type === 'blocked').length; hits.length = 0; if (b) { this.last = b; g.events?.emit('strawman.bout', b); } }
+        if (hits.length && clock - lastHit > STRAWMAN.boutGap) { const b = bout(hits); if (b) { b.blocked = hits.filter((h) => h.type === 'blocked').length; b.rig = S.rigLabel || ''; } hits.length = 0; if (b) { this.last = b; g.events?.emit('strawman.bout', b); } }
       },
       last: null,
     };
@@ -189,7 +192,7 @@ export class ThrowingRoom {
 
   update(dt, raw = dt) {
     const g = this.game, P = g.player;
-    this.strawman.tick(dt, raw);
+    this.strawman.tick(dt, raw); this.rig.update(dt, raw);
     this.statusBench.update(dt);
     if (g.interact?.cur?.id === 'throwingRoom.index' && P.peekLatch?.('KeyF')) { P.latch('KeyF'); g.course?.menu?.showPage?.('the Throwing Room', (im, el) => this.drills.page(im, el)); }
     this.drills.update(dt, raw);

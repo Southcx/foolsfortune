@@ -151,6 +151,7 @@ export class Creatures {
   build(c, type, amount, by = 'courier', cause = 'shot') {
     if (!c?.alive || !TYPES[type] || amount <= 0) return;
     const take = by === 'courier' && this.game.classArtsRun?.noResist?.(c) ? Math.max(1, stateOf(c.mind).take) : stateOf(c.mind).take; // (Mark for Death: it cannot resist your blows)
+    if (c.buildMult?.[type]) amount *= c.buildMult[type]; // (a test rig's build-up setting on Strawman: world/throwingroom/strawmanrig.js)
     amount *= (by === 'courier' ? draughtBuild(this.game.draught, type) : 1) * (this.game.weather?.buildMult?.(type, c.pos) ?? 1); // (the draught's, above; and its feeling's weather where it stands, anyone's blow: progress/weather.js)
     if (type === 'impact') { this.game.stun?.add(c, TYPES.impact.poise * amount * take, { by, cause }); return; }
     if (by === 'courier') amount *= this.game.laidSpread?.swordsK ?? 1; // (Swords' tally: the status your blows build, progress/laidspread.js)

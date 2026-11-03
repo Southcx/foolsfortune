@@ -4,7 +4,8 @@
 // standing in the plane (its stone the walkway, a basin dug 3.5 m deep in its middle, a clay wall across the way, a heap of sand), a
 // spigot over the basin, a sluice door before the goal. Worked without the god hand, at three lecterns behind the plane (F):
 //   CARVE   cuts a way through the clay wall (the dig)                  POUR    held, the spigot pours Lachryma into the basin
-//   FREEZE  turns the basin's Lachryma to ice to walk across
+//   FREEZE  turns the basin's Lachryma to ice to walk across      RAISE  raises three clay stepping stones across the empty basin (Sculpt's raise, at a lectern)
+// A crate stands on the walkway past the clay wall: pushed into the basin and the basin filled, it floats up (floatcrate.js; liquids are not solid to props).
 // and, while the god hand is taken over the stage, its Pour and Carve (`god.pour`, `god.carve`: godhand/matterarts.js) land on the grid
 // where the hand's cursor is. The basin filled past FLOOD.fill cells opens the sluice (`well.flood.fill { stage, cells }`, once a visit).
 // In a liquid the Courier wades (the place's wade). The grid is stepped GRID.rate times a real second.
@@ -23,16 +24,17 @@ import { GridBody } from './gridbody.js';
 import { COLOR, BACK } from './stagekit.js';
 import { AT } from './layout.js';
 import { scaffold, goalFlag } from './stages.js';
+import { FloatCrates } from './floatcrate.js';
 
 /** The stage in its lane's metres: the grid's foot-left corner, the basin (cells), the clay wall, the spigot's cell, the lecterns, the
  *  sluice; `fill` the basin's Lachryma (cells) that opens it; the wade in a liquid. */
 export const FLOOD = {
   at: [6, -4], floor: 15, basin: [40, 2, 111, 15], wall: [20, 16, 23, 43], sand: [120, 16, 134, 21], spigot: [76, 42], pour: 2.4,
-  lecterns: { carve: 9.4, pour: 13.6, freeze: 15.0 }, sluice: 44.6, fill: 560, wade: 0.55,
+  lecterns: { raise: 7.4, carve: 9.4, pour: 13.6, freeze: 15.0 }, stones: [56, 76, 96], stoneRow: 13, crate: 14.4, sluice: 44.6, fill: 560, wade: 0.55,
 };
 
 export class FloodStage {
-  constructor(well) { this.well = well; this.game = well.game; this.grid = null; this.spots = []; this.offs = []; }
+  constructor(well) { this.well = well; this.game = well.game; this.grid = null; this.spots = []; this.offs = []; this.floats = new FloatCrates(well); }
 
   build(S) {
     const g = this.game, len = S.lane.len, F = FLOOD;
@@ -60,6 +62,7 @@ export class FloodStage {
     this.sluice = { mesh: door.mesh, collider: door.collider, y0: door.mesh.position.y, k: 0, open: false };
     S.label('SLUICE', F.sluice + 0.3, 9.8, { dz: -BACK + 0.13, width: 2, sub: 'fill the basin' });
     goalFlag(S, 49, 0);
+    this.well.machine.crate(S.at(F.crate, 0), 0.9); S.label('CRATE', F.crate, 2.4, { dz: -BACK + 0.13, width: 1.4, sub: 'push it in, fill the basin' });
     // the god hand's matter verbs, where its cursor is over the grid
     const on = (name, fn) => this.offs.push(g.events.on(name, fn));
     on('god.pour', () => this.handAt((c) => { if (this.grid.pour(c.x, c.y, CELL.lachryma, 4) > 0) this.well.verb('pour'); }));
@@ -79,7 +82,10 @@ export class FloodStage {
   /** F at a lectern. */
   use(ref) {
     const G = this.grid, F = FLOOD; if (!G) return;
-    if (ref === 'carve') {
+    if (ref === 'raise') {
+      let n = 0; for (const x of F.stones) n += G.raise(x, F.stoneRow, 3);
+      if (n > 0) this.well.verb('raise');
+    } else if (ref === 'carve') {
       let n = 0; for (const y of [18, 21, 24]) n += G.carve(F.wall[0] + 2, y, 5);
       if (n > 0) { this.well.verb('carve'); this.well.verb('dig'); }
     } else if (ref === 'freeze') {
@@ -107,6 +113,7 @@ export class FloodStage {
       G.step();
     }
     this.look.update(); this.body.update();
+    this.floats.update(dt, this.body, this.well.machine.crates, AT.y + FLOOD.at[1] + FLOOD.basin[1] * GRID.size, this.origin.z);
     if (!this.filled) {
       const cells = G.count(CELL.lachryma, ...F.basin) + G.count(CELL.ice, ...F.basin);
       if (cells >= F.fill) { this.filled = true; this.game.events?.emit('well.flood.fill', { stage: 'flood', cells, by: 'courier' }); }
