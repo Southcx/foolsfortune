@@ -2,7 +2,9 @@
 // THE MIMICRY PUZZLES' LOOKS (plain names; Dovina's rules, progress/mimicry.js, and the runtime, world/mimicry/mimicry.js, untouched;
 // docs/plans/MIMICRY.md 7): what the puzzles look like, over the runtime's placeholders, which are hidden while these stand in for them.
 //   the puzzle stones   vfx/mimicry/stones.js: lydite menhirs, their mark, their rung's number, their stars and their ogham edge
-//   the ghost           vfx/mimicry/ghost.js: the target as a topographic hologram over the patch, gold where the copy already matches
+//   the ghost           vfx/mimicry/ghost.js: the target as a topographic hologram over the patch, gold where the copy already matches;
+//                       a herd puzzle's pen on the ground, a veiled puzzle's hidden cells lifted by a read, a creation's body
+//                       (vfx/mimicry/ghostvoxels.js)
 //   a step's mark       during the System's demonstration (`mimic.step`), the step's domain's own effect where it lands on the patch
 //                       (vfx/library/domains.js `domain.<domain>.hit`: Shape's and Carve's Alteration, Scoop's Psychokinesis ...), at
 //                       every point the step names (a raise's middle, a carve's two ends, a move's from and to), so the steps can be
@@ -10,8 +12,8 @@
 //   the solve's beat    `mimic.solve { stars }`: the ghost's gold ring sweeping the patch, and the stone's stars struck in one by one,
 //                       each with a gold star popped off its socket (vfx/glyphs.js 'star'); the stone holds them a few real seconds,
 //                       then shows the rung it sets next
-// The placeholders it hides: the runtime's stones (`game.mimicry.group`: the clay cylinders and gold bands) and its gold wire ghost
-// (`game.mimicry.wire`). Asked of Dovina to remove: docs/handoffs/dovina/2026-10-30-from-calissa-mimicry-sandbox-looks.md.
+// The placeholders it hides: the runtime's stones (`game.mimicry.group`: the clay cylinders and gold bands), its gold wire ghost
+// (`game.mimicry.wire`) and the herd's pen line (`game.mimicry.flock.penLine`). Asked of Dovina to remove: docs/handoffs/dovina/2026-10-30-from-calissa-mimicry-sandbox-looks.md.
 // It reads the open puzzle from `game.mimicry.S` (its patch, its field, its frames): a read only.
 //
 // Prior art: Simon's lit pads (each step shown where it happens, in its own colour), the golf scorecard and the puzzle game's three
@@ -38,6 +40,8 @@ export class MimicryLooks {
     const E = game.events;
     E?.on?.('mimic.open', () => this.opened());
     E?.on?.('mimic.turn', () => this.ghost.turn());
+    E?.on?.('mimic.read', () => this.ghost.lift()); // (a veil read: its cells rise along the read's line, given by god.strata)
+    E?.on?.('god.strata', (e) => this.ghost.readLine(e?.a, e?.b));
     E?.on?.('mimic.step', (e) => this.step(e));
     E?.on?.('mimic.solve', (e) => this.solved(e));
     E?.on?.('mimic.leave', () => { this.ghost.leave(); this.open = null; });
@@ -48,6 +52,7 @@ export class MimicryLooks {
     const M = this.game.mimicry;
     if (this.stones && M?.group) M.group.visible = false;
     if (M?.wire && !this.ghost.done) M.wire.visible = false;
+    if (M?.flock?.penLine && !this.ghost.done) M.flock.penLine.visible = false; // (the herd's pen: the ghost draws it on the ground)
   }
 
   opened() {

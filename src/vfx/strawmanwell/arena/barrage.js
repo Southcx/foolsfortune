@@ -12,7 +12,7 @@
 // (wiki.biligame.com/closers/J: the charge, the punches, the kick and the forward strike), Smash's rapid jab; the house's flats'
 // cut-out (flats/kit.js) and the kurogo's one material (strawmanwell/kurogo.js: the flats' own program, nothing new compiled).
 //
-//   const B = new BarrageLook(ctx)   B.group   B.update(dt, kit)   B.dispose()   BARRAGE_LOOK   barrageOn(kit, F)
+//   const B = new BarrageLook(ctx, stageId?)   B.group   B.update(dt, kit)   B.dispose()   BARRAGE_LOOK   barrageOn(kit, F)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -34,8 +34,8 @@ function fistTexture() {
 }
 
 export class BarrageLook {
-  constructor(ctx) {
-    this.ctx = ctx; this.group = new THREE.Group(); this.group.name = 'arena.barrage';
+  constructor(ctx, stage = null) {
+    this.ctx = ctx; this.stage = stage; this.group = new THREE.Group(); this.group.name = `${stage || 'arena'}.barrage`;
     this.tex = fistTexture();
     this.mat = new THREE.MeshBasicMaterial({ name: 'well-kurogo', map: this.tex, alphaTest: 0.5, vertexColors: true, side: THREE.DoubleSide });
     const NV = B.max * 6; this.pos = new Float32Array(NV * 3); this.col = new Float32Array(NV * 3); const uv = new Float32Array(NV * 2);
@@ -47,8 +47,11 @@ export class BarrageLook {
     const mesh = new THREE.Mesh(this.geo, this.mat); mesh.frustumCulled = false; this.group.add(mesh);
     this.fists = []; this.acc = 0; this.was = false; this.side = new THREE.Color(B.col); this.c = new THREE.Color();
     const g = ctx.game;
-    this.off = g.events?.on?.('well.fighter.hit', (e) => { if (e?.by === 'courier' && e.move === 'jabEnd') this.say('battari'); });
+    this.off = g.events?.on?.('well.fighter.hit', (e) => { if (e?.by === 'courier' && e.move === 'jabEnd' && this.here()) this.say('battari'); });
   }
+
+  /** Is the Courier on this barrage's stage (one barrage a fighter stage: only the one in play speaks)? */
+  here() { return !this.stage || this.ctx.game.strawmanWell?.stage?.id === this.stage; }
 
   say(kind) { const g = this.ctx.game, p = g.player?.pos; g.events?.emit('well.tsuke', { kind, x: p?.x ?? 0, y: p?.y ?? 0, by: 'courier' }); }
 

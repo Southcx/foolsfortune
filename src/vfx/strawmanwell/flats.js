@@ -12,6 +12,8 @@
 //   machine  the inside of a sewing machine: its arm, gears that turn, bobbins, a painted clockwork sky
 //   flood    the toy theatre's sea: rows of cut-out waves rocking in their grooves, a storm sky, a lighthouse
 //   arena    the platform fighter's stage at rehearsal: the hall's bare back wall, the backdrop half painted on its frame, the clutter
+//   flatstage the flat stage (Final Destination's void as a toy theatre's night): a star cloth sewn of widths, a gold horizon line,
+//            a moon, a planet and tin stars hung on threads, a ground row of night cloud lined in gilt
 //   noh      (swing, depth, wall, script) the Noh stage: the old pine on the mirror board, the bridge and its five-coloured curtain,
 //            the hinoki pillars, masks on stands, the white gravel (South, 2026-11-01: Japanese theatre)
 //   kabuki   (chase, arsenal, pit, flip, jar) the kabuki stage: a painted great wave and red Fuji, the three-striped curtain drawn
@@ -37,9 +39,10 @@ import { FLOOD } from './flats/flood.js';
 import { ARENA } from './flats/arena.js';
 import { NOH } from './flats/noh.js';
 import { KABUKI } from './flats/kabuki.js';
+import { FLATSTAGE } from './flats/flatstage.js';
 
 /** A lane's theme, by its id. */
-const THEMES = { wings: WINGS, run: RUN, climb: CLIMB, stomp: STOMP, brawl: BRAWL, machine: MACHINE, flood: FLOOD, arena: ARENA,
+const THEMES = { wings: WINGS, run: RUN, climb: CLIMB, stomp: STOMP, brawl: BRAWL, machine: MACHINE, flood: FLOOD, arena: ARENA, flatstage: FLATSTAGE,
   swing: NOH, depth: NOH, wall: NOH, script: NOH, chase: KABUKI, arsenal: KABUKI, pit: KABUKI, flip: KABUKI, jar: KABUKI };
 /** How long the painting may take a frame (real ms): in play, and under the seam's cover (nothing of the world is drawn). */
 export const FLATS = { slice: 6, covered: 24 };
