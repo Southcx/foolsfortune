@@ -50,6 +50,13 @@ export class UiSounds {
   // the goals (Dovina's progress/goals.js: three achievements a game day): the gold check stamped in the goals window (Calissa's) and a
   // step of the Answer (G A B D E, music/motifs.js) for each goal done, the first three notes one a slot; all three done, the Answer
   // whole in bells over a shimmer. A game day's three laid: a soft chime of three, the System's.
+  /** The first path's next step laid (goal.next, FIRST-HOUR.md 5): a pencil's tick and two notes pointing on. */
+  goalNext() {
+    if (!this.ok() || !this.allow('goalNext', 2)) return;
+    const t = this.ctx.currentTime, d = this.out(0.6, 0.4, true), hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
+    this.noise(t, 0.03, { type: 'bandpass', f0: 3500, q: 3, gain: 0.2, dest: d });
+    [71, 74].forEach((m, j) => this.tone(t + 0.05 + j * 0.1, 0.4, { f0: hz(m), type: 'triangle', gain: 0.1, dest: d }));
+  }
   goalDone(slot = 0, all = false) {
     if (!this.ok() || !this.allow('goalDone', 3)) return;
     const t = this.ctx.currentTime, d = this.out(all ? 0.36 : 0.28, 0.45, true), hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
