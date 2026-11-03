@@ -12,12 +12,16 @@
 // Prior art: every twin-stick game's radial dead zone (rescaled past it, so a small push is still a small push); Zelda: Breath of the
 // Wild's walk / run by the stick's tilt; the genre's L3 sprint latched until the stick eases off.
 //
-//   const S = new StickMove(game, input, actions, kind)   S.set(x, y, { sprint, steerFull })   S.clear()   STICK
+//   const S = new StickMove(game, input, actions, kind)   S.set(x, y, { sprint, steerFull })   S.clear()   STICK   FLICK
 // ---------------------------------------------------------------------------------------
 
 /** dead: the push under which there is none; walk: under it, the walk; key: a direction's component past which its key is held;
  *  outer: the ring, a push past it the sprint (on foot) or the carve (on the skiff, touch). */
-export const STICK = { dead: 0.15, walk: 0.55, key: 0.38, outer: 1.5 }; // (the ring at 90 px of a 60 px push: the stick's own band, ui/touch/stick.js)
+export const STICK = { dead: 0.15, walk: 0.55, key: 0.38, outer: 1.5 };
+/** THE ARENA'S FLICK (G100; FIGHTER.md 8, Melee's smash input): in the Arena, the push from under `from` to past `to` inside `frames`
+ *  render frames is a flick, handed to the fighter kit as its key tapped twice (the kit's own reading of a flick on keys,
+ *  world/strawmanwell/fighter/courierbody.js): the way's key let go a frame and pressed again. Tap jump, the dash and the smash follow. */
+export const FLICK = { from: 0.3, to: 0.8, frames: 3 }; // (the ring at 90 px of a 60 px push: the stick's own band, ui/touch/stick.js)
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 export class StickMove {
@@ -29,8 +33,9 @@ export class StickMove {
    *  controls' ring, ui/touch/stick.js: past its band; -1, 0, 1), in place of the push's; `noAD`: the glide's thumb is the bank
    *  (progress/skifftouch.js), so A / D are let go. */
   set(x, y, { sprint = false, steerFull = 1, outer = null, carve = null, noAD = false } = {}) {
-    const push = Math.hypot(x, y), L = this.actions.live(), inp = this.input;
-    if (push < STICK.dead) return this.clear();
+    const push = Math.hypot(x, y), L = this.actions.live(), inp = this.input, f = (this.fr = (this.fr ?? 0) + 1);
+    if (push < FLICK.from) { this.lowAt = f; this.flicked = false; }
+    if (push < STICK.dead) return this.clear(true);
     this.on = true;
     const ux = x / push, uy = y / push, skiff = L.has('skiff');
     inp.axes.moveX = ux; inp.axes.moveY = uy; // (a unit direction: the core movement's own speeds)
@@ -42,10 +47,16 @@ export class StickMove {
     this.key('AltLeft', foot && push < STICK.walk);
     const past = outer ?? push >= STICK.outer, wantSprint = foot && (sprint || past);
     this.key('ShiftLeft', wantSprint && (this.keys.has('ShiftLeft') || this.game.player?.grounded !== false));
+    if (this.retap) { if (this.retap.step++ === 0) this.key(this.retap.code, false); else this.retap = null; } // (the flick's second tap: let go a frame, pressed again the next)
+    if (L.has('arena') && !this.flicked && push >= FLICK.to && this.lowAt != null && f - this.lowAt <= FLICK.frames) {
+      this.flicked = true; this.retap = { code: Math.abs(ux) > Math.abs(uy) ? (ux > 0 ? 'KeyD' : 'KeyA') : uy > 0 ? 'KeyW' : 'KeyS', step: 0 };
+    }
     const side = carve ?? (past ? Math.sign(x) : 0), ctl = skiff && !L.has('skiff.air') && this.kind === 'touch' && side ? (side < 0 ? 'move.outerL' : 'move.outerR') : null;
     if (ctl !== this.ctl) { if (this.ctl) this.actions.press('touch', this.ctl, false); if (ctl) this.actions.press('touch', ctl, true); this.ctl = ctl; }
   }
-  clear() {
+  clear(counted = false) {
+    if (!counted) { this.lowAt = this.fr = (this.fr ?? 0) + 1; this.flicked = false; } // (a stick at rest is under the flick's start)
+    this.retap = null;
     if (!this.on) return; this.on = false; // (only what this stick set: a pad at rest never wipes a thumb's push)
     for (const c of [...this.keys]) this.key(c, false);
     if (this.ctl) { this.actions.press('touch', this.ctl, false); this.ctl = null; }
