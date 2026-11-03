@@ -18,7 +18,7 @@
 //   buildThrowingRoom(level) -> the static room (called from level.build; its colliders merged with the Workshop's)   TR (the measures)
 //   game.throwingRoom = new ThrowingRoom(game)   .update(dt, raw)   .inRoom(p)   .drills (drills.js)   .strawman (the creature)   .wall   .console (the Index's lectern, a group)
 //   .statusBench (statusbench.js: the eleven roly-polies, each a status, and the bench's lectern)
-//   .parryRange (parryrange.js: the pitcher's balls, chosen at the range's lectern)
+//   .parryRange (parryrange.js: the pitcher's balls, chosen at the range's lectern)   .telegraphFloor (telegraphfloor.js: the caster's shapes)
 //   .paintRange (paintrange.js: the floor rings at 3, 6 and 9 m)
 //   the combat wing (combatwing.js, TR.wing): through the arcade in the south wall, Strawman's sparring circle and the other stations
 //   Strawman's stance (still, guard) is chosen on the sparring circle's lectern with its strings (the owner, 2026-10-11): F at Strawman
@@ -38,6 +38,7 @@ import { buildCombatWing } from './combatwing.js';
 import { StrawmanStrings } from './strawmanstrings.js';
 import { StatusBench } from './statusbench.js';
 import { ParryRange } from './parryrange.js';
+import { TelegraphFloor } from './telegraphfloor.js';
 import { StrawmanRig } from './strawmanrig.js';
 import { Drills } from './drills.js';
 import { TR } from './layout.js';
@@ -112,6 +113,7 @@ export class ThrowingRoom {
     this.paintRange = new PaintRange(g); // (the floor rings at 3, 6 and 9 m: painting at range, paintrange.js)
     this.statusBench = new StatusBench(g); // (the combat wing's status bench: eleven roly-polies, each a status: statusbench.js)
     this.parryRange = new ParryRange(g); // (the combat wing's parry range: the pitcher's balls, chosen at its lectern: parryrange.js)
+    this.telegraphFloor = new TelegraphFloor(g); // (the combat wing's Figment telegraph floor: the caster's shapes, chosen at its lectern: telegraphfloor.js)
     // F: the console opens the Index on its page (Strawman's stance is the sparring circle's lectern's: strawmanstrings.js)
     g.interact?.add('throwingRoom.index', (P) => {
       const dd = Math.hypot(P.pos.x - TR.console.x, P.pos.z - TR.console.z);
@@ -196,7 +198,7 @@ export class ThrowingRoom {
   update(dt, raw = dt) {
     const g = this.game, P = g.player;
     this.strawman.tick(dt, raw); this.rig.update(dt, raw);
-    this.statusBench.update(dt); this.parryRange.update(dt);
+    this.statusBench.update(dt); this.parryRange.update(dt); this.telegraphFloor.update(dt);
     if (g.interact?.cur?.id === 'throwingRoom.index' && P.peekLatch?.('KeyF')) { P.latch('KeyF'); g.course?.menu?.showPage?.('the Throwing Room', (im, el) => this.drills.page(im, el)); }
     this.drills.update(dt, raw);
   }

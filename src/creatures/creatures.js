@@ -226,7 +226,7 @@ export class Creatures {
   /** A windup over that held the Courier: answered (out of it, parried, looking away), said for Divination (domains.js, Dovina's). */
   read(c, w, why) {
     const how = why === 'parried' ? 'parried' : this.holds(c, w) ? null : w.area?.shape === 'gaze' ? 'lookAway' : 'out';
-    if (how) this.game.events?.emit('windup.read', { kind: w.kind, how, by: 'courier' });
+    if (how) this.game.events?.emit('windup.read', { kind: w.kind, how, ...(c.training ? { training: true } : {}), by: 'courier' }); // (a training caster's: never counted, world/throwingroom/telegraphfloor.js)
     if (how && how !== 'parried' && w.area && !c.training) this.game.events?.emit('foe.dodge', { kind: c.kind, cast: w.kind, how, by: 'courier' }); // (a cast avoided, by stepping out or looking away: Perception's seasoning, TRAINING.md, GAPS G315)
   }
   /** An outlined windup run out unanswered with the Courier in its reach: a parry missed (the feat's run starts over: TRAINING.md 6). */
