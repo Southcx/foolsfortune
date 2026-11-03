@@ -87,6 +87,8 @@ export function bootPneuka(game, made) {
   game.windowOpen = windowOpen; // (the chat line does not pause: the world goes on while you type, as in an MMO; the keys typed are the field's, input.js)
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
+  { const LOW = { below: 0.25, rearm: 0.35 }; let low = false; // (a low pool's second avenue, a sound: OVERLAY.md 9, GAPS G167; once a dip, re-armed past `rearm`)
+    lachryma.on('change', (e) => { const k = lachryma.value / Math.max(1e-6, lachryma.max); if (!low && k < LOW.below && e.evt === 'spend') { low = true; game.events?.emit('pool.low', { share: +k.toFixed(2), by: 'courier' }); } else if (low && k > LOW.rearm) low = false; }); }
   if (character.filigree) { game.filigree = new Filigree(game, character.filigree); game.systems.add('fx', game.filigree, { name: 'filigree' }); } // (the armour's lines show the Lachryma in them; the `fx` phase: core/systems.js)
   game.hudRing = new HudRing(game); // (their Lachryma and what has noticed them, on the ground at their feet)
   game.releaseCrack = new ReleaseCrack(game); // (a release cracks the vessel from inside: vessel.release, vfx/releasecrack.js)
