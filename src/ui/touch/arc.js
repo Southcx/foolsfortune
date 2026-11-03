@@ -33,6 +33,8 @@ import { TouchTile, TILE } from './tile.js';
 import { touchTiles } from './presses.js';
 import { placeOf, windowOpen } from './areas.js';
 import { openRadial } from './radial.js';
+/** The slip jelly mount is open (the ledger's) and may be called: the radial offers it by name beside the Solar Skiff. */
+const jellyCan = (g) => { try { return !!g.jellyMount?.open?.(); } catch { return false; } };
 import { specialsOf } from '../../progress/mechs/specials.js';
 import { mechFace, MECH_BELT } from '../mechs/mechfaces.js';
 
@@ -97,7 +99,10 @@ export class TouchArc {
   tap(control) { if (!control) return; touchTiles.report(this.game, control, true); setTimeout(() => touchTiles.report(this.game, control, false), ARC_PRESS.tap); }
   pickItem(it) {
     this.touched = performance.now() / 1000;
-    if (it.id === 'skiff') { const B = this.game.touchUI?.topBar; B?.hold('skiff', true); setTimeout(() => B?.hold('skiff', false), ARC_PRESS.tap); }
+    if (it.id === 'skiff' || it.id === 'skiff.jelly') { // (a mount by name: the tap calls the one preferred, JellyMount.prefer; the held choice needs Y 0.35 s, GAPS G149)
+      if (it.mount) this.game.jellyMount?.prefer?.(it.mount);
+      const B = this.game.touchUI?.topBar; B?.hold('skiff', true); setTimeout(() => B?.hold('skiff', false), ARC_PRESS.tap);
+    }
     else this.tap(it.id);
     if (!it.pad) this.afterChoice();
   }
@@ -153,6 +158,7 @@ export class TouchArc {
     this.picks = ctx === 'tool' ? [...stripOf(g).filter((e) => e.id !== 'art'), third].filter(Boolean) : ctx === 'mech' ? mechPicks(g) : [];
     const pair = beltPairOf(g), drawE = pair.find((e) => e.id === 'tool');
     this.belt = [...pair.filter((e) => e.id !== 'tool'), art].filter(Boolean); this.beltTap = drawE || this.belt.find((e) => e.id === 'skiff') || null;
+    if (this.belt.some((e) => e.id === 'skiff') && jellyCan(g)) this.belt = this.belt.flatMap((e) => (e.id === 'skiff' ? [{ ...e, glyph: 'skiff', word: 'SKIFF', mount: 'skiff' }, { ...e, id: 'skiff.jelly', glyph: 'jelly', word: 'JELLY', mount: 'jelly' }] : [e])); // (both mounts by name in the radial)
     if (ctx === 'mech') { this.belt = MECH_BELT; this.beltTap = MECH_BELT[0]; }
     const has = (id) => {
       if (ctx === 'mech') return true; // (every slot of the frame's is always there: mechpilot.js reads them all)

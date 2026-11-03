@@ -26,12 +26,14 @@
 //   events: mech.grab { prop, by }, mech.prop.hit { prop, n, own?, by }, mech.prop.throw { prop, hit, javelin?, own?, from, at, by } (from and at:
 //   world [x, y, z] to 0.1 m, where it left the hand and where it came down),
 //   mech.prop.break { prop, shield?, by }
+// A water tower that bursts (thrown, or broken in the hand) puts out fire within FIRE.douse.water m (cityfire.js douseAt: city.douse { cause: 'water' }).
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { stream } from '../../core/rng.js';
 import { PROPS, TECHNIQUES, propBlow, thrownK } from '../../progress/mechs/techniques.js';
 import { armOK } from '../../progress/mechs/joints.js';
 import { outputK } from '../../progress/mechs/rules.js';
+import { FIRE } from '../../progress/mechs/fire.js';
 import { PROVING } from './layout.js';
 import { MECH_BODY, seatOf } from './mech.js';
 import { GIANT_LOOK } from './giant.js';
@@ -215,6 +217,7 @@ export class MechProps {
   }
   /** A prop gone to pieces: its mesh into the voxel batch's debris (the house's burst, baked from its own mesh), then away. */
   shatter(r) {
+    if (r.prop === 'tower') this.hangar.city?.fire?.douseAt(r.mesh.position, FIRE.douse.water, 'water', 'courier'); // (a water tower's tank bursts: the fire in reach goes out, a burning giant too)
     const V = this.game.voxels?.mesh ? this.game.voxels : null;
     if (V) { r.mesh.updateMatrixWorld(true); V.burst({ object: r.mesh, key: r.ownGeo ? null : `mech.prop.${r.prop}.${r.part || ''}`, power: 1.2 }); }
     r.mesh.parent?.remove(r.mesh); if (r.ownGeo) r.mesh.traverse((o) => o.geometry?.dispose());

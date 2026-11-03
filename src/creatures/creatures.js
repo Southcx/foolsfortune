@@ -37,7 +37,7 @@
 //   (a telegraphed blow, for the parry: courier/parry.js answers what is listed in reach; `part` is the striking part, worn with the parry
 //   mark while it can be answered. Its FIGMENT ATTACK TELEGRAPH (docs/plans/FIGMENT-TELEGRAPHS.md): `area` its shape, `type` `status` `answer` what Divination
 //   may show of it; `w.figmentTelegraph` is figmentMarkOf at the Courier's Divination as it began (the mark is Calissa's to draw). A windup that held
-//   the Courier as it began and ended with them out of it, parried or looking away is READ: `windup.read { kind, how, by }`; `read: false`
+//   the Courier as it began and ended with them out of it, parried or looking away is READ: `windup.read { kind, how, by }` (a cast's, an `area`, stepped out of or looked away from: `foe.dodge { kind, cast, how, by }`); `read: false`
 //   for one that never counts, Strawman's)
 //   stateOf(c.mind) (mind.js) names a creature's state; c.emo, c.build[type] are its numbers
 // ---------------------------------------------------------------------------------------
@@ -226,6 +226,7 @@ export class Creatures {
   read(c, w, why) {
     const how = why === 'parried' ? 'parried' : this.holds(c, w) ? null : w.area?.shape === 'gaze' ? 'lookAway' : 'out';
     if (how) this.game.events?.emit('windup.read', { kind: w.kind, how, by: 'courier' });
+    if (how && how !== 'parried' && w.area && !c.training) this.game.events?.emit('foe.dodge', { kind: c.kind, cast: w.kind, how, by: 'courier' }); // (a cast avoided, by stepping out or looking away: Perception's seasoning, TRAINING.md, GAPS G315)
   }
   /** An outlined windup run out unanswered with the Courier in its reach: a parry missed (the feat's run starts over: TRAINING.md 6). */
   missed(c, w) { const P = this.game.player; if (P && w.at.distanceTo(P.pos) <= w.radius + 1) this.game.events?.emit('parry.missed', { kind: c.kind, by: 'creature' }); }

@@ -1112,3 +1112,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 
 399. **A line that would say a zero says nothing.** A count rounded for the log is said only once it is a whole
   one; the ledger keeps the fractions.
+
+NEW:touch-hold-by-name. **A choice made by holding a key is offered by name on touch.** A touch tile taps; a hold that opens
+  a choice is a radial of the choices, each set before the tap. A probe of a timed hold steps frames with real time between them.

@@ -22,7 +22,7 @@ export const HELM_LOOK = {
   bone: 0xe6dccb, ivory: 0xd2c3a6, grey: 0x9a938a, dark: 0x3e3834, cord: 0x6a4a3a,
   trim: 0xffffff, trimD: 0xa8a8a8, trimDD: 0x6a6a6a, terracotta: 0xa45a3a, core: 0x1c1411, coreTone: 0x6a6662, gold: 0xd9ab4c,
   plume: { ivory: 0xece2cf, ochre: 0xc89a52, rust: 0xa45c3c, slate: 0x6c7076, umber: 0x5a4030 },
-  fit: 0.58, narrow: 0.86, float: 0.42, bob: [0.06, 1.6], detail: 1, facets: 5, chunk: 1.4, orn: 1.3, // (a head's size; floated over the collar; the bob's height in the head's frame and its rate)
+  fit: 0.58, narrow: 0.86, float: 0.62, bob: [0.06, 1.6], detail: 1, facets: 5, chunk: 1.4, orn: 1.3, // (a head's size; floated over the collar; the bob's height in the head's frame and its rate)
   gravity: 9.8, damping: 0.94, stiff: [0.32, 0.05],
 };
 export const L = HELM_LOOK, PI = Math.PI, V = THREE.Vector3;
