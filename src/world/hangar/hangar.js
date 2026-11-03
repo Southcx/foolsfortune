@@ -4,7 +4,7 @@
 // y 200, z -3000) with the proving ground beside it (`provingground`, world/hangar/provingground.js), both one area (render/areas.js
 // stage 2): built when the camera comes to it, torn down whole after it leaves, the mech back in its gantry when it is built again.
 //   the gantry against the north wall, the mech standing in it on the lift's deck (mech.js, posed by mechpilot.js);
-//   the walkway at its chest, up a ramp along the west: F there seals the Pneuka Jar into the chest's cradle (a body cradle,
+//   the walkway a ring round its chest, up a ramp along the west: F on its back run seals the Pneuka Jar into the chest's cradle (a body cradle,
 //     world/cradles.js), and the launch follows: the lift rides up the shaft through the roof and, under the seam, the mech is set down in
 //     the proving ground, piloted (mechpilot.js); X unseals anywhere: it kneels where it stands, the Courier beside it;
 //   the lectern at the gantry's foot: F opens the assembly page (assembly.js: the frame chosen, the cracks mended);
@@ -17,7 +17,7 @@
 //
 //   game.hangar = new Hangar(game)   .build()   .teardown()   .built   .here   .arrive()   .leave()   .update(dt)   .light()
 //   .state (MechState: the frame and its cracks, save section `mech`)   .pilot (MechPilot)   .giant (Giant: the straw giant, or the dune colossus once called)   .post (GiantPost)   .field (ProvingGround)   .bout (RingBout)
-//   .city (ToyCity: the voxel buildings, city.js)   .props (MechProps: what the mech picks up, props.js)   .challenges (SmashChallenges: the lane's lectern and five smash challenges, challenges.js)
+//   .city (ToyCity: the voxel buildings, city.js; .city.fire its fire, cityfire.js)   .props (MechProps: what the mech picks up, props.js)   .challenges (SmashChallenges: the lane's lectern and five smash challenges, challenges.js)
 //   .cradle (the mech's body cradle while built)   .deck (the lift's deck)   events: hangar.enter, hangar.leave { by }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -80,12 +80,12 @@ export class Hangar {
     for (const s of [-1, 1]) { box([X(s * 8.5), y + 11, Z(Gz)], [2, 22, 2], C.iron); box([X(s * 6.2), y + 12, Z(Gz - 3.2)], [2.6, 1, 0.8], C.iron); }
     box([X(0), y + 22.6, Z(Gz)], [19, 1.4, 2], C.iron);
     label(room, 'THE GANTRY', [X(0), y + 24.4, Z(Gz + 1.05)], { width: 6, vertical: true });
-    // the walkway at the chest and its ramp up the west (the cradle reached from the walkway's middle)
-    const Wk = HANGAR.walk, wy = y + HANGAR.walkY;
-    box([X((Wk.x0 + Wk.x1) / 2), wy - 0.2, Z((Wk.z0 + Wk.z1) / 2)], [Wk.x1 - Wk.x0, 0.4, Wk.z1 - Wk.z0], C.walk);
+    // the walkway a ring round the chest and its ramp up the west (the cradle reached from the back run's middle)
+    const wy = y + HANGAR.walkY;
+    for (const Wk of HANGAR.walks) box([X((Wk.x0 + Wk.x1) / 2), wy - 0.2, Z((Wk.z0 + Wk.z1) / 2)], [Wk.x1 - Wk.x0, 0.4, Wk.z1 - Wk.z0], C.walk);
     const Rp = HANGAR.ramp, run = Rp.x1 - Rp.x0, a = Math.atan2(HANGAR.walkY, run), t = 0.5, len = Math.hypot(run, HANGAR.walkY) + 0.3;
     box([X((Rp.x0 + Rp.x1) / 2) + (Math.sin(a) * t) / 2, y + HANGAR.walkY / 2 - (Math.cos(a) * t) / 2, Z(Rp.z)], [len, t, Rp.w], C.walk, { rotZ: a });
-    label(room, 'THE CRADLE', [X(0), wy, Z(Wk.z1 - 0.6)], { width: 2.4, sub: 'F seals your Pneuka Jar in' });
+    label(room, 'THE CRADLE', [X(HANGAR.reach.x), wy, Z(HANGAR.walks[3].z1 - 0.6)], { width: 2.4, sub: 'F seals your Pneuka Jar in', rotY: Math.PI });
     // the lectern, and the lift's deck the mech stands on (its own mesh: it rides up with the mech)
     const L = HANGAR.lectern;
     box([X(L.x), y + 0.5, Z(L.z)], [0.9, 1, 0.9], C.lectern); box([X(L.x), y + 1.02, Z(L.z)], [0.7, 0.04, 0.7], C.gold, { collide: false });

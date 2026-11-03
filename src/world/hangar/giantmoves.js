@@ -48,7 +48,7 @@ export class GiantMoves {
   canStart(M, mech, d) {
     const R0 = this.g.radius;
     switch (M.kind) {
-      case 'ring': return d <= M.reach;
+      case 'ring': return d <= M.reach && !this.g.glass?.on; // (glass does not sink: fire.js GIANT_FIRE.colossus)
       case 'hurl': return d >= M.min && d <= M.reach;
       case 'wave': return d - mech.radius <= M.reach;
       default: return d - mech.radius <= M.reach + R0;

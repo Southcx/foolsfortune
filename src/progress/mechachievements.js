@@ -37,6 +37,12 @@ export function mechAchievements({ C, H, F }) {
   F('mk19', 'hand', 'The Hangar', 5, 'collect', 'All Gold', 'Win gold in every smash challenge.', (L) => CHALLENGE_IDS.filter((c) => L.get(`challenge.medal.${c}`) >= 3).length, CHALLENGE_IDS.length, { title: 'Wrecker' });
   C('mk20', 'hand', 'The Hangar', 3, 'mechanic', 'Strike!', 'Knock down all ten pins with one throw.', 'bowling.strike', 1);
   C('mk21', 'hand', 'The Hangar', 2, 'mechanic', 'Picked Up the Spare', 'Knock down the last pins with your second throw.', 'bowling.spare', 1);
+  // fire (MECHS.md 12; words placeholders, Espada's): the first fire opens the flamer (parts.js earn 'mk26')
+  C('mk26', 'hand', 'The Hangar', 1, 'mechanic', 'Kindling', 'Set a building of the toy city alight.', 'city.ignite', 1);
+  C('mk27', 'hand', 'The Hangar', 3, 'mechanic', 'Burnt Down', 'Bring a building down by burning it.', 'city.felled.fire', 1);
+  C('mk28', 'hand', 'The Hangar', 2, 'mechanic', 'Bucket Brigade', 'Put out a fire with a water tower.', 'city.douse.water', 1);
+  C('mk29', 'hand', 'The Hangar', 2, 'mechanic', 'Bonfire', 'Set the straw giant alight.', 'giant.burn.straw', 1);
+  C('mk30', 'hand', 'The Hangar', 3, 'mechanic', 'Glassed', 'Fire the dune colossus\'s sand to glass.', 'giant.vitrify', 1);
   C('mk22', 'hand', 'The Hangar', 3, 'mechanic', 'Giant Swing', 'Lift a giant and throw it.', 'giant.throw', 1);
   C('mk23', 'hand', 'The Hangar', 4, 'mechanic', 'Through the Wall', 'Throw a giant through a building.', 'giant.throw.building', 1);
   C('mk24', 'hand', 'The Hangar', 4, 'mechanic', 'Sand Breaker', 'Fell the dune colossus.', 'giant.down.colossus', 1);
