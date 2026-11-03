@@ -87,12 +87,16 @@ Built in the kernel: **gravity** (the map), **match** (three or more in a line),
 in a line between two of yours becomes yours), **bomb** (Bomberman's cross, set off by a clear beside it), **junk** with offsetting,
 **the line**.
 
-To come, each a module of its own:
-- **matching:** diagonal runs (Columns), the crash gem (SPF2T), the rainbow (Noon);
-- **clearing:** line clears (Tetris), Lumines' sweep, Qix claims, drilling (Mr. Driller);
-- **movement:** ice and conveyors, grab and throw (Magical Drop), launching across the line (Meteos);
-- **junk:** timer junk (SPF2T), hard junk (two hits), junk in patterns (Puzzle Pirates), viruses (Dr. Mario);
-- **rules as tiles** (section 6).
+Built since (2026-11-03, section 27; each off unless a ruleset sets its flag):
+- **matching** (`matchrules.js`): diagonal runs (`diagonal`), the crash gem (`crash`), the rainbow (`rainbow`);
+- **clearing** (`clearrules.js`): line clears (`lines`), Lumines' sweep (`sweep`), Meteos' launch across the Line (`launch`). Mr. Driller's
+  drilling was already the Courier's DRILL (`couriertools.js`). **Qix's claims are not built**: the Line already is the territory;
+- **movement** (`movement.js`): ice (`ice`) and conveyors (`belts`), magnets (`magnets`), grab and throw (the action `grabthrow`);
+- **junk** (`junkrules.js`): hard junk and sticky junk (`hard`), junk in patterns (`pattern`), rot (`corrode`), viruses (`viruses`).
+  Timer junk is `dread.js`'s embers (SPF2T's counter gems), built before.
+- **the Wake Whistle** (`whistle.js`, section 27.3).
+
+Still to come: **rules as tiles** (section 6; GAPS G185).
 
 ## 6. A Figment is its ruleset ("Bingo, baby")
 
@@ -313,7 +317,7 @@ Built: `flee.js`. **Flee** is an action in either form, 3 AP, the Courier's side
   116, 109, 48 and 14 on tries 1 to 5). Down 4 columns with the Figment stunned: 40%; an even fight after two misses: 60%.
 - **The bots** flee only when losing by 4 columns or more and the odds are 40% or better: once in 120 duels. A roll is judged by its
   odds, never sampled with the rest (a clone's die would let the bot see it fall).
-- The sure way out stays the Wake Whistle's to give (an item that ends a duel whole, unrolled): the plan's, not built.
+- The sure way out is the Wake Whistle's (an item that ends a duel whole, unrolled): built 2026-11-03, section 27.3.
 
 **Ruled on Petra's room** (630dccc; Dovina, 2026-10-19):
 16. **A Figment's ruleset comes from `rulesetOf(c)`** (rulesets.js), not a feeling looked up in the room: it gives an aberrant Lantern
@@ -1006,3 +1010,65 @@ drawn as junk until Calissa's look). **Transmute** takes a slime cell: every sli
   its Zone of Influence; Kindle's tile and cast; the turn's change (26.8's ask, standing); a lantern pendant if she likes it.
 - **Wanda:** Spew's and Harden's stings, the jelly's cue, the slime's sound when a Transmute turns it.
 - **Espada:** Spew's, Harden's and Kindle-yours' words, the jelly's secret lines, its two deaths, the learning line.
+
+## 27. The rule modules, the feelings' rulesets and the Wake Whistle (Dovina, 2026-11-03; South: "build any outstanding unbuilt features"; GAPS G184, G186, G188)
+
+### 27.1 The rule modules (`src/progress/duel/`)
+One job a file, each with a header naming its prior art; a ruleset turns one on with a flag, and one that sets none is **untouched** (no
+hook draws from the duel's stream, moves a piece or settles: `scripts/duel.mjs` gives the same numbers as before for every old ruleset).
+`turnrules.js` is where `duel.js` hands them their moments (the start, a new gem, after an action, the turn's end), so the kernel names none.
+
+| flag | module | what it does |
+|---|---|---|
+| `diagonal` (`true`, or a longer run) | `matchrules.js` | runs count on the diagonals too (Columns) |
+| `crash` (a chance a new gem is one) | `matchrules.js` | takes no part in runs; touching a gem of its colour it breaks the touching group of that colour and itself (SPF2T) |
+| `rainbow` (a chance) | `matchrules.js` | touching a gem it breaks every gem of the colour it touches most on its side, and itself (Noon) |
+| `lines` | `clearrules.js` | a row filled across a half (a column where gravity runs along the rows) clears whole, junk too (Tetris) |
+| `sweep { step }` | `clearrules.js` | at the end of a side's own turn a bar crosses `step` columns of its half; the 2 x 2 squares of one colour it passed break (Lumines) |
+| `launch { at, n }` | `clearrules.js` | a clear of `at` gems throws `n` of the pieces touching it across the Line as junk landing at once beside it, pushing nothing (Meteos) |
+| `ice { share }` | `movement.js` | that share of each half is ice: a gem dragged or swapped onto it slides on the way it was going |
+| `belts { rows, dir }` | `movement.js` | a row of each half is a conveyor: at its side's turn end each piece on it moves a cell |
+| `magnets` (a chance) | `movement.js` | a magnetic gem draws the nearest gem of its colour in its row or column a cell closer each turn |
+| action `grabthrow { from, to }` | `movement.js` | the classic duel's god hand, 2 points: up to four gems of one colour off the exposed end of a lane thrown on another (Magical Drop) |
+| `hard { from, hits, sticky }` | `junkrules.js` | the side `from`'s junk takes `hits` breaks (a clear beside it cracks it once a pass); sticky does not fall |
+| `pattern { from, shapes }` | `junkrules.js` | its junk lands in a row, a column, a 2 x 2 block or a diagonal where one fits (Puzzle Pirates) |
+| `corrode { p, max }` | `junkrules.js` | at a side's turn end its junk turns a gem beside it to junk, by chance, `max` a turn |
+| `viruses { n, bonus }` | `junkrules.js` | `n` fixed gems (no `falls`) on a half at the start, cleared only in a match; the half cleared of them sends `bonus` junk once (Dr. Mario) |
+
+A special piece is a base kind with an `extra` tag and a `look` (the placeholder the view draws it as: a crash gem or virus as a gem, a
+rainbow as a bomb, hard junk as junk), so the view draws it before it has a look of its own; a clear event of one carries `special`
+(`crash`, `rainbow`, `virus`). Hard junk's crack is `junk.crack`. **Measured:** a refill (skyfall) never makes a special gem: a rainbow
+made inside the settle that breaks a colour ran Wonder's board away (25 capped settles in 10 duels); with the specials out of the refill
+and the diagonal at 4, 1. A diagonal of 3 also ran it away on a 20 x 20 board with skyfall (17 to 25 capped).
+
+### 27.2 The feelings' rulesets (G186)
+All seven feelings now have a board (`RULESETS[feeling]`, which `rulesetOf` gives a blotling by its grade); the aberrants keep their own.
+
+| feeling | the families it wears |
+|---|---|
+| Wonder | diagonal runs of 4, the rainbow, the sweep |
+| Mirth | mirrored gravity, ice, launches (bounces) |
+| Desire | magnets, the pincer, clusters |
+| Fury | bombs, kicks, the crash gem |
+| Gall | hard junk, rot, three viruses a half |
+| Grief | gravity toward the Line, sinking clusters, the pincer |
+| Dread | fog, embers (timer junk) |
+
+Measured (`scripts/duel.mjs`, bot against bot, 20 x 20, 5 AP): every ruleset plays to its end; the new ones run about 4.5 turns a side as
+the others do; chains run deep on the big classic board with skyfall as they always did (the settle's cap is 64). These are the generic
+Figments' boards; **the families' tiles in the aberrants' own boards are asked per aberrant** (ABERRANTS.md), not changed here.
+
+### 27.3 The Wake Whistle (G188)
+`whistle.js`: **a Wake Whistle blown in a duel ends it whole and unrolled**: no roll (Flee's d20 can fail), 0 points (it works with none
+left and, in the PvE duel, after the turn's drag), the duel ends `winner: -1`, `fled: side`, `whistled: true`, events `whistle { side, left }`
+then `duel.fled { how: 'whistle' }`. A side holds `whistles` (`newDuel({ whistles: [n, 0] })`); the kernel takes one on the action and the
+session takes the item out of the Pneuka Box. It is a drag-duel and PvE verb. Bots never use it (`legalActions` does not list it).
+The ledger counts `duel.whistle`, never `duel.fled`; the log line is a placeholder (Espada's).
+
+### 27.4 Not built
+- **Qix's claims** (27.1): the Line is the territory; a claim state would be a second one.
+- **Rules as tiles** (G185, section 6): it needs rulings first. (1) A tile sits on the **aberrant's** half, which the PvE duel freezes and
+  the drag cannot touch: the drag across the Line is a new verb. (2) The sentence words are Espada's (LORE.md, proposed): code takes
+  plain English until she and South call the mechanic final. (3) Familiarity reading them is Calissa's tag. Until then Wonder's
+  family is the rainbow, the diagonal and the sweep.
+- The new pieces' own looks (Calissa), the sounds (Wanda) and the log's words (Espada): handoffs in `docs/handoffs/`.
