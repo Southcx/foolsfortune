@@ -14,8 +14,12 @@
 // ---------------------------------------------------------------------------------------
 import { DIRS, KINDS, hasTag } from './board.js';
 import { DUEL_BREAK, capOf } from './duelbreak.js';
+import { matchClears } from './matchrules.js';
+import { lineClears, squareClears } from './clearrules.js';
+import { crackJunk } from './junkrules.js';
 
 const key = (x, y) => x + ',' + y;
+const SPECIAL = ['crash', 'rainbow', 'virus']; // (a clear event says which special gem it was: the view's tell)
 const unkey = (k) => k.split(',').map(Number);
 
 /** Gravity: every falling piece moves along its cell's gravity while the next cell is empty, on its own side (the line is a wall to a
@@ -66,18 +70,22 @@ export function clears(b, rs, tune = null, needs = null) {
       if (group.length >= need(b.sideOf(x), p.colour)) for (const [gx, gy] of group) out.add(key(gx, gy));
     }
   }
+  for (const set of [matchClears(b, rs), lineClears(b, rs), squareClears(b)]) for (const k of set) out.add(k); // (the optional rules: matchrules.js diagonals, crash gems and rainbows; clearrules.js lines and the sweep's squares)
   return out;
 }
 
 /** Remove the cleared cells; junk beside a cleared cell breaks, and a bomb beside one goes off (a cross of `rs.blast`). Returns how many
  *  gems each side cleared (what junk is counted from) and the events. */
 export function resolve(b, cells, rs) {
-  const events = [], cleared = [0, 0], gone = new Set(cells), fuse = [];
+  const events = [], cleared = [0, 0], gone = new Set(cells), fuse = [], struck = new Set();
   for (const k of cells) {
     const [x, y] = unkey(k);
     for (const [dx, dy] of [DIRS.N, DIRS.S, DIRS.E, DIRS.W]) {
       const n = b.at(x + dx, y + dy);
-      if (n && hasTag(n, 'junk') && b.sideOf(x + dx) === b.sideOf(x)) gone.add(key(x + dx, y + dy));
+      if (n && hasTag(n, 'junk') && b.sideOf(x + dx) === b.sideOf(x) && !gone.has(key(x + dx, y + dy))) { // (hard junk cracks once a pass and breaks on its last hit: junkrules.js)
+        if (struck.has(n.id)) continue;
+        if (crackJunk(n)) gone.add(key(x + dx, y + dy)); else { struck.add(n.id); events.push({ type: 'junk.crack', id: n.id, side: b.sideOf(x + dx), at: [x + dx, y + dy], hits: n.hits }); }
+      }
       if (n && hasTag(n, 'explosive') && b.sideOf(x + dx) === b.sideOf(x)) fuse.push([x + dx, y + dy]);
     }
   }
@@ -93,7 +101,7 @@ export function resolve(b, cells, rs) {
   for (const k of gone) {
     const [x, y] = unkey(k), p = b.at(x, y); if (!p) continue;
     if (hasTag(p, 'matches')) cleared[b.sideOf(x)]++;
-    events.push({ type: hasTag(p, 'junk') ? 'break' : 'clear', id: p.id, side: b.sideOf(x), at: [x, y], colour: p.colour, ...(p.born ? { born: p.born } : {}) }); // (born: a gem that was something else, a Transmute's slime: secrets.js)
+    events.push({ type: hasTag(p, 'junk') ? 'break' : 'clear', id: p.id, side: b.sideOf(x), at: [x, y], colour: p.colour, ...(p.born ? { born: p.born } : {}), ...(SPECIAL.find((t) => hasTag(p, t)) ? { special: SPECIAL.find((t) => hasTag(p, t)) } : {}) }); // (born: a gem that was something else, a Transmute's slime: secrets.js)
     b.set(x, y, null);
   }
   return { cleared, events };

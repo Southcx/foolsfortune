@@ -3,7 +3,7 @@
 // only text feedback) and kept on the ledger: begun, the Figment broken by your junk, and its end, won (drained, or the finisher), lost, or fled.
 // The words are Espada's (docs/LORE.md, "The puzzle duel's words"); the log says "duel", the genre's word.
 //
-//   duel.pull { foe }   duel.slip   duel.open { kind, feeling }   duel.break { kind, depth }   duel.flee { roll, reroll, need, ok }   duel.end { kind, won, how, turns, atOnce }   duel.undo { left }   (each with `by`)
+//   duel.pull { foe }   duel.slip   duel.open { kind, feeling }   duel.break { kind, depth }   duel.flee { roll, reroll, need, ok }   duel.whistle { left }   duel.end { kind, won, how, turns, atOnce }   duel.undo { left }   (each with `by`)
 //   the PvE duel (23): duel.foe { skill, n } (by creature)   duel.desperate (by creature)   duel.stagger (by courier)
 //   the one-gesture duel (PUZZLE-DUELS.md 22): duel.chain { step, weak } (each step from 2)   duel.skill { tool }   duel.charge { tool } (a skill full)   duel.land { n, kind } (by creature)   duel.allclear { n }
 //
@@ -42,7 +42,10 @@ export function duelRules({ on: onAny, L: ledger, log }) {
     if (e.reroll) log.say('battle', 'Luck\'s re-roll. The d20 is thrown again.');
     if (!e.ok) log.say('battle', 'Flee failed.', { key: 'duel.flee', throttle: 1 }); else if (e.roll === 20) log.say('battle', 'Natural 20. Fled at once!');
   });
+  // duel.whistle { left, by }: the Wake Whistle blown in a duel (progress/duel/whistle.js; the session emits it on the kernel's `whistle`, then duel.end { how: 'fled', whistle: true }): out whole, nothing rolled; Espada's to word
+  on('duel.whistle', (e) => { if (e.by !== 'courier') return; L.inc('duel.whistle'); log.say('battle', 'Wake Whistle blown. You wake from the duel whole.', { key: 'duel.whistle', throttle: 2 }); });
   on('duel.end', (e) => {
+    if (e.how === 'fled' && e.whistle) return; // (the Wake Whistle: duel.whistle said it, and it is not a flee; PUZZLE-DUELS.md 15)
     if (e.how === 'fled') { L.inc('duel.fled'); if (!e.atOnce) log.say('battle', 'Fled the duel.'); return; } // (a natural 20 said it already: "You flee at once.")
     L.inc(e.won ? 'duel.won' : 'duel.lost'); if (e.won && e.kind) L.inc(`duel.won.${e.kind}`); if (e.won && e.shiny) L.inc('duel.won.shiny'); // (by kind: a learned skill's count way, duel/learned.js)
     if (e.practice) { log.say('battle', e.won ? 'Practice duel won. Nothing counts.' : 'Practice duel lost. Nothing counts.'); return; } // (no shatter, no drain; Espada's)
