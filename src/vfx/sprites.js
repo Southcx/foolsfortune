@@ -9,6 +9,10 @@
 // The shapes live in one atlas, drawn here at startup (8 x 4 cells of 128 px, greyscale with alpha: every use tints its own):
 //   soft  core  star4  sparkle  |  streak  ring  ringthin  puff  |  shard  diamond  glint  swirl  |  petal  crescent  chip  bubble
 //   hex  facet  drip  ripple  |  disc  talisman  moth  leaf  |  die  comb   (the last five the Courier's flourishes': vfx/flourisheffects.js)
+//   cloud  tongue   THE CEL CELLS (the city's fire, vfx/mechs/fire/: Wind Waker's smoke balls, Okami's and Hades' flame tongues): drawn
+//   as a field in alpha (1 at a lobe's heart, falling to its edge) and bands in colour (red the tone, lit 1 .. shadow 0.42; green the
+//   white-hot core), never a soft edge: the shader cuts the field at a threshold the particle's alpha sets (so a cel puff erodes from
+//   its edge inward as it dies, never goes see-through), draws its keyline at the cut in the tint's dark, and its bands flat
 //
 // Prior art: the sprite-sheet particle of every sixth-generation action game (Devil May Cry's and Kingdom Hearts' hit stars and
 // streaks, Final Fantasy X's glints, Okami's petals, Dark Cloud 2's poofs), velocity-stretched sparks (every engine's "stretched
@@ -23,7 +27,9 @@ import * as THREE from 'three';
 import { bakedCanvasTexture } from '../render/bakedcanvas.js';
 import { T } from '../core/config.js';
 
-export const SHAPES = { soft: 0, core: 1, star4: 2, sparkle: 3, streak: 4, ring: 5, ringthin: 6, puff: 7, shard: 8, diamond: 9, glint: 10, swirl: 11, petal: 12, crescent: 13, chip: 14, bubble: 15, hex: 16, facet: 17, drip: 18, ripple: 19, disc: 20, talisman: 21, moth: 22, leaf: 23, die: 24, comb: 25 };
+export const SHAPES = { soft: 0, core: 1, star4: 2, sparkle: 3, streak: 4, ring: 5, ringthin: 6, puff: 7, shard: 8, diamond: 9, glint: 10, swirl: 11, petal: 12, crescent: 13, chip: 14, bubble: 15, hex: 16, facet: 17, drip: 18, ripple: 19, disc: 20, talisman: 21, moth: 22, leaf: 23, die: 24, comb: 25, cloud: 26, tongue: 27 };
+/** The first cel cell (the cel branch of the program: an index at or past it). */
+export const CEL_FROM = 26;
 
 let _atlas = null;
 export function atlas() {
@@ -97,6 +103,30 @@ export function atlas() {
       g.restore();
     }
   });
+  // THE CEL CELLS: a field in alpha (lobes added, 'lighter'), then the bands filled over it 'source-atop' (its alpha kept, its colour
+  // replaced): red the tone (the shadow under, mid, the lit cap up and left: the sun above, as every cartoon draws it), green the core
+  const lobe = (x, y, rr) => { g.fillStyle = radial(rr, [[0, 1], [0.55, 0.62], [1, 0]]); g.beginPath(); g.arc(x, y, rr, 0, Math.PI * 2); g.fill(); };
+  const band = (css, fn) => { g.save(); g.globalCompositeOperation = 'source-atop'; g.fillStyle = css; fn(); g.restore(); };
+  const blob = (P, s, dx, dy) => { g.beginPath(); for (const [x, y, rr] of P) { g.moveTo(x + dx + rr * s, y + dy); g.arc(x + dx, y + dy, rr * s, 0, Math.PI * 2); } g.fill(); };
+  cell(SHAPES.cloud, (R) => {
+    const P = [[0, R * 0.12, R * 0.5], [-R * 0.42, R * 0.26, R * 0.36], [R * 0.44, R * 0.24, R * 0.38], [-R * 0.18, -R * 0.3, R * 0.4], [R * 0.24, -R * 0.24, R * 0.36]];
+    g.save(); g.globalCompositeOperation = 'lighter'; for (const [x, y, rr] of P) lobe(x, y, rr * 1.18); g.restore();
+    band('rgb(107,0,0)', () => g.fillRect(-R, -R, R * 2, R * 2));                 // the shadow (0.42)
+    band('rgb(184,0,0)', () => blob(P, 0.9, -R * 0.07, -R * 0.09));              // mid (0.72)
+    band('rgb(255,0,0)', () => blob(P, 0.62, -R * 0.15, -R * 0.2));              // the lit cap (1)
+  });
+  cell(SHAPES.tongue, (R) => {
+    // a flame's tongue: a fat foot drawn up into a licking tip, a little flick off to its side
+    const tongue = (s, oy) => { g.beginPath(); g.moveTo(0, -R * 0.96 * s + oy); g.bezierCurveTo(R * 0.2 * s, -R * 0.5 * s + oy, R * 0.62 * s, -R * 0.05 * s + oy, R * 0.5 * s, R * 0.42 * s + oy);
+      g.arc(0, R * 0.42 * s + oy, R * 0.5 * s, 0, Math.PI); g.bezierCurveTo(-R * 0.62 * s, -R * 0.1 * s + oy, -R * 0.06 * s, -R * 0.4 * s + oy, 0, -R * 0.96 * s + oy); g.fill(); };
+    g.save(); g.globalCompositeOperation = 'lighter';
+    for (const [s, a] of [[1, 0.35], [0.82, 0.3], [0.62, 0.35]]) { g.fillStyle = `rgba(255,255,255,${a})`; tongue(s, R * 0.12 * (1 - s)); }
+    g.fillStyle = 'rgba(255,255,255,0.35)'; g.beginPath(); g.ellipse(R * 0.42, -R * 0.52, R * 0.1, R * 0.2, 0.5, 0, Math.PI * 2); g.fill();
+    g.restore();
+    band('rgb(150,0,0)', () => g.fillRect(-R, -R, R * 2, R * 2));                 // the rim (0.59: the tint taken toward its blood)
+    band('rgb(255,0,0)', () => tongue(0.74, R * 0.12));                           // the body (the tint)
+    band('rgb(255,255,0)', () => tongue(0.44, R * 0.36));                         // the core (white-gold)
+  });
   };
   _atlas = bakedCanvasTexture(paint, C * 8, C * 4, { scale: Math.min(1, T.visual.textureScale ?? 1) }); // (drawn once: its pixels let go once on the GPU, render/bakedcanvas.js; at the tier's textureScale, 512 x 256 on Low and Minimum: the resolution pass, 2026-10-25)
   _atlas.colorSpace = THREE.NoColorSpace; _atlas.generateMipmaps = true; _atlas.minFilter = THREE.LinearMipmapLinearFilter; _atlas.anisotropy = 2;
@@ -112,10 +142,11 @@ attribute vec4 aP1;    // size0 size1 drag gravity
 attribute vec4 aP2;    // rot0 spin shape stretch
 attribute vec4 aP3;    // floor twinkle seed grow (how fast it pops to size: 0 at once)
 uniform float uTime;
-varying vec4 vColor; varying vec2 vUv;
+varying vec4 vColor; varying vec2 vUv; varying float vCel;
 void main() {
+  vCel = step(${CEL_FROM}.0 - 0.5, aP2.z);
   float age = uTime - aPos.w, life = aVel.w;
-  if (age < 0.0 || age >= life) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); vColor = vec4(0.0); vUv = vec2(0.0); return; }
+  if (age < 0.0 || age >= life) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); vColor = vec4(0.0); vUv = vec2(0.0); vCel = 0.0; return; }
   float k = aP1.z, g = aP1.w;
   vec3 p, v;
   if (k > 1e-4) {
@@ -153,8 +184,21 @@ void main() {
 }`;
 const FRAG = /* glsl */`
 uniform sampler2D uAtlas; uniform float uAdd;
-varying vec4 vColor; varying vec2 vUv;
+varying vec4 vColor; varying vec2 vUv; varying float vCel;
 void main() {
+  if (vCel > 0.5) {
+    // a cel cell: the field cut where the particle's alpha says (eroding from its edge as it dies), a keyline at the cut, flat bands
+    vec4 tx = texture2D(uAtlas, vUv);
+    float th = mix(0.94, 0.16, clamp(vColor.a, 0.0, 1.0)), aa = max(fwidth(tx.a) * 0.75, 1e-3);
+    float inside = smoothstep(th - aa, th + aa, tx.a);
+    if (inside < 0.01) discard;
+    float tone = clamp(tx.r, 0.0, 1.0); // (the canvas's colour comes up unpremultiplied: the band's own, wherever the field is)
+    vec3 c = mix(vColor.rgb * tone, vec3(1.0, 0.86, 0.5) * 1.35, clamp(tx.g, 0.0, 1.0));
+    float line = 1.0 - smoothstep(th + 0.06 - aa, th + 0.06 + aa, tx.a);
+    c = mix(c, vColor.rgb * 0.16, line * (1.0 - uAdd));
+    gl_FragColor = uAdd > 0.5 ? vec4(c * inside * (1.0 - line * 0.7), inside) : vec4(c, inside);
+    return;
+  }
   float a = texture2D(uAtlas, vUv).a * vColor.a;
   if (a < 0.003) discard;
   gl_FragColor = uAdd > 0.5 ? vec4(vColor.rgb * a, a) : vec4(vColor.rgb, a);

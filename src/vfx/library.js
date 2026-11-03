@@ -44,6 +44,7 @@ import { DROP_EFFECTS } from './library/drops.js'; // (a creature's drop's momen
 import { PANIC_EFFECTS } from './library/panic.js'; // (a creature struck by a thrown thing: its sweat flung, its stars spun off: vfx/panic.js plays them)
 import { SLAB_EFFECTS } from './library/slabs.js'; // (carving a slab: each verb's moment, the fossil lifting and the spirit waking: vfx/garden/slablook.js plays them)
 import { MECH_SPECIAL_EFFECTS } from './library/mechs.js'; // (a mech part's special at the frame's scale: vfx/mechs/speciallooks.js plays them)
+import { CITY_FIRE_EFFECTS } from './library/cityfire.js'; // (the toy city's fire's moments at the street's scale: vfx/mechs/fire/ plays them)
 const L = (o) => o; // (a layer: only for readability)
 const GLAZES = [0x2f6db5, 0x4f9a7a, 0xe0b030, 0xc84a3a, 0xf3efe6, 0x6a4a9a, 0x2a8ab0]; // (the glazes' own colours: the Hailstorm's shards)
 
@@ -456,4 +457,5 @@ export const LIBRARY = {
   ...SENTINEL_EFFECTS,
   ...SLAB_EFFECTS,
   ...MECH_SPECIAL_EFFECTS,
+  ...CITY_FIRE_EFFECTS,
 };

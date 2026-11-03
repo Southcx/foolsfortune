@@ -6,13 +6,22 @@
 // panels over the interstitial's barrel inside it, so the gaps between the panels are real grooves with the core lit in them. Its
 // sockets (the neck's cup, the shoulders' cups facing out) are ivory, so any head and any arms seat in any core. The back's panels
 // close round the cradle's boss: a narrow window cut only where the boss stands, its trim flange laid over the cut.
-//   clayCore   heroic: broad shoulders, a strong keel, the breastplate split at it into two pectorals, a flank and a shoulder blade a
-//              side, the abdomen in three wrapped bands narrowing to the waist, a kintsugi crack across the left pectoral
+//   clayCore   heroic: broad shoulders; the front one sculpted cuirass (parts/sdf.js, South, 2026-11-02: the chest a focal point):
+//              two pectoral masses undercut at their foot, a sternal valley between them, the costal arch running down from the
+//              sternum's foot as a groove round the abdomen's plastron (two rectus masses, the linea alba and its tendinous lines),
+//              serratus ribs on the flanks; the plastron's foot arched over the waist ball; a flank and a shoulder blade a side and
+//              the abdomen's three bands round the sides and back as plates; a kintsugi crack across the left pectoral. Its base is
+//              analytic (an elliptic section through the chest's own profile, as splines), the forms few and strong
+//              THE CHEST TANK (South, 2026-11-02): one glass Lachryma tank set into the sternum between the pectorals in a rolled
+//              bezel, the doll's plates' way (femcores.js `tank`), filled and sloshed by the hydraulics
+// THE DANTIAN (South, 2026-11-02: "Think of the waist joint like the dantian. Its a target point!"): the hero's waist ball a little
+// larger than the rest, its heart the glow (lit while sealed, seen through the clear shell), bare glass with no gold wire on it
+// (South, 2026-11-02), sitting in the pelvis's socket under the plastron's arch, seen whole from the front.
 //   kilnCore   fired twice: deeper and rounder (a bottle kiln's shoulders), banded in trim, its firing holes bricked open on the core
 //   lightCore  bisque thin: slim, its flanks cut to narrow ribs over the lit core, a sternum plate and hoops
 // The feminine forms' cores are their own (femcores.js, by the same `coreLook`).
 // THE CRADLE (South, 2026-11-02, via the coordinator: Evangelion's entry plug): in the back, between the shoulder blades, a well
-// tilted back 20 degrees from upright, at the Pneuka Jar's own size (vfx/pneukajar/shape.js JAR_ANATOMY: the Jar 1.2 m, its foot
+// tilted back 20 degrees from upright (its housing on the back one of the cradle's mounts, cradles.js), at the Pneuka Jar's own size (vfx/pneukajar/shape.js JAR_ANATOMY: the Jar 1.2 m, its foot
 // 0.257 round), so the Jar goes in base first and screws down until its shoulder line (0.82 up it) is flush with the lip, the head
 // and face left showing. A screw thread cut round the inside at a pitch of two full turns over that depth, a gold collar on the lip,
 // an octagonal boss round it (the cradle's look's octagon and four bronze tines, vfx/cradlelook.js), the well's floor lit while sealed.
@@ -23,12 +32,16 @@
 //
 //   coreLook(id, F) -> { mounts: { neck [y, z], shoulder [x, y], back [y, z], gen [y, z], boost [y, z, x], plug [y, z], cradleZ }, chest(S), waist(S) }
 //   CORE_LOOKS[id] (the cores' numbers)   cradle(S) (the boss, the thread, the floor's glow)   cradleParts(mats) -> { collar, tines, bore }
-//   CRADLE (the well's sizes: r, depth, turns, pitch, tilt, at [y, z] on the chest)
+//   CRADLE (the well's sizes: r, depth, turns, pitch, tilt, at [y, z] on the chest)   DANTIAN (the hero's waist ball: r)   CORE_TANK (the hero's chest tank)
+//   coreLook(...).tank { r, at } (the hero's chest tank, registered with the hydraulics: partsbody.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { JAR_ANATOMY } from '../../pneukajar/shape.js';
-import { MECH_LOOK as L, FORMS, band, profAt, panel, cup, seam, ball, threadGeometry, shell, sculpt } from './kit.js';
+import { MECH_LOOK as L, FORMS, band, profAt, panel, seam, ball, threadGeometry, shell, sculpt } from './kit.js';
+import { blend, carve, meet, ellipsoid } from './sdf.js';
+import { sideSculpt, aoTone, onto, socket } from './arms.js';
 import { femCoreLook } from './femcores.js';
+import { cradleMount } from './cradles.js';
 
 const PI = Math.PI;
 /** The well: its radius (the Jar's foot and a hand's width of room), its depth (to the Jar's shoulder line), two turns, its tilt back,
@@ -38,6 +51,67 @@ CRADLE.pitch = CRADLE.depth / CRADLE.turns;
 const WIN = [1.32, 2.82]; // (the back's window round the boss, in the chest's height)
 const G = 0.035; // (a groove's half-width in phi)
 const bump = (y, a, b) => (y <= a || y >= b ? 0 : Math.sin((PI * (y - a)) / (b - a)));
+/** The hero's waist ball, the dantian: a little larger than the shoulders' (0.62). */
+export const DANTIAN = { r: 0.64 };
+/** The hero's chest tank: its radius, its centre's height on the chest, how far of its radius it sits back into the plate. */
+/** The highest a generator's mount stands on the chest (its dome's top then clear of every cradle mount's foot), any form: partsbody.js holds a core's `gen` to it. */
+export const GEN_TOP = 0.45;
+export const CORE_TANK = { r: 0.55, y: 2.15, sink: 0.45 };
+
+/** A Catmull-Rom through [[v, y], ...] read at y (a profile made smooth: no shelf at a knot). */
+function spline(pts) {
+  return (y) => {
+    const n = pts.length; if (y <= pts[0][1]) return pts[0][0]; if (y >= pts[n - 1][1]) return pts[n - 1][0];
+    let i = 1; while (pts[i][1] < y) i++;
+    const p0 = pts[Math.max(0, i - 2)][0], p1 = pts[i - 1][0], p2 = pts[i][0], p3 = pts[Math.min(n - 1, i + 1)][0], t = (y - pts[i - 1][1]) / (pts[i][1] - pts[i - 1][1]);
+    return 0.5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t + (-p0 + 3 * p1 - 3 * p2 + p3) * t * t * t);
+  };
+}
+
+/** The clay core's cuirass: the chest's front (phi within +-PH) sculpted as one plate. Its base is analytic and calm (an elliptic
+ *  section whose half width and depth run as splines through the chest's own profile, its plan's keel and swells added, so it meets the
+ *  flanks' panels and covers the core), with a few strong forms blended on: the two pectoral masses, the plastron's two rectus masses; the sternal valley carved
+ *  between the pectorals; the costal arch and the lines cut as clean grooves; its foot arched over the dantian. */
+const PH = 1.0;
+/** A sculpt's tone with its panel lines shaded in (k 0..1 from `lineK(x, y)`), toward `ink`. */
+function lineTone(tone, lineK, ink) {
+  const I = new THREE.Color(ink);
+  return (x, y, z, nx, ny, nz) => { const c = tone(x, y, z, nx, ny, nz), k = lineK(x, y) * 0.42; return [c[0] + (I.r - c[0]) * k, c[1] + (I.g - c[1]) * k, c[2] + (I.b - c[2]) * k]; };
+}
+function cuirassField(P, W, top, C, F, tank = null) {
+  const wk = C.w * F.chest[0] * 1.03, dk = C.d * F.chest[2] * 1.03, r = spline(P);
+  const A = (y) => r(y) * wk, B = (y) => r(y) * dk + 0.03; // (the half width and the front's depth)
+  const ARCH = [0, 1.0, 0.86, 0.95], archE = (x, y) => Math.hypot(x / ARCH[2], (y - ARCH[1]) / ARCH[3]); // (the costal arch: 1 on it)
+  // the plan's own keel and pectoral swells, read analytically at the front (so the plate stays over the core's barrel there)
+  const lift = (x, y) => { const a = A(y), u = Math.min(1, Math.abs(x) / a), f = Math.sqrt(1 - u * u); return r(y) * dk * (C.keel * bump(y, 0.5, 3.0) * f ** 4 + C.pec * bump(y, 1.75, 3.15) * f * Math.exp(-((u - 0.5) ** 2) / 0.06)); };
+  const base = (x, y, z) => { const a = A(y), b = B(y); return (Math.hypot(x / a, (z > 0 ? z - lift(x, y) : z) / b) - 1) * Math.min(a, b) * 0.95; };
+  const pz = (x, y, k) => B(y) * Math.sqrt(Math.max(0, 1 - (x / A(y)) ** 2)) + lift(x, y) - k; // (a point k under the base's front at x, y)
+  const forms = [
+    ellipsoid([0.7, 2.42, pz(0.7, 2.42, 0.3)], [0.62, 0.48, 0.4]), ellipsoid([-0.7, 2.42, pz(0.7, 2.42, 0.3)], [0.62, 0.48, 0.4]), // (the pectorals)
+  ];
+  let solid = blend(0.22, base, forms[0], forms[1]);
+  solid = carve(0.14, solid, ellipsoid([0, 2.5, pz(0, 2.5, -0.25)], [0.14, 0.6, 0.31])); // (the sternal valley, cut into the keel)
+  const near = (x, y, z) => { const d = base(x, y, z); return d > 0.5 || d < -0.7 ? d : solid(x, y, z); }; // (far off: the base alone)
+  const phiOf = (x, z) => Math.atan2(x / wk, Math.max(z, -1) / dk);
+  let plateF = meet(0.07, (x, y, z) => { const d = near(x, y, z); return Math.max(d, -(d + 0.2)); },
+    (x, y, z) => Math.max((Math.abs(phiOf(x, z)) - PH - G * 0.9) * A(y) * 0.8, y - (top - 0.08), 0.24 - y, -z)); // (its foot a level rim, clear of the waist's taper: no tongues hanging off it)
+  plateF = carve(0.06, plateF, ellipsoid([0, -0.12, 1.4], [0.5, 0.5, 1.4])); // (the plastron's arch over the dantian)
+  if (tank) { const [tx, ty, tz] = tank.at, tr = tank.r + 0.03; plateF = carve(0.04, plateF, (x, y, z) => Math.hypot(x - tx, y - ty, z - tz) - tr); } // (the chest tank's seat)
+  // the lines: the costal arch round the plastron, the linea alba and its tendinous lines inside it, the abdomen's bands outside it
+  // (drawn in the plate's tone, never cut: a groove thinner than two cells comes out jagged, so the lines are shaded in, `lineK`)
+  const lineK = (x, y) => {
+    const e = archE(x, y), inArch = e < 1 && y > 0.25; let k = 0;
+    const ln = (dist, w) => { const t = Math.min(1, dist / w); k = Math.max(k, (1 - t) * (1 - t)); }; // (a soft valley of shade, not a hard ink line)
+    if (y > 0.25) ln(Math.abs(e - 1) * ARCH[2], 0.11); // (the costal arch)
+    if (inArch) { ln(Math.abs(x), 0.09); if (y < 1.75) { ln(Math.abs(y - 0.66), 0.08); ln(Math.abs(y - 1.18), 0.08); } }
+    else if (y < 1.05) { ln(Math.abs(y - 0.71), 0.09); ln(Math.abs(y - 1.02), 0.09); }
+    return k;
+  };
+  const lines = plateF;
+  let X = 0; for (let y = 0; y <= top; y += 0.1) X = Math.max(X, A(y) * Math.sin(PH + 0.15) + 0.1);
+  let Z = 0; for (let y = 0; y <= top; y += 0.1) Z = Math.max(Z, B(y) + lift(0, y) + 0.35);
+  return { f: lines, lineK, solid: near, front: (x, y) => pz(x, y, 0), bounds: [[-X, 0.02, 0.0], [X, top, Z]] };
+}
 
 /** The cores' numbers: the profile [[r, y], ...], the plan (w across, d ahead, back behind, the keel's and the pectorals' swell), the
  *  shoulder's height, the waist's colour. */
@@ -68,7 +142,8 @@ export function coreLook(id, F = FORMS.hero) {
   const top = P[P.length - 1][1], depth = (y) => profAt(P, y) * C.back * F.chest[2], wide = (y) => profAt(P, y) * C.w * F.chest[0];
   const gap = Math.asin(Math.min(0.9, 0.5 / (profAt(P, 2.1) * C.w * F.chest[0])));
   const mounts = {
-    neck: [top - 0.06, 0.1], shoulder: [wide(C.shoulderY) * 0.97 + 0.06, C.shoulderY], back: [1.05, -(depth(1.05) + 0.5)], gen: [0.62, -(depth(0.62) + 0.55)],
+    neck: [top - 0.06, 0.1], shoulder: [wide(C.shoulderY) * 0.97 + 0.06, C.shoulderY], back: [1.05, -(depth(1.05) + 0.5)], gen: [GEN_TOP, -(depth(GEN_TOP) + 0.55)], // (the generator low on the lumbar, clear of the cradle's mount)
+   
     boost: [0.32, -(depth(0.32) + 0.55), Math.max(0.6, wide(0.32) * 0.75)], plug: [0.4, -(depth(0.4) + 0.65)], cradleZ: -depth(L.cradleY) + 0.06,
   };
   /** A point on the chest's surface at phi, height y, k out. */
@@ -80,18 +155,42 @@ export function coreLook(id, F = FORMS.hero) {
       one(a0, a1); if (a0 > 0) one(-a1, -a0);
     }
   };
-  const inner = (S) => S.core.geo(sculpt(shell(band(P, P[0][1], top, 0.95, 16), 32), W), { c: L.core });
+  const inner = (S) => S.p.geo(sculpt(shell(band(P, P[0][1], top, 0.95, 16), 32), W), { c: L.dark }); // (under the panels: a porcelain a little darker, so a groove reads as an incised line, never a black one)
   /** The back from phi a to the spine: a blade either side of the window, the spine's strips above and below it. */
   const backPlates = (S, y0, y1, a, c = L.mid) => panels(S, [[y0, y1, a, PI - gap - G, c], [y0, WIN[0], PI - gap - G, PI - G, c], [WIN[1], y1, PI - gap - G, PI - G, c]]);
   const sockets = (S) => {
-    S.p.geo(cup(0.4 * F.joint).rotateX(PI), { at: [0, mounts.neck[0], mounts.neck[1]], c: L.ivory });
-    for (const s of [-1, 1]) S.p.geo(cup(C.cup * F.joint).rotateZ(s * PI / 2), { at: [s * mounts.shoulder[0], mounts.shoulder[1], 0], c: L.ivory });
+    socket(S.p, 0.4 * F.joint, { at: [0, mounts.neck[0], mounts.neck[1]], rot: [PI, 0, 0] }); // (the sockets: sculpted, so each ball sits in its plate)
+    for (const s of [-1, 1]) socket(S.p, C.cup * F.joint, { at: [s * mounts.shoulder[0], mounts.shoulder[1], 0], rot: [0, 0, s * PI / 2] });
   };
   const gorget = (S, y, c = L.trimM) => S.trim.geo(sculpt(shell([[0.36, y], [profAt(P, y) * 0.9, y + 0.01], [profAt(P, y) * 0.96, y + 0.14], [0.5, y + 0.26]], 28), W), { c });
   const hoop = (S, y, h, k = 1.06, c = L.trimM, piece = S.trim) => piece.geo(sculpt(shell(band(P, y - h, y + h, k, 2), 36), W), { c });
+  /** The hero's chest tank (South, 2026-11-02: "give the male mecha a similar, single chest lachryma tank"): one glass sphere set
+   *  into the sternum between the pectorals as the doll's plates are set, its back seated in the cuirass, a rolled porcelain bezel where
+   *  it leaves the plate; the parts body registers it (`tank`) so the hydraulics fill it and slosh it. Rigid: the slosh is its motion. */
+  const hero = !F.fem && F.id === 'hero' && (id === 'clayCore' || !CORE_LOOKS[id]);
+  let tank = null, CU = null;
+  if (hero) { const r0 = CORE_TANK.r, y0 = CORE_TANK.y, z0 = cuirassField(P, W, top, C, F).front(0, y0); tank = { r: r0, at: [0, y0, z0 - r0 * CORE_TANK.sink] }; CU = cuirassField(P, W, top, C, F, tank); }
+  const chestTank = (S) => {
+    const { r, at } = tank, zf = CU.front(0, at[1]), rb = Math.sqrt(Math.max(0.01, r * r - (zf - at[2]) ** 2));
+    const tilt = Math.atan((CU.front(0, at[1] + 0.08) - CU.front(0, at[1] - 0.08)) / 0.16), rot = [tilt, 0, 0]; // (the bezel laid to the sternum's slope)
+    S.core.ball(r * 0.36, { at, c: 0xffffff }, 18, 12); S.j.ball(r, { at, c: 0xffffff }, 30, 20); // (the heart; the glass)
+    S.p.geo(shell([[rb - 0.01, 0.05], [rb + 0.03, 0.08], [rb + 0.08, 0.05], [rb + 0.1, -0.01], [rb + 0.09, -0.1], [rb + 0.04, -0.2]], 40).rotateX(PI / 2), { at: [0, at[1], zf - 0.03], rot, c: L.pale }); // (the rolled bezel, its skirt run back into the plate)
+    S.trim.geo(shell([[rb + 0.085, 0.0], [rb + 0.105, -0.025], [rb + 0.095, -0.05]], 40).rotateX(PI / 2), { at: [0, at[1], zf - 0.03], rot, c: L.trimM }); // (a fine trim bead round it)
+  };
   const build = {
     clayCore(S) {
       inner(S);
+      if (hero) {
+        const Cu = CU; chestTank(S);
+        sideSculpt(S.p, Cu.f, Cu.bounds, 0.065, { key: `core.cuirass|${id}|${F.chest.join(',')}|tank`, tone: lineTone(aoTone(Cu.f, L.pale, L.mid, 0.06), Cu.lineK, L.dark) });
+        panels(S, [[1.05, top - 0.2, PH + 2 * G, 1.95, L.mid], // (the flanks)
+          [0.06, 0.34, PH + 2 * G, PI - 0.2, L.dark, 1.05], [0.4, 0.68, PH + 2 * G, PI - 0.2, L.mid, 1.05], [0.74, 0.99, PH + 2 * G, PI - 0.2, L.pale, 1.05]]); // (the abdomen's bands round the sides)
+        panels(S, [[1.82, 1.9, PH + 2 * G, PI - G, L.trimD, 1.05]], S.trim); // (the trim rim under the pectorals, round the sides and back)
+        backPlates(S, 1.05, top - 0.25, 1.95 + 2 * G);
+        seam(S.g, [on(0.42, 3.02), on(0.56, 2.78), on(0.64, 2.45), on(0.86, 2.2), on(0.96, 1.98)].map((p) => onto(Cu.solid, p, 0.015))); // (the crack run out across the pectoral, clear of the tank's bezel)
+        gorget(S, top - 0.1); sockets(S);
+        return;
+      }
       panels(S, [[1.9, top - 0.08, G, 1.0, L.pale], [1.05, 1.82, G, 1.0, L.mid], [1.05, top - 0.2, 1.0 + 2 * G, 1.95, L.mid], // (pectorals, the ribs under them, the flanks)
         [0.06, 0.34, G, PI - 0.2, L.dark, 1.05], [0.4, 0.68, G, PI - 0.2, L.mid, 1.05], [0.74, 0.99, G, PI - 0.2, L.pale, 1.05]]); // (the abdomen's three bands)
       backPlates(S, 1.05, top - 0.25, 1.95 + 2 * G);
@@ -122,9 +221,10 @@ export function coreLook(id, F = FORMS.hero) {
   };
   const tone = id === 'kilnCore' ? L.dark : id === 'lightCore' ? L.mid : L.pale, k = 1;
   return {
-    mounts, prof: P, plan: W,
+    mounts, prof: P, plan: W, tank,
     chest: build[id] || build.clayCore,
     waist(S) {
+      if (F.id === 'hero') { dantian(S); return; }
       ball(S.g, 0.5 * F.joint);
       S.core.cyl(0.5 * k, 0.56 * k, L.chestBase + 0.2, { at: [0, L.chestBase / 2, 0], c: L.core }, 20);
       for (let i = 0; i < 2; i++) (i ? S.trim : S.p).lathe([[0.66, 0], [0.76, 0.05], [0.76, 0.2], [0.66, 0.25]], { at: [0, 0.12 + i * 0.3, 0], sc: [k, 1, 0.85 * k], c: i ? L.trimM : tone }, 28);
@@ -132,14 +232,23 @@ export function coreLook(id, F = FORMS.hero) {
   };
 }
 
-/** The cradle's porcelain and glow, in the well's frame (its floor at the origin, +Y up the well's axis out of the back): the
- *  octagonal boss, the thread cut round the inside, the floor's ring lit while sealed. */
+/** The hero's waist: the dantian (a bare glass ball, its Lachryma standing round a heart that glows while sealed; no gold wire on
+ *  it, South, 2026-11-02), the column up into the chest and a trim collar where it meets the ball's crown; the
+ *  pelvis's socket below is its lip (legs.js), the plastron's arch above. */
+function dantian(S) {
+  const r = DANTIAN.r;
+  S.j.ball(r, { c: 0xffffff }, 32, 22);
+  S.e.ball(r * 0.3, { c: 0xffffff }, 18, 12); S.e.ring(r * 0.42, 0.018, { rot: [PI / 2, 0, 0], at: [0, 0, r * 0.62], c: 0xffffff }, 32, 4); // (the heart lit, a ring before it)
+  S.p.cyl(0.46, 0.5, 0.42, { at: [0, 0.82, 0], c: L.dark }, 20); // (the column up into the chest, clear of the heart)
+  S.trim.lathe([[0.44, 0.6], [0.58, 0.64], [0.6, 0.72], [0.5, 0.78]], { c: L.trimM }, 32); // (a collar where the column meets the ball's crown)
+}
+
+/** The cradle's porcelain and glow, in the well's frame (its floor at the origin, +Y up the well's axis out of the back): its mount's
+ *  housing (the form's `cradle`, cradles.js: the boss, a sunk socket, a kiln collar, a yoke, a halo), the thread cut round the inside,
+ *  the floor's ring lit while sealed. */
 export function cradle(S) {
-  const { p, g, e } = S, R = CRADLE.r, D = CRADLE.depth, B = CRADLE.boss;
-  p.geo(shell([[R, D], [B - 0.04, D], [B, D - 0.05], [B + 0.03, D - 0.2], [B + 0.06, -0.3]], 8, PI / 8), { c: L.pale }); // (the boss, an octagon)
-  S.core.geo(shell([[B + 0.07, D - 0.26], [B + 0.08, D - 0.34]], 8, PI / 8), { c: L.core }); // (a groove round it)
-  S.trim.geo(shell([[B + 0.04, 0.16], [B + 0.3, 0.02], [B + 0.42, -0.1], [B + 0.44, -0.22], [B + 0.05, -0.34]], 8, PI / 8), { c: L.trimM }); // (the flange the back's plates close on)
-  g.geo(shell([[B + 0.43, -0.08], [B + 0.46, -0.13], [B + 0.43, -0.18]], 8, PI / 8), { c: L.gold });
+  const { g, e } = S, R = CRADLE.r, D = CRADLE.depth;
+  cradleMount(S, S.F?.cradle, CRADLE); // (its housing on the back: one of the cradle's mounts, cradles.js)
   g.geo(threadGeometry(R - 0.03, CRADLE.turns, CRADLE.pitch, 0.03).rotateX(-PI / 2), { at: [0, D - 0.02, 0], c: L.gold });
   e.ring(R * 0.7, 0.03, { at: [0, 0.01, 0], c: 0xffffff }, 32, 4);
 }

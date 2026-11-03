@@ -10,6 +10,8 @@
 //   the giant post       a stone lantern with a bell (giants/post.js)
 //   giant wrestling      the frame's strain under a held giant, the throw, the slam (giants/grapple.js)
 //   the smash challenges the lane's dress and moments, installed with these (vfx/mechs/challenges/: game.challengeLooks)
+//   the city's fire      its flames, char, smoke, embers, lamps and moments, and the bodies in it, installed with these (vfx/mechs/fire/: game.cityFireLooks)
+//   the adobe city       the plaster and props of buildings made from the adobe blueprints, installed with these (vfx/mechs/city/: game.cityDress)
 // Looks only: nothing here moves a giant, decides a blow or touches a collider.
 // Prior art: the house's split of rules from looks (game.mechSpecialLooks, game.sentinelLook, Strawman's Well's look over Dovina's
 // placeholders: vfx/strawmanwell/look.js).
@@ -24,6 +26,8 @@ import { ColossusMarks } from './colossusmarks.js';
 import { GiantPostLook } from './post.js';
 import { GrappleLook } from './grapple.js';
 import { installChallengeLooks } from '../challenges/index.js';
+import { installCityFireLooks } from '../fire/index.js';
+import { installCityDress } from '../city/dress.js';
 
 /** Which dress a giant's row asks for (its `body`: 'sand' the colossus; the rest straw). */
 export const bodyOf = (giant) => (giant?.G?.body === 'sand' ? 'sand' : 'straw');
@@ -57,5 +61,7 @@ export function installGiantLooks(game) {
   const L = game.giantLooks = new GiantLooks(game);
   game.systems?.add('fx', L, { clock: 'raw', name: 'giantLooks' });
   installChallengeLooks(game); // (the lane's dress and moments, the same night's: vfx/mechs/challenges/index.js)
+  installCityFireLooks(game); // (the toy city's fire: vfx/mechs/fire/index.js; after the giants' looks, so a burning giant's dress is this frame's)
+  installCityDress(game); // (the adobe city's plaster and props, over any building made from a blueprint: vfx/mechs/city/dress.js)
   return L;
 }

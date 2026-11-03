@@ -16,7 +16,7 @@
 //                  three-quarter rear for the wake, then let go to the pilot's. A second seal on the same visit runs at twice the speed.
 // The traces are one onBeforeCompile on the parts body's shared porcelain (vfx/mechs/partsbody.js `mats.porcelain`): the running hand
 // baked once into a tile, sampled triplanar in each plate's own space (so the writing rides the plate it is on), revealed by the
-// world distance from the cradle. Looks only: the seal, the lift and the drive are Petra's. Events said for the ear: `mech.mount
+// world distance from the cradle; the same traces carry the filigree's three channels (vfx/mechs/hydraulics.js). Looks only: the seal, the lift and the drive are Petra's. Events said for the ear: `mech.mount
 // { beat: 'lift' | 'turn' | 'lock' | 'wake' | 'power' }` (Wanda's).
 // Prior art: Evangelion's entry plug (inserted at the nape, the LCL and the A10 nerve's connection: the unit's eyes lit last),
 // the Shrine Gate (Calissa's round six: carved dead, lit along its length, the far end last), Tron's circuitry lit along its runs,
@@ -69,7 +69,8 @@ function circuitTile() {
  *  share of the Courier's colours held everywhere (0 the blank frame, 1 fired), uOrigin the cradle, uReach how far the wave runs (m). */
 function wakeUniforms() {
   return { uTrace: { value: circuitTile() }, uCharge: { value: 0 }, uGlow: { value: 0 }, uPaint: { value: 0 }, uOrigin: { value: new THREE.Vector3() },
-    uReach: { value: 18 }, uFront: { value: M.front * 4 }, uTile: { value: 1 / M.tile }, uTime: { value: 0 } };
+    uReach: { value: 18 }, uFront: { value: M.front * 4 }, uTile: { value: 1 / M.tile }, uTime: { value: 0 },
+    uAbsorb: { value: 0 }, uChannel: { value: 0 }, uHurt: { value: 0 } }; // (the filigree's three channels, vfx/mechs/hydraulics.js)
 }
 /** The waking traces and the blank laid into one material (once), after its finish (vfx/finish.js, so the Courier's colours are what
  *  the wave paints): `blank` the frame's colour before it is fired, `traces` whether the running hand is written on it. */
@@ -86,7 +87,7 @@ function wakeTraces(mat, U, blank, traces = true) {
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
 varying vec3 vMtLP; varying vec3 vMtLN; varying vec3 vMtWP;
-uniform sampler2D uTrace; uniform float uCharge, uGlow, uPaint, uReach, uFront, uTile, uTime, uTraced; uniform vec3 uOrigin, uBlank;
+uniform sampler2D uTrace; uniform float uCharge, uGlow, uPaint, uReach, uFront, uTile, uTime, uTraced, uAbsorb, uChannel, uHurt; uniform vec3 uOrigin, uBlank;
 vec3 mtFilm(float t) { t = fract(t) * 4.0; // (the film's four: violet, teal, gold, rose, vfx/oxidation.js FILM)
   vec3 a = vec3(0.30, 0.06, 0.70), b = vec3(0.04, 0.55, 0.75), c = vec3(0.95, 0.72, 0.18), d = vec3(0.85, 0.10, 0.50);
   return t < 1.0 ? mix(a, b, t) : t < 2.0 ? mix(b, c, t - 1.0) : t < 3.0 ? mix(c, d, t - 2.0) : mix(d, a, t - 3.0); }`)
@@ -98,12 +99,17 @@ vec3 mtFilm(float t) { t = fract(t) * 4.0; // (the film's four: violet, teal, go
   float mtL = dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114));
   diffuseColor.rgb = mix(uBlank * (0.75 + 0.5 * mtL), diffuseColor.rgb, mtK);
   totalEmissiveRadiance *= mtK;
-  if (uTraced > 0.5 && (uGlow > 0.001 || mtEdge > 0.001)) {
+  float mtFil = uAbsorb + uChannel + uHurt;
+  if (uTraced > 0.5 && (uGlow > 0.001 || mtEdge > 0.001 || mtFil > 0.002)) {
     vec3 w = pow(abs(normalize(vMtLN)), vec3(4.0)); w /= (w.x + w.y + w.z);
     vec3 p = vMtLP * uTile;
     float tr = texture2D(uTrace, p.zy).r * w.x + texture2D(uTrace, p.xz).r * w.y + texture2D(uTrace, p.xy).r * w.z;
     vec3 col = mtFilm(mtD * 0.045 + uTime * 0.05);
     totalEmissiveRadiance += col * tr * (mtLit * uGlow + mtEdge * 2.6) + vec3(1.0) * tr * mtEdge * 0.8;
+    if (mtFil > 0.002) { // (the filigree's channels: the cable's pulses running in to the cradle, the spend's running out, a blow's flash)
+      float pIn = pow(fract(mtD * 0.16 + uTime * 1.3), 7.0), pOut = pow(fract(mtD * 0.16 - uTime * 1.8), 5.0);
+      totalEmissiveRadiance += tr * mtK * (col * (uAbsorb * pIn * 2.0 + uChannel * (0.35 + pOut * 2.4)) + vec3(1.0, 0.86, 0.72) * uHurt * 2.2);
+    }
   }
   totalEmissiveRadiance += mtFilm(mtD * 0.045 + uTime * 0.05) * mtEdge * 0.35; // (the front itself, a seam of the film running over the shell)
 }

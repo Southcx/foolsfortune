@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-11-02). 679 effects in 44 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-11-03). 691 effects in 45 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -8,7 +8,7 @@ Every effect the game can play, read from the code by `node scripts/vfxcatalogue
 
 | block | what there is |
 |---|---|
-| sprite shapes (`vfx/sprites.js`) | soft, core, star4, sparkle, streak, ring, ringthin, puff, shard, diamond, glint, swirl, petal, crescent, chip, bubble, hex, facet, drip, ripple, disc, talisman, moth, leaf, die, comb |
+| sprite shapes (`vfx/sprites.js`) | soft, core, star4, sparkle, streak, ring, ringthin, puff, shard, diamond, glint, swirl, petal, crescent, chip, bubble, hex, facet, drip, ripple, disc, talisman, moth, leaf, die, comb, cloud, tongue |
 | decal textures | circle_lotus, circle_swirl, shockring (drawn), scorch (drawn), pentacle (drawn) |
 | baked effect meshes (`src/assets/vfx/*.glb`, Mesh Create) | chest_circle, chest_helix, chest_shock, ult_crown, ult_dome, ult_helix, ult_pillar, ult_vortex |
 | caster shaders (`vfx/caster/`) | bubble, corrupted, frostbisque, heathaze, hologram, lensing, lightning, molten, portal, timegrade |
@@ -576,7 +576,35 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `flourish.whole.moths` | one-shot | sprites:moth, sprites:soft |  |  |
 | `flourish.whole.porcelain` | one-shot | sprites:shard, sprites:swirl, sprites:glint |  |  |
 
-### giant (20)
+### mech (23)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `mech.blink.step` | one-shot | shape:ring, shape:pillar, sprites:star4 |  | vfx/mechs/speciallooks.js |
+| `mech.flamer.fire` | held | caster:heathaze, sprites:cloud×2, sprites:star4 |  | vfx/mechs/fire/flamer.js |
+| `mech.gust` | one-shot | shape:wave, sprites:puff, sprites:chip, sprites:streak |  | vfx/mechs/speciallooks.js |
+| `mech.gust.cone` | one-shot | shape:cone×2 |  | vfx/mechs/speciallooks.js |
+| `mech.gust.ground` | one-shot | shape:beam×2 | the wind's track on the ground: a long dark scour and streaks of light along it, `dir` the gust, `scale` its reach | vfx/mechs/speciallooks.js |
+| `mech.hasten.halo` | held | shape:ring, shape:hoop, shape:quad×2 |  | vfx/mechs/speciallooks.js |
+| `mech.hasten.hold` | held | shape:ring×3, sprites:star4, sprites:streak |  | vfx/mechs/speciallooks.js |
+| `mech.joint.drip` | one-shot | sprites:soft | a fractured joint leaking: a few drops off the cracked bottle | vfx/mechs/hydraulics.js |
+| `mech.joint.spill` | one-shot | sprites:star4, sprites:soft, sprites:streak, shape:band, sprites:puff | a snapped joint's bottle burst: the Courier's Lachryma thrown out of the socket in its colour, the film at its turn | vfx/mechs/hydraulics.js |
+| `mech.pull.motes` | one-shot | sprites:streak, sprites:soft |  | vfx/mechs/speciallooks.js |
+| `mech.pull.snap` | one-shot | shape:disc, shape:ring, sprites:puff, sprites:chip |  | vfx/mechs/speciallooks.js |
+| `mech.pull.tether` | one-shot | shape:beam×2 |  | vfx/mechs/speciallooks.js |
+| `mech.quake` | one-shot | shape:ring, shape:band, shape:disc, sprites:puff, sprites:chip, shake |  | vfx/mechs/speciallooks.js |
+| `mech.ready` | one-shot | sprites:star4, shape:hoop, sprites:glint |  | vfx/mechs/speciallooks.js |
+| `mech.scan.ground` | held | shape:disc, shape:ring, shape:hoop | held under the marked giant: its weak point's ring on the ground, dark under light | vfx/mechs/speciallooks.js |
+| `mech.scan.iris` | one-shot | shape:disc, shape:hoop, sprites:star4 |  | vfx/mechs/speciallooks.js |
+| `mech.scan.mark` | held | shape:disc×2, shape:hoop×3, shape:ring, sprites:star4 |  | vfx/mechs/speciallooks.js |
+| `mech.scan.sweep` | one-shot | shape:cone×3 |  | vfx/mechs/speciallooks.js |
+| `mech.sunder.crumble` | one-shot | sprites:chip, sprites:puff, sprites:sparkle |  | vfx/mechs/speciallooks.js |
+| `mech.sunder.edge` | one-shot | shape:beam×3 |  | vfx/mechs/speciallooks.js |
+| `mech.sunder.scar` | one-shot | shape:beam×2, sprites:puff | the line cut in the ground under the blade: played at its start, `dir` along it flat, `scale` its length | vfx/mechs/speciallooks.js |
+| `mech.ward.cast` | one-shot | shape:ring, shape:hoop, shape:disc, shape:crescent×3, sprites:talisman, shake |  | vfx/mechs/speciallooks.js |
+| `mech.ward.hold` | held | shape:ring, shape:hoop, shape:band, sprites:talisman |  | vfx/mechs/speciallooks.js |
+
+### giant (22)
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
@@ -594,37 +622,14 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `giant.sand.slump` | one-shot | sprites:puff, sprites:chip, shake |  | vfx/mechs/giants/colossus.js |
 | `giant.slam` | one-shot | shape:ring×2, sprites:puff, sprites:chip, shake, hitstop | a giant driven into the ground at the mech's feet: the powerbomb | feedback/tracking/mechnight.js, vfx/mechs/giants/grapple.js, world/hangar/giantgrapple.js |
 | `giant.strain.spark` | one-shot | sprites:streak, sprites:puff | the frame's joint under a held giant: embers spat from it | vfx/mechs/giants/grapple.js |
+| `giant.straw.burn` | held | sprites:streak, sprites:tongue, sprites:star4, sprites:cloud |  | vfx/mechs/fire/bodies.js |
 | `giant.straw.burst` | one-shot | sprites:streak, sprites:puff |  | vfx/mechs/giants/straw.js |
 | `giant.straw.dust` | one-shot | sprites:puff, shake |  | vfx/mechs/giants/straw.js |
 | `giant.straw.spill` | one-shot | sprites:streak, sprites:puff |  | vfx/mechs/giants/straw.js |
 | `giant.throw.impact` | one-shot | sprites:puff, sprites:chip, shape:ring, shake | a thrown giant into a building or the ground: debris and a column of dust | vfx/mechs/giants/grapple.js |
 | `giant.throw.trail` | one-shot | sprites:streak, sprites:puff | a thrown giant's whoosh: streaks along its flight and sand torn off it | vfx/mechs/giants/grapple.js |
+| `giant.vitrify.crack` | one-shot | sprites:facet, sprites:glint, sprites:puff |  | vfx/mechs/fire/bodies.js |
 | `giant.wave.spray` | one-shot | sprites:puff, sprites:streak | the cone's crest breaking: sand flung forward off its lip | vfx/mechs/giants/colossusmarks.js |
-
-### mech (20)
-
-| effect | kind | layers | what | asked by |
-|---|---|---|---|---|
-| `mech.blink.step` | one-shot | shape:ring, shape:pillar, sprites:star4 |  | vfx/mechs/speciallooks.js |
-| `mech.gust` | one-shot | shape:wave, sprites:puff, sprites:chip, sprites:streak |  | vfx/mechs/speciallooks.js |
-| `mech.gust.cone` | one-shot | shape:cone×2 |  | vfx/mechs/speciallooks.js |
-| `mech.gust.ground` | one-shot | shape:beam×2 | the wind's track on the ground: a long dark scour and streaks of light along it, `dir` the gust, `scale` its reach | vfx/mechs/speciallooks.js |
-| `mech.hasten.halo` | held | shape:ring, shape:hoop, shape:quad×2 |  | vfx/mechs/speciallooks.js |
-| `mech.hasten.hold` | held | shape:ring×3, sprites:star4, sprites:streak |  | vfx/mechs/speciallooks.js |
-| `mech.pull.motes` | one-shot | sprites:streak, sprites:soft |  | vfx/mechs/speciallooks.js |
-| `mech.pull.snap` | one-shot | shape:disc, shape:ring, sprites:puff, sprites:chip |  | vfx/mechs/speciallooks.js |
-| `mech.pull.tether` | one-shot | shape:beam×2 |  | vfx/mechs/speciallooks.js |
-| `mech.quake` | one-shot | shape:ring, shape:band, shape:disc, sprites:puff, sprites:chip, shake |  | vfx/mechs/speciallooks.js |
-| `mech.ready` | one-shot | sprites:star4, shape:hoop, sprites:glint |  | vfx/mechs/speciallooks.js |
-| `mech.scan.ground` | held | shape:disc, shape:ring, shape:hoop | held under the marked giant: its weak point's ring on the ground, dark under light | vfx/mechs/speciallooks.js |
-| `mech.scan.iris` | one-shot | shape:disc, shape:hoop, sprites:star4 |  | vfx/mechs/speciallooks.js |
-| `mech.scan.mark` | held | shape:disc×2, shape:hoop×3, shape:ring, sprites:star4 |  | vfx/mechs/speciallooks.js |
-| `mech.scan.sweep` | one-shot | shape:cone×3 |  | vfx/mechs/speciallooks.js |
-| `mech.sunder.crumble` | one-shot | sprites:chip, sprites:puff, sprites:sparkle |  | vfx/mechs/speciallooks.js |
-| `mech.sunder.edge` | one-shot | shape:beam×3 |  | vfx/mechs/speciallooks.js |
-| `mech.sunder.scar` | one-shot | shape:beam×2, sprites:puff | the line cut in the ground under the blade: played at its start, `dir` along it flat, `scale` its length | vfx/mechs/speciallooks.js |
-| `mech.ward.cast` | one-shot | shape:ring, shape:hoop, shape:disc, shape:crescent×3, sprites:talisman, shake |  | vfx/mechs/speciallooks.js |
-| `mech.ward.hold` | held | shape:ring, shape:hoop, shape:band, sprites:talisman |  | vfx/mechs/speciallooks.js |
 
 ### aura (14)
 
@@ -673,7 +678,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `caster.bubble.wall` | held | caster:bubble |  | tools/psygun/shelldeployables.js |
 | `caster.craze` | one-shot | caster:frostbisque |  |  |
 | `caster.frost` | one-shot | caster:frostbisque |  |  |
-| `caster.heatHaze` | held | caster:heathaze | (docs/plans/CASTER-SHELLS.md section 1: the looks the shells are built from, each a `caster` layer of its module in vfx/caster/; a shell's own effect `extends` one and adds its sparks, sound and weight) heat haze: hot air over a place (t... | tools/psygun/shelldeployables.js, tools/psygun/shellworld.js |
+| `caster.heatHaze` | held | caster:heathaze | (docs/plans/CASTER-SHELLS.md section 1: the looks the shells are built from, each a `caster` layer of its module in vfx/caster/; a shell's own effect `extends` one and adds its sparks, sound and weight) heat haze: hot air over a place (t... | tools/psygun/shelldeployables.js, tools/psygun/shellworld.js, vfx/mechs/fire/bodies.js |
 | `caster.heatHaze.flame` | held | caster:heathaze, sprites:puff |  |  |
 | `caster.heatHaze.tube` | one-shot | caster:heathaze |  | tools/psygun/shellspacetime.js |
 | `caster.lightning` | one-shot | caster:lightning, light | lightning: one strike from `from` to `to` (a return stroke that flickers twice), and an arc held between them | tools/psygun/shellbodies.js, tools/psygun/shellsplitchain.js, vfx/shelllooks/storm.js |
@@ -725,6 +730,18 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `blow.heavy` | one-shot | sprites:streak×2, sprites:ringthin, sprites:ring, sprites:core | extends `blow.light`. HEAVY the arc doubled and longer, a thick ring of the type's colour opening behind it, a hot core |  |
 | `blow.launcher` | one-shot | sprites:streak×2, sprites:ringthin, sprites:ring, sprites:glint | extends `blow.light`. LAUNCHER the arc thrown up with what it lifts, a ring, glints rising after |  |
 | `blow.light` | one-shot | sprites:streak, sprites:ringthin | laid over the hit (hit.slash.<material>, damage.<type>, which creatures.strike already plays) when a melee blow lands, by its weight class: light, heavy, launcher, finisher (blowWeight), then `.<material>` where a weight has more to give... |  |
+
+### city (7)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `city.chunk.split` | one-shot | sprites:chip, sprites:cloud |  | vfx/mechs/fire/index.js |
+| `city.dust.hang` | one-shot | sprites:puff |  | vfx/mechs/fire/index.js |
+| `city.fire.char` | one-shot | sprites:star4, sprites:chip, sprites:cloud |  | vfx/mechs/fire/index.js |
+| `city.fire.douse` | one-shot | sprites:cloud, sprites:drip, sprites:star4 |  | vfx/mechs/fire/index.js |
+| `city.fire.felled` | one-shot | sprites:star4, sprites:tongue, sprites:cloud, sprites:puff, shake |  | vfx/mechs/fire/index.js |
+| `city.fire.ignite` | one-shot | shape:sphere, sprites:tongue, sprites:star4, sprites:cloud |  | vfx/mechs/fire/index.js |
+| `city.glass.burst` | one-shot | sprites:star4, sprites:facet, sprites:glint, shape:hoop |  | vfx/mechs/fire/index.js |
 
 ### garden (7)
 
@@ -866,7 +883,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `absorb` | one-shot | shape:ring, sprites:glint | a thing taken into the Courier: a ring closing in on where it went, its sparkle drawn in after it | audio/duelsecrets.js, audio/puzzleduel.js, courier/jellymount/jellymount.js +10 |
+| `absorb` | one-shot | shape:ring, sprites:glint | a thing taken into the Courier: a ring closing in on where it went, its sparkle drawn in after it | audio/duelsecrets.js, audio/puzzleduel.js, courier/jellymount/jellymount.js +11 |
 
 ### angle (1)
 
