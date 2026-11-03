@@ -301,7 +301,7 @@ console.log(`  the reckoning (Divination): a wave's lane marked ${reckonLead(0)}
 // transactional pressure), so its sinks are paid by the rest of play.
 { const G = ECON.garden, D = ECON.dividend, hr = ECON.perMinute * 60, perHarvest = 60 / (G.growHours * 2.5); // (a game hour is 2.5 real minutes)
   const mats = (beds) => Math.floor(perHarvest) * beds * G.yield, div = (slots) => Math.round(D.share * G.farmRate * slots);
-  const cat = Object.keys(DECOR).reduce((n, id) => n + priceOf(id), 0), plan = SIZES[SIZES.length - 1].at * ECON.perMinute * 6; // (the ring's six seeds fed to large: progress/seeds.js)
+  const cat = Object.keys(DECOR).filter((id) => DECOR[id].set !== 'keepsake').reduce((n, id) => n + priceOf(id), 0), plan = SIZES[SIZES.length - 1].at * ECON.perMinute * 6; // (the ring's six seeds fed to large: progress/seeds.js)
   console.log(`\nthe gardener: an hour in the Spirit Garden pays no cubes for tending; its beds give ${mats(G.beds)} materials an hour at ${G.beds} beds (${mats(G.beds + 4)} at ${G.beds + 4}), ${perHarvest.toFixed(1)} harvests a bed an hour`);
   console.log(`  the dividend while away: ${div(1)} / ${div(D.slots)} cubes a real hour with 1 / ${D.slots} slots working, ${D.capDays} game days to its cap (${div(D.slots) * D.capDays} cubes)`);
   console.log(`  the sinks it asks: the decor catalogue once ${cat} cubes (${(cat / hr).toFixed(1)} hours at the aim), the six ring seeds fed to large ${plan} (${(plan / hr).toFixed(1)} hours; each stops where the player likes), the upgrades ${[...G.upgrade.slot, ...G.upgrade.bed].reduce((a, b) => a + b, 0) * ECON.perMinute}`);
@@ -357,4 +357,35 @@ export function domainPace(hours99 = PACE.hours99) {
   const SHORE_CAP = 6, perDay = Math.min(STAINS.shore, SHORE_CAP / STAINS.stages); // (stains.js: the Shore holds six; each game day lays two, each full-grown three game days later)
   const hunt = perDay, casual = perDay / 2; // (a game day is a real hour; a hunter mops every one that grows, a casual player about half)
   console.log(`\nTHE WORLD SHELLS' FIND: the Shore grows ${perDay} full-grown blots a game day (a real hour); a World shell every ${DUE_EVERY} mopped, so one each ${(DUE_EVERY / hunt).toFixed(1)} real hours hunting, ${(DUE_EVERY / casual).toFixed(1)} casually; each full-grown blot has risen as an aberrant slip jelly first (${DUE_EVERY} duels a shell)`);
+}
+
+{ // THE OPEN SEA'S FOLDS (OPEN-SEA.md 15.6; GAPS.md G158 to G161, G286): what fragments, capture, the wind's song and the islands' other wants do to the faucet
+  const { SALVAGE } = await import('../src/progress/opensea/salvagenumbers.js');
+  const { FRAGMENTS, fragmentChance, makePrice } = await import('../src/progress/opensea/fragments.js');
+  const { SEA_BEASTS, beastPay } = await import('../src/progress/opensea/seabeasts.js');
+  const { CAPTURE, livePay } = await import('../src/progress/opensea/capture.js');
+  const { WINDSONG } = await import('../src/progress/opensea/windsong.js');
+  const { materialKey, figmentKey, wellKey, bestMarket, cargoRun, bountyAt, mid } = await import('../src/progress/econ/wants.js');
+  const tiers = ['common', 'uncommon', 'rare', 'legend'];
+  console.log(`\nTHE OPEN SEA'S FOLDS`);
+  console.log(`  fragments: a part is ${FRAGMENTS.need} pieces; a crate holds one at ${tiers.map((t) => `${t} ${(fragmentChance(t) * 100).toFixed(0)}%`).join(', ')} (the old whole-part chance x ${FRAGMENTS.need}: the same parts in expectation, no new cubes: a fragment replaces the crate's cubes); a quay makes the part for ${makePrice()} cubes (${FRAGMENTS.maker} minutes of play: a drain)`);
+  console.log(`    crates to a first part, expected: ${tiers.map((t) => `${t} ${(FRAGMENTS.need / fragmentChance(t)).toFixed(1)}`).join(', ')}; a part begun is x${FRAGMENTS.lean} as likely, so the last piece comes sooner than the first`);
+  for (const id of ['seaSerpent', 'wolfWhale', 'seaMonk']) {
+    const B = SEA_BEASTS[id], lo = beastPay(id, 1, 6), hi = beastPay(id, 6, 6);
+    console.log(`  capture ${id.padEnd(10)} slain pays ${lo} to ${hi} cubes by the hull (${B.give.minutes} minutes x ${B.give.kept.join(' to ')}); taken alive ${livePay(id)} (x${CAPTURE.live}: worn under ${CAPTURE.hp * 100}%, stunned to depth ${CAPTURE.depth}, a ${CAPTURE.tow.speed}x tow home that a hull hit parts) = ${(livePay(id) / hi).toFixed(2)}x the whole-hull kill; one a lair a game day either way`);
+  }
+  const squareCubes = ECON.openSea.burn * ECON.openSea.measureMin * ECON.perMinute;
+  console.log(`  the wind's song: costs ${WINDSONG.cost * 100}% of the pool, holds ${WINDSONG.hours} game hour, rests ${WINDSONG.rest}; best case spares ${(3.75 * squareCubes * 0.8).toFixed(1)} cubes of fuel an hour (3.75 squares x ${squareCubes.toFixed(2)} cubes x 0.8): worth under a minute of play, paid in pool not cubes`);
+  console.log(`  what each island wants, beyond crude (the band ${ECON.island.lo} to ${ECON.island.hi}, read against its middle ${mid().toFixed(2)}; averaged over 60 game days):`);
+  const avg = (key) => { const sums = {}; for (let d = 0; d < 60; d++) for (const i of Object.keys(ECON.islands)) sums[i] = (sums[i] || 0) + demand(i, key, d) / 60; return sums; };
+  const keys = [...Object.keys(ECON.islands.margarite.wants.material).map(materialKey), ...[0, 1, 2, 3, 4].map(figmentKey), wellKey('dunemaw')];
+  for (const k of keys) { const a = avg(k); console.log(`    ${k.padEnd(20)}${Object.entries(a).map(([i, v]) => `${i} ${v.toFixed(2)}`).join('  ')}`); }
+  // the best cargo of each kind (20 units of a tier-2 material worth 3 minutes) bought at the worst island and sold at the best, fuel paid, against a sloop's crude run
+  const day = 0, worth = Math.round(3 * ECON.perMinute);
+  let best = 0, bestK = '';
+  for (const k of keys.filter((x) => x.startsWith('material'))) { const m = bestMarket(k, day); const net = Math.max(0, cargoRun({ key: k, worth, units: 20, from: m.worst, to: m.island, day })); if (net > best) { best = net; bestK = `${k} ${m.worst} to ${m.island}`; } }
+  const crude = Math.round(crudeRun({ ship: 'sloop', field: 'entra', buy: 0.8, sell: 1.3, distance: 8 }));
+  console.log(`  best day-0 haul: 20 tier-2 materials (${worth} cubes each) ${bestK}: ${best} cubes net of the sloop's fuel (${(best / aim).toFixed(2)}x an hour's aim); the sloop's best crude run (Entropolis to Margarite): ${crude} cubes`);
+  const rows = [1, 3].map((c) => `class ${c}: ${Object.keys(ECON.islands).map((i) => `${i} ${bountyAt(i, c, day)}`).join(', ')}`);
+  console.log(`  a stray's bounty on day 0 by the island that posts it: ${rows.join('; ')} (best island at most ${((ECON.island.hi / mid() - 1) * 100).toFixed(0)}% over its base, worst ${((1 - ECON.island.lo / mid()) * 100).toFixed(0)}% under: a better place to stand, no new faucet)`);
 }

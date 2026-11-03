@@ -11,6 +11,7 @@ import { SALVAGE_PARTS } from './opensea/salvage.js';
 import { FORGE_PARTS } from './opensea/forge.js';
 import { EGREGORES } from './opensea/safari.js';
 import { PUZZLE_COUNT } from './opensea/isletpuzzles.js';
+import { TALES, taleSteps } from './opensea/tales.js';
 
 const PARTS = SALVAGE_PARTS;
 
@@ -53,4 +54,9 @@ export function seaAchievements({ C, F }) {
   C('sea28', 'emocean', 'The Open Sea', 2, 'collect', 'Every Stone Sings', 'Answer every singing stone in the open sea.', 'sea.echo', PUZZLE_COUNT.echoes);
   C('sea29', 'emocean', 'The Open Sea', 1, 'mechanic', 'X Marks the Sand', 'Dig up a buried cache.', 'sea.dig', 1);
   C('sea30', 'emocean', 'The Open Sea', 2, 'endure', 'Treasure Hunter', 'Dig up 7 buried caches.', 'sea.dig', 7);
+  // fragments, the wind's song, capture and the tall tales (opensea/fragments.js, windsong.js, capture.js, tales.js; OPEN-SEA.md 15.6): names placeholders for Espada's
+  C('sea31', 'emocean', 'The Open Sea', 2, 'count', 'Piece by Piece', 'Make a ship\'s part at a quay from the pieces salvage gave.', 'ship.make', 1);
+  C('sea32', 'emocean', 'The Open Sea', 2, 'mechanic', 'Asked the Wind', 'Play the wind a song on the Crucibelle at the helm.', 'sea.windsong', 1);
+  C('sea33', 'emocean', 'The Open Sea', 4, 'mechanic', 'Taken Alive', 'Tow a stunned beast home to a quay.', 'seabeast.captured', 1);
+  for (const [i, t] of TALES.entries()) F(`tale${i + 1}`, 'emocean', 'The Open Sea', 3, 'collect', t.name, `Finish the tall tale: ${t.name}.`, (L) => taleSteps(t.id, L), t.steps.length, { title: t.reward.title });
 }

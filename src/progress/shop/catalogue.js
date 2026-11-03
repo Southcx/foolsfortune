@@ -17,7 +17,7 @@
 // priced from its slot's `data`.
 //
 //   SHOPS[id] = { id, keeper, name, sells: { itemId: stock }, buys: [kind], trade: [kind], markup, haggle, island? }
-//   worthOf(itemId, data?) -> cubes (what the thing is worth: the base of every price)    demandKey(itemId) -> the kind an island wants
+//   worthOf(itemId, data?) -> cubes (what the thing is worth: the base of every price)    demandKey(itemId, data?) -> the kind an island wants
 //   glazePrice(prestige) -> cubes | null
 // ---------------------------------------------------------------------------------------
 import { worthOfShell } from '../combat/castershells.js';
@@ -52,7 +52,7 @@ export function worthOf(id, data = null) {
 /** A cask's field (`cask.dunemaw` -> 'dunemaw'), or null. */
 export const crudeField = (id) => (id?.startsWith('cask.') && ECON.crude.fields[id.slice(5)] ? id.slice(5) : null);
 /** What an island's demand is asked for: a cask by its grade, a map as 'cogitomap', anything else by its item kind. */
-export const demandKey = (id) => crudeField(id) || (itemOf(id)?.kind === 'map' ? 'cogitomap' : itemOf(id)?.kind || id);
+export const demandKey = (id, data = null) => crudeField(id) || (itemOf(id)?.kind === 'map' ? (data?.well ? `well:${data.well}` : 'cogitomap') : itemOf(id)?.kind === 'material' && data?.kind ? `material:${data.kind}` : itemOf(id)?.kind || id); // (G286: a material of a known kind, a map of a known Well: econ/wants.js)
 
 export const SHOPS = {
   raku: {

@@ -131,6 +131,10 @@ export const DECOR = {
   statueDesire: { ...P('Desire Statue', 'keepsake', 'medium', 1, ['farewell']), color: 0xd8b25a },
   statueGrief: { ...P('Grief Statue', 'keepsake', 'medium', 1, ['farewell']), color: 0x8aa0c0 },
   statueDread: { ...P('Dread Statue', 'keepsake', 'medium', 1, ['farewell']), color: 0x5a7f9a },
+  // a hunter of the open sea kept instead of sold (progress/opensea/capture.js, G159): one a beast, never sold; Calissa's models to come (a placeholder statue until)
+  statueSeaSerpent: { ...P('Sea Serpent Statue', 'keepsake', 'medium', 1, ['capture']), color: 0x6fa08a },
+  statueWolfWhale: { ...P('Akhlut Statue', 'keepsake', 'medium', 1, ['capture']), color: 0xb04a3a },
+  statueSeaMonk: { ...P('Umibozu Statue', 'keepsake', 'medium', 1, ['capture']), color: 0x4a4f6a },
   // briar (A6): made from briar fruit, or brought by a briar visitor
   brambleHedge: P('Bramble Hedge', 'briar', 'small', 2, ['briar', 'visitor']),
   thornArch: P('Thorn Arch', 'briar', 'medium', 2, ['briar', 'visitor']),
