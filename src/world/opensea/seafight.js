@@ -79,9 +79,14 @@ export class SeaFight {
     game.events?.on?.('sea.dock', () => this.mend());
     game.events?.on?.('seaserpent.down', (e) => { if (e.lair) { this.down.set(e.lair, today()); this.dirty(); } });
     game.events?.on?.('seabeast.down', (e) => { if (e.lair) { this.down.set(e.lair, today()); this.dirty(); } });
+    // a beast in tow (world/opensea/seafolds.js decides): out of the fight and off its lair for the game day; lost, free again; captured, gone
+    const towed = (id) => this.serpents.list.find((c) => c.alive && c.kind === id && (c.towed || c.tether > 0)) || null;
+    game.events?.on?.('seabeast.towing', (e) => { const c = towed(e.id); if (!c) return; this.serpents.tow(c, true); if (c.lair) { this.down.set(c.lair, today()); this.dirty(); } });
+    game.events?.on?.('seabeast.lost', (e) => { const c = this.serpents.list.find((x) => x.alive && x.kind === e.id && x.towed); if (c) this.serpents.tow(c, false); });
+    game.events?.on?.('seabeast.captured', (e) => { const c = this.serpents.list.find((x) => x.alive && x.kind === e.id && x.towed); if (c) this.serpents.remove(c); });
   }
   get room() { return this.game.opensea; }
-  get serpent() { return this.serpents.list.find((c) => c.alive) || null; }
+  get serpent() { return this.serpents.list.find((c) => c.alive && !c.towed) || null; } // (a beast in tow is out of the fight)
   /** The crew aboard: the siblings in your party that have a hand at sea. */
   get crew() { return new Set((this.game.party?.list || []).map((S) => S.id).filter((id) => SEA_CREW[id])); }
   /** How much sooner a beast's windup shows (real s): Dovina's hand. */

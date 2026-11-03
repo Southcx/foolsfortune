@@ -6,7 +6,8 @@
 // `when.k` or more, a bolt that comes down in the ridges leaves a fulgurite glowing for `hot` real s where it struck; struck with the
 // Dreamvane's pick while it glows, it is dug out whole, the curio `give.curio` (its tier `give.tier`): Fury teaches what lightning does to
 // sand. The glass on the sand is Calissa's look (vfx/dunes/fulgurites.js lays one at every strike), and its glow while it can be dug hers
-// too (vfx/dunes/hotfulgurite.js reads `.hot`; dug, on `area.rare`).
+// too (vfx/dunes/hotfulgurite.js reads `.hot`; dug, on `area.rare`). Both wait on the area's research: a find is met once the safari has
+// reached its third level there (`game.safari.open(area, 'rare')`, STEALTH.md 8.5).
 //
 // Prior art: Final Fantasy XII's rare game (a monster met only under its condition), real fulgurites dug out of desert sand after a storm,
 // Minecraft's lightning-struck sand; the house's struckable things (tools/melee.js `registered('struckable')`: a crystal is one).
@@ -28,9 +29,12 @@ export class RareFinds {
     this.game = game; this.hot = null; this.seen = -1;
     game.events?.on?.('duel.open', (e) => { // (the ruins' find: an aberrant Lantern Wisp, at night, in the ruins)
       const P = game.player; if (e.kind !== 'wisp' || phaseAt() !== RARE_FINDS.ruins.when.phase || !P) return;
-      if (areaAt(P.pos.x - DUNE.x, P.pos.z - DUNE.z) === 'ruins' && game.dunes?.active) game.events.emit('area.rare', { area: 'ruins', find: RARE_FINDS.ruins.find, by: 'courier' });
+      if (areaAt(P.pos.x - DUNE.x, P.pos.z - DUNE.z) === 'ruins' && game.dunes?.active && this.opened('ruins')) game.events.emit('area.rare', { area: 'ruins', find: RARE_FINDS.ruins.find, by: 'courier' });
     });
   }
+
+  /** An area's rare find is met once its research has reached it (the safari's third level, progress/safari.js RESEARCH.opens). */
+  opened(area) { const S = this.game.safari; return !S?.open || S.open(area, 'rare'); }
 
   update(raw) {
     const g = this.game, R = RARE_FINDS.ridges, D = g.dunes;
@@ -40,7 +44,7 @@ export class RareFinds {
     if (!fresh || !D?.active || this.hot) return;
     const b = g.weatherLook.bolts?.[S.n % g.weatherLook.bolts.length]; if (!b) return;
     const x = b.mesh.position.x, z = b.mesh.position.z;
-    if (areaAt(x - DUNE.x, z - DUNE.z) !== 'ridges') return;
+    if (areaAt(x - DUNE.x, z - DUNE.z) !== 'ridges' || !this.opened('ridges')) return;
     const at = new THREE.Vector3(x, D.heightAt(x, z), z), w = g.weather?.here?.(at);
     if (w?.aspect !== R.when.aspect || (w.strength || 0) < R.when.k) return;
     this.lay(at);

@@ -69,6 +69,10 @@ export const ATTUNE = [ // (exported: the compass's vane layer wears each mode's
 ];
 const FORK_HITS = groups(0xffff, G.STATIC | G.PROP | G.CRITTER);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion();
+/** The twirl (Calissa's ask, PARRY-CLIPS.md): the crook spun about its grip, about the forearm's axis, while the parry spins
+ *  (`game.parries.spinning`): `rate` turns a real second, eased in over `ease` real s, and run out to the next whole turn so it lands as held. */
+const TWIRL = { rate: 2.5, ease: 0.08 };
+const _p = new THREE.Vector3(), _ax = new THREE.Vector3(), _r = new THREE.Matrix4(), _t = new THREE.Matrix4();
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 
 export class Dreamvane extends HeldTool {
@@ -381,6 +385,17 @@ export class Dreamvane extends HeldTool {
   /** What is playing now, for the crossfade between two of them (tools/toolbody.js). */
   get playKey() { return this.moves.cur || (this.throwT >= 0 ? 'throw' : this.surveyT >= 0 ? 'survey' : this.catchT >= 0 ? 'catch' : this.dowseW > 0.5 ? 'dowse' : null); }
 
+  twirl(ch, M) {
+    const dt = this.dt || 1 / 60, Pa = this.game.parries, on = !!Pa?.spinning && Pa.tool === 'dreamvane', S = (this.tw ||= { a: 0, w: 0 }), TAU = Math.PI * 2;
+    if (on) S.w = Math.min(1, S.w + dt / TWIRL.ease);
+    if (S.w <= 0) return;
+    const was = S.a; S.a += S.w * TWIRL.rate * TAU * dt;
+    if (!on && Math.floor(S.a / TAU) > Math.floor(was / TAU)) { S.a = 0; S.w = 0; return; } // (a whole turn reached: as held)
+    const hand = ch.bones?.handR, fore = ch.bones?.forearmR; if (!hand || !fore) return;
+    hand.getWorldPosition(_p); fore.getWorldPosition(_ax); _ax.subVectors(_p, _ax); if (_ax.lengthSq() < 1e-8) return; _ax.normalize();
+    _r.makeRotationAxis(_ax, S.a % TAU); _t.makeTranslation(_p.x, _p.y, _p.z); _r.premultiply(_t); _t.makeTranslation(-_p.x, -_p.y, -_p.z); _r.multiply(_t);
+    M.premultiply(_r);
+  }
   /** After the vane is placed in the right hand: kept out of the ground, the left hand closed on it where the clip has it, the ribbon. */
   placed(M) {
     const ch = this.game.character, P = this.P, model = this.model;

@@ -61,6 +61,7 @@ import { sfx } from '../../audio/sfx.js';
 import { T } from '../../core/config.js';
 import { OFFERED, gloss } from '../../npc/realmnames.js';
 import { TAP_GO, goWish } from './tapgo.js';
+import { materialFeeling } from '../../progress/spiritwork.js';
 const _pm = new THREE.Matrix4(), _p = new THREE.Vector3(); // (the keepsake pots read for their song)
 const simRand = stream('world/garden/realm'); // (the spirits' wandering: core/rng.js, the same twice)
 
@@ -114,6 +115,7 @@ export class Realm {
     this.howto ||= new GardenHowto(this); // (the garden taught in seven steps on the first entry, and /howto: world/garden/howto.js)
     this.plots.onSeed = (P, dir) => this.plants.seed(P, dir, 2.5);
     this.plots.wet = (p) => this.waterworks.feelingAt(p.planet, p.dir); // (water standing at a plot is a neighbour in its formation: item 11)
+    if (game.spiritDiet) game.spiritDiet.waterOf = (entry) => { const s = this.spirits?.find((x) => x.e === entry), B = s?.body; return B?.planet && this.active ? this.waterworks.feelingAt(B.planet, B.pos.clone().sub(B.planet.c).normalize()) : null; }; // (a spirit drinks its own feeling's water: progress/spiritdiet.js)
     this.hand = new GardenHand(this);
     this.decorLayer = game.decorLayer = new DecorLayer(this); this.thornPatches = game.thornPatches = new ThornPatches(this); // (garden pieces placed by the hand, and the briar's thorns: Dovina's, world/garden/decorlayer.js, thornpatches.js)
     this.lakeLotuses = game.lakeLotuses = new LakeLotuses(this); this.lakeLotuses.set(this.decorLayer.report(true)?.lotuses || 0); // (the rating as lotuses on the Dantian's lake, a world mark: Calissa's, vfx/garden/lotuses.js)
@@ -315,7 +317,7 @@ export class Realm {
     for (const s of this.spirits) s.mesh.userData.form?.update?.(raw);
     // the spirits rest a game hour at a time, and work where they stand
     if ((this.restT += dt) >= GAME_HOUR) { this.raising.rest(Math.floor(this.restT / GAME_HOUR)); this.restT %= GAME_HOUR; }
-    if ((this.workT += dt) >= 1) { this.workT = 0; this.raising.work(this.spirits, this.plots); }
+    if ((this.workT += dt) >= 1) { this.workT = 0; this.raising.work(this.spirits, this.plots); this.surroundBeds(); }
     this.awaken.update(dt); this.tribulation.update(dt); this.waterworks.update(raw); this.cascades.update(raw); this.press.update(raw);
     this.rainLook.set({ amount: this.waterworks.rain(), feeling: this.waterworks.feeling() }); this.rainLook.update(raw, g.camera, this.site.planets, J.planet); // (the rain as it falls: your mental state, your draught)
     this.life.update(raw, g.camera); // (the small life: vfx/garden/gardenlife.js)
@@ -417,6 +419,15 @@ export class Realm {
     delete this.plants.grids[P.id]; this.races.clear?.(P); delete this.clays[P.id];
     this.decorLayer?.redraw?.(); this.thornPatches?.redraw?.();
     if (this.jarBody?.planet === P) this.jarBody.planet = this.jarBody.nearest(this.jarBody.pos);
+  }
+  /** Each bed told the ground and water round it, once a real second (a bed on its own feeling's ground or watered with it grows faster:
+   *  progress/bedgrowth.js; a planted bed keeps its share done). A herb terrace's bed's feeling is its crop's, a spore bed's its strain's. */
+  surroundBeds() {
+    const g = this.game, W = this.waterworks, at = (f) => { const P = f.planet, d = f.pos.clone().sub(P.c).normalize(); return { ground: this.clays[P.id]?.groundOf(d) ?? null, water: W.feelingAt(P, d) }; };
+    for (const f of this.site.features) {
+      if (f.kind === 'bed' && g.garden?.beds?.[f.i]) g.garden.surround(f.i, { feeling: materialFeeling({ kind: g.garden.beds[f.i].kind }), ...at(f) });
+      else if (f.kind === 'sporebed' && g.sporeBeds && f.bed >= 0) g.sporeBeds.surround(f.bed, at(f));
+    }
   }
   /** The mycelium heard where the Pneuka Jar stands (Wanda's sounds, audio/mycelium.js; the state Dovina's): a bed at work within 12 m
    *  (a phrase now and then: it limits itself), Myggdrasil's drone while on its planetoid, a keepsake pot's line within 4 m. */
@@ -520,7 +531,7 @@ export class Realm {
     const say = (s) => g.log?.say('info', s, { key: 'garden.use', throttle: 1 }); // (a refusal at the point of use)
     switch (f.kind) {
       case 'gate': this.leave(); return;
-      case 'spirit': this.raising.page(f.s); return;
+      case 'spirit': { const B = f.s.body, P = B?.planet; if (P && g.spiritNotice) g.spiritNotice.talk(f.s.e, { planetoid: P.id, ...cellAt(B.pos.clone().sub(P.c).normalize().toArray(), cellsOf(P.r)) }); this.raising.page(f.s); return; } // (it says what it notices, in the log: progress/spiritnotice.js)
       case 'shed': this.shed(); return;
       case 'bed': {
         const b = G?.beds?.[f.i];

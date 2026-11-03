@@ -261,7 +261,8 @@ export class Veritome extends Tech {
     B.pins.push({ x: +P.pos.x.toFixed(1), y: +P.pos.y.toFixed(1), z: +P.pos.z.toFixed(1), yaw: +P.yaw.toFixed(2), kind, stars: report.stars });
     if (B.pins.length > 60) B.pins.shift();
     sfx.shutter?.();
-    this.pending = { shot: serial(report), held, unwritten, kind, pos: [+P.pos.x.toFixed(1), +P.pos.y.toFixed(1), +P.pos.z.toFixed(1)], yaw: +P.yaw.toFixed(2), tide: +this.tide.toFixed(3), zone: g.zones?.current?.id ?? null };
+    const c0 = report.subjects[0]?.ref, act = c0?.brain?.action?.id ?? null, lured = c0?.brain ? !!g.safari?.luredNow?.(c0) : false; // (the safari reads the behaviour off these: safarirun.js)
+    this.pending = { shot: serial(report), held, unwritten, kind, act, lured, pos: [+P.pos.x.toFixed(1), +P.pos.y.toFixed(1), +P.pos.z.toFixed(1)], yaw: +P.yaw.toFixed(2), tide: +this.tide.toFixed(3), zone: g.zones?.current?.id ?? null };
   }
 
   /** Just after the frame is drawn: the plate is that frame (the picture inside the pages' margins). */
@@ -284,12 +285,15 @@ export class Veritome extends Tech {
       } catch { thumb = null; }
     }
     this.vf.flash(thumb);
-    const { held, unwritten, kind, ...plate } = q; // (plate.swatch rides along)
-    this.memory.expose({ ...plate, thumb, held });
+    const { held, unwritten, kind, act, lured, ...plate } = q; // (plate.swatch rides along)
+    const rec = this.memory.expose({ ...plate, thumb, held });
     this.book.save();
     if (thumb) this.model.setPhoto(thumb);
     const score = q.shot.subjects[0]?.score ?? 0, best = kind ? this.book.photos[kind]?.score ?? -1 : Infinity; // (the best subject's score; the Compendium's best of its kind)
-    this.game.events?.emit('photo.take', { kind: kind || 'nothing', stars: q.shot.stars, n: q.shot.subjects.length, kinds: q.shot.kinds, held, unwritten, left: this.memory.left, score, fresh: score > best, candid: q.shot.subjects[0]?.candid || null, d: q.shot.subjects[0]?.d ?? null }); // (score, fresh: domains.js weighs them, TRAINING.md 6)
+    const E = this.game.events, take = (e) => { if (rec?.shot) rec.shot.stars = e.stars; }; // (a Figment's plate wears the safari's stars, its behaviour's rarity: safarirun.js says safari.plate inside this emit)
+    const unhook = E?.on?.('safari.plate', take);
+    try { E?.emit('photo.take', { kind: kind || 'nothing', stars: q.shot.stars, n: q.shot.subjects.length, kinds: q.shot.kinds, held, unwritten, left: this.memory.left, score, fresh: score > best, candid: q.shot.subjects[0]?.candid || null, d: q.shot.subjects[0]?.d ?? null, act, lured }); } // (score, fresh: domains.js weighs them, TRAINING.md 6)
+    finally { unhook?.(); }
   }
   /** Appraise plates off the roll (all of them, or those ids): the darkroom's batch (the Codex calls it). */
   appraise(ids = null) { return appraise(this.game, this.book, this.memory.take(ids)); }

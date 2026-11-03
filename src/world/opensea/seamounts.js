@@ -23,6 +23,7 @@ import * as THREE from 'three';
 import { SEA_MOUNTS, MOUNTS } from '../../progress/rail/mounts.js';
 
 const KEYS = ['Digit1', 'Digit2'];
+const NOTE_KEYS = ['Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7']; // (the Crucibelle's five pads at the helm, while it is a worn mount: the wind's song, seafolds.js)
 /** slick: a slick's radius (m), how far astern of the stern it is laid (m), the slow it puts on (real s); toll: the stun (real s);
  *  gulp: the bow shot's multiplier carried back; flash: the weak point's multiplier while open (read by seaserpent.js). */
 export const MOUNTING = { slick: { r: 10, astern: 6, slow: 3 }, toll: { stun: 2 }, gulp: { k: 3 }, flash: { k: 1.5 } };
@@ -41,6 +42,7 @@ export class SeaMounts {
     for (const k in this.cd) this.cd[k] = Math.max(0, this.cd[k] - dt);
     const W = this.worn;
     W.forEach((t, i) => { if (!SEA_MOUNTS[t].passive && I.wasPressed(KEYS[i])) this.fire(t, H); });
+    const bell = this.padded(); if (bell) NOTE_KEYS.forEach((k, i) => { if (I.wasPressed(k)) this.note(bell, i + 1); });
     if ((W.includes('dreamvane') || this.fight.crew.has('calissa')) && (this.pingT -= dt) <= 0) // (Calissa's hand reads the water as the vane does)
       { this.pingT = SEA_MOUNTS.dreamvane.cooldown; this.sonar(H); }
     this.tend(dt);
@@ -78,9 +80,10 @@ export class SeaMounts {
 
   fire(t, H) {
     const M = SEA_MOUNTS[t], g = this.game, C = g.creatures, F = this.fight;
-    if (!this.ready(t)) return;
     if (t === 'sondelass') {
       const c = this.target(M, H);
+      if (c?.tether > 0 && !c.towed) return this.tow(c); // (the line already out: pulled on, never paid again)
+      if (!this.ready(t)) return;
       if (c) { c.tether = M.hold; return this.done(t, { hit: 'beast' }); }
       const R = g.opensea, wreck = R?.props?.marks?.find((m) => m.feature.kind === 'wreck' && this.inArc(M, H, m.mesh.position));
       if (wreck) { R.salvage(wreck); return this.done(t, { hit: 'crate', wreck: wreck.feature.id ?? null }); }
@@ -106,6 +109,20 @@ export class SeaMounts {
       s.life = s.t; this.slicks.push(s); g.events?.emit('sea.slick', { at: s.at, r: s.r, life: s.t, by: 'courier' }); // (`life` the whole, `t` what is left: the look reads both)
       return this.done(t);
     }
+  }
+
+  /** A note of the Crucibelle rung from the helm (degree 1..5), in the scale the music plays: the wind's song listens (crucibelle.note). */
+  /** The worn mount whose tool has note pads (asked of the tool: `pads`), or null. */
+  padded() { for (const t of this.worn) { const T = this.game.techs?.get?.(t); if (T?.pads) return T; } return null; }
+  note(B, d) {
+    const g = this.game, sc = B?.scaleNow?.() || [0, 2, 4, 7, 9], G = B?.grid?.(), root = G?.root ?? 60;
+    B?.voice?.(root + sc[d - 1], 0.6);
+    g.events?.emit('crucibelle.note', { degree: d, note: root + sc[d - 1], octave: 0, onBeat: false, at: 'helm', by: 'courier' });
+  }
+  /** The harpoon pulled on a tethered beast: the room's folds decide whether it comes in tow (world/opensea/seafolds.js, capture.js towOk). */
+  tow(c) {
+    const g = this.game, hp = c.maxHp ? Math.max(0, c.hp / c.maxHp) : 1;
+    g.events?.emit('seabeast.tow', { id: c.kind, hp: +hp.toFixed(2), depth: g.stun?.depth?.(c) ?? 0, tethered: true, by: 'courier' });
   }
 
   sonar(H) {

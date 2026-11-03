@@ -21,7 +21,7 @@
  *  step for each kind past the first, and its cap; points to a banked flare, the most banked; a banked flare's real seconds of flare. */
 export const COMBO = {
   link: 2.0,
-  points: { spin: 100, grab: 80, tweak: 50, grind: 6, pop: 50, perfect: 100, carve: [40, 90, 160], ring: 60, slope: 50 },
+  points: { spin: 100, grab: 80, tweak: 50, grind: 6, pop: 50, perfect: 100, carve: [40, 90, 160], ring: 60, slope: 50, smash: 120 }, // (smash: a lobbed pot struck from the air, the catapult trap's answer)
   kinds: 0.5, maxMult: 4,
   stock: 1000, stocks: 3, flare: 1.5,
 };

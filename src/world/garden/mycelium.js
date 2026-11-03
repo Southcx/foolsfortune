@@ -215,6 +215,12 @@ export class GardenMycelium {
         if (early) row('↶', 'Take it back', 'Still unchanged: you can take it out', () => done(S.back(i)));
       }
       im.appendChild(el('div', 'grp', `A SPORE BED${b.strain ? `: ${STRAIN_NAMES[b.strain].toUpperCase()}` : ''}`)); im.appendChild(rows);
+      // who tends it (G153: a quarter faster, its grain bending what it makes; the words placeholders, Espada's to rule)
+      const w = S.workerOf(i), raised = (this.game.bound?.list || []).filter((e) => e.sp), nameOf = (e) => e.name || e.kind;
+      const tend = el('div', 'rooms');
+      if (w) { const d = el('div', 'room', `<span class="n">✿</span><span><b>${nameOf(w)} tends it</b><s>Click to send it off the bed</s></span>`); d.onclick = () => done(S.worker(i, null)); tend.appendChild(d); }
+      else for (const e of raised.slice(0, 8)) { const d = el('div', 'room', `<span class="n">✿</span><span><b>Set ${nameOf(e)} to tend it</b><s>A quarter faster; its nature bends what grows</s></span>`); d.onclick = () => done(S.worker(i, e)); tend.appendChild(d); }
+      if (w || raised.length) { im.appendChild(el('div', 'grp', 'WHO TENDS IT')); im.appendChild(tend); }
     }, { title: 'A SPORE BED', sub: 'click to choose · F closes' });
   }
 

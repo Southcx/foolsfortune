@@ -191,7 +191,8 @@ export function mountsOf(g) {
 function helmStrip(g) {
   const use = g.seaFight?.serpent ? helmUse(g) : null, B = broadsideOf(g);
   return [use ? E('use', null, use) : null, // (BROADSIDE and the mounts on the near shelf: nearOf)
-    worn(g, 'dreamvane') ? E('fix', 'fix', 'FIX') : null, worn(g, 'veritome') ? E('plate', 'photo', 'PLATE') : null].filter(Boolean);
+    worn(g, 'dreamvane') ? E('fix', 'fix', 'FIX') : null, worn(g, 'veritome') ? E('plate', 'photo', 'PLATE') : null,
+    ...(g.seaFight?.mounts?.padded?.() ? [0, 1, 2, 3, 4].map((i) => E(`he.n${i + 1}`, null, null, { corner: String(i + 1), tint: DEGREE_COLOR[i], pad: true })) : [])].filter(Boolean); // (the bell's five pads: three in time set the wind, seafolds.js)
 }
 
 /** The mount a tap of Y calls (Petra's JellyMount: the last one chosen, once the slip jelly is open), its glyph and word. */

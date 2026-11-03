@@ -102,6 +102,8 @@ export class Crucibelle extends HeldTool {
   }
   /** The five notes to play in now: the bar's own scale (music/player.js scale(): a score's or a section's, else the weather's mode with
    *  nothing playing), so a phrase rung over a cue in another mode stays in it; the minor pentatonic when there is no music to ask. */
+  /** Five note pads: a mount at sea plays them from the helm (world/opensea/seamounts.js asks). */
+  get pads() { return 5; }
   scaleNow() { const s = sfx.ok?.() ? this.game.music?.scale?.() : null; return Array.isArray(s) && s.length === 5 ? s : SCALE; }
   /** How far from the nearest eighth note `t` is (seconds). */
   /** Is now on the song's beat (within WINDOW)? The toll's parry widens on it (courier/parries.js). */

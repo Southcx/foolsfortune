@@ -26,6 +26,7 @@ const FEELINGS = Object.keys(STATS);
 export const spiritName = (e) => e?.name || { slipjelly: 'slip jelly', clapperjar: 'clapperjar' }[e?.kind] || String(e?.kind || 'a spirit').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase(); // (its name, else its kind as said, never the code id: GARDEN-SWEEP #14)
 const DRILL_NAME = { sprint: 'sprints', scout: 'lookout', haul: 'hauling', swim: 'laps', sit: 'meditation' }; // (a drill as said, "Drill: sprints": Espada's words)
 const PET_BOND = 0.5; // (a pat's bond: two hundred to fill a heart from nothing, so food and gifts matter more than fuss)
+const PRESS_REACH = 6; // (m from the Athanor's centre: its bath 2.5 m, the ware ring just outside, and 3 m beyond it: a spirit there works the press)
 
 export class Raising {
   constructor(game, realm) {
@@ -68,7 +69,7 @@ export class Raising {
     if (!Object.keys(got).length) return false;
     g.pneuka.take(slot);
     const stat = Object.keys(got).find((k) => STATS[k]) || (got.bond ? 'bond' : got.feeling ? 'feeling' : null);
-    this.say('spirit.feed', s, { item: it.id, stat, gain: typeof got[stat] === 'number' ? got[stat] : 0 });
+    this.say('spirit.feed', s, { item: it.id, stat, gain: typeof got[stat] === 'number' ? got[stat] : 0, fruit: !!it.data?.fruit, hue: it.data?.hue, sat: it.data?.sat }); // (a fruit of the tree: its colour tints the body, spiritdiet.js)
     this.mature(s); this.dirty();
     return true;
   }
@@ -131,12 +132,19 @@ export class Raising {
     s.formed = dressForm(s.mesh, { feeling: f.feeling, side: f.side, size: 0.42 });
   }
 
-  /** Who works where: a spirit standing within 3 m of a placed feature (or a bed or a pavilion) works it, as long as it stays. */
+  /** Who works where: a spirit standing within 3 m of a placed feature (or a bed or a pavilion) works it, as long as it stays; one within
+   *  3 m of the Athanor's ware ring works the press (progress/spiritwork.js); one by a spore bed tends it (progress/sporebeds.js worker). */
   work(spirits, plots) {
+    const F = this.realm.site.features, ath = F.find((f) => f.kind === 'athanor'), B = this.game.sporeBeds;
     for (const s of spirits) {
       if (!s.body.grounded) continue;
-      const p = plots.near(s.body.pos, 3), job = p?.placed?.feature || this.realm.site.features.find((f) => (f.kind === 'bed' || f.kind === 'slot') && f.pos.distanceTo(s.body.pos) < 3)?.kind || null;
-      if (job !== s.e.work) { s.e.work = job; this.dirty(); }
+      const p = plots.near(s.body.pos, 3), atPress = !!ath && ath.pos.distanceTo(s.body.pos) < PRESS_REACH;
+      const job = p?.placed?.feature || F.find((f) => (f.kind === 'bed' || f.kind === 'slot') && f.pos.distanceTo(s.body.pos) < 3)?.kind || (atPress ? 'press' : null);
+      if (job === s.e.work) continue;
+      s.e.work = job; this.dirty();
+      if (B && s.bed != null && B.workerOf(s.bed) === s.e) B.worker(s.bed, null); // (it left its spore bed)
+      s.bed = null;
+      if (B && job === 'sporebed') { const i = B.bedOf(p.id); if (i >= 0 && !B.workerOf(i)) { B.worker(i, s.e); s.bed = i; } }
     }
   }
 

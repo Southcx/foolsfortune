@@ -132,6 +132,7 @@ export class SeaSerpents {
     for (let i = this.list.length - 1; i >= 0; i--) {
       const c = this.list[i];
       if (c.dying != null) { c.dying -= dt; c.goUnder = 1; c.wantRear = 0; c.want.set(0, 0, 0); if (c.dying <= 0) { this.remove(c); continue; } }
+      else if (c.towed) this.towTick(c); // (in tow: out of the fight, trailing the ship on its line)
       else {
         const held = st(c, 'halt') > 0 || st(c, 'stun') > 0;
         if (!held) c.brain.update(dt * (st(c, 'slow') ? 0.5 : 1));
@@ -368,5 +369,20 @@ export class SeaSerpents {
     if (c.held) (c.shape ?? SIGNATURES[c.held.move])?.end(this, c, why);
   }
   /** A shape's hold let go by an answer from outside it (the Lockheart's gulp on the umibozu's pour: seamounts.js). */
+  /** In tow (seabeast.towing): it leaves the fight and trails the ship slack on its tether; let go (seabeast.lost) it is free again at
+   *  half its hit points or more, and knows who towed it. */
+  tow(c, on) {
+    if (!c?.alive) return;
+    if (on) { c.towed = true; this.cancel(c, 'tow'); this.release(c, 'tow'); c.coiled = null; c.brain.end?.('tow'); return; }
+    c.towed = false; c.tether = 0; c.hp = Math.max(c.hp, c.maxHp * 0.5);
+    const f = c.mem?.ensure?.(this.game.player, 'courier'); if (f) { f.aware = 1; f.grudge = 1; }
+  }
+  towTick(c) {
+    const H = this.game.opensea?.helm; c.goUnder = 0; c.wantRear = 0; c.tether = Math.max(c.tether, 1);
+    if (!H) { c.want.set(0, 0, 0); return; }
+    const back = (H.look?.length ?? 8) / 2 + 16, tx = H.pos.x - Math.sin(H.yaw) * back, tz = H.pos.z - Math.cos(H.yaw) * back; // (astern, the line's length behind)
+    const P = c.shape ? c.pos : c.spine[0].p, dx = tx - P.x, dz = tz - P.z, d = Math.hypot(dx, dz) || 1, v = Math.min(c.row.speed * 1.2, Math.abs(H.speed) + d * 0.4);
+    c.want.set((dx / d) * v, 0, (dz / d) * v);
+  }
   release(c, how) { if (c.held && c.shape) c.shape.end(this, c, how); }
 }

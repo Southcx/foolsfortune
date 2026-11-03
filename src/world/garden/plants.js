@@ -20,6 +20,8 @@ import { GROUND } from '../../progress/realm.js';
 import { GardenPlants } from '../../vfx/garden/gardenplants.js';
 import { PATCH } from './thornpatches.js';
 import { souredBy, scorchStep } from '../../progress/gardenweather.js';
+import { plantRate, rollOf } from '../../progress/seasonlife.js';
+import { seasonOf } from '../../progress/seasons.js';
 import { FEELINGS } from './water.js';
 
 const PLANT = { most: 3, wet: 0.02, every: 1 }; // (stages; metres of water that wets; game hours a step)
@@ -47,6 +49,8 @@ export class Plants {
     while (this.owed >= PLANT.every) { this.owed -= PLANT.every; this.step(); }
   }
   step() {
+    const season = seasonOf().id, n0 = (this.steps = (this.steps || 0) + 1); // (the season paces the green, progress/seasonlife.js: winter rests)
+    const draw = (k, salt) => { let h = (k * 374761393 + n0 * 668265263 + salt * 2246822519) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }; // (a seeded draw: the same twice)
     for (const P of this.R.site.planets) {
       const G = this.grids[P.id]; if (!G) continue;
       const clay = this.R.clays[P.id], Wt = this.R.waterworks.waters[P.id]?.w, next = G.slice();
@@ -58,8 +62,9 @@ export class Plants {
         const fertile = SPREADS[clay.ground[k]], wet = wetAt(k) || nb.some(wetAt);
         if (G[k]) {
           if (!fertile || sour(k)) { next[k] = G[k] - 1; changed = true; continue; } // (ash, slate or bare clay, or soured water: it wilts)
-          if (wet && G[k] < PLANT.most) { next[k] = G[k] + 1; changed = true; }
-          if (G[k] === PLANT.most && wet) for (const n of nb) if (!G[n] && SPREADS[clay.ground[n]] && !(thorny && thorny[n]) && (wetAt(n) || wet)) { next[n] = 1; changed = true; }
+          const r = wet ? plantRate(season, GROUNDS[clay.ground[k] - 1]) : null;
+          if (r && G[k] < PLANT.most) { const up = rollOf(r.step, draw(k, 1)); if (up) { next[k] = Math.min(PLANT.most, G[k] + up); changed = true; } }
+          if (r && G[k] === PLANT.most) { let tries = rollOf(r.seed, draw(k, 2)); for (const n of nb) { if (tries <= 0) break; if (!G[n] && !next[n] && SPREADS[clay.ground[n]] && !(thorny && thorny[n])) { next[n] = 1; changed = true; tries--; } } }
         }
       }
       if (changed) { G.set(next); this.dirty.add(P.id); }

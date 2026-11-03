@@ -136,6 +136,7 @@ export class Skiffing extends Tech {
     this.wake = new Wake(game.scene, game.fx);
     this.grind = new Grind(this); // (the board on a rail, the skiff alone: courier/skiff/grind.js)
     this.combo = new SkiffCombo(this); // (tricks linked into a chain, banked into free flares: courier/skiff/combo.js)
+    game.events?.on?.('trap.smash', (e) => { if (e.by === 'courier' && this.active) this.combo.add('smash', COMBO.points.smash); }); // (a pot of the catapult trap smashed in the air: a link, world/raceway/trapkinds.js)
     this.rules = new BoardRules(this); // (the pool as the hull, the scorch, the manual, snaking, the shoulder, aftertouch, near misses: boardrules.js)
     this.grab = null; // { kind: 'nose' | 'tail' | 'double', t }: a grab held in the air
     this.phase = 'ride'; this.phaseT = 0; this.next = null;

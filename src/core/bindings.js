@@ -149,6 +149,11 @@ export const ACTIONS = [
   { id: 'heBroad',  mouse: 'Mouse2',      pad: 'LT',    touch: 'broadside',  ctx: 'helm', how: 'tap' },   // (the side the camera looks over fires at once: seafight.js)
   { id: 'heMount1', keys: ['Digit1'],       pad: 'LB',    touch: 'mount.1',    ctx: 'helm', how: 'tap' },   // (the main's mount at sea: seamounts.js)
   { id: 'heMount2', keys: ['Digit2'],       pad: 'RB',    touch: 'mount.2',    ctx: 'helm', how: 'tap' },   // (the sub's)
+  { id: 'heNote1',  keys: ['Digit3'],                   touch: 'he.n1',      ctx: 'helm', how: 'tap' },   // (the Crucibelle's five pads at the helm, worn as a mount: seamounts.js note)
+  { id: 'heNote2',  keys: ['Digit4'],                   touch: 'he.n2',      ctx: 'helm', how: 'tap' },
+  { id: 'heNote3',  keys: ['Digit5'],                   touch: 'he.n3',      ctx: 'helm', how: 'tap' },
+  { id: 'heNote4',  keys: ['Digit6'],                   touch: 'he.n4',      ctx: 'helm', how: 'tap' },
+  { id: 'heNote5',  keys: ['Digit7'],                   touch: 'he.n5',      ctx: 'helm', how: 'tap' },
   { id: 'heParry',  keys: ['KeyV'],       pad: 'B',     touch: 'parry',      ctx: 'helm', how: 'tap' },   // (the outlined spit sent back: seafight.js)
   { id: 'hePlate',  keys: ['KeyE'],       pad: 'X',     touch: 'plate',      ctx: 'helm', how: 'tap' },   // (a plate from the helm, the Veritome worn: world/opensea/herds.js)
   // ---- the rhythm mode and busking (M3, Wanda's: ten lanes as ten pads in two rows; a held pad is a held lane, music/rhythm/rhythm.js)
