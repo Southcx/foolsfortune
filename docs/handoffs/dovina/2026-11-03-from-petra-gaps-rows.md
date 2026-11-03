@@ -43,4 +43,10 @@ And v415:
   read 69 straight away, a gain of 5 read 74, and the close left it at 74. Regen stays held by the `duel` modifier. Still a copy in
   the kernel (`sides[0].pool`); the kernel reading the pool itself is yours if you want the copy gone.
 
+And v416:
+- **G271 built (the rule's runtime):** one of the folk standing in crude (a blot or a slick) is coated at `COAT.rate`
+  (npc/folk.js, placeholders yours). `folk.coat { id, folk }` fires when the coat is whole. The mop's head takes the coat off and
+  pours `COAT.crude` Lachryma a coat into the bottle; cleaned whole, `folk.clean` is counted and they cheer. Measured on Mistress
+  Saggar: coated whole in 4 real s, mopped clean for 4 Lachryma. An achievement on `folk.clean` is yours.
+
 Delete this note when done.

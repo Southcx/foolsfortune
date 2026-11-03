@@ -52,6 +52,10 @@ export function brushRules({ on, L, log }) {
     if (e.stage >= STAINS.stages) L.inc('stain.wash.grown');
     log.say('gain', `Mopped up ${STAGE[e.stage] || 'a'} blot of ${crudeName(e.field)}.`.replace('  ', ' '), { key: 'stain', throttle: 1 });
   });
+  // folk.coat { id, folk, by: 'environment' } / folk.clean { id, folk, by }: one of the folk coated by standing in crude, and mopped
+  // clean (npc/folk.js; G271). Words: placeholders for Espada.
+  on('folk.coat', (e) => log.say('info', `${e.folk || 'One of the folk'} is standing in crude and getting coated.`, { key: `folk.coat.${e.id}`, throttle: 20 }));
+  on('folk.clean', (e) => { if (e.by !== 'courier') return; L.inc('folk.clean'); log.say('gain', `You mop the crude off ${e.folk || 'one of the folk'}. They thank you.`, { key: 'folk.clean', throttle: 1 }); });
   // stain.find { what, worth, at, by }: what a washed blot hid (world/ground/stains.js found; G135). Words: placeholders for Espada.
   on('stain.find', (e) => { if (e.by !== 'courier') return; L.inc('stain.find'); log.say('find', `Something was under the blot: ${e.worth} ${e.worth === 1 ? 'cube' : 'cubes'}.`, { key: 'stain.find', throttle: 1 }); });
   // stain.spawn { field, aspect, kind, by: 'environment' }: a full-grown blot gives up an aberrant Figment (the weather's feeling where it rises, or none)

@@ -79,6 +79,11 @@ const SEEN_ID = {
   comeatme: 'fear', knuckles: 'fear', loser: 'anger', tooslow: 'anger', nosethumb: 'anger', pointlaugh: 'anger', // (taunt)
 };
 
+/** The coated folk: how fast standing in crude coats one (a share a real second), how far round the mop's head it reaches (m), how fast
+ *  the mop takes it off, the Lachryma a whole coat gives the bottle, how far the glaze dulls toward the crude. Placeholders, Dovina's. */
+export const COAT = { rate: 0.25, reach: 0.6, mop: 0.8, crude: 4, dull: 0.7 };
+const _crude = new THREE.Color(0x1a1410);
+
 export class Folk {
   constructor(game, gltf) {
     this.game = game; this.gltf = gltf; this.list = []; this.byId = {};
@@ -213,11 +218,30 @@ export class Folk {
   }
 
   // ------------------------------------------------------------------ every frame
+  /** The coated folk (SUNSHINE-SYSTEMS.md 7; GAPS G271): one of the folk standing in crude (a blot's cells or a slick) is coated, slowly,
+   *  its glaze dulled toward the crude's dark (a placeholder: the look is Calissa's); the Soul Brush's mop takes it off (`mop`), the
+   *  crude into the bottle, and cleaned whole it thanks you (`folk.clean`, counted). */
+  coatStep(n, dt) {
+    const pm = this.game.paintmap, under = pm?.at?.(n.pos.x, n.pos.y, n.pos.z), was = n.coat || 0;
+    if (under?.crude && was < 1) { n.coat = Math.min(1, was + COAT.rate * dt); if (was < 1 && n.coat >= 1) this.game.events?.emit('folk.coat', { id: n.id, folk: n.name, by: 'environment' }); }
+    if ((n.coat || 0) !== (n.coatShown || 0)) { n.coatShown = n.coat || 0; n.mat.color.copy(n.glaze).lerp(_crude, COAT.dull * n.coatShown); }
+  }
+  /** The mop's head at (x, z) this frame: the coated folk within reach lose their crude; returns the Lachryma it gave the bottle. */
+  mop(x, y, z, r, dt) {
+    let got = 0;
+    for (const n of this.list) {
+      if (!(n.coat > 0) || Math.abs(n.pos.y - y) > 1.5 || Math.hypot(n.pos.x - x, n.pos.z - z) > r + COAT.reach) continue;
+      const take = Math.min(n.coat, COAT.mop * dt); n.coat -= take; got += take * COAT.crude;
+      if (n.coat <= 1e-3) { n.coat = 0; n.reactT = 3; this.setMood(n, 'joy', 0.8); this.game.events?.emit('folk.clean', { id: n.id, folk: n.name, by: 'courier' }); }
+    }
+    return got;
+  }
+
   update(dt) {
     const g = this.game, P = g.player;
     for (const n of this.list) {
       if (g.zones && !g.zones.visibleAt(n.pos)) continue;
-      n.t += dt;
+      n.t += dt; this.coatStep(n, dt);
       if (n.reactT > 0) { n.reactT -= dt; if (n.reactT <= 0 && this.game.dialogue?.npc !== n) this.setMood(n, n.def.temper || 'calm', 0.35); }
       n.k = THREE.MathUtils.damp(n.k, n.kTarget, 4, dt);
       n.mixer.update(dt);

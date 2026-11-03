@@ -134,6 +134,7 @@ export class BrushLoad {
     if (got < want && g.paintmap) got += g.paintmap.wipe(from.x, from.z, fx, fz, P.pos.y, 2.4, (want - got) * 0.25, 'slick').got * 4; // (a slick too: a fight's crude, a cell-full four Lachryma as paint's)
     // (a blot's crude carries no feeling, the owner, 2026-10-11: what is mopped never sets the bottle's feeling)
     if (got < want && g.paintmap) { const p = g.paintmap.drink(fx, P.pos.y, fz, r, (want - got) * 0.25) * 4; got += p; } // (a cell-full of paint is four Lachryma)
+    if (got < want && g.folk?.mop) got += g.folk.mop(fx, P.pos.y, fz, r, dt); // (a coated folk mopped clean: npc/folk.js, G271)
     if (got > 0) { this.held += got; this.mopped += got; }
     this.mopAt = got > 0 ? (s.at || new THREE.Vector3(fx, P.pos.y, fz)) : null; // (where the stream is drawn from: vfx/brushload.js)
   }
