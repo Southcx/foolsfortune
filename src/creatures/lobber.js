@@ -57,10 +57,16 @@ export class Lobbers {
   }
 
   fire(l) {
-    const P = this.game.player;
+    this.launch(l.pos, l.speed);
+    l.flash = 1;
+  }
+  /** A ball thrown from `from` (a mouth) at the Courier, at `speed` m/s along the line: a lobber's, or the parry range's pitcher's
+   *  (world/throwingroom/parryrange.js: `training`, never counted; `outlined`, only the parry answers it; `low`, a flatter arc). */
+  launch(from, speed, { training = false, outlined = false, low = false } = {}) {
+    const P = this.game.player, l = { pos: from };
     const to = new THREE.Vector3(P.pos.x, P.pos.y + 1.05, P.pos.z).addScaledVector(new THREE.Vector3(P.vel.x, 0, P.vel.z), 0.35);
     const d = to.clone().sub(l.pos);
-    const T = THREE.MathUtils.clamp(d.length() / l.speed, 0.6, 1.8);
+    const T = THREE.MathUtils.clamp(d.length() / speed, low ? 0.25 : 0.6, 1.8);
     const v = d.divideScalar(T);
     v.y += 0.5 * 9.81 * T;
     const body = this.physics.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(l.pos.x, l.pos.y + 0.3, l.pos.z).setLinvel(v.x, v.y, v.z).setCcdEnabled(true).setLinearDamping(0));
@@ -71,13 +77,13 @@ export class Lobbers {
     mesh.position.set(l.pos.x, l.pos.y + 0.3, l.pos.z);
     this.scene.add(mesh);
     const sync = this.physics.addSynced(body, mesh);
-    const b = { body, mesh, sync, t: 0, prev: v.length(), parried: false, reflected: false, mark: this.game.parryMark?.mark(mesh), vanish: () => { b.gone = true; } }; // (parryable, and marked so: vfx/parrymark.js)
+    const b = { body, mesh, sync, t: 0, prev: v.length(), parried: false, reflected: false, training, outlined, mark: this.game.parryMark?.mark(mesh), vanish: () => { b.gone = true; } }; // (parryable, and marked so: vfx/parrymark.js)
     this.balls.push(b);
     (this.game.projectiles ||= new Set()).add(b);
-    l.flash = 1;
     sfx.thump?.();
     this.game.fx?.impact?.(l.pos.clone().setY(l.pos.y + 0.3), new THREE.Vector3(0, 1, 0), { sparks: 6, dust: 6 });
-    this.game.events?.emit('lob.fire', {});
+    this.game.events?.emit('lob.fire', { ...(training ? { training: true, outlined } : {}) });
+    return b;
   }
 
   tickBall(b, dt) {
@@ -97,12 +103,12 @@ export class Lobbers {
       g.god.hitJar(T.god.ballDamage, new THREE.Vector3(v.x, 0, v.z).normalize().negate(), 'ball');
       done = true;
     } else if (!b.reflected && !g.god?.active && Math.hypot(t.x - P.pos.x, t.z - P.pos.z) < 0.7 && t.y > P.pos.y - 0.1 && t.y < P.pos.y + 1.9) {
-      if (P.invulnerable || P.guarding) { g.events?.emit('lob.dodged', {}); } // (a raised blade turns it: the guard's own check usually gets there first)
+      if (P.invulnerable || (P.guarding && !b.outlined)) { g.events?.emit('lob.dodged', { ...(b.training ? { training: true } : {}) }); } // (an outlined ball goes through the guard: only the parry answers it) // (a raised blade turns it: the guard's own check usually gets there first)
       else {
         const dir = new THREE.Vector3(v.x, 0, v.z).normalize();
         P.impulse(dir.multiplyScalar(6).setY(3), 'lobber');
         P.grounded = false;
-        g.events?.emit('lob.hit', {});
+        g.events?.emit('lob.hit', { ...(b.training ? { training: true } : {}) });
       }
       done = true;
     }

@@ -143,19 +143,19 @@ export function deflect(game, { at, radius = 2, speedMin = 4.5, outMin = 12, ass
   if (game.domainArtsRun?.catch?.(hit.pr)) { breath(game, hit.t, iframes); return hit.pr; } // (caught, not sent back: the rung holds it and lets it go through throwBack)
   send(game, hit, { outMin, assist, paint });
   breath(game, hit.t, iframes);
-  game.events?.emit('move.parry', { speed: hit.sp, tool, how: 'return', what: 'shot', d: +hit.d.toFixed(2), reach: radius, by: 'courier' });
+  game.events?.emit('move.parry', { speed: hit.sp, tool, how: 'return', what: 'shot', d: +hit.d.toFixed(2), reach: radius, ...(hit.pr.training ? { training: true } : {}), by: 'courier' }); // (training: the parry range's ball, never counted: tracking.js)
   return hit.pr;
 }
 
 export function guard(game, { at, radius = 1.7, tool = 'cutlass' } = {}) {
   const P = game.player;
   const hit = incoming(game, at, radius, 2);
-  if (!hit) return null;
+  if (!hit || hit.pr.outlined) return null; // (an outlined shot wears the parry mark: only the parry answers it, never the guard)
   turn(game, hit);
   P.shake = Math.max(P.shake, 0.15);
   game.fx?.impact?.(hit.t.clone(), new THREE.Vector3(0, 1, 0), { sparks: 6, dust: 0 });
   sfx.guardBlock?.();
-  game.events?.emit('guard.block', { speed: hit.sp, tool, by: 'courier' });
+  game.events?.emit('guard.block', { speed: hit.sp, tool, ...(hit.pr.training ? { training: true } : {}), by: 'courier' });
   return hit.pr;
 }
 
@@ -180,7 +180,7 @@ function shot(game, { tool, how, at, radius, paint }) {
     if (pr.from?.alive) game.creatures?.stagger(pr.from, 1, { type: 'impact', by: 'courier', cause: 'parry' });
   } else turn(game, hit);
   breath(game, hit.t);
-  game.events?.emit('move.parry', { speed: hit.sp, tool, how: did, what: 'shot', d: +hit.d.toFixed(2), reach: radius, ...(amount ? { amount: +amount.toFixed(2) } : {}), by: 'courier' });
+  game.events?.emit('move.parry', { speed: hit.sp, tool, how: did, what: 'shot', d: +hit.d.toFixed(2), reach: radius, ...(amount ? { amount: +amount.toFixed(2) } : {}), ...(pr.training ? { training: true } : {}), by: 'courier' });
   return 'shot';
 }
 
