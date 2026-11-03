@@ -167,7 +167,7 @@ export class MechPartsBody {
     for (const slot of ['legs', 'hip', 'core', 'head', 'arms', 'pauldron', 'weaponL', 'weaponR', 'booster', 'generator', 'back']) this.buildSlot(slot);
     this.layoutArms();
     this.group.updateMatrixWorld(true);
-    this.height = +new THREE.Box3().setFromObject(this.body).max.y.toFixed(2);
+    this.height = +(new THREE.Box3().setFromObject(this.body).max.y - new THREE.Vector3().setFromMatrixPosition(this.group.matrixWorld).y).toFixed(2); // (over its own feet: a rebuild where it stands, the gantry at y 200, read 213 m as a world box's top)
     const sg = new THREE.SphereGeometry(this.height * 0.62, 24, 16);
     this.barrierMat = new THREE.MeshBasicMaterial({ name: 'mech-barrier', color: 0xffe39a, transparent: true, opacity: 0.18, depthWrite: false, side: THREE.DoubleSide });
     this.barrier = new THREE.Mesh(sg, this.barrierMat); this.barrier.position.y = this.hip + 2.5; this.barrier.visible = false; this.body.add(this.barrier);
