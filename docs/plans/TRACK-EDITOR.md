@@ -277,3 +277,10 @@ at no lives or the shelf's end. Ledger: `endless.*`, `shelf.add`. **Not built:**
 **Proofs** (`node scripts/trapproof.mjs`: the rules, 90 checks; `node scripts/trapworld.mjs`: the world traps on a real made track with a
 stand-in game, all thirteen built, the six struck, the bots fired twelve kinds, Read listed them). Not measured: the six's balance
 on a real board (speeds, the maw's 60 m/s lunge, the hasten's drag), the shoulder's break, the pot popped by a real hop.
+
+### 14.x Rulings (Dovina, 2026-11-03)
+- **The box of thirteen opens over about 55 real minutes** of haunted racing (the six at races 11 to 16) or by their feats. It stays:
+  a feat is the short way, and the grind closes the gap.
+- **Endless pace (1.3 of a third of the reference race) stands** until South rides it. Its counters are its own; a made track's endless
+  finish is not a race on it (`race.made.*`).
+- **mt8 reads seven different traps of thirteen.**
