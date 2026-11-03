@@ -84,6 +84,7 @@ export const SEASONING = [
   { event: 'shop.haggle',     attribute: 'charisma',      points: 2, when: (e) => e.step === 'deal' },          // (a haggle struck, not each step: Petra, v114)
   { event: 'move.parry',      attribute: 'perception',    points: 2, when: (e) => e.by === 'courier' && e.how },  // (a parry that answered something)
   { event: 'photo.appraise',  attribute: 'perception',    points: 2, when: (e) => (e.stars || 0) >= 3 },
+  { event: 'foe.dodge',       attribute: 'perception',    points: 2, when: (e) => e.by === 'courier' },          // (a cast read and stepped out of, or looked away from: G315; a parry's worth, the same read without the timing)
   { event: 'drill.end',       attribute: 'dexterity',     points: 3, when: (e) => !e.tuned?.length },            // (a Throwing Room drill finished, untuned: `tuned` is the list of knobs away from default)
   { event: 'creature.zandatsu', attribute: 'dexterity',   points: 2, when: (e) => e.by !== 'environment' },
   { event: 'sigil.pop',       attribute: 'visualization', points: 2, when: (e) => e.by !== 'environment' },
