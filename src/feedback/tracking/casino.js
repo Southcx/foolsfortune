@@ -9,7 +9,7 @@
 //   casinoRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
 
-const NAMES = { querent: 'Querent', zodiac: 'Zodiac', eventhorizon: 'Event Horizon', supernova: 'Supernova Run', nebula: 'Nebula Bluff' };
+const NAMES = { querent: 'Querent', zodiac: 'Zodiac', eventhorizon: 'Event Horizon', supernova: 'Supernova Run', nebula: 'Nebula Bluff', charity: 'Charity Gamble', entropy: 'Entropy Tactics' };
 
 export function casinoRules({ on, L, log }) {
   const say = (kind, text, key, throttle = 1) => log.say(kind, text, { key, throttle });
@@ -33,6 +33,13 @@ export function casinoRules({ on, L, log }) {
     else if (e.what === 'fuse20') say('info', `${w} ${e.who === 'you' ? 'fused' : 'fused'} a d20.`, 'fuse20', 0.3);
     else if (e.what === 'nova') { if (e.who === 'you') L.inc('casino.supernova.novas'); say('record', `Supernova! ${w} ${e.who === 'you' ? 'doubled your' : 'doubled their'} points to ${e.points}. Every hand resets to 4 d6.`, 'nova', 0.3); }
     else if (e.what === 'callout') { if (e.who === 'you' && e.bluff) L.inc('casino.nebula.caught'); say(e.bluff ? 'record' : 'warn', `${w} ${e.who === 'you' ? 'called' : 'called'} ${e.on === 'you' ? 'your' : `${e.on}'s`} claim of ${e.claim}: ${e.bluff ? `a bluff (${e.worth})` : `it was true (${e.worth})`}.`, 'callout', 0.3); }
+    else if (e.what === 'deposits') say('info', `The jar held ${e.total} against a line of ${e.line}: ${e.winners.length ? `${e.winners.join(', ')} bet right${e.share ? `, ${e.share} chips each` : ''}.` : 'no one was right; it carries over.'}`, 'deposits', 0.3);
+    else if (e.what === 'liar') say('info', `${w} ${e.who === 'you' ? 'said' : 'said'} ${e.said} and had dropped ${e.dropped}.`, 'liar', 0.3);
+    else if (e.what === 'summon') say('info', `${w} ${e.who === 'you' ? 'summoned' : 'summoned'} a ${e.kind}.`, 'summon', 0.3);
+    else if (e.what === 'spell') say('info', `${w} ${e.who === 'you' ? 'cast' : 'cast'} ${e.n} of a kind${e.arcana ? ` for ${e.dmg} to the Arcana` : ''}.`, 'spell', 0.3);
+    else if (e.what === 'push') say('info', `${w} ${e.who === 'you' ? 'pushed' : 'pushed'} the bomb: ${e.tiles ? `${e.tiles} tile${e.tiles === 1 ? '' : 's'}` : 'it held'} (${e.atk} against ${e.def}).`, 'push', 0.3);
+    else if (e.what === 'countdown') say('info', `${w} ${e.who === 'you' ? 'counted' : 'counted'} the bomb down to ${e.counter}.`, 'countdown', 0.3);
+    else if (e.what === 'boom') say('warn', `The Grand Bomb goes off${e.zone === 'you' ? ' on your ground' : e.zone ? ` on ${e.zone}'s ground` : ' in the middle'}.`, 'boom', 0.3);
     else if (e.what === 'reveal') say('info', `Raises over. Hands shown: ${e.shown.join(', ')}.`, 'reveal', 0.3);
   });
   on('casino.result', (e) => {

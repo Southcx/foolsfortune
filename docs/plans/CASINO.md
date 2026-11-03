@@ -24,9 +24,9 @@ into rules a program can play, says where a rule was open and what was decided, 
 | Astroll: Supernova Run | push-your-luck dice fission and fusion | 2 | the doc's rules; one pass needed on the reaction loop |
 | Astroll: Nebula Bluff | Liar's Dice on a set's totals | 2 | the doc's rules; needs bots that bluff and tell |
 | Astroll: Gravity Well | crokinole with dice, real physics | 2 | the doc's rules; the house's physics fits it |
-| Astroll: Charity Gamble | hidden deposits, over / under | 3 | the doc's rules; needs four to six seats |
+| Astroll: Charity Gamble (section 6a) | hidden deposits, say what you dropped, over / under the line | 3 | rules, bot, coach, how-to, simulator built (2026-11-03); the cloth's layout is Calissa's, handed off |
 | Astroll: Celestial Skirmish | chess with dice | 3 | the doc's rules; needs a chess-grade bot |
-| Entropy Tactics (merges Fatelink: the owner, 2026-10-15) | a tactics game on a 7 x 7 board | 3 | a design pass first: one of 22 characters is written |
+| Entropy Tactics (merges Fatelink: the owner, 2026-10-15) | a tactics game on a 7 x 7 board | 3 | rules (four classes), search bot, coach, how-to, simulator built (2026-11-03) on defaults for the owner's six questions; the board's layout is Calissa's, handed off |
 | Astroll: Asteroid Belt | a grab for duplicate faces | later | one sentence so far |
 
 ## 2. The table engine (`src/progress/casino/table.js`)
@@ -203,20 +203,31 @@ a **tell** on a bluff at its own rate, and sometimes on an honest claim; the tel
 
   So tells are a real skill, and the cloth's tells must read on the folk's bodies.
 
+### 6a. Charity Gamble (`progress/casino/charity.js`, built 2026-11-03)
+
+Four to six seats, eight rounds, a purse of 40 chips each. Each round every seat drops 1, 5 or 10 into the jar in secret, then SAYS what
+it dropped (public, free to lie), then bets over or under the line (the seats' count x 16/3, rounded; bets hidden until the reveal). A
+right bet shares the jar (charity keeps a tenth of a paid jar); nobody right, or exactly on the line, and the jar carries over. The most
+chips wins. Measured (`node scripts/casino.mjs --game charity`, 3000 games a size, every seat the same bot): seats win evenly, a purse
+returns about 0.86 to 0.88 (the house's edge is charity's tenth and the jar left unpaid at the end, 11 to 14% of a purse), a quarter of
+claims are lies. The folk at one table (Raku, Petra, Calissa, Espada, Dovina, Wanda): Calissa, who lies most, wins most (27%) and
+Espada, who counts and lies least, least: a liar profits from a table that does not keep count, which is the game's lesson. The
+coach shows each seat's lie rate from the shown rounds, so a reader can be made.
+
 ### Still to build
 - **Gravity Well**: real flicked dice on the house's physics (Rapier), zones as data; a dexterity game, so the owner's play is its test.
   It waits until the owner has played the tables.
-- **Charity Gamble**: four to six seats; the hidden deposit's denominations (1, 5, 10) as the bluff. Small.
 - **Celestial Skirmish**: a chess move generator and a search bot; the dice as pieces and their natural-maximum specials. The heaviest.
-- **Entropy Tactics** (Fatelink merged in): **the design pass is `docs/plans/ENTROPY-TACTICS.md`**, six questions for the owner before
-  any code.
+- **Entropy Tactics** (Fatelink merged in): built on defaults, `docs/plans/ENTROPY-TACTICS.md` section 6.
 - **Event Horizon's interference** (swap, steal, reroll another's dice): the owner's doc puts the game there; it comes back as abilities.
 
 ## 7. The opponents
 
 Every game ships a bot (`zodiacBot`, `horizonBot`, `querentBot`) good enough to measure with, and a `style` to lean it: a thief that
 steals for less, a bold roller, a greedy payer. At Raku's tables the seats are the folk and the siblings, each with a style that suits
-them (Petra folds tight, Calissa bluffs pretty, Espada counts cards), so a table reads as people. Guests (co-op players) take seats later
+them (Petra folds tight, Calissa bluffs pretty, Espada counts cards), so a table reads as people: `progress/casino/folk.js` (G31) holds
+the nine people's styles per game and `world/bazaar/session.js` seats them (`seatOf`); Charity Gamble seats Raku, Petra, Calissa and
+Espada, Entropy Tactics Dovina. The older tables keep their folk. Guests (co-op players) take seats later
 through the same interface.
 
 ## 8. Measuring (`node scripts/casino.mjs`)
