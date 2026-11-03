@@ -47,15 +47,16 @@ export const ROLE = {
 export const ROLE_NAMES = Object.fromEntries(Object.entries(ROLE).map(([k, v]) => [v, k]));
 
 /** Dovina's material ids (MAT in progress/mechs/destruction.js; paper 6 and furnishing 7 from her fire branch). */
-export const M = { glass: 1, timber: 2, brick: 3, stone: 4, steel: 5, paper: 6, furnishing: 7 };
-/** What each role is made of unless a blueprint says otherwise (adobe as brick for now: its hits, density and span). */
+export const M = { glass: 1, timber: 2, brick: 3, stone: 4, steel: 5, paper: 6, furnishing: 7, adobe: 8 };
+/** What each role is made of unless a blueprint says otherwise: the earth's plasters, crenels, domes and reliefs adobe (Dovina's MAT.adobe:
+ *  sun-dried, softer than fired brick); the glazed tiles and the gilded accents fired brick. */
 export const ROLE_MAT = {
-  1: M.brick, 2: M.brick, 3: M.brick, 4: M.timber, 5: M.timber, 6: M.timber, 7: M.timber, 8: M.brick, 9: M.brick, 10: M.brick, 11: M.brick,
-  12: M.timber, 13: M.paper, 14: M.timber, 15: M.stone, 16: M.glass, 17: M.furnishing, 18: M.timber, 19: M.brick, 20: M.brick, 21: M.paper,
-  22: M.timber, 23: M.brick, 24: M.brick,
+  1: M.adobe, 2: M.adobe, 3: M.adobe, 4: M.timber, 5: M.timber, 6: M.timber, 7: M.timber, 8: M.brick, 9: M.adobe, 10: M.adobe, 11: M.adobe,
+  12: M.timber, 13: M.paper, 14: M.timber, 15: M.stone, 16: M.glass, 17: M.furnishing, 18: M.timber, 19: M.brick, 20: M.adobe, 21: M.paper,
+  22: M.timber, 23: M.brick, 24: M.adobe,
 };
 /** Each material's span (cells it may reach out over air from one that stands): her MATERIALS' spans, her fire branch's included. */
-export const SPAN = { 1: 0, 2: 3, 3: 2, 4: 1, 5: 6, 6: 1, 7: 0 };
+export const SPAN = { 1: 0, 2: 3, 3: 2, 4: 1, 5: 6, 6: 1, 7: 0, 8: 2 };
 
 /** The faces a wall looks out of (a prop's or an opening's): n (-z), s (+z: the front, the street's side at yaw 0), w (-x), e (+x), up. */
 export const FACE = { n: 0, s: 1, w: 2, e: 3, up: 4 };

@@ -17,8 +17,10 @@
 //
 //   MATERIALS[id] = { hp (full blows to break a cell), density (t a m³ of cell: a chunk's mass), span (cells a cell of it may bridge over air), look }
 //   SOFT (fire.js's heated steel: half its span)   FURNISH[id]   GLASS   shatterGlass(b, at, r) -> [i]   SPLIT   splitChunk(chunk, fell) -> [chunk]
-//   BUILDINGS[id] = { label, w, h, d, floors, shell, frame, glass }   CITY = { cell, lots: [{ x, z, id, yaw }] }
-//   newBuilding(id, seed) -> b { id, w, h, d, mat: Uint8Array, hp: Float32Array }   at(b, x, y, z)   cellsLeft(b)
+//   BUILDINGS[id] = { label, w, h, d, floors, shell, frame, glass } (and a row an adobe blueprint: { label, size, adobe: true, beam })
+//   CITY = { cell, lots: [{ x, z, id, yaw, seed }] } (the adobe city's lots: adobe/lots.js)
+//   newBuilding(id, seed) -> b { id, w, h, d, mat: Uint8Array, hp: Float32Array } (an adobe kind's from its blueprint, with role, props, tint)
+//   at(b, x, y, z)   cellsLeft(b)   leavesBeam(id) (a felled building that leaves a beam to pick up: a steel frame's girder, a large adobe's viga)
 //   carve(b, shape, k) -> { broke: [i], cracked: [i] }  (shape: { kind: 'ball'|'capsule'|'cone'|'ray', at, to?, r, dir?, angle? } in the building's cells)
 //   footLeft(b) -> 0..1   FOOT   collapse(b) -> [{ cells: [[x,y,z]], mats, mass (t), at: [x,y,z] (its centre of mass, cells) }] (each cut loose; removed from b)
 //   chunkMass(b, cells)   fallBlow(mass, height) -> k (a full blow's share on what it lands on)   SCORE (the ledger's counts)
@@ -36,8 +38,9 @@ export const MATERIALS = {
   5: { id: 'steel', hp: 4, density: 1.6, span: 6, look: 'steel' },        // the frame of the tall ones: what holds floors over a hole
   6: { id: 'paper', hp: 0.1, density: 0.1, span: 1, look: 'paper' },      // a lantern stall's walls: oiled paper on a timber frame (fire's fodder)
   7: { id: 'furnishing', hp: 0.3, density: 0.3, span: 0, look: 'furnishing' }, // what is in the rooms: shelves, beds, crates; a carved facade shows them, and they burn
+  8: { id: 'adobe', hp: 1.0, density: 1.4, span: 2, look: 'adobe' },      // the adobe city's walls: sun-dried mud brick under plaster, softer than fired brick (a fist takes a room a blow sooner) and heavier (thick earthen walls: its chunks land harder); a brick's span (the blueprints stand on it: Calissa's guess, ruled)
 };
-export const MAT = { glass: 1, timber: 2, brick: 3, stone: 4, steel: 5, paper: 6, furnishing: 7 };
+export const MAT = { glass: 1, timber: 2, brick: 3, stone: 4, steel: 5, paper: 6, furnishing: 7, adobe: 8 };
 /** A steel cell heated through (fire.js STATE.soft) holds half its span and half its hits: the frame sags under a fire. */
 export const SOFT = 3;
 const spanAt = (b, i) => { const s = MATERIALS[b.mat[i]].span; return b.fire && b.fire.state[i] === SOFT ? Math.floor(s / 2) : s; };
@@ -51,24 +54,22 @@ export const BUILDINGS = {
   tower:  { label: 'Tower', w: 10, h: 34, d: 10, floor: 4, bay: 3, shell: MAT.glass, frame: MAT.steel, glass: 0, base: { h: 4, mat: MAT.stone } },
   kiln:   { label: 'Bottle kiln', w: 10, h: 16, d: 10, floor: 0, bay: 0, shell: MAT.brick, frame: 0, glass: 0, round: true }, // (a bottle kiln: a round brick shell, nothing inside to hold it once its foot goes)
   stall:  { label: 'Lantern stall', w: 6, h: 5, d: 6, floor: 0, bay: 5, shell: MAT.paper, frame: MAT.timber, glass: 0 }, // (a matsuri stall: paper walls on four timber posts under a timber roof; what fire takes first)
+  // and a row an adobe blueprint (adobe/blueprints.js): its cells drawn by the blueprint, its shell adobe, its frame timber; a large one leaves a viga
+  ...Object.fromEntries(ADOBE_IDS.map((id) => { const K = ADOBE[id]; return [id, { label: K.label, w: K.w, d: K.d, floor: 0, bay: 0, shell: MAT.adobe, frame: MAT.timber, glass: 0, size: K.size, adobe: true, beam: K.size === 'large' }]; })),
 };
+/** A felled building leaves a beam on its street side to pick up (props.js 'girder'): a steel frame's girder, a large adobe's cedar viga
+ *  (Djenne's, the kasbah's: the roof beams that outlast the mud). */
+export const leavesBeam = (id) => { const B = BUILDINGS[id]; return !!B && (B.frame === MAT.steel || !!B.beam); };
 /** What fills a building's rooms (`furnish`: the share of a room's floor-level cells, MAT.furnishing): a lived-in house the most, an
  *  office tower the least; a kiln none. A carved facade shows them (Ultimate Destruction's interiors), and they are a fire's fuel inside
  *  brick (fire.js), so a brick house burns from within. */
-export const FURNISH = { house: 0.12, shop: 0.14, block: 0.06, tower: 0.04, kiln: 0, stall: 0.18 };
+export const FURNISH = { house: 0.12, shop: 0.14, block: 0.06, tower: 0.04, kiln: 0, stall: 0.18 }; // (an adobe kind's rooms are drawn by its blueprint: its goods)
 
-/** The proving ground's lots (metres from the yard's middle, PROVING.at): a street of the toy city between the launch (x -130) and the
- *  straw giant (x 70), and a few on the flanks, so a walk to the giant goes through it and a fight beside it has walls to go through. */
-export const CITY = {
-  cell: 1,
-  lots: [
-    { x: -112, z: -18, id: 'stall' }, { x: -112, z: 18, id: 'stall' }, { x: -100, z: -16, id: 'stall' }, { x: -100, z: 16, id: 'stall' }, // (a matsuri's lantern stalls either side of the launch street: the first thing to burn)
-    { x: -90, z: -30, id: 'house' }, { x: -90, z: 30, id: 'house' }, { x: -70, z: -32, id: 'shop' }, { x: -70, z: 32, id: 'shop', yaw: Math.PI },
-    { x: -45, z: -35, id: 'block' }, { x: -45, z: 35, id: 'block' }, { x: -20, z: -40, id: 'tower' }, { x: -20, z: 42, id: 'kiln' },
-    { x: 10, z: -36, id: 'shop' }, { x: 10, z: 36, id: 'block' }, { x: 30, z: -60, id: 'tower' }, { x: 35, z: 60, id: 'house' },
-    { x: 110, z: -50, id: 'block' }, { x: 110, z: 50, id: 'kiln' }, { x: 130, z: 0, id: 'tower' },
-  ],
-};
+/** The proving ground's lots (metres from the yard's middle, PROVING.at): since 2026-11-03 the adobe city (South: "Those buildings are
+ *  still very placeholder"; Calissa's 101 lots, adobe/lots.js: 9 large, 32 medium, 60 small either side of the street from the launch
+ *  past the straw giant, the lanes and the yards kept clear). The first kinds (house .. stall) stay as rows for the simulator and a lot
+ *  laid by hand; their 19 lots went with the change. */
+export const CITY = { cell: 1, lots: ADOBE_LOTS };
 
 /** The ledger's destruction counts are cells (mech.destroy.cells) and chunks (mech.destroy.chunks); a building is felled when fewer than
  *  `felled` of its cells stand (mech.destroy.buildings), toppled in one blow when one blow's collapse took `topple` of what stood. */
@@ -83,6 +84,9 @@ const idx = (b, x, y, z) => x + b.w * (z + b.d * y);
 const inside = (b, x, y, z) => x >= 0 && y >= 0 && z >= 0 && x < b.w && y < b.h && z < b.d;
 export const at = (b, x, y, z) => (inside(b, x, y, z) ? b.mat[idx(b, x, y, z)] : 0);
 export const cellsLeft = (b) => { let n = 0; for (let i = 0; i < b.mat.length; i++) if (b.mat[i]) n++; return n; };
+import { ADOBE, ADOBE_IDS, adobePlan } from './adobe/blueprints.js';
+import { ADOBE_LOTS } from './adobe/lots.js';
+
 const xyz = (b, i) => { const x = i % b.w, r = (i - x) / b.w, z = r % b.d; return [x, (r - z) / b.d, z]; };
 
 /** A small seeded stream (mulberry32): a building's windows are its own and the same every visit. */
@@ -91,6 +95,7 @@ function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>>
 /** A building's cells: its shell on the outside (windows punched in it), its frame's columns and floors inside, the rest air. */
 export function newBuilding(id, seed = 1) {
   const B = BUILDINGS[id]; if (!B) return null;
+  if (B.adobe) return fromPlan(id, adobePlan(id, seed));
   const b = { id, w: B.w, h: B.h, d: B.d, mat: new Uint8Array(B.w * B.h * B.d), hp: new Float32Array(B.w * B.h * B.d), start: 0 };
   const r = rng(seed), cx = (B.w - 1) / 2, cz = (B.d - 1) / 2, R = Math.min(B.w, B.d) / 2;
   for (let y = 0; y < B.h; y++) for (let z = 0; z < B.d; z++) for (let x = 0; x < B.w; x++) {
@@ -107,6 +112,16 @@ export function newBuilding(id, seed = 1) {
     if (!m && !edge && !B.round && (FURNISH[id] || 0) > 0 && (y === 0 || (B.floor && y % B.floor === 1)) && r() < FURNISH[id]) m = MAT.furnishing; // (the rooms: on the ground floor and on each floor's cells)
     const i = idx(b, x, y, z); b.mat[i] = m; b.hp[i] = m ? MATERIALS[m].hp : 0;
   }
+  b.start = cellsLeft(b); b.foot0 = footCells(b); b.fallen = false;
+  return b;
+}
+
+/** A building of an adobe blueprint's plan: its cells and their materials as drawn (the blueprint's own settle already stood every cell on
+ *  this rule), each cell its material's hits, counted as a drawn building is; its look roles, props and tint kept for the dress. */
+function fromPlan(id, p) {
+  if (!p) return null;
+  const n = p.mat.length, b = { id, w: p.w, h: p.h, d: p.d, mat: p.mat instanceof Uint8Array ? p.mat : Uint8Array.from(p.mat), hp: new Float32Array(n), start: 0, role: p.role, props: p.props, tint: p.tint, dropped: p.dropped };
+  for (let i = 0; i < n; i++) if (b.mat[i]) b.hp[i] = MATERIALS[b.mat[i]]?.hp ?? 1;
   b.start = cellsLeft(b); b.foot0 = footCells(b); b.fallen = false;
   return b;
 }

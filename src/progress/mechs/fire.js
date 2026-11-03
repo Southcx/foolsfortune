@@ -16,7 +16,7 @@
 // tick (a burning block lights flammable neighbours by chance and burns away), Red Faction Guerrilla (a weakened structure falls under its
 // own weight), Battlefield's levolution, SimCity's fires (a city that burns building to building), the water tower as a fire bucket.
 //
-//   BURN[mat] = { burn (0..1 a chance's weight), fuel (real s), away (burns away at its end) }   STATE   FIRE   HEAT   GIANT_FIRE
+//   BURN[mat] = { burn (0..1 a chance's weight), fuel (real s), away (burns away at its end) }   STATE   FIRE   BURNT   HEAT   GIANT_FIRE
 //   newFire(b) -> b.fire { state, fuel, heat, t, by }   burnable(b, i)   ignite(b, i, by) -> bool   igniteRay(b, from, dir, chance, rnd, by) -> n
 //   igniteNear(b, at, r, chance, rnd, by) -> n   stepFire(b, dt, rnd, { quench }) -> { burning, away: [i], glass: [i], scorched, soft, out }
 //   douse(b, at, r) -> n   burningOf(b) -> n   heatStep(k, inFire, dt) -> k   (all positions in the building's own cells)
@@ -55,6 +55,12 @@ export const FIRE = {
 /** The mech in fire: its heat k (0..1) rises `rise` a real second while a burning cell is within `near` m of its footprint and falls
  *  `fall` out of it; it drains `drainKW` x k from the battery (the clay battery's 48 MJ: a real minute at full heat costs half of it), and
  *  at full heat cracks its legs `crack.k` every `crack.every` real s (stand in it and it hurts; walk through it and it does not). */
+/** Burnt down (South's adobe city, 2026-11-03: earth does not burn, so no adobe building burns to the ground; its vigas, awnings and goods
+ *  do): a building whose fire burned away `share` of the cells it was built with counts as burned down when anything fells it within
+ *  `within` real s of the last cell its fire took (fire's work finished by a fist: the scorched shell is at half its hits, FIRE.scorchHp).
+ *  0.15: the market stall's, the granary's and the casa's fires take 20 to 45% (scripts/mechs.mjs), the mud-and-cedar ones under 5%;
+ *  a real minute: the fire seen and the blow its answer, not a building that burned last night. */
+export const BURNT = { share: 0.15, within: 60 };
 export const HEAT = { rise: 0.5, fall: 0.25, near: 3, drainKW: 400, crack: { region: 'legs', k: 0.15, every: 2 } };
 
 /** The giants and fire. The straw giant burns: lit by the flamer (FIRE.light.flame a real second), a charged beam, or a burning building
@@ -137,7 +143,7 @@ export function stepFire(b, dt, rnd, { quench = 0 } = {}) {
       if (between.length) continue; // (heat on what does not burn: only what touches the flame)
       if (m === MAT.glass) { b.hp[j] -= FIRE.glass * dt; if (b.hp[j] <= 0) { b.mat[j] = 0; b.hp[j] = 0; glass.push(j); } continue; }
       if (m === MAT.steel && f.state[j] !== SOFT) { f.t[j] += dt; if (f.t[j] >= FIRE.soften) { f.state[j] = SOFT; b.hp[j] *= 0.5; soft++; } continue; }
-      if ((m === MAT.brick || m === MAT.stone) && f.state[j] === STATE.none) { f.t[j] += dt; if (f.t[j] >= FIRE.scorch) { f.state[j] = STATE.scorched; b.hp[j] *= FIRE.scorchHp; scorched++; } }
+      if ((m === MAT.brick || m === MAT.stone || m === MAT.adobe) && f.state[j] === STATE.none) { f.t[j] += dt; if (f.t[j] >= FIRE.scorch) { f.state[j] = STATE.scorched; b.hp[j] *= FIRE.scorchHp; scorched++; } }
     }
     if (f.fuel[i] <= 0) { f.state[i] = STATE.none; f.fuel[i] = 0; if (BURN[b.mat[i]]?.away) { b.mat[i] = 0; b.hp[i] = 0; away.push(i); } }
   }

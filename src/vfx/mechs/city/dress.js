@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE ADOBE CITY'S DRESS (plain names; South, 2026-11-03: "Those buildings are still very placeholder, could you take a stab at drafting
 // some adobe buildings? Make em super fancy"): the proving ground's toy city drawn as an earthen city wherever a building was made from
-// an adobe blueprint (vfx/mechs/city/blueprints.js: its cells carry a look role, `b.role`, and props, `b.props`). Over Dovina's runtime
+// an adobe blueprint (progress/mechs/adobe/blueprints.js: its cells carry a look role, `b.role`, and props, `b.props`). Over Dovina's runtime
 // (world/hangar/city.js), looks only: nothing here carves, collapses or touches a collider.
 //   THE CELLS    each building's mesh (hers: a face where a cell meets air) recoloured face by face from its cell's role in the Clay
 //                dress's palette (ADOBE_LOOK: mud plaster in one of four earths a building, lime-wash, cedar, indigo and turquoise
@@ -16,15 +16,13 @@
 // and Minecraft shaders' world-space noise over voxels, the adobe and banco plasters of Taos, Djenné and the Draa (the colours sampled
 // from photographs of their walls), Fez's zellige and Yazd's kashi for the glazes.
 //
-//   const D = new CityDress(game).attach(city)   D.update(dt)   D.refresh(rec)   D.dispose()   installCityDress(game) (the fx phase; and
-//   DEBUG's /adobecity on|off: preview.js)
+//   const D = new CityDress(game).attach(city)   D.update(dt)   D.refresh(rec)   D.dispose()   installCityDress(game) (the fx phase)
 //   ADOBE_LOOK   cellColour(role, x, y, z, tint, up) -> hex   cellSheen(role) -> 0..1   adobeMaterial({ mobile }) -> material
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { ROLE as R } from './blueprintkit.js';
+import { ROLE as R } from '../../../progress/mechs/adobe/blueprintkit.js';
 import { PROP_KINDS, propGeometry, propMatrix, propColour } from './dressprops.js';
 import { PROVING } from '../../../world/hangar/layout.js';
-import { previewAdobe } from './preview.js';
 
 /** The palette: four earths for a building's plaster (picked by its tint), what each role takes from it or has of its own, and the
  *  jitter a cell's lightness moves by (small: the plaster's own mottle does the rest). */
@@ -224,6 +222,5 @@ export class CityDress {
 export function installCityDress(game) {
   const D = game.cityDress = new CityDress(game);
   game.systems?.add('fx', D, { clock: 'raw', name: 'cityDress' });
-  game.chat?.add?.('adobecity', { debug: true, help: 'the proving ground\'s toy city stood as the adobe proposal (on) or as it is (off): /adobecity on|off', run: ([v]) => previewAdobe(game.hangar?.city, v !== 'off') });
   return D;
 }

@@ -12,7 +12,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FACE_DIR } from './blueprintkit.js';
+import { FACE_DIR } from '../../../progress/mechs/adobe/blueprintkit.js';
 
 /** Each kind's colours (a pick by the prop's `c`) and how it stands. */
 export const PROP_LOOK = {
