@@ -17,7 +17,7 @@
 //   S.list ([{ x, y, z, field, born, drunk, spawned, from }])   S.stageOf(s)   S.crudeOf(s)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { STAINS, stainStage } from '../../progress/brushload.js';
+import { STAINS, stainStage, CLEAN } from '../../progress/brushload.js';
 import { ECON, crudeFieldOf } from '../../progress/econ/table.js';
 import { now, today, DAY_MS } from '../../core/calendar.js';
 import { seeded, stream } from '../../core/rng.js';
@@ -95,6 +95,17 @@ export class Stains {
     this.list.splice(this.list.indexOf(s), 1);
     pm?.wipe(s.x, s.z, s.x, s.z, s.y, 2 * RADIUS[stage] + 1, 1e9, true, s); // (what little is left of it, gone with it)
     this.game.events?.emit('stain.wash', { field: s.field, stage, at: [s.x, s.y, s.z], size: 2 * RADIUS[stage], by }); // (at, size: where it lay and how wide, for the shine: vfx/brushload.js; by: the mop's 'courier', a Lantern Wisp's drink 'creature')
+    this.found(s, by); // (what it hid, said after the wash: CLEAN.findChance of them, G135)
+  }
+
+  /** What a blot hid (G135; Dovina's CLEAN, progress/brushload.js: a share of stains hide a find, a pot's worth), turned up when the
+   *  Courier washes it: seeded by the blot itself (where and when it was laid), so the same blot always hides the same. The find is cubes
+   *  for now (`CLEAN.worth`, a minute of play until Dovina names it), burst out of the ground where it lay. */
+  found(s, by) {
+    if (by !== 'courier' || seeded(Math.floor(s.born / 1000) ^ Math.round(s.x * 7) ^ Math.round(s.z * 13))() >= CLEAN.findChance) return;
+    const at = new THREE.Vector3(s.x, s.y + 0.2, s.z), worth = CLEAN.worth ?? Math.round(ECON.perMinute);
+    this.game.cubes?.burst?.(at, worth, { count: Math.min(8, Math.max(3, Math.round(worth / 2))), up: 3.5, spread: 0.8, from: 'stain' });
+    this.game.events?.emit('stain.find', { what: 'cubes', worth, at: [s.x, s.y, s.z], by });
   }
 
   /** The game day's layout: the Shore's stains, a few a game day, seeded by the day (the same for everyone on it). */

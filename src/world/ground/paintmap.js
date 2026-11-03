@@ -295,6 +295,24 @@ export class PaintMap {
     if (this.k[m] > 0) { this.h[m] = y; this.wetT[m] = this.clock; this.live.add(m); }
   }
 
+  /** Painted ground as signatures (G274; PAINT.md: paint is Lachryma laid on a surface, so the Dreamvane hears it): the paint's cells
+   *  binned 2 m a side, each bin one source of its strongest feeling, its strength the paint it holds; rebuilt at most once a real
+   *  second (`clock`). Crude's blots and slicks are not here: a blot has its own (world/ground/stains.js). */
+  patches() {
+    if (this.patchT != null && this.clock - this.patchT < 1) return this.patchList;
+    this.patchT = this.clock; const B = 8, M = N / B, sum = new Float32Array(M * M), hy = new Float32Array(M * M), best = new Int8Array(M * M).fill(-1), bk = new Float32Array(M * M);
+    for (let m = 0; m < N * N; m++) {
+      const k = this.k[m]; if (k <= 0.02 || this.crude[m]) continue;
+      const b = Math.floor((m / N | 0) / B) * M + Math.floor((m % N) / B); sum[b] += k; hy[b] += k * this.h[m]; if (k > bk[b]) { bk[b] = k; best[b] = this.asp[m]; }
+    }
+    const out = [];
+    for (let b = 0; b < M * M; b++) if (sum[b] > 0.5) {
+      const i = b % M, j = (b / M) | 0;
+      out.push({ pos: new THREE.Vector3(this.x0 + (i + 0.5) * B * CELL, hy[b] / sum[b], this.z0 + (j + 0.5) * B * CELL), strength: 0.3 + 0.025 * sum[b], kind: 'paint', aspect: best[b] >= 0 ? ASPECTS[best[b]] : null, ref: `paint:${Math.round(this.x0 / (B * CELL)) + i}:${Math.round(this.z0 / (B * CELL)) + j}` }); // (ref: the bin's place in the world, so the dowse finds a patch once)
+    }
+    return (this.patchList = out);
+  }
+
   /** The paint at a point of the ground (within 0.8 m of the height it was laid at), or null. */
   at(x, y, z) {
     const n = this.cell(x, z); if (n < 0 || this.k[n] < 0.08 || Math.abs(this.h[n] - y) > NEAR) return null;

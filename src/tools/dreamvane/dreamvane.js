@@ -65,7 +65,7 @@ export const ATTUNE = [ // (exported: the compass's vane layer wears each mode's
   { id: 'crystal', kinds: ['crystal'], color: 0xcdb8f2 },
   { id: 'chest', kinds: ['chest'], color: 0xffb27a },
   { id: 'living', kinds: ['creature', 'clapper', 'spirit'], color: 0x9be36a },
-  { id: 'loose', kinds: ['bauble', 'liquid', 'cube'], color: 0x9fe6ff },
+  { id: 'loose', kinds: ['bauble', 'liquid', 'cube', 'paint'], color: 0x9fe6ff },
 ];
 const FORK_HITS = groups(0xffff, G.STATIC | G.PROP | G.CRITTER);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion();

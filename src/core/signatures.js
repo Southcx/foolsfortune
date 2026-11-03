@@ -68,5 +68,7 @@ export function standardSignatures(game) {
   S.provide(() => (g.chests?.list || []).filter((c) => c.state === 'closed' && c.rig?.root?.visible !== false).map((c) => ({ pos: c.rig.root.position, strength: 3 + 2.5 * (c.tier || 0), kind: 'chest', ref: c })));
   // the Lachryma in clay and in jelly
   S.provide(() => (g.clappers?.list || []).filter((c) => c.alive).map((c) => ({ pos: c.pos, strength: 1.2 + 0.4 * (c.baubles || 0), kind: 'clapper', ref: c })));
+  // painted ground (the paint map's cells, binned: world/ground/paintmap.js patches; G274)
+  S.provide(() => g.paintmap?.patches?.() || []);
   S.provide(() => (g.creatures?.list || []).filter((c) => c.alive).map((c) => ({ pos: c.pos, strength: c.spirit ? 1.5 : 1 + 0.3 * (c.stash || 0), kind: c.spirit ? 'spirit' : 'creature', ref: c })));
 }

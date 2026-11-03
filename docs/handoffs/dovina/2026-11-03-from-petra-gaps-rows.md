@@ -23,4 +23,12 @@ Later the same round (v412):
   standing. Making B BLINK in the air, as the row says, takes the air dash off touch once Blink is learned. The alternatives are a
   second tile in the air, or a double tap on B. Which one?
 
+And v413:
+- **G274 built:** painted ground is a signature (`kind: 'paint'`). The paint map's cells are binned 2 m a side
+  (`paintmap.patches()`), each bin's strength 0.3 + 0.025 x its paint (a full bin about 1.9). The Dreamvane's LOOSE mode hears it.
+  Still open: the brush profile in `scripts/economy.mjs` to price the bottles (yours).
+- **G135 built:** a blot the Courier washes may hide a find, chosen by `CLEAN.findChance` and seeded by the blot. Measured: 10 of 42.
+  The find bursts out as cubes worth `CLEAN.worth`, which falls back to a minute of play (8) until you name "a pot's worth";
+  `stain.find { what, worth, at, by }` is counted. An ostracon or a cache in its place is yours to rule.
+
 Delete this note when done.

@@ -52,6 +52,8 @@ export function brushRules({ on, L, log }) {
     if (e.stage >= STAINS.stages) L.inc('stain.wash.grown');
     log.say('gain', `Mopped up ${STAGE[e.stage] || 'a'} blot of ${crudeName(e.field)}.`.replace('  ', ' '), { key: 'stain', throttle: 1 });
   });
+  // stain.find { what, worth, at, by }: what a washed blot hid (world/ground/stains.js found; G135). Words: placeholders for Espada.
+  on('stain.find', (e) => { if (e.by !== 'courier') return; L.inc('stain.find'); log.say('find', `Something was under the blot: ${e.worth} ${e.worth === 1 ? 'cube' : 'cubes'}.`, { key: 'stain.find', throttle: 1 }); });
   // stain.spawn { field, aspect, kind, by: 'environment' }: a full-grown blot gives up an aberrant Figment (the weather's feeling where it rises, or none)
   on('stain.spawn', (e) => {
     L.inc('stain.spawn');
