@@ -36,6 +36,7 @@ import { Knacks } from '../progress/knacks.js';
 import { Goals } from '../progress/goals.js';
 import { Quests } from '../progress/quests.js';
 import { Stealth } from '../progress/stealth.js';
+import { Safari } from '../progress/safarirun.js';
 import { DomainArts } from '../progress/domainarts.js';
 import { DomainArtsRun } from '../courier/domainarts/run.js';
 import { MovementProfiles } from '../progress/movementprofiles.js';
@@ -104,6 +105,7 @@ export function bootProgress(game, made) {
   game.domainArts = new DomainArts(game); // (a domain's rungs, opened by its level or a feat: progress/domainarts.js, DOMAINS.md 12)
   game.domainArtsRun = new DomainArtsRun(game); // (the rungs in play: courier/domainarts/run.js)
   game.quests = new Quests(game); game.recap = new Recap(game); // (someone's trouble fixed in steps, and what you were doing: progress/quests.js, progress/recap.js)
+  game.safari = new Safari(game); // (the Veritome's safari: behaviours, research, lures, flight rings, the darkroom: progress/safarirun.js, STEALTH.md 8)
   game.firstToday = new FirstToday(game); // (the first of each module a game day pays a little: progress/firsttoday.js)
   game.gardenBackdrop = () => gardenBackdropOf(game); // (your Spirit Garden as your half of a duel's backdrop: progress/gardenbackdrop.js, the view's to draw)
   game.foeSeen = new FoeSeen(game); // (the aberrants' foe skills you have seen, knowledge: the duel's badge tooltips, progress/foeseen.js)
@@ -118,7 +120,7 @@ export function bootProgress(game, made) {
   // (progress's own services each frame: core/systems.js, the `world` phase; the recap after the quests, the awakening after the vantages)
   game.systems.add('world', () => game.ostraca.update(), { name: 'ostraca' });
   for (const name of ['knacks', 'goals']) game.systems.add('world', game[name], { clock: 'raw', name });
-  for (const name of ['stealth', 'domainArtsRun']) game.systems.add('world', game[name], { name });
+  for (const name of ['stealth', 'safari', 'domainArtsRun']) game.systems.add('world', game[name], { name });
   game.systems.add('world', game.quests, { clock: 'raw', name: 'quests' });
   game.systems.add('world', game.recap, { clock: 'raw', name: 'recap', after: ['quests', 'questSplash'] });
   game.systems.add('world', game.harmony, { clock: 'raw', name: 'harmony' });
