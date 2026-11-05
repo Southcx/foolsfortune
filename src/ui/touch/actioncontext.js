@@ -198,15 +198,31 @@ function helmStrip(g) {
 /** The mount a tap of Y calls (Petra's JellyMount: the last one chosen, once the slip jelly is open), its glyph and word. */
 export const mountFace = (g) => { const J = g.jellyMount; let jelly = false; try { jelly = J?.last === 'jelly' && !!J.open?.(); } catch { /* not there */ } return jelly ? { glyph: 'jelly', word: 'JELLY' } : { glyph: 'skiff', word: 'SKIFF' }; };
 
+/** The mounts on touch, each its own tile called by name (South, 2026-11-05: the choice held on a tile never worked on the phone, and
+ *  the skiff had no way off on screen; casebook 410): on foot where a mount may come (the Raceway, the Dunes) SKIFF,
+ *  and JELLY once the slip jelly is open; riding one, OFF (its glyph) and the other mount. `mount` is what `pickMount` calls. */
+export function mountTiles(g) {
+  const J = g.jellyMount, S = g.techs?.get?.('skiff'); let jelly = false; try { jelly = !!J?.open?.(); } catch { /* not there */ }
+  const onSkiff = !!S?.active && S.phase === 'ride', onJelly = !!J?.active && J.phase === 'ride';
+  if (onSkiff) return [E('mount.off', 'skiff', 'OFF', { mount: 'off' }), jelly ? E('mount.jelly', 'jelly', 'JELLY', { mount: 'jelly' }) : null].filter(Boolean);
+  if (onJelly) return [E('mount.off', 'jelly', 'OFF', { mount: 'off' }), E('mount.skiff', 'skiff', 'SKIFF', { mount: 'skiff' })];
+  if (!onFoot(g) || !(g.raceway?.active || g.dunes?.active)) return [];
+  return [E('mount.skiff', 'skiff', 'SKIFF', { mount: 'skiff' }), jelly ? E('mount.jelly', 'jelly', 'JELLY', { mount: 'jelly' }) : null].filter(Boolean);
+}
+/** A mount tile's pick: the mount called by name, or OFF (JellyMount.callByName, .dismount: courier/jellymount/jellymount.js). */
+export function pickMount(g, mount) { const J = g.jellyMount; if (!J) return; if (mount === 'off') J.dismount?.(); else J.callByName?.(mount); }
+
 /** DRAW (STOW while the main is out), LEND (the sub's verb) and SWAP (main and sub traded, Belt.swap) at the cluster's top edge, on foot;
- *  SKIFF or JELLY (the top bar's, folded under MENU on a phone: the mount a tap calls) where a mount may come: the Raceway or the Dunes. */
+ *  the mounts' tiles (mountTiles) where a mount may come, and riding one, alone. */
 export function beltPairOf(g) {
-  if (g.duel?.active || !onFoot(g)) return [];
-  const B = g.belt, M = mountFace(g), skiff = g.raceway?.active || g.dunes?.active ? E('skiff', M.glyph, M.word) : null;
-  if (!B?.main) return skiff ? [skiff] : [];
+  if (g.duel?.active) return [];
+  const mounts = mountTiles(g);
+  if (!onFoot(g)) return mounts;
+  const B = g.belt;
+  if (!B?.main) return mounts;
   const out = !!B.inHand && B.inHand.id === B.main, gift = B.sub ? SUB_GIFTS[B.sub] : null;
   return [ // (USE with a tool drawn is the cluster's, in PARRY's slot outside a fight: toolCluster)
-    skiff,
+    ...mounts,
     B.sub ? E('swap', 'swap', 'SWAP') : null,
     gift ? E('lend', 'lend', gift.verb.toUpperCase()) : null,
     out ? E('tool', 'stow', 'STOW', { lit: true }) : E('tool', 'draw', 'DRAW'),

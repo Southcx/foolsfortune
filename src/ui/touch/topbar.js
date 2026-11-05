@@ -19,22 +19,21 @@
 // ---------------------------------------------------------------------------------------
 import { TouchTile, TILE } from './tile.js';
 import { placeOf } from './areas.js';
-import { mountFace } from './actioncontext.js';
 import { arcContext } from './arc.js';
 
 /** The windows in order (the glyph is `touch.<id>`), whether each stands only in the garden, and what says it is open; the gap before
  *  PAUSE (CSS px). */
 export const TOP_BAR = {
-  ids: ['codex', 'box', 'map', 'settings', 'overhead', 'skiff', 'godhand', 'survey'], // (no `chat`: the ticker's tap opens the chat line, the log's tile folds it: South, 2026-10-27, two balloons on the bar)
-  // where a tile stands (the rest always): TOP VIEW in the garden; the board on foot or riding; the hand outside the garden; its survey in the hand
+  ids: ['codex', 'box', 'map', 'settings', 'overhead', 'godhand', 'survey'], // (no `skiff`: the mounts are the strip's own tiles by name since 2026-11-05, ui/touch/actioncontext.js mountTiles, casebook 410; no `chat`: the ticker's tap opens the chat line, the log's tile folds it: South, 2026-10-27, two balloons on the bar)
+  // where a tile stands (the rest always): TOP VIEW in the garden; the hand outside the garden; its survey in the hand
   when: {
-    overhead: (g) => !!g.realm?.active, skiff: (g) => !g.realm?.active && !g.god?.active && !g.rail?.stage?.active, godhand: (g) => !g.realm?.active,
+    overhead: (g) => !!g.realm?.active, godhand: (g) => !g.realm?.active,
     survey: (g) => !!g.god?.active,
   },
   open: {
     codex: (g) => !!g.codex?.open, settings: (g) => !!g.settingsWindow?.isOpen, box: (g) => !!g.pneukaUI?.open, map: (g) => !!g.cartography?.open, chat: (g) => !!g.log?.typing,
     overhead: (g) => !!(g.realm?.active && g.realm?.camera?.view === 'overhead'), godhand: (g) => !!g.god?.active,
-    skiff: (g) => { const T = g.player?.techs?.get?.('skiff') || g.techs?.get?.('skiff'); return !!T?.active; }, pause: () => { const o = document.getElementById('overlay'); return !!o && o.style.display !== 'none'; },
+    pause: () => { const o = document.getElementById('overlay'); return !!o && o.style.display !== 'none'; },
   },
   gap: 6, pauseGap: 14, h: 44, fold: 6, // (h: one row's height, the layout's own topBar.h; fold: real seconds an opened row stays untouched)
 };
@@ -61,7 +60,7 @@ export class TouchTopBar {
   constructor(game) {
     this.game = game; this.onOpen = null; this.tiles = new Map(); this.shown = false; this.ids = []; this.folded = true; this.touched = 0;
     this.shelf = shelf();
-    for (const id of [...TOP_BAR.ids, 'pause']) this.tiles.set(id, new TouchTile(`top.${id}`, { size: TILE.small, glyph: id, word: null, onPress: id === 'skiff' ? (_, down) => this.hold(id, down) : (_, down, inside) => { if (!down && inside) { if (id !== 'pause') this.fold(true); this.open(id); } } }));
+    for (const id of [...TOP_BAR.ids, 'pause']) this.tiles.set(id, new TouchTile(`top.${id}`, { size: TILE.small, glyph: id, word: null, onPress: (_, down, inside) => { if (!down && inside) { if (id !== 'pause') this.fold(true); this.open(id); } } }));
     this.tiles.set('fold', new TouchTile('top.fold', { size: TILE.small, glyph: 'fold', word: null, onPress: (_, down, inside) => { if (!down && inside) this.foldArc(); } })); // (the arc's fold tile: TOUCH-REBUILD.md 7; its own glyph Calissa's)
     this.tiles.set('menu', new TouchTile('top.menu', { size: TILE.small, glyph: 'menu', word: null, onPress: (_, down, inside) => { if (!down && inside) this.fold(!this.folded); } }));
     this.tiles.set('log', new TouchTile('top.log', { size: TILE.small, glyph: 'chat', word: null, onPress: (_, down, inside) => { const L = game.hudLayout?.touchLog; if (!down && inside && L) { if (game.hudLayout.duelR) L.setSheet(!L.sheet); else L.fold(!L.folded); } } })); // (the log's fold on the bar beside MENU: South, 2026-10-27, it stood alone under the bar)
@@ -85,12 +84,6 @@ export class TouchTopBar {
   }
 
   /** A window asked for: said on the bus, handed to the shell, and to the listener. */
-  /** SKIFF: Y held while the finger is down (a tap the last mount, a hold the mounts' choice, steered by the stick). */
-  hold(what, down) {
-    const g = this.game;
-    if (down) { this.fold(true); g.events?.emit?.('touch.open', { what, by: 'courier' }); }
-    try { g.touchShell?.hold?.(what, down); } catch (e) { console.warn('touchShell.hold', e); }
-  }
 
   open(what) {
     const g = this.game;
@@ -131,7 +124,6 @@ export class TouchTopBar {
     for (const id of this.items) {
       const t = this.tiles.get(id); let lit = false; try { lit = id === 'fold' ? !!g.touchUI?.arc?.collapsed : id === 'menu' ? !this.folded : id === 'log' ? (g.hudLayout?.duelR ? !!g.hudLayout.touchLog?.sheet : !g.hudLayout?.touchLog?.folded) : !!TOP_BAR.open[id]?.(g); } catch { /* not there */ }
       if (t.state.pressed) this.touched = now;
-      if (id === 'skiff') t.face({ glyph: mountFace(g).glyph }); // (the mount a tap calls: the Solar Skiff, or the slip jelly when it was chosen last)
       t.set({ lit: lit || t.state.pressed, dim: id === 'fold' && g.touchUI?.arc?.setting === 'hidden' }); t.update(now); // (HIDDEN: the fold tile faint, the arc's way back)
     }
   }

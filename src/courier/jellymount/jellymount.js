@@ -22,7 +22,7 @@
 // Breath of the Wild's horse called by a whistle, Splatoon's squid form (fast in its own ink); the skiff's tech here (courier/skiff/skiff.js:
 // the capsule held at the seat over the ground it follows, moved by the core's own move).
 //
-//   game.jellyMount = techs.add(new JellyMount(techs))   (boot/tools.js, before the Solar Skiff: Y is read here first)   .absorb(k) -> bool   .callByName(id) (a mount chosen by name: touch's BELT, the held choice)
+//   game.jellyMount = techs.add(new JellyMount(techs))   (boot/tools.js, before the Solar Skiff: Y is read here first)   .absorb(k) -> bool   .callByName(id) (a mount chosen by name: touch's tiles, the held choice)   .dismount()
 //   .riding   .hp   .readyIn (real s until it can be called)   events mount.call, mount.ride, mount.hop, mount.hurt, mount.burst, mount.drink, mount.end
 //   (each with `by` and `mount: 'slipjelly'`)
 // ---------------------------------------------------------------------------------------
@@ -72,6 +72,14 @@ export class JellyMount extends Tech {
     if (id !== 'skiff' && !(id === 'jelly' && this.open())) return;
     this.last = id; this.want = { id, until: this.now + 3 };
     const S = this.skiff; if (id === 'jelly' && S?.active && S.phase === 'ride' && !S.air) S.enter('recall');
+  }
+
+  /** Off whichever mount is ridden (touch's OFF tile: ui/touch/actioncontext.js mountTiles): the slip jelly slumps, the Solar Skiff
+   *  steps down (never in the air, as Y's tap). False when neither is ridden. */
+  dismount() {
+    if (this.active && this.phase === 'ride') { this.want = null; this.slump('dismiss'); return true; }
+    const S = this.skiff; if (S?.active && S.phase === 'ride' && !S.air) { S.enter('recall'); return true; }
+    return false;
   }
 
   // ------------------------------------------------------------------ the call (Y tapped or held)

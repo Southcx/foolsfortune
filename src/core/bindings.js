@@ -49,7 +49,7 @@ export const ACTIONS = [
   { id: 'dash',     keys: ['ShiftLeft'],  pad: 'LS',    touch: 'dash',       ctx: 'foot', how: 'tap' },   // (a press: the air dash, the crouched roll; on touch a DASH tile, always on foot: the dash is the core movement's, MOBILE.md 6.1.1)
   { id: 'view',     keys: ['KeyZ'],       pad: 'Up',                         ctx: 'foot', how: 'tap' },   // (first / third person; touch: the pause menu)
   { id: 'shoulder', keys: ['KeyO'],       pad: 'Left',                       ctx: 'foot', how: 'tap' },   // (touch: the pause menu)
-  { id: 'skiff',    keys: ['KeyY'],       pad: 'Down',  touch: 'top.skiff',  ctx: 'foot', how: 'tap' },   // (summon / recall: in the Dunes and the Raceway)
+  { id: 'skiff',    keys: ['KeyY'],       pad: 'Down',  touch: 'mount.skiff', ctx: 'foot', how: 'tap' },  // (summon / recall: in the Dunes and the Raceway; touch: SKIFF and JELLY on the strip, by name)
   // ---- the Solar Skiff (M1: section 8)
   { id: 'sail',     keys: ['KeyW'],       pad: 'RT',    touch: 'auto',       ctx: 'skiff', how: 'hold' }, // (touch: held by the driver while riding unless BRAKE is held)
   { id: 'brake',    keys: ['KeyS'],       pad: 'LT',    touch: 'brake',      ctx: 'skiff', how: 'hold' }, // (with a combo live and the sail up: the manual)
@@ -67,7 +67,7 @@ export const ACTIONS = [
   { id: 'noseGrind', mouse: 'Mouse0',     pad: 'X',     touch: 'nose',       ctx: 'skiff.rail', how: 'double' },
   { id: 'tailSlide', mouse: 'Mouse2',     pad: 'B',     touch: 'tail',       ctx: 'skiff.rail', how: 'double' },
   { id: 'stepOff',  keys: ['KeyF'],       pad: 'Up',    touch: 'menu.stepOff', ctx: 'skiff', how: 'tap' }, // (and the race board, the start pillar: USE on touch)
-  { id: 'recall',   keys: ['KeyY'],       pad: 'Down',  touch: 'top.skiff',  ctx: 'skiff', how: 'tap' },
+  { id: 'recall',   keys: ['KeyY'],       pad: 'Down',  touch: 'mount.off',  ctx: 'skiff', how: 'tap' },
   { id: 'toGate',   keys: ['KeyR'],       pad: 'Left',  touch: 'menu.back',  ctx: 'race', how: 'tap' },  // (held: retire, RETIRE in the pause menu on touch)
   { id: 'restart',  keys: ['Backspace'],  pad: 'Back',  touch: 'menu.restart', ctx: 'race', how: 'tap' }, // (held in practice: the rewind; Back is the Box off a race)
   // ---- the god hand (M1: MOBILE.md 8.4). One finger is the hand (the cursor); a long press is RMB (the art wheel); two fingers pan, pinch

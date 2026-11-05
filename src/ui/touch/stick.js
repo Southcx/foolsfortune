@@ -10,8 +10,8 @@
 //              dashed ring.
 //   READ       x, y (-1 .. 1, full at 60 px; y forward is up the screen), carve (-1 left, 0, 1 right: past 90 px on that side, on the
 //              skiff), outer (past 90 px at all: the sprint on foot), active, and the push (0 .. outer / 60).
-//   AT REST    the ring and knob drawn faint (a third) at the stick's home (hudlayout.js stickHome: the touch layout editor's, kept, or
-//              low in the move area), so a thumb knows where to land; a thumb anywhere in the move area still makes the stick there.
+//   AT REST    hidden (South, 2026-11-05); a thumb anywhere in the move area makes the stick there. Only while the touch layout editor
+//              is open is the ring drawn faint (a third) at its home (hudlayout.js stickHome: the editor's, kept, or low in the move area).
 // Redrawn on a move and, while held, at most 15 times a real second for the schiller's walk; no per-frame DOM.
 //
 // Prior art: Genshin Impact's and Mario Kart Tour's floating sticks (a stick where the thumb lands; MKT's slide past the edge is the
@@ -121,10 +121,11 @@ export class TouchStick {
     this.dirty = false; this.drawnAt = now; this.draw(now);
   }
 
-  /** At rest: the ring stands faint at its home (the HUD layout's stickHome, the kept one or the default), Genshin's resting stick;
-   *  drawn once a place. */
+  /** At rest: nothing drawn (South, 2026-11-05: "the control stick is always faintly present, when it should be hidden if not in
+   *  use"), but while the touch layout editor is open, where the ring stands faint at its home so it can be dragged (the HUD layout's
+   *  stickHome); drawn once a place. */
   rest() {
-    const H = this.game.hudLayout?.touch ? this.game.hudLayout.stickHome?.() : null;
+    const H = this.game.hudLayout?.touch && this.game.touchLayoutEditor?.isOpen ? this.game.hudLayout.stickHome?.() : null;
     const key = H ? `${Math.round(H.x)},${Math.round(H.y)}` : '';
     if (key === this.restKey) return;
     this.restKey = key; this.el.classList.toggle('rest', !!H);

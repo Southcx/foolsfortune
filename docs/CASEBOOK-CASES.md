@@ -5069,3 +5069,19 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   dips to the dark (a seal, a tow, the garden's way out). `seam.busy` holds until the loading screen has opened again: the Well's
   sweep drew the psygun while it was still lifting, and the draw was refused (nothing is played under a cover).
 - **Rule:** 409
+
+### 2026-11-05 · On the phone the mounts' choice still failed, the skiff had no way off, and the choice's ring stayed (South's report)
+- **Seen:** South, a screenshot on the skiff in the Dunes: the mount selector does not work on mobile, there is no easy way to
+  dismount, the selector does not go away; and the stick's ring stands faint when not in use.
+- **Cause, as measured:** the top bar's SKIFF tile held Y while the finger was down, but its press folded the top bar first
+  (`TouchTopBar.hold`: `fold(true)` before the key went down), and the fold hid the tile under the finger; a tile hidden while held lets
+  go (`TouchTile.release`), so Y's keyup was sent before its keydown and Y stayed down. Held, the skiff opened the mounts' choice past
+  0.35 s and never let it go, and no tap could step off. The tile was also the only way off the skiff on screen, folded under MENU on
+  a phone. The choice itself asked a held tile and the stick at once.
+- **Fix:** the mounts are tiles called by name (`mountTiles`, `pickMount`, ui/touch/actioncontext.js): on foot SKIFF and JELLY in the
+  arc's BELT radial (and the strip where the arc stands down), riding one OFF and the other mount on the strip (on the slip jelly, where
+  the arc holds the moment, a tap of BELT is OFF); `JellyMount.dismount()` steps off whichever is ridden. The top bar's SKIFF tile and
+  its hold are gone (two of one thing). The stick is drawn only under a thumb, and at its home only while the touch layout editor is open.
+- **Probed** (touch at 896 x 414): BELT's SKIFF to the skiff; on it OFF and JELLY on the top row; JELLY to the jelly; SKIFF from it;
+  OFF to foot; BELT's tap OFF the jelly; Y never left down, the choice's ring never up, 0 errors.
+- **Rule:** 410

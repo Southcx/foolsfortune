@@ -29,7 +29,7 @@ import { TouchTile, TILE } from './tile.js';
 import { touchTiles } from './presses.js';
 import { placeOf, windowOpen } from './areas.js';
 import { shelf, TOP_BAR } from './topbar.js';
-import { stripOf, beltPairOf, nearOf } from './actioncontext.js';
+import { stripOf, beltPairOf, nearOf, pickMount } from './actioncontext.js';
 import { CURSOR } from '../../core/touchcursor.js';
 import { arcContext } from './arc.js';
 import { openRadial } from './radial.js';
@@ -60,7 +60,7 @@ export class TouchStrip {
     if (!t) {
       const onPress = e.cycle ? (tid, down, inside) => this.cyclePress(tid, down, inside)
         : e.id === MORE ? (tid, down, inside) => { if (!down && inside) { this.folded = !this.folded; this.relayout(); } }
-        : e.id === 'skiff' ? (tid, down) => this.game.touchUI?.topBar?.hold('skiff', down) // (what the top bar's SKIFF presses: folded under MENU on a phone)
+        : e.mount ? (tid, down, inside) => { if (!down && inside) pickMount(this.game, e.mount); } // (a mount by name, or OFF: actioncontext.js mountTiles)
           : (tid, down) => touchTiles.report(this.game, tid, down);
       t = new TouchTile(e.id, { size: STRIP.size, glyph: e.glyph ?? null, word: e.word ?? null, corner: e.corner ?? null, tint: e.tint ?? null, fit: true, onPress }); this.tiles.set(e.id, t);
     }

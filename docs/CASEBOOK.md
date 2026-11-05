@@ -1146,3 +1146,7 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 
 409. **A crossing that builds a place names it, and shows it while it builds.** A dip to the dark says
   nothing about a load; the cover says where you are going and how far the work is.
+
+410. **On touch, a choice is its own tiles, never a key held while another thumb steers.** A press that
+  must outlast a clock and be steered with the stick is two hands' work on glass, and a tile that hides itself under the finger leaves
+  its key down for good.

@@ -5,7 +5,7 @@
 //               context (core/actions.js `press('touch', id)`), held while it is held; the art bar's two plain ones are the hand's undo
 //               (Ctrl+Z) and the turn (R). The top bar's own tiles report here too, and are left to `open`.
 //   THE TOP BAR opens a window as the keyboard would, by its key sent as a key event, so the window's own listener and the game's
-//               reads both hear it: codex B, box P, map M, chat Enter, overhead ` (the garden's god hand view), godhand `, skiff Y,
+//               reads both hear it: codex B, box P, map M, chat Enter, overhead ` (the garden's god hand view), godhand `,
 //               survey N. settings and pause are
 //               the pause menu (`game.pause`: a phone has no pointer lock to lose).
 //   THE ART BAR (the Spirit Garden's, ui/touch/artbar.js) is the hand's: `touch.art { id }` sets its art (WALK, no art, included),
@@ -15,13 +15,13 @@
 //
 // Prior art: the virtual gamepad layer of the mobile ports (the view reports, the input layer decides); VirtualKeys (coop/sibling.js).
 //
-//   game.touchShell = new TouchShell(game)   .open(what)   .hold(what, down)   .tile(id, down)   .verbs (the pause menu's)   OPENS (what -> code)   events read: touch.art, touch.mod, touch.size
+//   game.touchShell = new TouchShell(game)   .open(what)   .tile(id, down)   .verbs (the pause menu's)   OPENS (what -> code)   events read: touch.art, touch.mod, touch.size
 // ---------------------------------------------------------------------------------------
 
 import { PauseVerbs } from './help/pauseverbs.js';
 
 /** The top bar's windows, by the key the keyboard opens each with. */
-export const OPENS = { codex: 'KeyB', box: 'KeyP', map: 'KeyM', chat: 'Enter', overhead: 'Backquote', godhand: 'Backquote', skiff: 'KeyY', survey: 'KeyN' }; // (godhand: the hand raised or let go, ~; skiff: summoned or recalled, Y; survey: the hand's, N)
+export const OPENS = { codex: 'KeyB', box: 'KeyP', map: 'KeyM', chat: 'Enter', overhead: 'Backquote', godhand: 'Backquote', survey: 'KeyN' }; // (godhand: the hand raised or let go, ~; survey: the hand's, N; the mounts are tiles by name, casebook 410)
 /** The art bar's plain tiles: the codes held for one frame (the hand's undo is Ctrl+Z, the turn R). */
 const ART = { 'art.undo': ['ControlLeft', 'KeyZ'], 'art.turn': ['KeyR'] };
 
@@ -47,13 +47,6 @@ export class TouchShell {
     if (g.touch) g.touch.control(id, down); else g.actions?.press('touch', id, down); // (through the driver: a tool's own first, core/touchtools.js)
   }
   /** A top bar tile tapped (ui/touch/topbar.js calls it). */
-  /** A key held for as long as the finger is: the SKIFF tile's Y, so a tap calls the last mount and a hold shows the mounts' choice
-   *  (0.35 real s, courier/jellymount/jellymount.js; a 60 ms tap could never reach it: Dovina's touch audit, 2026-11-01). */
-  hold(what, down) {
-    const code = OPENS[what]; if (!code) return;
-    const opts = { code, key: code.slice(3).toLowerCase(), bubbles: true };
-    dispatchEvent(new KeyboardEvent(down ? 'keydown' : 'keyup', opts));
-  }
 
   open(what) {
     const g = this.game;
