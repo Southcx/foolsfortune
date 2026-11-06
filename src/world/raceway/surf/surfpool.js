@@ -14,6 +14,9 @@
 //   raceway.surf = new SurfPool(raceway)   .S (wavePool())   .t   .update(dt)   .inPool(wx, wz)   .rideY(wx, wz) -> world y | null
 //   .waterNormal(wx, wz, out) -> out | null   .carry(wx, wz, out) -> out (world x, z m/s)   .riseAt(wx, wz) -> m/s   .frame(wx, wz)
 //   .push(wx, wz)   .barrel(wx, wy, wz)   .place(places)   .beach() -> Vector3   .dip ({ x, z, depth }: the submarine's board under, courier/skiff/surf.js)
+//   .probe(wx, wy, wz) -> .vol | null: the basin as swimmable water (game.water.probe, courier/moves/env.js): swim.js takes the Courier
+//   in the pool as in any water; `.vol`'s surface and bottom are read where the Courier is (else where it was last asked), the moving
+//   surface the board rides (rideY) over the pool's own bed. The skiff is never taken by it: a tech that is active is not preempted.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RW } from '../track.js';
@@ -28,11 +31,28 @@ export class SurfPool {
   constructor(R) {
     this.R = R; this.S = wavePool(); this.t = 0; this.buoys = new PoolBuoys(this); // (wave riding's slalom in the deep end: poolbuoys.js)
     this.dip = { x: 0, z: 0, depth: 0 };
+    const S = this, q = { x: 0, z: 0 }, at = () => { const p = S.game.player?.pos; return p && S.inPool(p.x, p.z) ? p : q; };
+    const half = Math.hypot(POOL.L, POOL.W + POOL.beach) / 2 + 2;
+    this.vol = { kind: 'water', wavePool: true, x0: RW.x + POOL.x - half, x1: RW.x + POOL.x + half, z0: RW.z + POOL.z - half, z1: RW.z + POOL.z + half,
+      get surface() { const p = at(); return S.rideY(p.x, p.z) ?? RW.y + POOL.y; },
+      get bottom() { const p = at(); return RW.y + (S.S.bedAt(p.x - RW.x, p.z - RW.z) ?? POOL.y - POOL.depth.deep); },
+      surfaceAt: (x, z) => S.rideY(x, z) ?? RW.y + POOL.y, _q: q };
+  }
+  /** The basin as water a body is in: (wx, wy, wz) over the bed and under the moving surface (+0.5), or wy null for any height. */
+  probe(wx, wy, wz) {
+    const lx = wx - RW.x, lz = wz - RW.z;
+    if (!this.S.inPool(lx, lz)) return null;
+    const bed = this.S.bedAt(lx, lz), y = this.rideY(wx, wz);
+    if (bed == null || y == null || y <= RW.y + bed + 0.05) return null; // (the beach's dry sand)
+    if (wy != null && !(wy > RW.y + bed - 0.5 && wy < y + 0.5)) return null;
+    this.vol._q.x = wx; this.vol._q.z = wz;
+    return this.vol;
   }
   get game() { return this.R.game; }
   /** The pool's clock: game seconds, so a slowed world slows the wave with it (the lip's ease: courier/skiff/barrelcam.js). */
   update(dt) {
     this.t += dt;
+    if (!this.unprobe && this.game.water?.probe) this.unprobe = this.game.water.probe((x, y, z) => this.probe(x, y, z)); // (registered on first need: CASEBOOK 34)
     const R = this.R; // (the pool's buoy run: built with the park, gone with it; poolbuoys.js)
     if (R.built && !this.buoys.group) this.buoys.build(); else if (!R.built && this.buoys.group) this.buoys.dispose();
     if (this.buoys.group) this.buoys.update(dt);

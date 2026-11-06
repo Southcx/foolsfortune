@@ -17,6 +17,8 @@
 //   the tube       the face under the lip is in its shade: the sun and sky dimmed, lit instead by the jade light coming through the lip
 //   the foam       cartoon (Wind Waker, Sea of Thieves): the bubbles' noise thresholded against the ported `foamAt` mask, crisp over a
 //                  pixel, a shadowed rim round each patch; scrolled with the bore's travel; the aerated bore paler under it
+//   the face's     Hokusai's roughness (The Great Wave off Kanagawa): foam streaked up the face in bands down its fall line, drawn up
+//   streaks        toward the crest and broken there, and a rougher face (the fine normals stronger on it, a ridge noise along the crest)
 //   the glints     the swell's crests catching the sun where the fine noise crosses them, faded at a low look (the house's: vfx/water.js)
 //   the wake       the ripple tank's rings (vfx/ripples.js) bend it as they bend every water in the game
 // One opaque program (no sort, no depth texture), drawn on the desk and the phone alike; the phone gets coarser grids, never a simpler
@@ -29,7 +31,7 @@
 //   const W = new WavePoolWater(game, { U, pool, lean })   (pool: wavePool())   W.near  W.far  (meshes)   W.place(S, t)   W.dispose()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { WAVEPOOL_GLSL } from '../../world/raceway/surf/wavepool.js';
+import { WAVEPOOL_GLSL, WAVE } from '../../world/raceway/surf/wavepool.js';
 import { LIQUID_GLSL, liquidUniforms } from '../liquid.js';
 import { RIPPLE_U, RIPPLE_GLSL } from '../ripples.js';
 import { WAVE_PARTS_GLSL, WAVE_SHADE_GLSL, SKY_FALLBACK_GLSL } from './waveglsl.js';
@@ -37,9 +39,9 @@ import { WAVE_PARTS_GLSL, WAVE_SHADE_GLSL, SKY_FALLBACK_GLSL } from './waveglsl.
 /** The grids: the near one's reach along the crest (behind the break, ahead of it) and across it (behind the crest, ahead), its spacing
  *  on the desk and on a lean machine; the far one's spacing; the seam's overlap (m); the eps of the normals' differences. */
 export const WAVE_WATER = {
-  near: { s: [-72, 44], d: [-24, 30], step: 0.35, lean: 0.7 },
+  near: { s: [-130, 80], d: [-62, 46], step: 0.5, lean: 1.0 }, // (the great wave's reach: its back 30 m, its face 16, its tube 46: WAVE)
   far: { step: 3, lean: 5 },
-  seam: 2.5, eps: { near: 0.25, far: 0.9 },
+  seam: 3, eps: { near: 0.35, far: 0.9 },
 };
 
 const VERT = /* glsl */`
@@ -88,7 +90,12 @@ void main() {
   float dist = length(cameraPosition - vW), far = smoothstep(25.0, 140.0, dist);
   vec3 N = normalize(vN);
   vec3 pn = liqNormal(vW.xz, 0.14, t, 0.9 * (1.0 - 0.75 * far)), fine = liqRipple(vW.xz, 0.38, t, 0.45 * (1.0 - far));
-  N = normalize(N + vec3(pn.x + fine.x, 0.0, pn.z + fine.z) * (1.0 - 0.6 * hw));
+  float faceK = smoothstep(-0.2 * F, 0.05 * F, d) * (1.0 - smoothstep(0.9 * F, 1.3 * F, d)) * step(0.5, zone) * step(zone, 3.5) * smoothstep(3.0, 8.0, H);
+  vec2 sd = vec2(s * 0.21, d * 0.045); // (the face's own frame: across the crest stretched, so bands run down the fall line)
+  float ridge = liqTap(sd + vec2(0.0, -t * 0.05)).g * 0.65 + liqTap(sd * 2.3 + vec2(0.37, t * 0.03)).g * 0.35;
+  N = normalize(N + vec3(pn.x + fine.x, 0.0, pn.z + fine.z) * (1.0 - 0.6 * hw) * (1.0 + 1.3 * faceK));
+  vec2 crP = wpToPark(uWP[3].zw) - wpToPark(vec2(0.0)); // (the crest's way in the park)
+  N = normalize(N + (ridge - 0.5) * 0.35 * faceK * vec3(crP.x, 0.0, crP.y)); // (the bands' ridges rough the face across the crest)
   vec3 rip = ripSlope(vW.xz); N = normalize(N + vec3(-rip.x, 0.0, -rip.y) * 1.2);
   if (!gl_FrontFacing && dot(N, V) < 0.0) N = -N;
   float ndv = clamp(dot(N, V), 0.0, 1.0), fres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);
@@ -110,12 +117,13 @@ void main() {
   float onFace = smoothstep(-0.35 * F, 0.0, d) * (1.0 - smoothstep(0.85 * F, 1.2 * F, d)) * step(0.5, zone);
   float thin = smoothstep(0.3, 1.0, hw) * (0.35 + 0.65 * onFace) * step(0.2, H);
   // the tube: the face under the lip in its shade, lit through it
-  float tube = uWP[5].z, tau = smoothstep(0.0, uWP[5].w, -s), gone = smoothstep(-tube * 0.84, -tube * 1.02, s);
-  float under = tau * (1.0 - gone) * step(s, 0.0) * smoothstep(0.04 * F, 0.2 * F, d) * (1.0 - smoothstep(0.9 * F, 1.15 * F, d)) * step(1.5, H);
+  float tube = uWP[5].z, tau = smoothstep(-${WAVE.lead.toFixed(1)}, uWP[5].w, -s), gone = smoothstep(-tube * 0.84, -tube * 1.02, s);
+  float under = tau * (1.0 - gone) * smoothstep(-0.01 * F, 0.004 * F, d) * (1.0 - smoothstep(0.9 * F, 1.15 * F, d)) * step(3.0, H); // (to the crest itself: the curl's strip begins there)
+  float mouth = smoothstep(-tube * 0.75, 2.0, s);
   col += wpThrough(V, N, thin) * (1.0 - 0.4 * under);
-  col = mix(col, col * 0.62 + WP_GLOW * 0.16 * (0.5 + 0.5 * uDay), under * 0.85);
+  col = mix(col, wpTube(0.4 * hw, mouth, V, N, tau), under * 0.94); // (the tube's wall, shaded as the curl over it is: lip.js, one surface)
   // the sky in it, short of a mirror, dimmed in the tube
-  col = mix(col, sky * 0.85, clamp(fres, 0.0, 0.55) * (1.0 - 0.6 * under));
+  col = mix(col, sky * 0.85, clamp(fres, 0.0, 0.55) * (1.0 - 0.9 * under));
   // the sun: a soft highlight and glints where the swell's crests cross the fine noise
   float swl = wpSwell(uv, t);
   float glint = smoothstep(0.88, 0.96, liqTap(vW.xz * 0.85 + vec2(t * 0.05, -t * 0.03)).g) * pow(sp, 28.0) * smoothstep(0.1, 0.55, swl + hw * 0.5);
@@ -123,7 +131,10 @@ void main() {
   col += min(sunC * mix(0.15, 1.0, graze), vec3(0.75));
   // the foam: the ported mask, thresholded noise scrolled with the bore's travel
   float mask = wpFoamMask(s, d, zone, H, F, uv.y);
-  mask = max(mask, smoothstep(0.6, 1.0, hw) * step(1.5, zone) * 0.25 * step(s, 8.0)); // (the crest pitching)
+  mask = max(mask, smoothstep(0.6, 1.0, hw) * step(1.5, zone) * 0.25 * step(s, 16.0)); // (the crest pitching)
+  float streak = smoothstep(0.5, 0.72, ridge) * faceK * (0.25 + 0.75 * smoothstep(0.3, 0.95, hw)); // (Hokusai's foam bands up the face)
+  mask = max(mask, streak * 0.85);
+  mask *= 1.0 - 0.9 * under * (1.0 - smoothstep(0.72 * F, 0.92 * F, d)); // (no foam on the tube's wall up to the curl: the lip's landing line kept)
   vec2 flowP = wpToPark(uv + uWP[3].xy) - wpToPark(uv);
   vec2 fm = wpFoam(vW.xz, -flowP * (zone > 3.5 ? uWP[4].y * 0.6 : 0.4), mask, t);
   col = mix(col, vec3(0.62, 0.86, 0.86) * (0.6 + 0.4 * uDay), mask * 0.3 * step(3.5, zone)); // (the bore is aerated: paler under its foam)

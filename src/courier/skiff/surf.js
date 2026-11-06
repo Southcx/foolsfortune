@@ -91,7 +91,7 @@ export class SurfRide {
     else { this.c.x = 0; this.c.z = 0; }
     P.pos.x += this.c.x * dt; P.pos.z += this.c.z * dt;
     // on the face: the sail furls itself and W is the pump
-    const onFace = (this.onFace = wet && f.H > 1.2 && f.d > -0.5 && f.d < f.F && !!FACE_ZONES[f.zone]);
+    const onFace = (this.onFace = wet && f.H > 3 && f.d > -0.5 && f.d < f.F && !!FACE_ZONES[f.zone]);
     this.ownsW = onFace;
     if (onFace) sk.L = Math.max(0, sk.L - dt / sk.cfg.furlTime);
     // the rail's bite: on the face the board's slide across its own heading (the fall line's pull, the base ride's vl) is held, as a
@@ -129,13 +129,13 @@ export class SurfRide {
     const sk = this.sk, T = SURF.turn, rate = wrap(sk.heading - this.h0) / Math.max(1e-4, dt); this.h0 = sk.heading;
     for (const k in this.cool) this.cool[k] -= dt;
     const vx = sk.v.x, vz = sk.v.z, up = -(vx * f.travel.x + vz * f.travel.z), along = vx * f.crest.x + vz * f.crest.z, hrf = f.H > 0.5 ? clamp(f.h / f.H, 0, 1) : 0;
-    if (wet && f.zone !== 'flat' && f.H > 1.5) {
+    if (wet && f.zone !== 'flat' && f.H > 3) {
       if (!this.turn && Math.abs(rate) > T.rate) this.turn = { acc: 0, t: 0, up0: up, along0: along, hr0: hrf, zone0: f.zone, s0: f.s, sign: Math.sign(rate) };
       const Tn = this.turn;
       if (Tn) { Tn.acc += rate * dt; Tn.t += dt; if (Math.abs(rate) < T.end || Math.sign(rate) !== Tn.sign || Tn.t > 1.6) { this.turn = null; this.judge(Tn, up, along); } }
       // the floater: over the crest on the water, along the wave
       const d0 = this.d0; this.d0 = f.d;
-      if (d0 != null && d0 > 0 && f.d <= 0 && f.H > 3 && (f.zone === 'pocket' || f.zone === 'barrel') && Math.abs(along) > SURF.floater.speed) this.trick('floater');
+      if (d0 != null && d0 > 0 && f.d <= 0 && f.H > 8 && (f.zone === 'pocket' || f.zone === 'barrel') && Math.abs(along) > SURF.floater.speed) this.trick('floater');
     } else { this.turn = null; this.d0 = null; }
   }
   judge(Tn, up, along) {
@@ -157,7 +157,7 @@ export class SurfRide {
   /** Airs: off the lip, a trick in the air; off a swell's crest with a trick, a small push; and the submarine on landing. */
   airs(f, inp) {
     const sk = this.sk, P = sk.P, air = !!sk.air;
-    if (air && !this.wasAir) this.launch = { lip: f.H > 2 && f.zone !== 'flat' && f.zone !== 'whitewater' && f.h > 0.5 * f.H, n0: sk.combo.n };
+    if (air && !this.wasAir) this.launch = { lip: f.H > 5 && f.zone !== 'flat' && f.zone !== 'whitewater' && f.h > 0.5 * f.H, n0: sk.combo.n };
     if (!air && this.wasAir && this.launch && sk.phase === 'ride') {
       const L = this.launch, at = sk.airT || 0, Pt = COMBO.points.surf;
       if (L.lip && at > 0.35) this.trick('air', Pt.air + Pt.airT * at * at);

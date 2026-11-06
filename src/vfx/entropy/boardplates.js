@@ -1,7 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // THE BOARD'S PLATES (plain names; South, 2026-11-06: "I don't want you guys to anchor to the current artstyle"; docs/plans/
 // ENTROPY-TACTICS.md 7): the few words the board view (boardview.js) lays over Entropy Tactics' board, in its own minimal DOM, never the
-// house's panels, buttons or fonts: black glass, a thin ivory rule, a clean light sans letter-spaced. The turn's one line at the top; the
+// house's panels, buttons or fonts: black glass, a thin ivory rule, a clean light sans letter-spaced. The turn's one line at the top (whose
+// turn as a block in its side's colour, the turn's four steps with the one now marked, the coach's line); the
 // bar of plates along the bottom edge for the choices that are no piece (feed, keep, end, push, count, a re-roll, an active), the house's
 // suggestion marked; a tip by the cursor (a choice's label, what it does, what it would bring); a few plates beside the cursor when one
 // piece names several choices; the result's plate with AGAIN and STAND UP. Its CSS is injected on mount and removed on unmount, and
@@ -10,7 +11,7 @@
 // Prior art: MTG Arena's and Hearthstone's few big words over the board, Into the Breach's tooltips that say what will happen, Teenage
 // Engineering's and Swiss typography's hairline rules and spaced capitals.
 //
-//   new BoardPlates({ play(cm), again(), close() })   .mount()   .unmount()   .hue(css)   .turn(text, mine)   .bar(moves, key)
+//   new BoardPlates({ play(cm), again(), close() })   .mount()   .unmount()   .hue(css)   .turn(text, mine, { who, step })   .bar(moves, key)
 //   .tip(info | null, x, y)   .choose(moves | null, x, y)   .roll(n | null, x, y, css)   .result(r | null)   .busy (a choice or the result is up)
 // ---------------------------------------------------------------------------------------
 
@@ -22,9 +23,17 @@ const CSS = `
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 300; -webkit-font-smoothing: antialiased; }
 #etb .glass { background: rgba(4, 3, 8, 0.8); border: 1px solid rgba(236, 230, 214, 0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
 #etb .turn { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 50%; transform: translateX(-50%); padding: 5px 14px 5px;
-  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap; max-width: 70vw; overflow: hidden; text-overflow: ellipsis; }
-#etb .turn b { font-weight: 500; color: var(--hue); margin-right: 10px; }
-#etb .turn.theirs b { color: #ffa48c; }
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; max-width: min(1000px, 76vw); }
+#etb .turn { display: flex; align-items: stretch; gap: 10px; padding: 0 14px 0 0; }
+#etb .turn b, #etb .turn .steps { white-space: nowrap; align-self: center; }
+#etb .turn b { font-weight: 600; color: #050307; background: #9fe9ff; padding: 6px 12px 5px; letter-spacing: 0.18em; font-size: 12px; }
+#etb .turn.theirs b { background: #ffa48c; animation: etb-wait 1.4s ease-in-out infinite; }
+@keyframes etb-wait { 50% { opacity: 0.55; } }
+#etb .turn .steps { font-style: normal; display: flex; gap: 2px; font-size: 9px; letter-spacing: 0.2em; }
+#etb .turn .steps i { font-style: normal; padding: 2px 5px; opacity: 0.35; border-bottom: 1px solid transparent; }
+#etb .turn .steps i.on { opacity: 1; color: var(--hue); border-bottom-color: var(--hue); }
+#etb .turn.theirs .steps i.on { color: #ffa48c; border-bottom-color: #ffa48c; }
+#etb .turn span { padding: 5px 0 4px; line-height: 1.35; white-space: normal; } /* (the coach's line wraps: the rule a new player needs must show whole) */
 #etb .bar { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); display: flex; gap: 6px;
   justify-content: center; flex-wrap: nowrap; max-width: calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px) - 24px); pointer-events: auto; }
 #etb .pl { padding: 5px 12px 4px; min-height: 26px; cursor: pointer; display: flex; flex-direction: column; justify-content: center; text-align: left;
@@ -46,7 +55,7 @@ const CSS = `
 #etb .end .tag { font-size: 9px; letter-spacing: 0.3em; opacity: 0.55; text-transform: uppercase; }
 #etb .roll { position: absolute; width: 96px; height: 72px; margin: -84px 0 0 -48px; display: none; filter: drop-shadow(0 0 6px rgba(0,0,0,0.9)); }
 #etb .rule { position: absolute; left: 0; right: 0; height: 1px; background: rgba(236, 230, 214, 0.35); }
-@media (max-height: 500px) { #etb .pl { font-size: 10px; padding: 4px 9px 3px; min-height: 22px; } #etb .pl small { display: none; } #etb .turn { font-size: 10px; } }
+@media (max-height: 500px) { #etb .pl { font-size: 10px; padding: 4px 9px 3px; min-height: 22px; } #etb .pl small { display: none; } #etb .turn { font-size: 10px; } #etb .turn .steps { display: none; } #etb .turn { max-width: 82vw; letter-spacing: 0.06em; font-size: 9px; } #etb .turn b { font-size: 10px; padding: 5px 8px 4px; } }
 `;
 const el = (tag, cls, parent) => { const e = document.createElement(tag); if (cls) e.className = cls; parent?.appendChild(e); return e; };
 const esc = (s) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
@@ -63,10 +72,13 @@ export class BoardPlates {
   }
   unmount() { this.root?.remove(); this.style?.remove(); this.root = this.style = null; this.barKey = this.tipKey = null; this.picking = this.ended = null; }
   hue(css) { if (this.root && css !== this.hueCss) { this.hueCss = css; this.root.style.setProperty('--hue', css); } }
-  turn(text, mine) {
-    if (!this.root) return; const k = `${mine}|${text}`; if (k === this.turnKey) return; this.turnKey = k;
+  /** The turn's one line: whose turn as a block in its side's colour (theirs breathing while you wait), the turn's steps with the one
+   *  now marked, and the coach's line. */
+  turn(text, mine, { who = mine ? 'Your turn' : 'Their turn', step = '' } = {}) {
+    if (!this.root) return; const k = `${mine}|${text}|${who}|${step}`; if (k === this.turnKey) return; this.turnKey = k;
     this.turnEl.style.display = text ? '' : 'none'; this.turnEl.classList.toggle('theirs', !mine);
-    this.turnEl.innerHTML = `<b>${mine ? 'Your turn' : 'Their turn'}</b>${esc(text)}`;
+    const steps = ['Draw', 'Play', 'Carve', 'Bomb'].map((x) => `<i class="${x === step ? 'on' : ''}">${x}</i>`).join('');
+    this.turnEl.innerHTML = `<b>${esc(who)}</b><em class="steps">${steps}</em><span>${esc(text)}</span>`;
   }
   /** A plate a choice: its label, its preview (or what it does) small under it. */
   plate(cm, parent, fn = () => this.on.play(cm)) {

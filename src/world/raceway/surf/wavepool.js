@@ -33,15 +33,24 @@
 /** The basin, park-local metres (park.js's frame): its middle, its long axis's yaw (0: u runs along +x), its length L and width W, its
  *  still water's height `y` over the layer's floor, the reef line `vb` (where the wave breaks), its depths (at the beach's foot, over the
  *  reef, at the deep wall) and the beach's run up out of it. The machine's wall stands along v = W. */
-export const POOL = { x: -500, z: 790, yaw: 0, L: 600, W: 150, y: 14, vb: 62, beach: 18, depth: { foot: 1.2, reef: 2.4, deep: 6 }, rim: 3 };
+export const POOL = { x: -500, z: 790, yaw: 0, L: 600, W: 150, y: 14, vb: 62, beach: 18, depth: { foot: 1.6, reef: 5, deep: 11 }, rim: 3 };
 
 /** The wave a pass raises: its height H (m) at the break, the peel speed c (m/s down the pool: the board's cruise is 24), the crest's
  *  travel cw toward the beach, the back's e-fold, the face's width at the break and out on the shoulder, how far the shoulder runs before
  *  it is half its height, the pocket's centre and width ahead of the break (s), the tube's length behind the break and how long the lip
- *  takes to throw, the whitewater's share of H and its decay, and the pass's clock: its ramp in and out, the lull between passes. */
+ *  takes to throw, the whitewater's share of H and its decay, and the pass's clock: its ramp in and out, the lull between passes.
+ *  `ends` and `deepEnd`: the metres over which the wave dies into the pool's end walls and its deep wall; `beachRun` into the beach.
+ *  `lip`: the curl's arc (lipCurve): its sweep (a share of pi), its reach out over the face (F at no throw .. F at a full one) and its
+ *  drop (a share of H). South, 2026-11-06: "the waves need to be much more prominent, great wave of hokusai scale and roughness, probably
+ *  about 3x magnitude": H 6.2 -> 18.6, the face, back, tube and pocket about 2.3 times as long, so the face stays a face to ride (Hokusai's
+ *  "The Great Wave off Kanagawa", c. 1831: a tall hollow curl, its thick lip thrown far over the trough, the crest clawing into fingers). */
 export const WAVE = {
-  H: 6.2, c: 15, cw: 7.5, back: 13, face: 7, faceShoulder: 15, shoulder: 70, pocket: 4, pocketW: 9,
-  tube: 26, throwLen: 5, ww: 0.38, wwDecay: 60, ramp: 4, lull: 16, margin: 40,
+  H: 18.6, c: 15, cw: 7.5, back: 30, face: 16, faceShoulder: 34, shoulder: 110, pocket: 8, pocketW: 16,
+  tube: 46, throwLen: 8, lead: 4, ww: 0.22, // (lead: metres ahead of the break where the lip begins to rise, 0 there, thrown whole throwLen behind)
+  wwDecay: 90, ramp: 4, lull: 16, margin: 40,
+  ends: 40, deepEnd: 30, beachRun: 26, broke: 8,
+  lip: { rx: 0.7, up: 0.16, down: 0.95, sweep: 4.46 },
+  roll: [[0.22, 0.19, 1.1, 0], [0.12, 0.47, -1.9, 1.7], [0.06, 1.13, 2.7, 0.4]], // (the bore's height rolling along it: amp, /m, /s, phase)
 };
 
 /** The pool's swell: sharpened sines (GPU Gems ch. 1, eq. 8: exp(sin) - 1, crests peaked, troughs broad), its amplitude rising toward the
@@ -49,7 +58,7 @@ export const WAVE = {
 export const SWELL = {
   calm: 0.35, // (the share left while a pass runs)
   near: 0.25, far: 1.0, // (the amplitude's scale at the beach and at the deep wall)
-  waves: [{ dir: -1.2, len: 34, amp: 0.55 }, { dir: -1.55, len: 21, amp: 0.38 }, { dir: -0.9, len: 13, amp: 0.2 }, { dir: -1.9, len: 8, amp: 0.1 }],
+  waves: [{ dir: -1.2, len: 44, amp: 0.8 }, { dir: -1.55, len: 27, amp: 0.55 }, { dir: -0.9, len: 15, amp: 0.28 }, { dir: -1.9, len: 9, amp: 0.13 }], // (half as tall again as the first firing's, beside the great wave)
 };
 
 const G = 9.81, E1 = Math.E - 1;
@@ -60,12 +69,21 @@ const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t 
 export const passTime = () => (POOL.L + 2 * WAVE.margin) / WAVE.c;
 export const cycleTime = () => 2 * (passTime() + WAVE.lull);
 
-/** The lip's arc in the wave's frame (d ahead of the crest, h over the still water), a in 0..1 from the crest to its tip: an ellipse
- *  thrown off the crest over the face (Fournier and Reeves' curl), tau the throw (0 feathering .. 1 the tube formed). The tube's opening is
- *  under it: the face below, the lip above, about F wide and 0.8 H tall. */
-export function lipCurve(H, F, tau, a) {
-  const rx = F * (0.35 + 0.7 * tau), ry = H * 0.46, phi = a * tau * Math.PI * 0.82;
-  return { d: rx * Math.sin(phi), h: H - ry + ry * Math.cos(phi) };
+/** The lip's arc in the wave's frame (d ahead of the crest, h over the still water), a in 0..1 from the crest to its tip, tau the throw (0
+ *  feathering .. 1 the tube formed): the face rises to the vertical at the crest, and the curl goes on round from there as one tube (an
+ *  ellipse about (rx, H): up from the crest with the face's own tangent, over the top a little above it, and down the far side to the tip
+ *  near the face's foot), the throw running further round it as tau grows (Fournier and Reeves' curl; every barrel photograph: the wall,
+ *  the roof and the curtain one surface). `shrink` the collapse's (the whitewater). The tube is about 1.4 F wide and H tall. */
+export function lipCurve(H, F, tau, a, shrink = 1) {
+  const C = WAVE.lip, rx = F * C.rx * shrink, psi = Math.PI - a * tau * C.sweep, r = H * (psi > 0 ? C.up : C.down) * shrink;
+  return { d: rx + rx * Math.cos(psi), h: H + r * Math.sin(psi) };
+}
+/** The bore's height factor at s behind the tube (1 elsewhere): rolling along its length and in time, so it tumbles, never a wall. */
+export function rollOf(s, t) {
+  if (s >= -WAVE.tube) return 1;
+  const w = sstep(-WAVE.tube, -WAVE.tube - 12, s); let k = 1;
+  for (const [a, f, v, p] of WAVE.roll) k += w * a * Math.sin(s * f + t * v + p);
+  return k;
 }
 
 export function wavePool() {
@@ -103,20 +121,20 @@ export function wavePool() {
     fr.s = s; fr.d = d;
     // the height along the crest: shoaling up out of the deep to the break; standing through the tube; the whitewater behind
     const shoal = s > 0 ? 0.42 + 0.58 * Math.exp(-s / Wv.shoulder) : 1;
-    const broke = s < -Wv.tube ? Wv.ww + (1 - Wv.ww) * Math.exp((s + Wv.tube) / 6) : 1;
+    const broke = s < -Wv.tube ? Wv.ww + (1 - Wv.ww) * Math.exp((s + Wv.tube) / Wv.broke) : 1;
     const decay = s < -Wv.tube ? Math.exp((s + Wv.tube) / Wv.wwDecay) * 0.65 + 0.35 : 1;
-    const walls = sstep(-2, 12, v + P.beach * 0.3) * sstep(0, 25, u) * sstep(0, 25, P.L - u) * sstep(0, 18, P.W - v);
-    const H = Wv.H * shoal * broke * decay * walls * S.env;
+    const walls = sstep(-2, Wv.beachRun, v + P.beach * 0.3) * sstep(0, Wv.ends, u) * sstep(0, Wv.ends, P.L - u) * sstep(0, Wv.deepEnd, P.W - v);
+    const H = Wv.H * shoal * broke * decay * walls * S.env * rollOf(s, t);
     const F = s > 0 ? Wv.face + (Wv.faceShoulder - Wv.face) * (1 - Math.exp(-s / 30)) : s < -Wv.tube ? Wv.face * 1.6 : Wv.face;
     fr.H = H; fr.F = F;
     let h;
     if (d < 0) h = H * Math.exp(-(d * d) / (Wv.back * Wv.back));
     else if (d < F) {
-      const x = d / F, p = s > 0 ? 0.75 + 0.6 * clamp(s / 40, 0, 1) : 0.72; // (concave and steep at the break: its top nearly sheer; rolling out on the shoulder)
-      h = H * (1 - Math.pow(x, p)); fr.face = 1 - x;
+      const x = d / F, p = 0.72 + 0.63 * clamp(s / 40, 0, 1); // (concave and steep at the break: its top nearly sheer; rolling out on the shoulder)
+      h = H * (1 - Math.pow(x, p)) - 0.08 * H * x * x; fr.face = 1 - x; // (its foot let down into the trough's level: no step at d = F)
     } else { const e = (d - F) / F; h = -0.08 * H * Math.exp(-e * e); } // (the trough before it, drawn down)
     fr.h = h;
-    fr.zone = d < -Wv.back * 1.4 || d > F * 2 || H < 0.4 ? 'flat' : s > Wv.pocket + Wv.pocketW ? 'shoulder' : s > 0 ? 'pocket' : s > -Wv.tube ? 'barrel' : 'whitewater';
+    fr.zone = d < -Wv.back * 1.4 || d > F * 2 || H < 1 ? 'flat' : s > Wv.pocket + Wv.pocketW ? 'shoulder' : s > 0 ? 'pocket' : s > -Wv.tube ? 'barrel' : 'whitewater';
     return fr;
   }
 
@@ -177,8 +195,8 @@ export function wavePool() {
    *  far the lip's tip hangs over the body's d (m; > 0 the lip is over you). */
   function barrelAt(x, y, z, t) {
     const f = frameAt(x, z, t);
-    if (!f || f.H < 1.5 || f.zone !== 'barrel' && !(f.zone === 'pocket' && f.s < 2)) return { k: 0, cover: 0, hr: 0, lipOver: -99, frame: f };
-    const tau = sstep(0, Wv.throwLen, -f.s), gone = sstep(-Wv.tube * 0.88, -Wv.tube, f.s);
+    if (!f || f.H < 3 || f.zone !== 'barrel' && !(f.zone === 'pocket' && f.s < Wv.lead)) return { k: 0, cover: 0, hr: 0, lipOver: -99, frame: f };
+    const tau = sstep(-Wv.lead, Wv.throwLen, -f.s), gone = sstep(-Wv.tube * 0.88, -Wv.tube, f.s);
     const tip = lipCurve(f.H, f.F, tau, 1), hr = (y - P.y) / f.H;
     const inside = f.d > 0.08 * f.F && f.d < f.F * 1.05 && hr < 0.88;
     const cover = inside ? tau * (1 - gone) * sstep(-0.2 * f.F, 0.25 * f.F, tip.d - f.d * 0.6) : 0;
@@ -190,9 +208,9 @@ export function wavePool() {
     const u = toU(x, z), v = toV(x, z), w = waveAt(u, v, t);
     let f = 0;
     if (w.H > 0.3) {
-      if (w.zone === 'whitewater') f = Math.max(f, sstep(-Wv.back, 0, w.d) * (1 - sstep(w.F, w.F * 2.2, w.d)) * 0.95);
-      if (w.zone === 'barrel') f = Math.max(f, Math.exp(-((w.d - w.F) ** 2) / 6) * 0.85, sstep(-2, 0.5, w.d) * (1 - sstep(0.5, 2.5, w.d)) * 0.5);
-      if (w.zone === 'pocket') f = Math.max(f, sstep(-1.2, 0.3, w.d) * (1 - sstep(0.3, 1.6, w.d)) * 0.45 * (1 - w.s / (Wv.pocket + Wv.pocketW)));
+      if (w.zone === 'whitewater') f = Math.max(f, (sstep(-Wv.back, 0, w.d) * 0.42 + Math.exp(-((w.d - 0.3 * w.F) ** 2) / (0.25 * w.F * w.F)) * 0.5) * (1 - sstep(w.F, w.F * 2.2, w.d)));
+      if (w.zone === 'barrel') f = Math.max(f, Math.exp(-((w.d - w.F) ** 2) / 32) * 0.85, sstep(-4.6, 1.2, w.d) * (1 - sstep(1.2, 5.8, w.d)) * 0.5);
+      if (w.zone === 'pocket') f = Math.max(f, sstep(-2.8, 0.7, w.d) * (1 - sstep(0.7, 3.7, w.d)) * 0.45 * (1 - w.s / (Wv.pocket + Wv.pocketW)));
     }
     return Math.max(f, (1 - sstep(-P.beach, 6, v)) * 0.6);
   }
@@ -244,17 +262,19 @@ vec4 wpWave(vec2 uv, out float H, out float F) {
   float s = dot(pr, uWP[3].zw), d = dot(pr, uWP[3].xy);
   float Hb = uWP[4].x, tube = uWP[5].z;
   float shoal = s > 0.0 ? 0.42 + 0.58 * exp(-s / uWP[5].y) : 1.0;
-  float broke = s < -tube ? uWP[6].x + (1.0 - uWP[6].x) * exp((s + tube) / 6.0) : 1.0;
+  float broke = s < -tube ? uWP[6].x + (1.0 - uWP[6].x) * exp((s + tube) / ${WAVE.broke.toFixed(1)}) : 1.0;
   float decay = s < -tube ? exp((s + tube) / uWP[6].y) * 0.65 + 0.35 : 1.0;
-  float walls = wpS(-2.0, 12.0, uv.y + uWP[1].w * 0.3) * wpS(0.0, 25.0, uv.x) * wpS(0.0, 25.0, uWP[1].x - uv.x) * wpS(0.0, 18.0, uWP[1].y - uv.y);
-  H = Hb * shoal * broke * decay * walls * env;
+  float roll = 1.0; if (s < -tube) { float rw = clamp((-tube - s) / 12.0, 0.0, 1.0); float tt = uWP[6].z; rw = rw * rw * (3.0 - 2.0 * rw);
+    ${WAVE.roll.map(([a, f, v, p]) => `roll += rw * ${a.toFixed(3)} * sin(s * ${f.toFixed(3)} + tt * ${v.toFixed(3)} + ${p.toFixed(3)});`).join(' ')} }
+  float walls = wpS(-2.0, ${WAVE.beachRun.toFixed(1)}, uv.y + uWP[1].w * 0.3) * wpS(0.0, ${WAVE.ends.toFixed(1)}, uv.x) * wpS(0.0, ${WAVE.ends.toFixed(1)}, uWP[1].x - uv.x) * wpS(0.0, ${WAVE.deepEnd.toFixed(1)}, uWP[1].y - uv.y);
+  H = Hb * shoal * broke * decay * walls * env * roll;
   F = s > 0.0 ? uWP[4].w + (uWP[5].x - uWP[4].w) * (1.0 - exp(-s / 30.0)) : (s < -tube ? uWP[4].w * 1.6 : uWP[4].w);
   float h;
   if (d < 0.0) h = H * exp(-(d * d) / (uWP[4].z * uWP[4].z));
-  else if (d < F) { float x = d / F, p = s > 0.0 ? 0.75 + 0.6 * clamp(s / 40.0, 0.0, 1.0) : 0.72; h = H * (1.0 - pow(x, p)); }
+  else if (d < F) { float x = d / F, p = 0.72 + 0.63 * clamp(s / 40.0, 0.0, 1.0); h = H * (1.0 - pow(x, p)) - 0.08 * H * x * x; }
   else { float e = (d - F) / F; h = -0.08 * H * exp(-e * e); }
   float pocketEnd = ${WAVE.pocket + WAVE.pocketW}.0;
-  float zone = (d < -uWP[4].z * 1.4 || d > F * 2.0 || H < 0.4) ? 0.0 : s > pocketEnd ? 1.0 : s > 0.0 ? 2.0 : s > -tube ? 3.0 : 4.0;
+  float zone = (d < -uWP[4].z * 1.4 || d > F * 2.0 || H < 1.0) ? 0.0 : s > pocketEnd ? 1.0 : s > 0.0 ? 2.0 : s > -tube ? 3.0 : 4.0;
   return vec4(h, s, d, zone);
 }
 vec4 wpSurface(vec2 p) {

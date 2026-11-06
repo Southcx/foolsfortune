@@ -29,12 +29,17 @@ export class Water {
     this.mats = {};
     this.ripples = []; // (the last 3 s of disturbances, for vfx/water.js's rings and wakes: docs/plans/SUNSHINE-SYSTEMS.md, phase 1)
     this.onDisturb = null;
+    this.probes = []; // (water no box can hold, asked after the boxes: a probe(x, y, z) -> a volume or null; the wave pool's: world/raceway/surf/surfpool.js)
   }
+
+  /** Register a probe: `fn(x, y, z)` answers a volume-like `{ surface, bottom, kind, x0, x1, z0, z1 }` there (y already tested), or null.
+   *  Returns its removal. */
+  probe(fn) { this.probes.push(fn); return () => { const i = this.probes.indexOf(fn); if (i >= 0) this.probes.splice(i, 1); }; }
 
   /** Something touched a water surface at (x, z): `strength` 0..1, `kind` 'stroke' | 'dive' | 'land' | 'drop' | 'fish' | 'wake'.
    *  Kept in `ripples` ({ x, z, y, s, kind, t }) for 3 s, and handed to `onDisturb` as it comes (the look is Calissa's). */
   disturb(x, z, strength = 0.5, kind = 'stroke', y = null) {
-    if (y === null) { const v = this.volumes.find((w) => x > w.x0 && x < w.x1 && z > w.z0 && z < w.z1); if (!v) return null; y = v.surface; }
+    if (y === null) { const v = this.volumes.find((w) => x > w.x0 && x < w.x1 && z > w.z0 && z < w.z1) || this.probeAt(x, null, z); if (!v) return null; y = v.surfaceAt ? v.surfaceAt(x, z) : v.surface; }
     const d = { x, z, y, s: Math.min(1, Math.max(0, strength)), kind, t: this.time };
     this.ripples.push(d); if (this.ripples.length > 64) this.ripples.shift();
     this.onDisturb?.(d);
@@ -55,8 +60,10 @@ export class Water {
   /** The volume containing (x, y, z) - y anywhere from its bottom to 0.5 above the surface. */
   at(x, y, z) {
     for (const v of this.volumes) if (x > v.x0 && x < v.x1 && z > v.z0 && z < v.z1 && y > v.bottom - 0.5 && y < v.surface + 0.5) return v;
-    return null;
+    return this.probes.length ? this.probeAt(x, y, z) : null;
   }
+  /** The first probe's answer at (x, y, z) (y null: any height there). */
+  probeAt(x, y, z) { for (const f of this.probes) { const v = f(x, y, z); if (v) return v; } return null; }
 
   update(dt) {
     this.time += dt;
