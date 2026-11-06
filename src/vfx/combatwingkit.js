@@ -17,8 +17,8 @@
 //   THE STATUS PLAQUES fired tiles hung on the status bench's front under each roly-poly, as labels on a shelf, each with its
 //                    status's glyph (the Figment attack telegraphs' own pictures, ui/icons/figmenttelegraphart.js STATUS_ART, in the icons'
 //                    hand): no words. (Laid flat on the floor first, they were unreadable at the striker's grazing angle.)
-//   THE STAND-INS    the parry range's pitcher (a big clay jug on a plinth, its spout toward the marks), the Figment telegraph floor's
-//                    caster (a tall urn on a turntable): static bodies where the mechanic is not built
+//   THE PLINTHS      the parry range's plinth and the Figment telegraph floor's turntable, static; what stands on them is alive: the
+//                    straw pitcher (vfx/strawpitcher.js) and the practice caster (vfx/practicecaster.js), set down by ThrowingRoomDress
 //   THE ROLY-POLIES  the status bench's eleven (Strawman's kin, a Daruma's shape in burlap on a black ball foot), alive: each rocks on
 //                    its ball when struck and wears its status (world/throwingroom/statusbench.js); the lit one warms from within
 //
@@ -97,28 +97,16 @@ export function rolyPolyMaterials() {
   return ROLY_M;
 }
 
-/** The parry range's pitcher, a stand-in for the thing that lobs: a big clay jug on a plinth, about 1.9 m high to its lip, its spout
- *  toward local +z (the marks) and its handle behind. The pitching (plain and outlined shots, speeds, angles) is not built. */
+/** The parry range's plinth, the static part of its pitcher: a dark box 1.2 m square and 0.5 m high. The pitcher itself (a straw
+ *  thrower on a cotton reel, its heave and its basket of clay balls) is alive on top of it: vfx/strawpitcher.js. */
 export function parryPitcher() {
-  const C = PALETTE, out = [];
-  out.push({ geo: T(new THREE.BoxGeometry(1.2, 0.5, 1.2), M(0, 0.25, 0)), color: C.dark, outline: true });
-  out.push({ geo: T(lathe([[0.001, 0], [0.32, 0], [0.42, 0.12], [0.5, 0.42], [0.48, 0.7], [0.36, 0.95], [0.27, 1.12], [0.28, 1.3], [0.33, 1.38], [0.31, 1.4]], 16), M(0, 0.5, 0)), color: C.pot, outline: true });
-  out.push({ geo: T(new THREE.ConeGeometry(0.1, 0.3, 8, 1, true), M(0, 1.78, 0.33, Math.PI / 2 + 0.5)), color: C.pot, outline: false }); // (the spout, lipped forward)
-  out.push({ geo: T(new THREE.TorusGeometry(0.2, 0.045, 6, 12, Math.PI), M(0, 1.45, -0.36, 0, Math.PI / 2, -Math.PI / 2)), color: C.pot, outline: true }); // (the handle)
-  out.push({ geo: T(new THREE.TorusGeometry(0.47, 0.02, 4, 24), M(0, 1.05, 0, Math.PI / 2)), color: WING_COLOR.oxblood, outline: false }); // (a band of oxblood round the belly)
-  return out;
+  return [{ geo: T(new THREE.BoxGeometry(1.2, 0.5, 1.2), M(0, 0.25, 0)), color: PALETTE.dark, outline: true }];
 }
 
-/** The Figment telegraph floor's caster, a stand-in for whatever throws the shapes: a tall urn on a low turntable, about 1.9 m high,
- *  its front local +z. Which creature casts, and how it turns to face, is the mechanic's (COMBAT-LAB.md section 3). */
+/** The Figment telegraph floor's turntable, the static part of its caster: a low dark drum 1.5 m across. The caster on it (a clay
+ *  practice haniwa that lights up as it winds up) is alive: vfx/practicecaster.js. */
 export function telegraphCaster() {
-  const C = PALETTE;
-  return [
-    { geo: T(new THREE.CylinderGeometry(0.75, 0.8, 0.22, 20), M(0, 0.11, 0)), color: C.dark, outline: true },
-    { geo: T(lathe([[0.001, 0], [0.22, 0], [0.3, 0.1], [0.42, 0.55], [0.44, 0.9], [0.34, 1.25], [0.2, 1.42], [0.21, 1.55], [0.27, 1.62], [0.25, 1.65]], 16), M(0, 0.22, 0)), color: PALETTE.potLight ?? C.pale, outline: true },
-    { geo: T(new THREE.TorusGeometry(0.43, 0.025, 4, 24), M(0, 0.95, 0, Math.PI / 2)), color: WING_COLOR.oxblood, outline: false },
-    { geo: T(new THREE.SphereGeometry(0.07, 8, 6), M(0, 1.45, 0.36)), color: WING_COLOR.oxblood, outline: false }, // (a boss on its front: where it faces)
-  ];
+  return [{ geo: T(new THREE.CylinderGeometry(0.75, 0.8, 0.22, 20), M(0, 0.11, 0)), color: PALETTE.dark, outline: true }];
 }
 
 let TILE_M = null, STATUS_M = null;

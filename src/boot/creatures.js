@@ -37,6 +37,7 @@ import { Crystals } from '../world/dunes/crystals.js';
 import { DunesAreas } from '../world/dunes/areacut.js';
 import { RareFinds } from '../world/dunes/rarefinds.js';
 import { SporePrintSpots } from '../world/sporeprintspots.js';
+import { WildSporePrints } from '../vfx/wildsporeprints.js';
 import { DunesDress } from '../vfx/dunes/index.js';
 import { RacewayDress } from '../vfx/raceway/index.js';
 import { JellyMountLook } from '../vfx/jellymount/look.js';
@@ -81,6 +82,7 @@ export async function bootCreatures(game, made) {
   game.crystals = new Crystals(game); // (Lachryma set hard in the sand: the Dreamvane's: world/dunes/crystals.js)
   game.dunesAreas = new DunesAreas(game); // (the Dunes as five areas: the one you are in, said as you reach it: world/dunes/areacut.js)
   game.sporePrintSpots = new SporePrintSpots(game); game.systems.add('world', game.sporePrintSpots, { clock: 'raw', name: 'sporePrintSpots' }); // (the game day's wild spore prints, stood where they grow: world/sporeprintspots.js)
+  game.wildSporePrints = new WildSporePrints(game); game.systems.add('marks', game.wildSporePrints, { clock: 'raw', name: 'wildSporePrints' }); // (each print dressed as its strain's clump, its print and its haze: vfx/wildsporeprints.js)
   game.rareFinds = new RareFinds(game); // (an area's condition-bound find: the ridges' fulgurite, the ruins' Wisp: world/dunes/rarefinds.js)
   game.dunesDress = new DunesDress(game); game.racewayDress = new RacewayDress(game); // (the living dressing, looks only: the Dunes' dust devils, mirage, geodes and fulgurites; the Raceway's spectators, banners, lanterns and fireworks: vfx/dunes/, vfx/raceway/)
   game.jellyMountLook = new JellyMountLook(game); // (the slip jelly mount's body, its moments and the mounts' ring, over Petra's runtime: vfx/jellymount/)
