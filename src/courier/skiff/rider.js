@@ -93,6 +93,7 @@ export class Rider {
     if (s.landT != null && s.landT < 0.44) ot = OLLIE.land + s.landT;
     else if (s.air) ot = s.popT != null ? Math.min(OLLIE.peak, OLLIE.pop + s.popT * 0.9) : OLLIE.peak;
     else if (s.charge > 0.01) ot = OLLIE.crouch * Math.min(1, s.charge);
+    else if ((s.drag || 0) > 0.01) ot = OLLIE.crouch * Math.min(1, s.drag / 0.9); // (the stall's hand in the wave's face: crouched as the hop's charge crouches, so the hand reaches the water: courier/skiff/handdrag.js)
     this.ollieW = damp(this.ollieW, ot >= 0 ? 1 : 0, ot >= 0 ? 18 : 6, dt);
     if (ot >= 0) this.ot = ot;
     if (this.ollieW > 0.01) {

@@ -43,4 +43,4 @@ the turns' thresholds, a wipeout and a made tube in play.
 - The pool's buoy run (`surf/poolbuoys.js`) moves the Raceway's one buoy meter (`raceway.buoys.power`) and fires its `skiff.buoy`, judged
   as the board crosses a gate down the pool; buoys.js is untouched (Dovina told).
 - One more line in skiff.js `hands(ch)`: after the grab's reach, `if (this.surf.drag.w > 0) this.surf.drag.reach(ch)` (the stall's
-  hand in the wave's face, courier/skiff/handdrag.js; its weight is nothing off the wave pool). Stress after it: 8 runs, 0 violations.
+  hand in the wave's face, courier/skiff/handdrag.js; its weight is nothing off the wave pool), and `drag: this.surf.drag.w` in the rider's state (rider.js crouches by it as by the hop's charge). Stress after it: 8 runs, 0 violations.

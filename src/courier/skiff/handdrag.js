@@ -17,7 +17,7 @@ import * as THREE from 'three';
  *  metres behind along the crest; dip: metres into the water; spray: its strength at full weight; from: the cover that lays it there
  *  with no stall held; lean: the spine bent from the hips toward the water by what the arm is short of it (rad at most, in passes, over
  *  the torso's length, spread as the grab's lean is: grabreach.js LEAN). */
-export const HAND_DRAG = { in: 7, out: 4, w: 0.9, reach: 0.5, back: 0.35, dip: 0.05, spray: 0.9, from: 0.55, lean: { max: 0.95, passes: 3, torso: 0.55, share: [['spine001', 0.3], ['spine002', 0.35], ['spine003', 0.35]] } };
+export const HAND_DRAG = { in: 7, out: 4, w: 0.9, reach: 0.3, back: 0.2, dip: 0.05, spray: 0.9, from: 0.55, lean: { max: 1.25, passes: 4, torso: 0.45, share: [['spine001', 0.3], ['spine002', 0.35], ['spine003', 0.35]] } };
 
 const _t = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quaternion(), _d = new THREE.Vector3();
 
