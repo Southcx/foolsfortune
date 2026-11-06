@@ -32,19 +32,20 @@ try {
   page.on('pageerror', (e) => errs.push(e.message));
   page.on('console', (m) => { if (m.type() === 'error' && !/404/.test(m.text())) errs.push(m.text().slice(0, 240)); });
   await page.addInitScript(() => { Object.defineProperty(window, '__game', { configurable: true, set(v) { v.manual = true; this.__g = v; }, get() { return this.__g; } }); });
-  await page.goto(`${server.resolvedUrls.local[0]}?seed=1&clock=1791160275000`, { waitUntil: 'commit' });
+  await page.goto(`${server.resolvedUrls.local[0]}?seed=1&clock=1791160275000${phone ? '&firstdraws=0' : ''}`, { waitUntil: 'commit' }); // (the phone's first-draw budget admits a few new materials a frame: a shot from a manual frame or two would be near empty, render/firstdraws.js)
   for (let i = 0; i < 300; i++) { await new Promise((r) => setTimeout(r, 1000)); if (await page.evaluate('!!window.__ready').catch(() => false)) break; }
   await page.evaluate(`document.getElementById('overlay') && (document.getElementById('overlay').style.display = 'none'); __game.input.enabled = true;`);
   await page.evaluate(async () => {
     const G = __game, g = G.game;
     window.__keys = new Set(); g.input.isDown = (c) => __keys.has(c);
-    window.__ev = []; for (const n of ['skiff.surf', 'skiff.surf.pump', 'skiff.surf.turn', 'skiff.tube.enter', 'skiff.tube.exit', 'skiff.submarine', 'skiff.bail', 'skiff.slope', 'skiff.edge.skid', 'skiff.butter', 'skiff.slope.land']) g.events.on(n, (e) => __ev.push(n + ' ' + JSON.stringify(Object.fromEntries(Object.entries(e).filter(([k]) => k !== 'name' && k !== 't' && k !== 'by')))));
+    window.__ev = []; for (const n of ['skiff.surf', 'skiff.surf.pump', 'skiff.surf.turn', 'skiff.tube.enter', 'skiff.tube.exit', 'skiff.submarine', 'skiff.bail', 'skiff.slope', 'skiff.edge.skid', 'skiff.butter', 'skiff.slope.land', 'skiff.buoy']) g.events.on(n, (e) => __ev.push(n + ' ' + JSON.stringify(Object.fromEntries(Object.entries(e).filter(([k]) => k !== 'name' && k !== 't' && k !== 'by')))));
     g.places.travel('wavepool');
     let f = 0; do { G.tick(1 / 30); f++; if (f % 5 === 0) await new Promise((q) => setTimeout(q, 0)); } while ((g.seam?.busy || !g.raceway?.built) && f < 1500);
     for (let i = 0; i < 30; i++) G.tick(1 / 60);
   });
   // ---- set the board on the wave at (s, d as a share of F), along the crest, at speed
-  const placeOnWave = (s, dK, speed, t = 19.3) => page.evaluate(({ s, dK, speed, t }) => {
+  const placeOnWave = (s, dK, speed, t = 19.3) => page.evaluate(async ({ s, dK, speed, t }) => {
+    { const sk0 = __game.game.player.techs.get('skiff'); sk0.skiff?.load?.(__game.game); for (let i = 0; i < 200 && !sk0.skiff?.ready; i++) await new Promise((q) => setTimeout(q, 100)); } // (the board's model loaded: a ride begun before it rides an undrawn board)
     const G = __game, g = G.game, P = g.player, R = g.raceway, S = R.surf, W = S.S, PO = W.POOL, RW = { x: 6000, z: 0 };
     S.t = t; const st = W.state(t), ax = W.axes, F = W.WAVE.face, d = dK * F, u = st.ub + s * st.tu + d * st.nu, v = PO.vb + s * st.tv + d * st.nv, du = u - PO.L / 2, dv = v - PO.W / 2;
     const wx = RW.x + PO.x + du * ax.ux + dv * ax.vx, wz = RW.z + PO.z + du * ax.uz + dv * ax.vz, cx = st.tu * ax.ux + st.tv * ax.vx, cz = st.tu * ax.uz + st.tv * ax.vz;
@@ -70,7 +71,7 @@ try {
       }
       G.tick(1 / 60);
       if (i % (opt.every || 15) === 0) rows.push([i, sk.phase, sk.surf.tube ? 'T' : '-', +((f?.d ?? 0) / (f?.F || 1)).toFixed(2), f?.zone, +(f?.s ?? 0).toFixed(1), +(sk.surf.hr).toFixed(2), +sk.surf.cover.toFixed(2), +sk.surf.k.toFixed(2), +sk.surf.balance.toFixed(2), +sk.speed.toFixed(1)].join(' '));
-      if (opt.shot && !shot && sk.surf.cover > 0.8 && g.cinema?.shots?.has?.('barrel') && (g.cinema?.sk ?? 1) > 0.9) { shot = true; for (let k = 0; k < 2; k++) G.draw(); window.__shot = true; const W = g.wavePoolLook, c = g.camera; window.__lookDbg = { near: W.near, vis: W.group?.visible, lipVis: W.parts?.lip?.mesh?.visible, wt: W.t, st: S.t, same: W.S === S.S, cam: [c.position.x - 6000, c.position.y + 420, c.position.z].map((x) => +x.toFixed(1)), pl: [P.pos.x - 6000, P.pos.y + 420, P.pos.z].map((x) => +x.toFixed(1)), cover: W.screen?.cover, inScene: !!W.group?.parent, layers: W.group?.layers?.mask }; return { rows, ev: __ev.slice(), shot: true }; }
+      if (opt.shot && !shot && sk.surf.cover > 0.8 && g.cinema?.shots?.has?.('barrel') && (g.cinema?.sk ?? 1) > 0.9) { shot = true; if (opt.nolip && g.wavePoolLook?.parts) { g.wavePoolLook.parts.lip.mesh.visible = false; g.wavePoolLook.parts.water.near.visible = false; } for (let k = 0; k < 2; k++) G.draw(); window.__shot = true; const skb = sk.skiff?.group; window.__board = skb ? { vis: skb.visible, y: +(skb.getWorldPosition(new G.THREE.Vector3()).y + 420).toFixed(2), water: +(g.raceway.rideHeight(P.pos.x, P.pos.z) + 420).toFixed(2), py: +(P.pos.y + 420).toFixed(2) } : null; const W = g.wavePoolLook, c = g.camera; window.__lookDbg = { near: W.near, vis: W.group?.visible, lipVis: W.parts?.lip?.mesh?.visible, wt: W.t, st: S.t, same: W.S === S.S, cam: [c.position.x - 6000, c.position.y + 420, c.position.z].map((x) => +x.toFixed(1)), pl: [P.pos.x - 6000, P.pos.y + 420, P.pos.z].map((x) => +x.toFixed(1)), cover: W.screen?.cover, inScene: !!W.group?.parent, layers: W.group?.layers?.mask }; return { rows, ev: __ev.slice(), shot: true }; }
       if (i % 30 === 0) await new Promise((q) => setTimeout(q, 0));
     }
     return { rows, ev: __ev.slice(), shot: false };
@@ -79,12 +80,36 @@ try {
   const dbg = () => page.evaluate('window.__dbg').then((d) => console.log('placed', JSON.stringify(d)));
   if (want('barrel')) {
     await placeOnWave(2, 0.45, 13); await dbg();
-    let r = await surfPilot(10, { stall: true, pump: true, pumpFrom: -8, shot: true });
-    if (r.shot) { console.log('lookDbg', JSON.stringify(await page.evaluate('window.__lookDbg'))); await page.screenshot({ path: path.join(out, `surfplay-barrel${phone ? '-phone' : ''}.png`) }); const r2 = await surfPilot(9, { pump: true, pumpFrom: -8 }); r = { rows: r.rows.concat(r2.rows), ev: r.ev.concat(r2.ev) }; }
+    let r = await surfPilot(10, { stall: true, pump: true, pumpFrom: -8, shot: true, nolip: process.argv.includes('--nolip') });
+    if (r.shot) { console.log('board', JSON.stringify(await page.evaluate('window.__board'))); console.log('lookDbg', JSON.stringify(await page.evaluate('window.__lookDbg'))); await page.screenshot({ path: path.join(out, `surfplay-barrel${phone ? '-phone' : ''}.png`) }); const r2 = await surfPilot(9, { pump: true, pumpFrom: -8 }); r = { rows: r.rows.concat(r2.rows), ev: r.ev.concat(r2.ev) }; }
     report.barrel = r;
   }
   if (want('pump')) { await placeOnWave(30, 0.4, 14); report.pump = await surfPilot(5, { pump: true }); }
   if (want('lip')) { await placeOnWave(-8, 0.4, 12); report.lip = await surfPilot(2, { climb: true, every: 2 }); }
+  if (want('buoys')) {
+    // wave riding's slalom: in the lull's swell, down the deep end, each buoy passed on its side (sail up: on the swell the board sails)
+    report.buoys = await page.evaluate(async () => {
+      const G = __game, g = G.game, P = g.player, R = g.raceway, S = R.surf, W = S.S, PO = W.POOL, sk = P.techs.get('skiff'), ax = W.axes, rows = [];
+      const { POOL_BUOYS } = await import('/src/world/raceway/surf/poolbuoys.js');
+      S.t = (PO.L + 2 * W.WAVE.margin) / W.WAVE.c + 1; // (the lull: no wave running)
+      const at = (u, v) => { const du = u - PO.L / 2, dv = v - PO.W / 2; return { x: 6000 + PO.x + du * ax.ux + dv * ax.vx, z: PO.z + du * ax.uz + dv * ax.vz }; };
+      const p0 = at(50, 120); g.course.teleport(new P.pos.constructor(p0.x, R.rideHeight(p0.x, p0.z) + 0.7, p0.z), Math.atan2(ax.ux, ax.uz));
+      for (let i = 0; i < 120 && !sk.active; i++) { sk.mount(); G.tick(1 / 60); }
+      sk.heading = Math.atan2(ax.ux, ax.uz); sk.v.set(ax.ux * 14, 0, ax.uz * 14); sk.L = 1; sk.rideT = 5; __ev.length = 0; S.t = (PO.L + 2 * W.WAVE.margin) / W.WAVE.c + 1;
+      const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+      for (let i = 0; i < 60 * 40; i++) {
+        __keys.clear(); __keys.add('KeyW');
+        const lx = P.pos.x - 6000, lz = P.pos.z, u = W.toU(lx, lz);
+        const next = POOL_BUOYS.find(([bu]) => bu > u + 2); if (!next) break;
+        const [bu, bv, pass] = next, aim = at(bu, bv + (pass === 'right' ? 7 : -7)), want = Math.atan2(aim.x - P.pos.x, aim.z - P.pos.z), dh = wrap(sk.heading - want);
+        if (Math.abs(dh) > 0.05) __keys.add(dh > 0 ? 'KeyD' : 'KeyA');
+        G.tick(1 / 60);
+        if (i % 60 === 0) rows.push(`${i} u ${u.toFixed(0)} v ${W.toV(lx, lz).toFixed(0)} speed ${sk.speed?.toFixed?.(1)} power ${R.buoys?.power}`);
+        if (i % 30 === 0) await new Promise((q) => setTimeout(q, 0));
+      }
+      return { rows, ev: __ev.slice() };
+    });
+  }
   if (want('sub')) {
     // wave riding's dive: in the lull's swell out by the deep wall, dropped onto it nose down with S held
     report.sub = await page.evaluate(async () => {
@@ -144,6 +169,7 @@ const verdict = {
   barrel: report.barrel && { entered: had('barrel', /tube\.enter/), made: had('barrel', /tube\.exit .*"made":true/), exit: ev('barrel').filter((e) => /tube\.exit|bail/.test(e)) },
   pump: report.pump && { pumps: ev('pump').filter((e) => /pump/.test(e)).length },
   lip: report.lip && { wipeout: ev('lip').filter((e) => /bail/.test(e)) },
+  buoys: report.buoys && { passed: ev('buoys').filter((e) => /buoy/.test(e)) },
   sub: report.sub && { dives: ev('sub').filter((e) => /submarine/.test(e)) },
   slope: report.slope && { on: had('slope', /skiff\.slope /), skids: ev('slope').filter((e) => /skid/.test(e)).length, landings: ev('slope').filter((e) => /slope\.land/.test(e)), butter: ev('slope').filter((e) => /butter/.test(e)) },
 };

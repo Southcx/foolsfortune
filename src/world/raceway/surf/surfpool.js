@@ -17,6 +17,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RW } from '../track.js';
+import { PoolBuoys } from './poolbuoys.js';
 import { wavePool, POOL } from './wavepool.js';
 
 /** The dive's hole: metres round the board the surface is pressed down for the submarine (a look of the ride, never the water's). */
@@ -25,12 +26,17 @@ const _n = { x: 0, y: 1, z: 0 }, _c = { x: 0, z: 0 };
 
 export class SurfPool {
   constructor(R) {
-    this.R = R; this.S = wavePool(); this.t = 0;
+    this.R = R; this.S = wavePool(); this.t = 0; this.buoys = new PoolBuoys(this); // (wave riding's slalom in the deep end: poolbuoys.js)
     this.dip = { x: 0, z: 0, depth: 0 };
   }
   get game() { return this.R.game; }
   /** The pool's clock: game seconds, so a slowed world slows the wave with it (the lip's ease: courier/skiff/barrelcam.js). */
-  update(dt) { this.t += dt; }
+  update(dt) {
+    this.t += dt;
+    const R = this.R; // (the pool's buoy run: built with the park, gone with it; poolbuoys.js)
+    if (R.built && !this.buoys.group) this.buoys.build(); else if (!R.built && this.buoys.group) this.buoys.dispose();
+    if (this.buoys.group) this.buoys.update(dt);
+  }
   inPool(wx, wz) { return this.S.inPool(wx - RW.x, wz - RW.z); }
   /** The moving surface, world y, where the basin's water is over its bed; else null (the park's own water then). */
   rideY(wx, wz) {

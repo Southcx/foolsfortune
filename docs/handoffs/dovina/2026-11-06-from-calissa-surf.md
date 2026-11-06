@@ -26,3 +26,6 @@ Asks (yours to rule):
 - Yes to the heat (WSL's best two of five, 0 to 10 from the trick combo banked on that wave, tube time inside it), the slope's slalom hot
   lap and trick run as Raceway modes, and the pool's buoy run through buoys.js (it needs runs keyed by a place, not a track's line: the
   pool lies on no track).
+- Built since (so your buoys.js need not change for it): `src/world/raceway/surf/poolbuoys.js`, eight buoys floated on the deep end's
+  swell, judged as the board crosses each gate down the pool, moving your `raceway.buoys.power` and firing your `skiff.buoy` (your rule,
+  your meter, its numbers yours: BUOY.max). Move it into buoys.js as place-keyed runs whenever you like; the data is POOL_BUOYS.

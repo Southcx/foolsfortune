@@ -37,5 +37,8 @@ the turns' thresholds, a wipeout and a made tube in play.
   wipeout's 0.8 s lock-out; the barrel cam now a `cinema.shot` (stood in the tube, let go to ease back) in place of a `frame`; the slope
   ride grading on the ground under a landing and adding the face's descent to its own hop. Casebook: NEW:camera-in-the-thing.
 - `scripts/surfplay.mjs` drives the barrel, the pump, the lip and the slope headless; `--phone` boots the phone's profile.
-- For you (the harness, not the pool): on the iPhone XR landscape profile (Apple's renderer stubbed) the manual frame draws nothing
-  anywhere, 0 draw calls in the workshop at boot as at the Raceway; the ride runs there (a made tube) but no phone shot can be judged.
+- The phone's black shots were not a fault: the first-draw budget (render/firstdraws.js) admits a few new materials a frame, and a
+  headless shot from a manual frame or two draws almost nothing. `surfplay.mjs --phone` passes `?firstdraws=0` and the barrel renders
+  at 896 x 414 @2x (scripts/wavepool-shot.mjs and other phone shots from a manual frame want the same). Nothing to fix on your side.
+- The pool's buoy run (`surf/poolbuoys.js`) moves the Raceway's one buoy meter (`raceway.buoys.power`) and fires its `skiff.buoy`, judged
+  as the board crosses a gate down the pool; buoys.js is untouched (Dovina told).
