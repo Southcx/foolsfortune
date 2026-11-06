@@ -105,13 +105,13 @@ function entropy(n = 200, iters = 40) {
   let w = 0, rounds = 0; const how = {};
   for (let s = seed0; s < seed0 + n; s++) { const { result } = play(ENTROPY, { seats: 2, bots: [think(iters), randomEntropyBot], seed: s, opts: { first: s % 2 } }); if (result.winner === 0) w++; }
   console.log(`ENTROPY search (${iters} iterations) vs random x${n}: search wins ${pct(w, n)}`);
-  const m = {}, st = { flips: 0, busts: 0, fatigue: 0, reshuffles: 0 }; let first = 0, games = 0, fatigued = 0, reshuffled = 0;
+  const m = {}, st = { flips: 0, busts: 0, fatigue: 0, reshuffles: 0, hits: 0, downs: 0, strikes: 0, struck: 0, mends: 0, blunted: 0 }, off = { clash: 0, shove: 0 }; let first = 0, games = 0, fatigued = 0, reshuffled = 0;
   for (const a of CLASS_IDS) for (const b of CLASS_IDS) {
     let won = 0;
     for (let s = seed0; s < seed0 + n; s++) {
       const f = s % 2, { result } = play(ENTROPY, { seats: 2, bots: [think(iters), think(iters)], seed: s, opts: { first: f, classes: [a, b] } });
       if (result.winner === 0) won++; if (result.winner === f) first++; games++; rounds += result.rounds; how[result.how] = (how[result.how] || 0) + 1;
-      for (const k in st) st[k] += result.stats[k]; if (result.stats.fatigue) fatigued++; if (result.stats.reshuffles) reshuffled++;
+      for (const k in st) st[k] += result.stats[k] || 0; for (const k in off) off[k] += result.stats.offBy?.[k] || 0; if (result.stats.fatigue) fatigued++; if (result.stats.reshuffles) reshuffled++;
     }
     (m[a] ||= {})[b] = won / n;
   }
@@ -119,6 +119,8 @@ function entropy(n = 200, iters = 40) {
   for (const a of CLASS_IDS) console.log(`    ${a.padEnd(8)} ${CLASS_IDS.map((b) => (100 * m[a][b]).toFixed(0).padStart(4)).join('')}   mean ${(100 * CLASS_IDS.reduce((x, b) => x + m[a][b], 0) / CLASS_IDS.length).toFixed(1)}%`);
   console.log(`  ENTROPY the first seat wins ${pct(first, games)}; rounds a game ${(rounds / games).toFixed(1)}; ends by ${JSON.stringify(how)}`);
   console.log(`  ENTROPY a game: tiles turned by 21 ${(st.flips / games).toFixed(2)}, busts ${(st.busts / games).toFixed(2)}; fatigue taken ${(st.fatigue / games).toFixed(2)} (in ${pct(fatigued, games)} of games), reshuffles ${(st.reshuffles / games).toFixed(2)} (in ${pct(reshuffled, games)})`);
+  const g = (k) => (st[k] / games).toFixed(2);
+  console.log(`  ENTROPY tokens a game: hit ${g('hits')}, downed by a card ${g('downs')}, wands struck ${g('strikes')} for ${g('struck')}, cups mended ${g('mends')}, swords blunted ${g('blunted')}; off the board by the clash ${off.clash}, by a sword ${off.shove}`);
 }
 function entropyStyles(n = 200) {
   for (const [name, st] of [['Espada 90', { iters: 90, greed: 0.5 }], ['Petra 80', { iters: 80, greed: 0.3 }], ['Crock 20', { iters: 20, greed: 0.9 }]]) {
@@ -134,4 +136,4 @@ if (which === 'all' || which === 'querent') for (const k of K ? [+K] : [2, 3, 4]
 if (which === 'all' || which === 'supernova') { for (const k of K ? [+K] : [2, 3, 4]) supernova(N ? +N : 4000, k); supernovaStyles(N ? +N : 4000); }
 if (which === 'all' || which === 'nebula') { for (const k of K ? [+K] : [2, 3, 4]) nebula(N ? +N : 2000, k); nebulaTells(N ? +N : 2000); }
 if (which === 'all' || which === 'charity') { for (const k of K ? [+K] : [4, 5, 6]) charity(N ? +N : 3000, k); charityFolk(N ? +N : 3000); }
-if (which === 'all' || which === 'entropy') { entropy(N ? +N : 100, 40); entropyStyles(N ? +N : 100); }
+if (which === 'all' || which === 'entropy') { entropy(N ? +N : 100, 40); if (opt('styles', '1') !== '0') entropyStyles(N ? +N : 100); } // (--styles 0: the classes alone, a tuning pass's run)

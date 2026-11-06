@@ -306,3 +306,73 @@ Choices the builder made where section 8 was open:
 - A number card may sit on a token's tile and on the bomb's.
 - Equal swords both break.
 - A draw counts as a loss at a pot table.
+
+### 8.11 Token health, hits and feeding any time (South, 2026-11-06, evening, through Calissa)
+
+South: "giving the court tokens a health value, such that they can also be targeted by cards, with damage taken being 1x magnitude if of
+the same or adjacent suit, and 2x magnitude if of the opposite suit", and "the hungry dice should be able to be fed at any point during the
+turn". Built (`tokens.js` `hitOf`, `hitToken`; `rules.js` `previewPlay`, `feedCard`):
+- **A token's health** (`t.hp` of `t.max`): three a rank, page 3 .. king 12 (the Empress's +1 rank, +3). Three a rank so a ten of the
+  contrary suit (20) downs a queen or less and a same-suit ten downs a knight or less: a king costs two cards or a contrary ace (22).
+- **A hit**: a number card played on an enemy token (the place move `{ on: tokenId, v }`, an ace 1 or 11) hurts it by its value in place
+  of adding to a tile. x2 when the card's suit is the token's contrary (SPREADS.md 4: Wands against Cups, Swords against Pentacles), x1
+  for the same suit or an adjacent one. At 0 it is downed to its owner's discard pile (a cup does not go home). The log: `{ hurt, owner,
+  by, dmg, mult, hp, card }`, then `{ down, why: 'card' }`.
+- **Feeding** (`{ feed: card }`) is offered in every step that holds the play: the play, a card's place (the hand's other cards), the carve
+  (it replaces the carve's old `to: 'feed'`), and the bomb (after the roll: the roll stands, the bank and a re-roll's die grow). Fed in
+  the play step, the die is bigger for this turn's roll.
+- Choices South left open (strike any): **any enemy token anywhere** may be hit (a king of wands crosses in two turns, out of reach of the
+  tiles beside your ground); a **meeting still goes by strength**, never the health left; feeding is not offered at an empty deck's
+  fatigue-or-reshuffle choice (the draw is not done).
+
+Measured once (`node scripts/casino.mjs --game entropy --n 60`, search 40 both sides, 960 class games), untuned:
+- **The bot:** the search beats random 85% (75% before: hits and an early feed are moves it finds).
+- **Class means:** the Fool 41.3% (33.5%), the Chariot 35.8% (45.8%), the Empress 45.8%, the Hermit 49.2%. The Chariot is the token
+  class, and its tokens can now be shot down.
+- **Seats:** the first seat 47.4%. **Length:** 10.1 rounds.
+- **Ends:** 36% the counter on nobody's tile, 32% off a back rank, 17% on an owned tile, 15% draws; on health 2 of 960.
+- **Per game:** 3.1 tiles turned (5.1 before: cards go to tokens now), 0.12 busts; fatigue in 19%, a reshuffle in 26%.
+Read plainly: health still never ends a game; the swords' shove still decides a third; the Chariot wants something back.
+
+## 8.12 Version 2.1: health is the token, five classes (South, 2026-11-06, night: "the arcana class abilities and balance are your playground")
+
+8.11's numbers said: health never ended a game, draws were 20% (a bomb on nobody's tile, both Arcana still at 20), and a token could be shot
+anywhere the turn it was laid. Version 2.1's rules, each in its module's header:
+- **Health is the token** (`tokens.js`). Its power is its health left, plus a Charge's +3 on its owner's turn. A meeting's winner loses
+  the loser's power (never under 1). Wands strike their Arcana for their power. A sword shoves the bomb only with half its health left.
+  Cups mend half their power. Every hit now weakens everything the token will do.
+- **Reach** (`reachTokens`, `rules.js`). A card hits only an enemy token on a tile your number cards may go on, so ground held forward is
+  reach. A king of wands laid on their back rank is out of reach until it crosses into your half.
+- **Ground breaks the tie.** A bomb on nobody's tile goes to the seat holding more tiles, then the higher health; a draw only if both are
+  even. The 21s count to the end.
+- **Attuned cards** (`cards.js`). A number card of your class's suit may be played one up or one down (1 to 11). A deck carved toward its
+  suit finds 21 more easily, on tiles and on tokens.
+- **The second seat** opens with a bank of 2 and draws a sixth card on its first turn (Hearthstone's coin and card).
+- **Five classes** (`classes.js`), each answering another:
+  - **the Fool** (no suit): no contrary, so its tokens never take double; its re-roll costs 2; Cycle.
+  - **the Chariot** (swords): every token one tile further, plated (3 off every hit, never under 1), unscathed winning a meeting; Charge +3.
+  - **the Empress** (pentacles): tokens one rank stronger; Bloom now turns every tile under one of her tokens hers, since ground decides
+    half the games (its mend of 5 did little).
+  - **the Hermit** (cups): three cards kept; Lantern +3 to the roll.
+  - **the Tower** (wands, new): its tokens that fall are fed to its Hungry Die, not discarded; Lightning (2) hits every token for 3 but its
+    own wands, once a turn.
+- **Your class**: `/arcana <id>` before you sit; Dovina takes each of the others in turn (it was always the Fool against the Chariot).
+
+Measured with `node scripts/casino.mjs --game entropy --n 30 --styles 0` (search 40 both sides; a cell is 30 games, so +-9% a cell and
++-4% a class's mean):
+
+| pass | Fool | Chariot | Empress | Hermit | Tower | first seat | draws | ground | off the edge | owned tile | strike |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| health only (4 classes, n 40) | 46 | 31 | 35 | 38 | - | 43 | 20 | - | 26 | 18 | 2 |
+| + reach (Fool anywhere), ground, Tower | 74 | 35 | 47 | 50 | 39 | 58.5 | 1.2 | 47 | 27 | 16 | 7.5 |
+| Fool a tile further, Chariot plating 3, Lightning 2 | 60 | 50 | 39 | 47 | 53 | 58 | 1.2 | 47 | 26 | 19 | 7 |
+| Fool re-roll 2, Bloom claims, second's sixth card | 70 | 49 | 47 | 50 | 43 | 56 | 1.6 | 44 | 25 | 19 | 10 |
+| **Fool: no contrary in place of reach (n 40, as built)** | **51.5** | **46** | **48.5** | **46** | **43.5** | **56** | **0** | **44** | **24** | **20** | **10.6** |
+
+Read plainly: draws are gone (20% to 1.5%); ground now decides almost half the games and strikes a tenth; the bomb pushed off an edge is
+mostly the clash (133 of 187), not swords (54). The Fool kept winning while it held any reach of its own. Part of that may be the bot: the
+Fool, with no attuned cards, has the fewest choices to search. Its reach went in the last pass: as built, every class's mean sits within
+its noise of 50% (the Tower lowest at 43.5), the first seat still wins 56%, and draws are gone.
+Open, for the next pass: the first seat's edge (56%: a sixth card and a bank of 2 were not enough; next to try, the second seat's first
+roll +2 or the first seat's opening without a roll); the Tower a touch low; the clash pushing the bomb off an edge in a quarter of games
+(whether that is a fault or the game's tug of war is South's call in play).
