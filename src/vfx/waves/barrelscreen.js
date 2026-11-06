@@ -33,7 +33,7 @@ void main() {
   c = mix(c, c * uTint * 0.5 + uTint * 0.015, vig * 0.8);
   // the streaks: rays out from the mouth, drifting slowly round it
   float rays = pow(0.5 + 0.5 * sin(ang * 19.0 + uT * 0.35 + 2.0 * sin(ang * 5.0 - uT * 0.21)), 12.0) * smoothstep(0.08, 0.5, r) * (1.0 - smoothstep(0.7, 1.5, r));
-  c += uTint * rays * (0.025 + 0.035 * uK) * uCover * uMouthOn; // (half the first firing's: the streaks were louder than the lip, Calissa's look 2026-11-06)
+  c += uTint * rays * (0.006 + 0.01 * uK) * uCover * uMouthOn; // (a trace: the glow multiplies it many times, the first firing's 0.05 drowned the lip; Calissa 2026-11-06)
   c += vec3(1.0, 0.97, 0.88) * exp(-r * r / 0.012) * 0.12 * uCover * uMouthOn;
   // the spit: a ring thrown out from the mouth, a mist on the edges, the rays flared
   if (uSpit > 0.001) {

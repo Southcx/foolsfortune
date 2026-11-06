@@ -71,7 +71,7 @@ void main() {
   if (inner) {
     // inside the tube: the light through the lip, rippling in bands along the crest, the sky behind it
     float bands = liqGlow(vec2(vS * 0.35 - t * 0.6, vA * 2.0), 0.6, t) * 0.7 + 0.3;
-    col = body * 0.55 + wpThrough(V, N, thin) * (0.9 + 0.6 * bands) + WP_GLOW * 0.12 * thin * (0.5 + 0.5 * uDay);
+    col = body * 0.55 + wpThrough(V, N, thin) * (1.0 + 0.28 * bands) + WP_GLOW * 0.12 * thin * (0.5 + 0.5 * uDay); // (the bands' contrast softened after the first looks: down the tube they converge to rays and drowned the roof, Calissa 2026-11-06)
     col = mix(col, sky * 0.6, fres * 0.35);
     col += liqFilm(vA * 0.8 + vS * 0.02 + fres * 0.6 + t * 0.01) * fres * 0.05; // (the film's schiller, at a grazing look only)
   } else {
