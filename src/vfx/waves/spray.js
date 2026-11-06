@@ -25,7 +25,7 @@ import { RW } from '../../world/raceway/track.js';
 
 /** The rates (bursts a real second, desk and lean), the reach from the eye inside which the spray plays (m), the board's speed under
  *  which its rail throws none, the lens drops at a spit, and the skid's throttle (real s). */
-export const WAVE_SPRAY = { lip: [16, 6], near: 320, railFrom: 4, railFull: 24, drops: 14, skidEvery: 0.12 };
+export const WAVE_SPRAY = { lip: [34, 12], near: 320, railFrom: 4, railFull: 24, drops: 14, skidEvery: 0.12 };
 /** The spit's drops on the lens: big, running, drying in a second and a half (vfx/weatherfx/lensdrops.js LENS's form). */
 const SPIT_DROPS = { kind: 0, r: [0.012, 0.045], run: 0.45, dry: 1.6 };
 
@@ -42,7 +42,7 @@ export function lipTip(S, t, s, a, out = new THREE.Vector3()) {
   const W = S.WAVE, tl = W.throwLen, tube = W.tube;
   let tau = sstep(0, tl, -s); if (s >= 0) tau = Math.max(tau, 0.14 * (1 - sstep(0, tl, s)));
   const gone = sstep(-tube * 0.84, -tube * 1.02, s), shrink = 1 - 0.75 * gone;
-  const rx = f.F * (0.35 + 0.7 * tau) * shrink, ry = f.H * 0.46 * shrink, phi = a * tau * Math.PI * 0.82;
+  const C = W.lip, rx = f.F * (C.rx[0] + C.rx[1] * tau) * shrink, ry = f.H * C.ry * shrink, phi = a * tau * Math.PI * C.arc; // (WAVE.lip; a past 1: a finger's curl, lip.js)
   const dd = rx * Math.sin(phi), hh = f.H - ry + ry * Math.cos(phi) - gone * f.H * 0.35 * a;
   const tx = st.nu * ax.ux + st.nv * ax.vx, tz = st.nu * ax.uz + st.nv * ax.vz, px = x + dd * tx, pz = z + dd * tz;
   const base = (S.surfaceY(x, z, t) ?? P.y) - f.h; // (the still water and the swell under the crest)
@@ -74,7 +74,7 @@ export class WaveSpray {
       this.acc += raw * WAVE_SPRAY.lip[lean ? 1 : 0] * st.env;
       while (this.acc >= 1) {
         this.acc -= 1;
-        const s = -1 - Math.random() * (W.tube * 0.82), a = lipTip(S, t, s, 0.97, this.from), b = a && lipTip(S, t, s - 1.6, 0.97, this.to);
+        const s = -1 - Math.random() * (W.tube * 0.82), a = lipTip(S, t, s, 1, this.from), b = a && lipTip(S, t, s - 1.6, 1, this.to); // (off the fingers at the lip's tip: Hokusai's spray as dots)
         if (!a || !b || a.tau < 0.3) continue;
         _d.set(a.travel[0], 0.75, a.travel[1]).normalize();
         V.play('wave.lip.spray', { pos: _p.copy(a).lerp(b, 0.5), from: this.from.clone(), to: this.to.clone(), dir: _d.clone(), power: lean ? 0.7 : 1 });

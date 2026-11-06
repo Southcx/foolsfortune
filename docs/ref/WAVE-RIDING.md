@@ -16,7 +16,9 @@ surface on the GPU from `WAVEPOOL_GLSL` fed by `uniformsOf` (seven vec4s). Chang
 The model: a foil-driven pool (Surf Ranch), 600 x 150 m, the beach along v = 0, the machine's wall along v = W. Each pass raises one
 solitary wave whose crest travels to the beach at cw = 7.5 m/s, oblique to the reef line so its break point peels down the pool at
 c = 15 m/s (the board cruises at 24). Zones along the crest: the shoulder (unbroken, ahead), the pocket (just ahead of the break: the most
-power), the barrel (26 m behind the break: the face standing, the lip thrown over it, `lipCurve`), the whitewater (the bore behind). A
+power), the barrel (26 m behind the break: the face standing, the lip thrown over it, `lipCurve`), the whitewater (the bore behind). The wave is Hokusai's
+scale (South, 2026-11-06: "great wave of hokusai scale and roughness, probably about 3x magnitude"): 18.6 m at the break, its face 16 m
+wide, the tube 46 m, the lip thrown a full face width to land in the trough, its crest clawing into fingers of foam (vfx/waves/lip.js). A
 pass runs about 45 real s, then a 16 s lull of swell; the next pass peels the other way. Between and beyond, the swell (sharpened sines,
 bigger toward the deep wall) is wave riding's chop.
 
@@ -61,6 +63,9 @@ with depth, the spit's hiss.
 - The lip: a strip swept along the crest from the break point back through the tube, its cross-section `lipCurve` (Horizon Forbidden
   West's baked cross-section swept along the wavefront, done here as a function); its inside lit by light through the lip (DICE's
   translucency approximation, thickness from the curve's parameter), its edge feathering into spray.
+- The fingers: the lip's strip run on past its tip, cut by a fractal mask along the crest (Hokusai's claws); the face streaked with foam
+  bands down its fall line and roughened (water.js).
+- The waterline ripple (`vfx/watercontact.js`): a foam line and rings round the Courier and the hull wherever they cut any liquid.
 - Foam: cartoon, thresholded scrolling noise against the `foamAt` mask (Wind Waker, Sea of Thieves): the whitewater bore, the lip's
   landing line, the trail behind the board.
 - Spray: two-tone opaque blobs that shrink out (Breath of the Wild, Sonic Riders): the lip's sheet, the rail's spray on a carve, the

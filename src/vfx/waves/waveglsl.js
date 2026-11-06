@@ -38,8 +38,8 @@ float wpFoamMask(float s, float d, float zone, float H, float F, float v) {
   float m = 0.0;
   if (H > 0.3) {
     if (zone > 3.5) m = smoothstep(-uWP[4].z, 0.0, d) * (1.0 - smoothstep(F, F * 2.2, d)) * 0.95;
-    else if (zone > 2.5) m = max(exp(-(d - F) * (d - F) / 6.0) * 0.85, smoothstep(-2.0, 0.5, d) * (1.0 - smoothstep(0.5, 2.5, d)) * 0.5);
-    else if (zone > 1.5) m = smoothstep(-1.2, 0.3, d) * (1.0 - smoothstep(0.3, 1.6, d)) * 0.45 * (1.0 - s / ${f(WAVE.pocket + WAVE.pocketW)});
+    else if (zone > 2.5) m = max(exp(-(d - F) * (d - F) / 32.0) * 0.85, smoothstep(-4.6, 1.2, d) * (1.0 - smoothstep(1.2, 5.8, d)) * 0.5);
+    else if (zone > 1.5) m = smoothstep(-2.8, 0.7, d) * (1.0 - smoothstep(0.7, 3.7, d)) * 0.45 * (1.0 - s / ${f(WAVE.pocket + WAVE.pocketW)});
   }
   return max(m, (1.0 - smoothstep(-uWP[1].w, 6.0, v)) * 0.6);
 }
@@ -55,7 +55,7 @@ vec4 wpLipAt(float s, float a, out vec3 nOut, out float gone) {
   tau = max(tau, 0.14 * (1.0 - smoothstep(0.0, tl, s)) * step(-0.01, s)); // (the crest already pitching just ahead of the break: a feather)
   gone = smoothstep(-tube * 0.84, -tube * 1.02, s);
   float shrink = 1.0 - 0.75 * gone;
-  float rx = F * (0.35 + 0.7 * tau) * shrink, ry = H * 0.46 * shrink, phi = a * tau * 2.5761; // (lipCurve: 0.82 pi)
+  float rx = F * (${f(WAVE.lip.rx[0])} + ${f(WAVE.lip.rx[1])} * tau) * shrink, ry = H * ${f(WAVE.lip.ry)} * shrink, phi = a * tau * ${(Math.PI * WAVE.lip.arc).toFixed(5)}; // (lipCurve: WAVE.lip; a past 1 the clawing fingers curl on round, lip.js)
   float dd = rx * sin(phi), hh = H - ry + ry * cos(phi) - gone * H * 0.35 * a;
   vec2 uv = cuv + dd * tr;
   // the outward normal of the ellipse at phi, in the wave's (d, h) plane, turned into the park's

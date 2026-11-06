@@ -35,7 +35,7 @@ try {
       Object.defineProperty(window, '__game', { configurable: true, set(v) { v.manual = true; this.__g = v; }, get() { return this.__g; } });
       if (apple) for (const P of [WebGLRenderingContext.prototype, WebGL2RenderingContext.prototype]) { const gp = P.getParameter; P.getParameter = function (k) { return k === 0x9246 ? 'Apple GPU' : k === 0x9245 ? 'Apple Inc.' : gp.call(this, k); }; }
     }, Z.apple);
-    await page.goto(`${server.resolvedUrls.local[0]}?seed=1&clock=1791160275000`, { waitUntil: 'commit' });
+    await page.goto(`${server.resolvedUrls.local[0]}?seed=1&clock=1791160275000${Z.apple ? '&firstdraws=0' : ''}`, { waitUntil: 'commit' }); // (the phone's first-draw budget off: a manual frame or two would draw it near empty, render/firstdraws.js)
     for (let i = 0; i < 300; i++) { await new Promise((r) => setTimeout(r, 1000)); if (await page.evaluate('!!window.__ready').catch(() => false)) break; }
     report[Z.id] = await page.evaluate(async () => {
       const G = __game, g = G.game, R = G.renderer;

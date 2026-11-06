@@ -47,6 +47,7 @@ import { WorldLooks } from '../vfx/worldshells.js';
 import { RacewayCavern } from '../vfx/racewaycavern.js';
 import { RacewayPark } from '../vfx/racewaypark.js';
 import { WavePoolLook } from '../vfx/waves/index.js';
+import { WaterContact } from '../vfx/watercontact.js';
 import { RacewayMade } from '../vfx/racewaymade.js';
 import { RacewayTraps } from '../vfx/racewaytraps.js';
 import { TrackEditorMarks } from '../vfx/trackeditormarks.js';
@@ -87,7 +88,8 @@ export function bootTools(game, made) {
   game.racewayCavern = new RacewayCavern(game); game.racewayFog = new RacewayFog(game); game.racewayPark = new RacewayPark(game); game.racewayProps = new RacewayProps(game); game.racewaySiphons = new RacewaySiphons(game); // (the cavern's stone, crystals, veins and dark, and Dread's fog on the course: vfx/racewaycavern.js, vfx/racewayfog.js)
   game.racewayMade = new RacewayMade(game); game.racewayTraps = new RacewayTraps(game); game.trackEditorMarks = new TrackEditorMarks(game); game.trackEditorLook = new TrackEditorLook(); // (a made track's dress, its traps' bodies and tells, the editor's marks and its panel's dress: TRACK-EDITOR.md)
   game.wavePoolLook = new WavePoolLook(game); // (the Raceway park's wave pool: its water, the lip, the spray, the barrel screen, the basin: vfx/waves/)
-  for (const name of ['skiffSlipArc', 'racewayLooks', 'racewayCavern', 'racewayFog', 'racewayProps', 'racewayPark', 'racewaySiphons', 'racewayMade', 'trackEditorMarks', 'wavePoolLook']) game.systems.add('marks', game[name], { clock: 'raw', name }); // (core/systems.js)
+  game.waterContact = new WaterContact(game); // (the waterline ripple round the Courier and the hull wherever they cut a liquid: vfx/watercontact.js)
+  for (const name of ['skiffSlipArc', 'racewayLooks', 'racewayCavern', 'racewayFog', 'racewayProps', 'racewayPark', 'racewaySiphons', 'racewayMade', 'trackEditorMarks', 'wavePoolLook', 'waterContact']) game.systems.add('marks', game[name], { clock: 'raw', name }); // (core/systems.js)
   game.systems.add('marks', game.worldLooks, { name: 'worldLooks' }); // (the World shells' changed places, on the game's clock)
   applyCineOverrides(save); game.cine = new Cine(game); // (cinematic events as data: cine/sequences.js)
   game.auras = new Auras(game); // (a status, shown round whatever has it: vfx/auras.js)

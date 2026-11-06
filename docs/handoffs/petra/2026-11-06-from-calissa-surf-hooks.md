@@ -46,3 +46,24 @@ the turns' thresholds, a wipeout and a made tube in play.
   hand in the wave's face, courier/skiff/handdrag.js; its weight is nothing off the wave pool), and `drag: this.surf.drag.w` in the rider's state (rider.js crouches by it as by the hop's charge). Stress after it: 8 runs, 0 violations.
 
 **Added 2026-11-06 (late):** skiff.js, the height: `let want = ...` as before, then `if (this.surf.on) want = gy + SURF.seat;` (SURF.seat 0.35, surf.js). On the wave pool's water the deck sits 0.35 m over it, where it hovered 0.6: the board read as floating over the face and the stall's hand could not reach the water (now 0.44 m short, was 0.85). Off the pool `want` is unchanged. 0.15 was tried and broke the pump and the dive in the full playtest; 0.35 keeps all of them.
+
+## The pool swims, and the great wave (2026-11-06, night)
+
+South on the phone: "the water used for the surfing module doesn't use the same triggers to make it swim-able" (the Courier stood on the
+pool's bed under its drawn water: no `game.water` volume there). One guarded hook in your file, `courier/moves/env.js` (Water):
+
+- `this.probes = []` in the constructor, and `probe(fn)` -> its removal: `fn(x, y, z)` answers a volume-like
+  `{ surface, bottom, kind, x0, x1, z0, z1 }` there (the y range already tested by the probe; y null asks any height), or null.
+- `at(x, y, z)`: after the boxes, `return this.probes.length ? this.probeAt(x, y, z) : null` (no probe registered: exactly as before).
+- `disturb(..., y = null)`: the volume looked up in the boxes, else the probes; y taken from `v.surfaceAt(x, z)` where the volume has one.
+- `probeAt(x, y, z)`: the first probe's answer.
+
+The one probe is the wave pool's (`SurfPool.probe`, `world/raceway/surf/surfpool.js`, registered on its first update: CASEBOOK 34): inside
+the basin, over its bed and under the moving surface (+0.5), it answers one kept volume (`raceway.surf.vol`, `wavePool: true`) whose
+`surface` and `bottom` are getters read where the Courier is (else where it was last asked) on the surface the board rides (`rideY`) and
+the pool's own bed; `surfaceAt(x, z)` for anyone asking elsewhere. So swim.js takes the Courier walking or falling in, as in any water;
+the skiff is never taken (an active tech is not preempted), and a wipeout or stepping off the board swims. Nothing in swim.js changed.
+
+Also mine, no hooks in yours: the wave three times as tall (WAVE in `surf/wavepool.js`, H 6.2 -> 18.6, the face, back, tube and pocket
+about 2.3 times as long, the pool deeper: reef 5 m, deep wall 11 m, so park.js's cut is deeper), the swell half as tall again, the lip's
+fingers, the face's streaks, and `vfx/watercontact.js` (the waterline ripple: two quads, one program, a 'marks' system from boot/tools.js).
