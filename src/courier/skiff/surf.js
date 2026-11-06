@@ -47,10 +47,11 @@ export const SURF = {
   pump: { add: 2.8, least: 0.35, win: [0.22, 0.95], steep: [0.06, 0.4] },
   turn: { rate: 1.1, end: 0.5, min: 0.7, snap: 2.6, cool: 0.8 },
   floater: { speed: 8 },
-  tube: { cover: 0.45, out: 0.2, grace: 0.18, min: 0.6, ideal: 0.38, gain: 2.0, hold: 2.6, wobble: 0.9, home: 0.4, lip: 0.8, deep: 0.94, spit: [9, 1.2, 4] },
+  tube: { cover: 0.45, out: 0.2, grace: 0.18, min: 0.6, ideal: 0.38, gain: 2.0, hold: 2.6, wobble: 0.9, home: 0.4, lip: 0.7, deep: 0.94, spit: [9, 1.2, 4] },
   sub: { fall: -9, speed: 16, depth: 1.4, t: 0.7, drag: 1.6, burst: [10, 1.0, 5], up: 6 },
   crest: [4, 0.6, 1.5],
   carryAir: 0.6,
+  rail: 9, // (the rail's bite on the face: the board's slide across its heading held this hard, /s; the stall lets a third through)
 };
 const clamp = (x, a, b) => (x < a ? a : x > b ? b : x);
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
@@ -92,6 +93,9 @@ export class SurfRide {
     const onFace = (this.onFace = wet && f.H > 1.2 && f.d > -0.5 && f.d < f.F && !!FACE_ZONES[f.zone]);
     this.ownsW = onFace;
     if (onFace) sk.L = Math.max(0, sk.L - dt / sk.cfg.furlTime);
+    // the rail's bite: on the face the board's slide across its own heading (the fall line's pull, the base ride's vl) is held, as a
+    // surfboard's rail holds a line across a wave; the stall lets some through, so a stall drops you back and down into the tube
+    if (onFace) { const rx = -Math.cos(sk.heading), rz = Math.sin(sk.heading), vl = sk.v.x * rx + sk.v.z * rz, k = 1 - Math.exp(-SURF.rail * (this.stall ? 0.33 : 1) * dt); sk.v.x -= rx * vl * k; sk.v.z -= rz * vl * k; }
     // the pocket's push, and the tube's draw
     const pu = S.push(P.pos.x, P.pos.z), B = S.barrel(P.pos.x, P.pos.y - (sk.cfg.hover + 0.1), P.pos.z);
     this.cover = wet ? B.cover : 0; this.k = B.k; this.hr = B.hr; this.lipOver = B.lipOver;
@@ -186,7 +190,8 @@ export class SurfRide {
   /** The tube: in, its clock and balance, out made or not, or wiped out. */
   barrel(dt, f, wet) {
     const sk = this.sk, g = this.game, X = SURF.tube;
-    if (!this.tube && wet && this.cover > X.cover) { this.tube = { t: 0, out: 0, lipped: false }; this.balance = 0; g.events?.emit('skiff.tube.enter', { by: 'courier' }); }
+    this.tubeWait = Math.max(0, (this.tubeWait || 0) - dt);
+    if (!this.tube && wet && this.cover > X.cover && this.tubeWait <= 0) { this.tube = { t: 0, out: 0, lipped: false }; this.balance = 0; g.events?.emit('skiff.tube.enter', { by: 'courier' }); }
     const Tb = this.tube; if (!Tb) { this.balance *= Math.exp(-4 * dt); return; }
     Tb.t += dt; sk.combo.t = COMBO.link; // (the chain lives while the lip is over you)
     if (!Tb.lipped && this.cover > 0.5) { Tb.lipped = true; g.time?.pulse?.('surf.lip', 0.55, 0.22, { release: 0.3 }); } // (the lip passing over: a breath of game time)
@@ -195,7 +200,8 @@ export class SurfRide {
     const wob = X.wobble * (0.3 + this.k) * (Math.sin(tt * 2.3) * 0.6 + Math.sin(tt * 3.7 + 1.3) * 0.4);
     this.balance = clamp(this.balance + ((err + wob) - X.home * this.balance + X.hold * (sk.steer || 0)) * dt, -1.2, 1.2);
     // wiped out: the lip lands on you, or the foam ball takes you
-    if ((this.hr > X.lip && this.lipOver > 0 && this.cover > 0.3) || this.balance >= 1) return this.wipe('lip');
+    const underLip = f.zone === 'barrel' && this.k > 0.05 && f.d > 0 && f.d < f.F && this.hr > X.lip; // (up the face where the lip is thrown: it lands on you; the cover test stops counting you covered above 0.88 H, so it is asked of the wave, not of the cover)
+    if (underLip || this.balance >= 1) return this.wipe('lip');
     if (this.k > X.deep || (f.zone === 'whitewater' && f.d > 0 && wet) || this.balance <= -1) return this.wipe('closeout');
     // out of it: made through the mouth, or out over the face or the back
     Tb.out = this.cover < X.out ? Tb.out + dt : 0;
@@ -209,7 +215,7 @@ export class SurfRide {
   wipe(why) {
     const sk = this.sk;
     if (this.tube) this.game.events?.emit('skiff.tube.exit', { seconds: +this.tube.t.toFixed(2), made: false, by: 'courier' });
-    this.tube = null; this.balance = 0;
+    this.tube = null; this.balance = 0; this.tubeWait = 0.8; // (not back in at once: a wipeout in the bail's grace would re-enter every step)
     if ((sk.rideT || 0) > 0.5) sk.bail(why);
   }
 

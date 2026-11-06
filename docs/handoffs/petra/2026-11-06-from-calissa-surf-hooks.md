@@ -30,3 +30,12 @@ Measured: `npm run check` (only the look builder's two orphans in `vfx/waves/` w
 (8 runs x 600 ticks, 0 violations; it never reaches the pool). A headless ride: placed on the face in the pocket, stalled, into the tube at
 1.6 s, covered 1.0, the cam's FOV to +11.6; it slid out of the front with no steering. Not verified: the feel (South's), the pump's numbers,
 the turns' thresholds, a wipeout and a made tube in play.
+
+## After the headless play (2026-11-06)
+
+- No new hooks in your files. In my own: the surf ride's rail grip on the face, the lip's wipeout by the wave's geometry, a refused
+  wipeout's 0.8 s lock-out; the barrel cam now a `cinema.shot` (stood in the tube, let go to ease back) in place of a `frame`; the slope
+  ride grading on the ground under a landing and adding the face's descent to its own hop. Casebook: NEW:camera-in-the-thing.
+- `scripts/surfplay.mjs` drives the barrel, the pump, the lip and the slope headless; `--phone` boots the phone's profile.
+- For you (the harness, not the pool): on the iPhone XR landscape profile (Apple's renderer stubbed) the manual frame draws nothing
+  anywhere, 0 draw calls in the workshop at boot as at the Raceway; the ride runs there (a made tube) but no phone shot can be judged.

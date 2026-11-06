@@ -5085,3 +5085,21 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Probed** (touch at 896 x 414): BELT's SKIFF to the skiff; on it OFF and JELLY on the top row; JELLY to the jelly; SKIFF from it;
   OFF to foot; BELT's tap OFF the jelly; Y never left down, the choice's ring never up, 0 errors.
 - **Rule:** 410
+
+### 2026-11-06 · The wave pool's first headless play: the barrel camera outside the tube, the lip that never landed, the slope's landings
+- **Seen:** the wave riding playtest (scripts/surfplay.mjs, Calissa's): covered by the lip, the shot showed open sky and flat water,
+  no wave; riding up under the lip never wiped out; a wipeout inside the bail's grace re-entered the tube every step (an enter and exit
+  pair a frame); a straight hop on the slope's 26-degree pitch graded sketchy or a bail.
+- **Cause, as measured:** the barrel cam asked the follow camera for a composition (cinema `frame`: a share of the stand-off, metres of
+  lift), which left the camera 6.7 m over the still water against a 6.2 m wave, above the crest, outside the tube. The lip's wipeout was
+  asked only while the cover test counted you covered, and that test stops counting at 0.88 H, past where the board leaves the water at
+  the crest: the window never opened. The slope ride graded a landing on the last ground normal before the air, and the sand's hop sets
+  its rise alone, so a hop off a slope popped away from the face and came down 30 degrees steeper than it.
+- **Fix:** the barrel cam is a camera of its own (cinema `shot`), stood in the tube's frame (behind the rider down the crest, toward
+  its open side, an eye over the face kept under the rider's own height) and looking at the mouth, let go to ease back. The lip lands
+  on you by the wave's own geometry (in the barrel, the lip thrown, on the face, over 0.7 H). A refused wipeout keeps the tube shut
+  0.8 real s. The slope ride grades on the ground under the landing and adds the face's descent to a hop it launches; clean widened
+  to 29 degrees, bail to 54.
+- **Probed:** desk and the phone's profile: a made tube (2.8 s), twelve pumps, a lip wipeout, five skids, two presses, two clean
+  landings (one with a countered pre-wound spin); the barrel shot from inside the tube.
+- **Rule:** NEW:camera-in-the-thing

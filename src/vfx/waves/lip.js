@@ -18,7 +18,7 @@
 //   const L = new WavePoolLip(game, { U, lean })   L.mesh   L.dispose()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { WAVEPOOL_GLSL } from '../../world/raceway/surf/wavepool.js';
+import { WAVEPOOL_GLSL, WAVE } from '../../world/raceway/surf/wavepool.js';
 import { LIQUID_GLSL, liquidUniforms } from '../liquid.js';
 import { WAVE_PARTS_GLSL, WAVE_SHADE_GLSL, SKY_FALLBACK_GLSL } from './waveglsl.js';
 
@@ -69,10 +69,14 @@ void main() {
   vec3 body = mix(WP_DEEP, WP_BODY, 0.55 + 0.4 * vA);
   vec3 col;
   if (inner) {
-    // inside the tube: the light through the lip, rippling in bands along the crest, the sky behind it
+    // inside the tube: dark where the lip is thick (its root over the crest, the water's whole weight), luminous jade where it thins to
+    // the tip and the light comes through, darker the deeper into the tube from the mouth; slow bands of light along it (a tube is
+    // read by that gradient: the roof's dark heel to the bright curtain, the mouth the brightest thing in the frame)
+    float lit = pow(clamp(vA, 0.0, 1.0), 1.4) * vTau, deep = 0.45 + 0.55 * smoothstep(-${WAVE.tube.toFixed(1)}, 0.0, vS);
     float bands = liqGlow(vec2(vS * 0.35 - t * 0.6, vA * 2.0), 0.6, t) * 0.7 + 0.3;
-    col = body * 0.55 + wpThrough(V, N, thin) * (1.0 + 0.28 * bands) + WP_GLOW * 0.12 * thin * (0.5 + 0.5 * uDay); // (the bands' contrast softened after the first looks: down the tube they converge to rays and drowned the roof, Calissa 2026-11-06)
-    col = mix(col, sky * 0.6, fres * 0.35);
+    vec3 heel = WP_DEEP * 0.32, glass = mix(WP_BODY, WP_GLOW, 0.35) * 1.25;
+    col = mix(heel, glass, lit) * deep + wpThrough(V, N, thin) * lit * (0.6 + 0.25 * bands) * deep; // (the bands soft: down the tube they converge to rays, Calissa 2026-11-06)
+    col = mix(col, sky * 0.6, fres * 0.25 * lit);
     col += liqFilm(vA * 0.8 + vS * 0.02 + fres * 0.6 + t * 0.01) * fres * 0.05; // (the film's schiller, at a grazing look only)
   } else {
     col = mix(body, WP_DEEP, 0.3 * (1.0 - vA)) + wpThrough(V, N, thin * 0.75);

@@ -33,6 +33,8 @@ import { SKIFF } from './boat.js';
 import { onSlope } from '../../world/raceway/surf/slope.js';
 import { RW } from '../../world/raceway/track.js';
 
+const _n = new THREE.Vector3(); // (the ground's normal under a landing: the ride's own is the last step's before the air)
+
 /** The numbers. `furl`: the sail's hoist under which the board can ride as a snowboard (`leaveL` over which it stops); `enter` and `leave`
  *  (degrees): the fall along the travel that begins it, the steepness under which it ends after `leaveT` real s on the ground.
  *  edge: its most (rad), its ease; the sidecut's radius (m); the grip's mu; the heading's fastest turn (rad/s); the crawl's pivot (rad/s,
@@ -46,7 +48,7 @@ export const SLOPE_RIDE = {
   skid: { drag: 1.4, min: 0.08, every: 0.15 },
   butter: { min: 1.2, max: 10, rate: 2.6, most: 1.4, count: 0.4 },
   wind: { full: 0.6, spin: 7, fade: 0.35, counter: 6 },
-  land: { air: 0.4, yaw: 0.3, pitch: 0.35, bail: 0.85, keep: 0.85 },
+  land: { air: 0.4, yaw: 0.3, pitch: 0.5, bail: 0.95, keep: 0.85 }, // (pitch and bail widened after the headless play, 2026-11-06: a straight tap on a 26-degree pitch lands ~26 degrees steeper under the skiff's gravity)
   carve: { edge: 0.3, count: 1.0 },
 };
 
@@ -69,8 +71,8 @@ export class SlopeRide {
   get wound() { return this.wind / SLOPE_RIDE.wind.full; }
 
   /** The ground's fall along the travel (tan: + falling away) and its steepness (tan), from the ride's normal. */
-  fall() {
-    const S = this.S, n = S.n, sp = S.v.length();
+  fall(n = this.S.n) {
+    const S = this.S, sp = S.v.length();
     const tx = sp > 1.5 ? S.v.x / sp : Math.sin(S.heading), tz = sp > 1.5 ? S.v.z / sp : Math.cos(S.heading), ny = Math.max(0.2, n.y);
     return { down: (n.x * tx + n.z * tz) / ny, steep: Math.sqrt(n.x * n.x + n.z * n.z) / ny, tx, tz };
   }
@@ -118,7 +120,12 @@ export class SlopeRide {
     if (!this._on) return steerEff;
     // ---- the air: a pre-wound spin carried off the lip
     if (S.air) {
-      if (!this.wasAir) { this.spinRate = R.wind.spin * clamp(this.wound, 0, 1); this.wind = 0; this.endCarve(); this.endButter(); }
+      if (!this.wasAir) {
+        this.spinRate = R.wind.spin * clamp(this.wound, 0, 1); this.wind = 0; this.endCarve(); this.endButter();
+        // a hop off the face keeps the way down it had (the sand's hop sets its rise alone: on a slope that pops the board off the face
+        // and it lands steep; a snowboard's ollie rides the slope's line): the face's descent added to the launch, here only
+        if (P.vel.y > 0) { const F = this.fall(); P.vel.y -= S.v.length() * Math.max(0, F.down); }
+      }
       this.wasAir = true;
       if (this.spinRate > 0.05) {
         S.spin += -this.windDir * this.spinRate * dt;
@@ -168,7 +175,7 @@ export class SlopeRide {
     this.spinRate = 0;
     if (!this._on || (S.airT || 0) < R.air) return false;
     const TAU = Math.PI * 2, near = Math.round(S.spin / TAU), yaw = Math.abs(S.spin - near * TAU);
-    const vh = Math.max(0.1, S.v.length()), F = this.fall(), pitch = Math.abs(Math.atan2(-P.vel.y, vh) - Math.atan(F.down));
+    const vh = Math.max(0.1, S.v.length()), F = this.fall(S.dunes?.normalAt ? S.dunes.normalAt(P.pos.x, P.pos.z, _n) : S.n), pitch = Math.abs(Math.atan2(-P.vel.y, vh) - Math.atan(F.down));
     void vyT;
     const bail = yaw > 1.22 || pitch > R.bail, grade = bail ? 'bail' : yaw < R.yaw && pitch < R.pitch ? 'clean' : 'sketchy';
     this.grade = grade;

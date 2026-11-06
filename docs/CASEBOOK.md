@@ -1150,3 +1150,7 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 410. **On touch, a choice is its own tiles, never a key held while another thumb steers.** A press that
   must outlast a clock and be steered with the stick is two hands' work on glass, and a tile that hides itself under the finger leaves
   its key down for good.
+
+NEW:camera-in-the-thing. **A camera that must be inside a thing is placed in that thing's own frame.** A composition asked of the
+  follow camera (a share of its stand-off, metres of lift) knows nothing of the shape it should sit in; a tube, a cave or a cockpit is a
+  shot stood in its own geometry, looking where it opens.
