@@ -7,7 +7,7 @@
 //   lip      set in the tube and driven up the face under the lip: a wipeout, skiff.bail { why: 'lip' }
 //   slope    off the slope's crest down the face: an edge, a hop with a pre-wind countered, landings graded; a butter on the bench
 // A shot of the barrel cam's view is taken while covered (shots/surfplay-barrel.png).
-//   node scripts/surfplay.mjs [outDir] [--only barrel,pump] [--phone]
+//   node scripts/surfplay.mjs [outDir] [--only barrel,pump] [--phone [--throttle: the first-draw budget left on, 60 frames drawn before the shot]]
 // Prior art: the surf builder's probe (the pocket's placing, the barrel's frame), scripts/wavepool-shot.mjs (the manual frame).
 // ---------------------------------------------------------------------------------------
 import fs from 'node:fs';
@@ -32,7 +32,7 @@ try {
   page.on('pageerror', (e) => errs.push(e.message));
   page.on('console', (m) => { if (m.type() === 'error' && !/404/.test(m.text())) errs.push(m.text().slice(0, 240)); });
   await page.addInitScript(() => { Object.defineProperty(window, '__game', { configurable: true, set(v) { v.manual = true; this.__g = v; }, get() { return this.__g; } }); });
-  await page.goto(`${server.resolvedUrls.local[0]}?seed=1&clock=1791160275000${phone ? '&firstdraws=0' : ''}`, { waitUntil: 'commit' }); // (the phone's first-draw budget admits a few new materials a frame: a shot from a manual frame or two would be near empty, render/firstdraws.js)
+  await page.goto(`${server.resolvedUrls.local[0]}?seed=1&clock=1791160275000${phone && !process.argv.includes('--throttle') ? '&firstdraws=0' : ''}`, { waitUntil: 'commit' }); // (the phone's first-draw budget admits a few new materials a frame: a shot from a manual frame or two would be near empty, render/firstdraws.js)
   for (let i = 0; i < 300; i++) { await new Promise((r) => setTimeout(r, 1000)); if (await page.evaluate('!!window.__ready').catch(() => false)) break; }
   await page.evaluate(`document.getElementById('overlay') && (document.getElementById('overlay').style.display = 'none'); __game.input.enabled = true;`);
   await page.evaluate(async () => {
@@ -71,7 +71,7 @@ try {
       }
       G.tick(1 / 60);
       if (i % (opt.every || 15) === 0) rows.push([i, sk.phase, sk.surf.tube ? 'T' : '-', +((f?.d ?? 0) / (f?.F || 1)).toFixed(2), f?.zone, +(f?.s ?? 0).toFixed(1), +(sk.surf.hr).toFixed(2), +sk.surf.cover.toFixed(2), +sk.surf.k.toFixed(2), +sk.surf.balance.toFixed(2), +sk.speed.toFixed(1)].join(' '));
-      if (opt.shot && !shot && sk.surf.cover > 0.8 && g.cinema?.shots?.has?.('barrel') && (g.cinema?.sk ?? 1) > 0.9) { shot = true; if (opt.nolip && g.wavePoolLook?.parts) { g.wavePoolLook.parts.lip.mesh.visible = false; g.wavePoolLook.parts.water.near.visible = false; } for (let k = 0; k < 2; k++) G.draw(); window.__shot = true; const skb = sk.skiff?.group; window.__board = skb ? { drag: +(sk.surf.drag?.w ?? 0).toFixed(2), side: sk.surf.drag?.side, hand: sk.surf.drag ? +(sk.surf.drag.gap ?? -1).toFixed(2) : null, vis: skb.visible, y: +(skb.getWorldPosition(new G.THREE.Vector3()).y + 420).toFixed(2), water: +(g.raceway.rideHeight(P.pos.x, P.pos.z) + 420).toFixed(2), py: +(P.pos.y + 420).toFixed(2) } : null; const W = g.wavePoolLook, c = g.camera; window.__lookDbg = { near: W.near, vis: W.group?.visible, lipVis: W.parts?.lip?.mesh?.visible, wt: W.t, st: S.t, same: W.S === S.S, cam: [c.position.x - 6000, c.position.y + 420, c.position.z].map((x) => +x.toFixed(1)), pl: [P.pos.x - 6000, P.pos.y + 420, P.pos.z].map((x) => +x.toFixed(1)), cover: W.screen?.cover, inScene: !!W.group?.parent, layers: W.group?.layers?.mask }; return { rows, ev: __ev.slice(), shot: true }; }
+      if (opt.shot && !shot && sk.surf.cover > 0.8 && g.cinema?.shots?.has?.('barrel') && (g.cinema?.sk ?? 1) > 0.9) { shot = true; if (opt.nolip && g.wavePoolLook?.parts) { g.wavePoolLook.parts.lip.mesh.visible = false; g.wavePoolLook.parts.water.near.visible = false; } for (let k = 0; k < (opt.warm || 2); k++) G.draw(); window.__shot = true; const skb = sk.skiff?.group; window.__board = skb ? { drag: +(sk.surf.drag?.w ?? 0).toFixed(2), side: sk.surf.drag?.side, hand: sk.surf.drag ? +(sk.surf.drag.gap ?? -1).toFixed(2) : null, vis: skb.visible, y: +(skb.getWorldPosition(new G.THREE.Vector3()).y + 420).toFixed(2), water: +(g.raceway.rideHeight(P.pos.x, P.pos.z) + 420).toFixed(2), py: +(P.pos.y + 420).toFixed(2) } : null; const W = g.wavePoolLook, c = g.camera; window.__lookDbg = { near: W.near, vis: W.group?.visible, lipVis: W.parts?.lip?.mesh?.visible, wt: W.t, st: S.t, same: W.S === S.S, cam: [c.position.x - 6000, c.position.y + 420, c.position.z].map((x) => +x.toFixed(1)), pl: [P.pos.x - 6000, P.pos.y + 420, P.pos.z].map((x) => +x.toFixed(1)), cover: W.screen?.cover, inScene: !!W.group?.parent, layers: W.group?.layers?.mask }; return { rows, ev: __ev.slice(), shot: true }; }
       if (i % 30 === 0) await new Promise((q) => setTimeout(q, 0));
     }
     return { rows, ev: __ev.slice(), shot: false };
@@ -80,8 +80,8 @@ try {
   const dbg = () => page.evaluate('window.__dbg').then((d) => console.log('placed', JSON.stringify(d)));
   if (want('barrel')) {
     await placeOnWave(2, 0.45, 13); await dbg();
-    let r = await surfPilot(10, { stall: true, pump: true, pumpFrom: -8, shot: true, nolip: process.argv.includes('--nolip') });
-    if (r.shot) { console.log('board', JSON.stringify(await page.evaluate('window.__board'))); console.log('lookDbg', JSON.stringify(await page.evaluate('window.__lookDbg'))); await page.screenshot({ path: path.join(out, `surfplay-barrel${phone ? '-phone' : ''}.png`) }); const r2 = await surfPilot(9, { pump: true, pumpFrom: -8 }); r = { rows: r.rows.concat(r2.rows), ev: r.ev.concat(r2.ev) }; }
+    let r = await surfPilot(10, { stall: true, pump: true, pumpFrom: -8, shot: true, warm: process.argv.includes('--throttle') ? 60 : 2, nolip: process.argv.includes('--nolip') });
+    if (r.shot) { console.log('board', JSON.stringify(await page.evaluate('window.__board'))); console.log('lookDbg', JSON.stringify(await page.evaluate('window.__lookDbg'))); await page.screenshot({ path: path.join(out, `surfplay-barrel${phone ? '-phone' : ''}.png`), timeout: 180000 }); const r2 = await surfPilot(9, { pump: true, pumpFrom: -8 }); r = { rows: r.rows.concat(r2.rows), ev: r.ev.concat(r2.ev) }; }
     report.barrel = r;
   }
   if (want('pump')) { await placeOnWave(30, 0.4, 14); report.pump = await surfPilot(5, { pump: true }); }

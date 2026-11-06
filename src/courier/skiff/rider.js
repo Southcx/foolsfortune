@@ -30,6 +30,7 @@ import * as THREE from 'three';
 import { GrabReach } from './grabreach.js';
 
 const damp = THREE.MathUtils.damp, smooth = (a, b, x) => { const t = THREE.MathUtils.clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const DRAG_BEND = 1; // (how far the kneel's bend is laid over the ride while the hand drags)
 const OLLIE = { crouch: 0.23, pop: 0.27, peak: 0.45, land: 0.73 }; // (Skiff_Ollie's moments, clip seconds: frames 8, 9, 14, 23)
 const GLIDE = { clip: 'Air_Glide', w: 0.85 }; // (the glide's upper body: the suite's glide (courier/moves/jets.js's hover wears it too), short of all of it so the stance shows through)
 const lifts = new Map();
@@ -101,6 +102,8 @@ export class Rider {
       B.p[1] -= this.lift('Skiff_Ollie', this.ot); // (the feet stay on the deck: the hop lifts the body, not the clip)
       C.blend(A, B, this.ollieW);
     }
+    // the stall's drag: the upper body bent low over the knees (UAL's kneel, as the grab's under-pose), so the trailing hand reaches the face
+    if ((s.drag || 0) > 0.01 && C.clips.kneel) C.blend(A, C.sample('kneel', 0.5, B, false), Math.min(1, s.drag / 0.9) * DRAG_BEND, this.ch.MASK_UPPER, 0);
     // the glide (Skiff_Glide's body): the suite's Air_Glide, arms out as wings and leaning into the air, over the upper body only; the
     // ollie's held peak keeps the legs, so the feet stay on the deck (casebook rule 19). The rider faces over the side, so the arms
     // spread along the board, fore and aft, as a board rider's do on a wave, while the oars spread over the sides (boat.js SKIFF_GLIDE)
