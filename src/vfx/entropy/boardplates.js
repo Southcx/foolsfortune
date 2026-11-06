@@ -55,7 +55,7 @@ const CSS = `
 #etb .end .tag { font-size: 9px; letter-spacing: 0.3em; opacity: 0.55; text-transform: uppercase; }
 #etb .roll { position: absolute; width: 96px; height: 72px; margin: -84px 0 0 -48px; display: none; filter: drop-shadow(0 0 6px rgba(0,0,0,0.9)); }
 #etb .rule { position: absolute; left: 0; right: 0; height: 1px; background: rgba(236, 230, 214, 0.35); }
-@media (max-height: 500px) { #etb .pl { font-size: 10px; padding: 4px 9px 3px; min-height: 22px; } #etb .pl small { display: none; } #etb .turn { font-size: 10px; } #etb .turn .steps { display: none; } #etb .turn { max-width: 64vw; letter-spacing: 0.08em; } #etb .turn b { font-size: 10px; padding: 5px 8px 4px; } }
+@media (max-height: 500px) { #etb .pl { font-size: 10px; padding: 4px 9px 3px; min-height: 22px; } #etb .pl small { display: none; } #etb .turn { font-size: 10px; } #etb .turn .steps { display: none; } #etb .turn { max-width: 82vw; letter-spacing: 0.06em; font-size: 9px; } #etb .turn b { font-size: 10px; padding: 5px 8px 4px; } }
 `;
 const el = (tag, cls, parent) => { const e = document.createElement(tag); if (cls) e.className = cls; parent?.appendChild(e); return e; };
 const esc = (s) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);

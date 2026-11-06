@@ -44,6 +44,7 @@ import { BoardPlates } from './boardplates.js';
 import { ArcanaPortrait } from './portraits.js';
 import { BombCountdown } from './countdown.js';
 import { CardDrag } from './drag.js';
+import { SeatCorners, DieFeast } from './corners.js';
 
 /** The numbers: the camera's ease (per real s) and the screen band the board is fitted into (NDC: below `lo` is the hand's), a token's
  *  glide and hop (real s, m), the lift under the cursor (m), a spawn's grow, the die's throw, hold and way back (real s), a tap and a long
@@ -52,7 +53,8 @@ import { CardDrag } from './drag.js';
 export const BOARD_VIEW = {
   ease: 1.5, band: { lo: -0.46, hi: 0.92, x: 0.94 }, glide: 0.42, hop: 0.5, lift: 0.22, spawn: 0.5, throw: 0.95, hold: 1.4, back: 0.6, slide: 0.6,
   longPress: 0.42, still: 10, coachFor: 0.5,
-  at: { arcana: [{ x: -1.45, z: 5.7, y: 1.35 }, { x: 4.7, z: -0.95, y: 1.5 }], die: [{ x: 7.1, z: 6.4 }, { x: -1.1, z: -0.4 }], held: { x: 2.0, z: -0.95 }, throw: [{ x: 0.75, z: 0.55 }, { x: -0.75, z: -0.55 }],
+  // (arcana: yours is the corner's now, corners.js: [0] only the strike's flight's end; theirs right of the far rows, clear of the turn line)
+  at: { arcana: [{ x: -1.45, z: 5.7, y: 1.35 }, { x: 8.0, z: 1.6, y: 1.4 }], die: [{ x: 7.1, z: 6.4 }, { x: -1.1, z: -0.4 }], held: { x: 2.0, z: -0.95 }, throw: [{ x: 0.75, z: 0.55 }, { x: -0.75, z: -0.55 }],
     piles: [{ deck: { x: 0.25, z: 7.0 }, disc: { x: -0.5, z: 7.0 } }, { deck: { x: 5.85, z: -1.0 }, disc: { x: 6.6, z: -1.0 } }] },
   fly: 0.7, // (real s: a lance flying at their Arcana, a cup going home, a card riffled)
   hand: { h: 0.19, min: 72, max: 156, bar: 46, step: 0.74, fan: 0.06, picked: 0.3, held: 300 }, fray: 0.5, // (a downed token's fray, real s)
@@ -113,6 +115,7 @@ export class EntropyBoardView {
     g.entropyRoom?.room?.traverse?.((o) => { if (o.isMesh && o.visible && Math.abs(o.position.x - sx) < 0.4 && Math.abs(o.position.z - sz) < 0.4 && o.position.y < ER.y + 2) { o.visible = false; this.stone.push(o); } }); // (the seat stone sits in the seated frame's foot: hidden while seated)
     this.hand = new THREE.Group(); this.cardGeo = kit.own(new THREE.PlaneGeometry(1, 1)); this.rimMat = kit.own(new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false, transparent: true, opacity: 0.9 }));
     g.overlayScene?.add(this.hand, { anchor: 'bl', hud: false, update: (dt, s) => { s.x = s.view.w / 2; } });
+    this.corners = new SeatCorners(this); this.corners.attach(kit); // (your Arcana and your Hungry Die, big in the screen's corners)
     const cam = g.camera; this.from = { p: cam.position.clone(), q: cam.quaternion.clone(), fov: cam.fov }; this.k = 0; this.aspect = 0;
     this.plates = new BoardPlates({ play: (cm) => this.play(cm), again: () => this.session?.again(), close: () => this.session?.close() }); this.plates.mount();
     session.menu?.root?.classList.add('etboard'); g.ui?.want?.('entropyBoard', true);
@@ -125,7 +128,7 @@ export class EntropyBoardView {
     const g = this.game, el = this.canvas, cam = g.camera;
     el?.removeEventListener('pointermove', this.onMove); el?.removeEventListener('pointerdown', this.onDown);
     for (const ev of ['pointerup', 'pointercancel']) el?.removeEventListener(ev, this.onUp);
-    this.drag.detach(); this.count?.detach(); for (const a of this.arcana || []) a.p?.dispose(); this.count = null;
+    this.drag.detach(); this.count?.detach(); this.corners?.detach(); for (const a of this.arcana || []) a.p?.dispose(); this.count = null;
     this.plates?.unmount(); this.session?.menu?.root?.classList.remove('etboard'); document.getElementById('indexmenu')?.classList.remove('etboard'); g.ui?.want?.('entropyBoard', false);
     for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) this.look.tiles?.light?.(x, z, 0, this.hue);
     g.scene.remove(this.root); g.overlayScene?.remove(this.hand); this.kit.dispose(); for (const o of this.stone || []) o.visible = true; this.stone = null;
@@ -140,6 +143,7 @@ export class EntropyBoardView {
     this.refreshCoach(dt); this.readLog(S); this.diff(S);
     this.pick(); this.lights();
     this.layTiles(S); this.layTokens(dt, t); this.layFlyers(dt); this.layPiles(S); this.layBomb(dt, t, S); this.layDice(dt, t, S); this.layArcana(dt, t, S); this.layHeld(t, S); this.layHand(dt, S);
+    this.corners.hunger(this.drag.over === 'die:0' ? 1 : this.drag.on && this.drag.targets(this.drag.card).has('die:0') ? 0.35 : 0); this.corners.tick(dt, t, S);
     this.drag.tick(dt, t); this.sparks.tick(dt); this.words(S); this.frame(dt);
   }
   /** A new game at the seat (again): the board cleared, the log read from its start. */
@@ -147,7 +151,7 @@ export class EntropyBoardView {
     for (const e of this.tokens.values()) this.root.remove(e.group);
     for (const e of this.dying || []) this.root.remove(e.group);
     this.tokens.clear(); this.dying = []; this.drag.cancel(); this.flyers.length = 0; this.downWhy.clear(); this.S = S; this.seen = 0; this.hpSeen = S.hp.slice(); this.bombAt = null; this.bombPos = null; this.dieKey = null; this.sel = null; this.coach = null; this.coachKey = null;
-    for (const d of this.dice) { d.state = 'rest'; d.pos.copy(d.rest); }
+    for (const d of this.dice) { d.state = 'rest'; d.pos.copy(d.rest); d.feast = new DieFeast(sidesOf(S.fed[d.seat]), S.fed[d.seat]); d.feast.onBurst = () => { this.sparks.burst(d.pos, 120, WHITE, { speed: 4, up: 1 }); this.sparks.burst(d.pos, 80, this.hue, { speed: 3, up: 1.2, life: 1.6 }); }; }
     this.plates.result(null); this.plates.choose(null);
   }
   /** The coach, worked out again only when the game moves (bazaartable.js's rule). */
@@ -177,7 +181,10 @@ export class EntropyBoardView {
       else if (x.down != null) this.downWhy.set(x.down, x.why);
       else if (x.shove != null || x.push != null) { this.shake = 1; this.bombFlash = 1; this.sparks.burst(_v.copy(B).setY(B.y + 0.6), x.tiles === 0 ? 18 : 46, this.hue, { speed: 2.4, up: 0.3 }); }
       else if (x.boom !== undefined) { this.bombFlash = 2; this.shake = 1.5; this.sparks.burst(_v.copy(B).setY(B.y + 0.6), 160, WHITE, { speed: 5, up: 1, life: 1.6 }); this.sparks.burst(_v, 90, this.hue, { speed: 3, up: 1.2, life: 2 }); }
-      else if (x.feed != null) { const d = this.dice[x.feed]; this.sparks.burst(d.pos, 14, this.hue, { speed: 0.8, up: 0.6 }); this.dice[x.feed].fedFlash = 1; }
+      else if (x.feed != null) { // (the feast: yours in the corner, corners.js; theirs a card flown from their hand into their die, which gulps the same)
+        if (x.feed === 0) this.corners.feed(x);
+        else { const d = this.dice[1]; this.fly(this.heldAt, d.pos, LOOK.side(1), V.fly, 1.2, () => d.feast.gulp(x.fed, x.die)); }
+      }
       else if (x.discard != null) this.sparks.burst(this.piles[x.discard].disc.group.position, 8, BONE, { speed: 0.5, up: 0.5 });
       else if (x.fatigue != null) { this.arcana[x.fatigue].flash = 1; this.sparks.burst(this.arcana[x.fatigue].home, 40, 0xff5a3c, { speed: 1.6, up: 0.6, radius: 0.5 }); }
       else if (x.reshuffle != null) { const P = this.piles[x.reshuffle]; this.arcana[x.reshuffle].flash = 1; for (let i = 0; i < 6; i++) this.fly(P.disc.group.position, P.deck.group.position, BONE, 0.35 + i * 0.06, 0.6); }
@@ -233,11 +240,12 @@ export class EntropyBoardView {
   pick() {
     this.hover = null; if (!this.ndc || this.plates.busy) return;
     const OS = this.game.overlayScene;
-    if (OS && this.cards.size && !this.drag.on) {
-      OS.camera.updateMatrixWorld(); this.hand.updateMatrixWorld(true); this.ray.setFromCamera(this.ndc, OS.camera);
-      const hit = this.ray.intersectObjects([...this.cards.values()].map((c) => c.mesh), false)[0]; if (hit) { this.hover = hit.object.userData.pid; return; }
+    if (OS) {
+      OS.camera.updateMatrixWorld(); this.hand.updateMatrixWorld(true); this.corners.root?.updateMatrixWorld(true); this.ray.setFromCamera(this.ndc, OS.camera);
+      const hit = this.ray.intersectObjects([...(this.drag.on ? [] : [...this.cards.values()].map((c) => c.mesh)), ...this.corners.pickables()], true)[0];
+      if (hit) { let o = hit.object; while (o && !o.userData?.pid) o = o.parent; if (o) { this.hover = o.userData.pid; return; } }
     }
-    const tiles = this.look.tiles, map = new Map(), objs = [...[...this.tokens.values()].map((e) => e.group), this.bomb.core, ...this.arcana.map((a) => a.p.mesh), ...this.dice.map((d) => d.p.spinner), this.piles[0].disc.mesh, ...this.arcana.filter((a) => a.p).map((a) => a.p.group)];
+    const tiles = this.look.tiles, map = new Map(), objs = [...[...this.tokens.values()].map((e) => e.group), this.bomb.core, this.dice[1].p.spinner, this.piles[0].disc.mesh, ...this.arcana.filter((a) => a.p).map((a) => a.p.group)];
     for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) { const m = tiles.tile(x, z); if (m) { map.set(m, `t:${x}.${z}`); objs.push(m); } }
     this.ray.setFromCamera(this.ndc, this.game.camera);
     for (const h of this.ray.intersectObjects(objs, true)) {
@@ -315,8 +323,10 @@ export class EntropyBoardView {
       const key = `${S.round}|${S.cur}|${S.ctx.roll}|${S.ctx.rerolled}|${S.ctx.lit}`;
       if (key !== this.dieKey) { this.dieKey = key; const d = this.dice[S.cur], off = V.at.throw[S.cur]; Object.assign(d, { state: 'throw', u: 0, from: d.pos.clone(), roll: S.ctx.roll, key, land: _v2.set(off.x * (BOARD.tile + BOARD.gap), 0.45, off.z * (BOARD.tile + BOARD.gap)).clone(), axis: new THREE.Vector3(Math.random() - 0.5, 0.4, Math.random() - 0.5).normalize(), spins: 2.5 + Math.random() * 2 }); d.settle.setFromAxisAngle(_v.set(0, 1, 0), Math.random() * 6.28); }
     }
+    { const c = this.corners.dieScreen(), cam = this.game.camera, o = cam.position; _v.set((c.x / innerWidth) * 2 - 1, -(c.y / innerHeight) * 2 + 1, 0.5).unproject(cam).sub(o).normalize(); this.dice[0].rest.copy(o).addScaledVector(_v, 7); } // (yours rests in the corner: thrown from it and back into it)
     for (const d of this.dice) {
-      const P = d.p; P.setSides(sidesOf(S.fed[d.seat])); P.edges.color.copy(this.hue);
+      const P = d.p, pose = d.feast.tick(dt); P.setSides(d.seat === 0 ? sidesOf(S.fed[0]) : d.feast.sides); P.edges.color.copy(this.hue).lerp(WHITE, Math.min(1, pose.crack + pose.glow * 0.5));
+      P.group.visible = d.seat === 1 || d.state !== 'rest'; // (yours at rest is the corner's big one, corners.js)
       if (d.state === 'throw') {
         d.u = Math.min(1, d.u + dt / V.throw); const land = _v.copy(this.bombPos || d.rest).add(d.land);
         d.pos.lerpVectors(d.from, land, ease3(d.u)); d.pos.y += Math.sin(Math.PI * d.u) * 1.8 * (1 - d.u * 0.4);
@@ -331,16 +341,17 @@ export class EntropyBoardView {
         d.u = Math.min(1, d.u + dt / V.back); d.pos.lerpVectors(d.from, d.rest, ease3(d.u)); P.num.sprite.visible = false; if (d.u >= 1) d.state = 'rest';
       } else {
         d.pos.copy(d.rest); d.pos.y += Math.sin(t * 0.8 + d.seat * 2) * 0.08; P.spinner.rotation.y += dt * 0.45; P.spinner.rotation.x = Math.sin(t * 0.3 + d.seat) * 0.4;
-        P.num.sprite.visible = true; P.num.set(`d${sidesOf(S.fed[d.seat])}`, LOOK.inkDim); P.num.sprite.scale.set(1.2, 0.6, 1);
+        P.num.sprite.visible = true; P.num.set(`d${P.sides}`, pose.label > 0 ? LOOK.ink : LOOK.inkDim); P.num.sprite.scale.set(1.2, 0.6, 1);
       }
-      P.fedNum.sprite.position.y = -0.2 - 0.3 * V.scale.die; P.fedNum.set(S.fed[d.seat], `#${this.hue.getHexString()}`); P.fedNum.sprite.visible = d.state === 'rest';
+      P.fedNum.sprite.position.y = -0.2 - 0.3 * V.scale.die; P.fedNum.set(d.seat === 0 ? S.fed[0] : d.feast.fed, `#${this.hue.getHexString()}`); P.fedNum.sprite.visible = d.state === 'rest';
       const dl = this.lit.get(`die:${d.seat}`) || 0; if (dl) P.edges.color.lerp(WHITE, dl * 0.7);
-      P.group.position.copy(d.pos); P.spinner.scale.setScalar(V.scale.die * (1 + dl * 0.18 + (this.drag.over === `die:${d.seat}` ? 0.08 * Math.sin(t * 9) : 0))); P.num.sprite.position.y = 0.45 * V.scale.die + (d.state === 'rest' ? 0.35 : 0.9);
+      const sz = V.scale.die * pose.reform * (1 + dl * 0.18 + pose.bulge * 0.25);
+      P.group.position.copy(d.pos); P.spinner.scale.set(sz * (1 + pose.squash * 0.25), sz * (1 - pose.squash * 0.32), sz * (1 + pose.squash * 0.25)); P.spinner.rotation.z = pose.wob * 0.35; // (their feast and growth, the corner's timeline: corners.js DieFeast) P.num.sprite.position.y = 0.45 * V.scale.die + (d.state === 'rest' ? 0.35 : 0.9);
     }
   }
   layArcana(dt, t, S) {
     const k = 1 - Math.exp(-10 * dt), to = this.camTo?.p || this.game.camera.position;
-    for (const a of this.arcana) {
+    for (const a of this.arcana.slice(1)) { // (yours stands in the corner: corners.js)
       const pid = `arcana:${a.seat}`, lit = this.lit.get(pid) || 0; a.flash = Math.max(0, a.flash - dt * 1.8);
       a.lift += ((this.hover === pid ? V.lift : 0) - a.lift) * k;
       if (a.cls !== S.cls[a.seat]) { a.p?.dispose(); a.cls = S.cls[a.seat]; a.p = new ArcanaPortrait(this.kit, a.cls, a.seat); a.p.group.userData.pid = pid; this.root.add(a.p.group); a.hp = null; }
@@ -356,7 +367,7 @@ export class EntropyBoardView {
   /** Your hand, fanned at the screen's foot on the overlay's scene (CSS px, y up from the bottom edge). */
   layHand(dt, S) {
     if (!this.game.overlayScene) return;
-    const H = V.hand, kept = S.kept?.[0] || [], hand = [...(S.hand[0] || []), ...kept], nh = hand.length - kept.length, h = innerHeight, ch = Math.max(H.min, Math.min(H.max, h * H.h)), cw = ch * 0.7, bar = H.bar + (this.game.hudLayout?.safe?.b || 0), mid = (hand.length - 1) / 2, k = 1 - Math.exp(-12 * dt), keep = new Set();
+    const H = V.hand, kept = S.kept?.[0] || [], hand = [...(S.hand[0] || []), ...kept], nh = hand.length - kept.length, h = innerHeight, ch = Math.max(H.min, Math.min(H.max, h * H.h)), cw = ch * 0.7, bar = H.bar + (this.game.hudLayout?.safe?.b || 0), mid = (hand.length - 1) / 2, k = 1 - Math.exp(-12 * dt), keep = new Set(); this.handCh = ch;
     hand.forEach((c, i) => {
       keep.add(c); let e = this.cards.get(c);
       if (!e) {
@@ -416,8 +427,8 @@ export class EntropyBoardView {
   fit() {
     const cam = (this.fitCam ||= new THREE.PerspectiveCamera()), B = V.band; cam.fov = CAMERA.fov; cam.aspect = innerWidth / Math.max(1, innerHeight); cam.near = 0.1; cam.far = 500; cam.updateProjectionMatrix();
     const y0 = 0, pts = [cellAt(-0.6, -0.6, y0), cellAt(6.6, -0.6, y0), cellAt(-0.6, 6.6, y0), cellAt(6.6, 6.6, y0)].map((p) => p.clone());
-    for (const a of this.arcana) { const k = V.scale.arcana[a.seat]; pts.push(a.home.clone().setY(a.home.y + 1.0 * k), a.home.clone().setY(a.home.y - 1.0 * k)); }
-    for (const d of this.dice) pts.push(d.rest.clone().setY(d.rest.y + 1.3), d.rest.clone().setY(d.rest.y - 0.6));
+    for (const a of this.arcana.slice(1)) { const k = V.scale.arcana[a.seat]; pts.push(a.home.clone().setY(a.home.y + 1.0 * k), a.home.clone().setY(a.home.y - 1.0 * k)); }
+    for (const d of this.dice.slice(1)) pts.push(d.rest.clone().setY(d.rest.y + 1.3), d.rest.clone().setY(d.rest.y - 0.6));
     const dir = new THREE.Vector3(0, Math.sin(CAMERA.pitch), -Math.cos(CAMERA.pitch)), T = cellAt(3, 3, y0).clone(); let D = 20;
     for (let i = 0; i < 48; i++) {
       cam.position.copy(T).addScaledVector(dir, -D); cam.lookAt(T); cam.updateMatrixWorld();

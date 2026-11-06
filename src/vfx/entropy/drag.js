@@ -91,12 +91,12 @@ export class CardDrag {
   end() {
     if (!this.on) return false; const card = this.card, over = this.over, opts = over ? this.targets(card).get(over) : null; this.cancel();
     if (!opts?.length) { const e = this.view.cards?.get(card); if (e) e.spring = 1; return false; }
-    if (opts.length === 1) { opts[0].run(); return true; }
+    if (opts.length === 1) { if (opts[0].kind === 'feed') { const e = this.view.cards?.get(card); if (e) this.view.corners?.feast(card, { x: e.x + innerWidth / 2, y: e.y }); } opts[0].run(); return true; } // (fed: the card flies into the corner's die, corners.js)
     const at = this.screenOf(over), cms = opts.map((o) => ({ ...o.cm, run: o.run, label: o.cm.move.v != null ? `As ${o.cm.move.v}` : o.cm.label, preview: this.say(o) }));
     this.view.plates?.choose(cms, at.x, at.y); return true;
   }
   cancel() { this.on = false; this.card = null; this.over = null; this.preview?.hide(); }
-  screenOf(id) { const v = this.posOf(id, new THREE.Vector3()).project(this.view.game.camera); return { x: (v.x * 0.5 + 0.5) * innerWidth, y: (-v.y * 0.5 + 0.5) * innerHeight }; }
+  screenOf(id) { if (id === 'die:0' && this.view.corners?.on) return this.view.corners.dieScreen(); const v = this.posOf(id, new THREE.Vector3()).project(this.view.game.camera); return { x: (v.x * 0.5 + 0.5) * innerWidth, y: (-v.y * 0.5 + 0.5) * innerHeight }; }
   /** Where a target stands in the world (a tile's top, a token, the die, the discard pile). */
   posOf(id, out) {
     const V = this.view;
@@ -147,7 +147,7 @@ export class CardDrag {
       if (h.hp != null) { const left = Math.max(0, h.hp - h.dmg); segs.push({ n: h.hp, color: LOOK.inkDim }, { arrow: true }, left && !h.falls ? { n: left } : { t: 'down', color: CARD_DRAG.red }); }
       return this.preview.show({ at, segs, rise: 3.2 });
     }
-    if (o.kind === 'feed') { const f = S.fed[0], a = sidesOf(f), b = sidesOf(f + 1); return this.preview.show({ at, segs: [{ t: 'fed' }, { n: f, color: LOOK.inkDim }, { arrow: true }, { n: f + 1 }, ...(b !== a ? [{ n: `d${a}`, color: LOOK.inkDim }, { arrow: true }, { n: `d${b}`, color: OURS }] : [{ t: `d${a}`, color: LOOK.inkDim }])], rise: 2.3 }); }
+    if (o.kind === 'feed') { const f = S.fed[0], a = sidesOf(f), b = sidesOf(f + 1), ds = this.screenOf(id); return this.preview.show({ at, screen: { x: ds.x, y: ds.y - ds.r * 3.4 }, segs: [{ t: 'fed' }, { n: f, color: LOOK.inkDim }, { arrow: true }, { n: f + 1 }, ...(b !== a ? [{ n: `d${a}`, color: LOOK.inkDim }, { arrow: true }, { n: `d${b}`, color: OURS }] : [{ t: `d${a}`, color: LOOK.inkDim }])], rise: 2.3 }); }
     return this.preview.show({ at, segs: [{ t: o.kind === 'discard' ? 'discard' : o.cm.label }], rise: 1.2 });
   }
   tick(dt, t) {
