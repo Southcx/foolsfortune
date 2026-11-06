@@ -17,7 +17,7 @@
 //
 //   MATERIALS[id] = { hp (full blows to break a cell), density (t a m³ of cell: a chunk's mass), span (cells a cell of it may bridge over air), look }
 //   SOFT (fire.js's heated steel: half its span)   FURNISH[id]   GLASS   shatterGlass(b, at, r) -> [i]   SPLIT   splitChunk(chunk, fell) -> [chunk]
-//   BUILDINGS[id] = { label, w, h, d, floors, shell, frame, glass } (and a row an adobe blueprint: { label, size, adobe: true, beam })
+//   BUILDINGS[id] = { label, w, h, d, floors, shell, frame, glass } (and a row an adobe blueprint: { label, size, adobe: true, beam, whole: its mud burns too })
 //   CITY = { cell, lots: [{ x, z, id, yaw, seed }] } (the adobe city's lots: adobe/lots.js)
 //   newBuilding(id, seed) -> b { id, w, h, d, mat: Uint8Array, hp: Float32Array } (an adobe kind's from its blueprint, with role, props, tint)
 //   at(b, x, y, z)   cellsLeft(b)   leavesBeam(id) (a felled building that leaves a beam to pick up: a steel frame's girder, a large adobe's viga)
@@ -55,7 +55,7 @@ export const BUILDINGS = {
   kiln:   { label: 'Bottle kiln', w: 10, h: 16, d: 10, floor: 0, bay: 0, shell: MAT.brick, frame: 0, glass: 0, round: true }, // (a bottle kiln: a round brick shell, nothing inside to hold it once its foot goes)
   stall:  { label: 'Lantern stall', w: 6, h: 5, d: 6, floor: 0, bay: 5, shell: MAT.paper, frame: MAT.timber, glass: 0 }, // (a matsuri stall: paper walls on four timber posts under a timber roof; what fire takes first)
   // and a row an adobe blueprint (adobe/blueprints.js): its cells drawn by the blueprint, its shell adobe, its frame timber; a large one leaves a viga
-  ...Object.fromEntries(ADOBE_IDS.map((id) => { const K = ADOBE[id]; return [id, { label: K.label, w: K.w, d: K.d, floor: 0, bay: 0, shell: MAT.adobe, frame: MAT.timber, glass: 0, size: K.size, adobe: true, beam: K.size === 'large' }]; })),
+  ...Object.fromEntries(ADOBE_IDS.map((id) => { const K = ADOBE[id]; return [id, { label: K.label, w: K.w, d: K.d, floor: 0, bay: 0, shell: MAT.adobe, frame: MAT.timber, glass: 0, size: K.size, adobe: true, beam: K.size === 'large', whole: !!K.whole }]; })),
 };
 /** A felled building leaves a beam on its street side to pick up (props.js 'girder'): a steel frame's girder, a large adobe's cedar viga
  *  (Djenne's, the kasbah's: the roof beams that outlast the mud). */
@@ -95,7 +95,7 @@ function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>>
 /** A building's cells: its shell on the outside (windows punched in it), its frame's columns and floors inside, the rest air. */
 export function newBuilding(id, seed = 1) {
   const B = BUILDINGS[id]; if (!B) return null;
-  if (B.adobe) return fromPlan(id, adobePlan(id, seed));
+  if (B.adobe) { const b = fromPlan(id, adobePlan(id, seed)); if (b && B.whole) b.whole = true; return b; }
   const b = { id, w: B.w, h: B.h, d: B.d, mat: new Uint8Array(B.w * B.h * B.d), hp: new Float32Array(B.w * B.h * B.d), start: 0 };
   const r = rng(seed), cx = (B.w - 1) / 2, cz = (B.d - 1) / 2, R = Math.min(B.w, B.d) / 2;
   for (let y = 0; y < B.h; y++) for (let z = 0; z < B.d; z++) for (let x = 0; x < B.w; x++) {

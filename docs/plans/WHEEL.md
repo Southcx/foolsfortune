@@ -114,3 +114,9 @@ Rulings of 2026-10-05, the weather round:
 - **The wheel is approved** (docs/plans/WHEEL.md): one feeling or one **agate**; Plutchik's hues; Faith, Gall and Fury after the
   slice; about one weather game hour in eight is an agate.
   *(Superseded in part: "Faith, Gall and Fury after the slice" is overtaken by this page's head note: Faith is cut, and Gall and Fury are built as the sixth and seventh feelings, `docs/plans/GALL-AND-FURY.md`.)*
+
+## Ruling, South, 2026-11-06: where a creature's feelings come from
+
+A creature's shown feelings (`c.mood.shown()`, which the agate look reads) come from its island's weather where it stands and the
+Lachryma it last drank, never chance. The stronger one is what happens and the weaker one is its colour (the agate). A creature that drank
+nothing and stands in fair weather shows its kind's own feeling alone.

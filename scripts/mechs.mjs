@@ -113,7 +113,7 @@ console.log('  the pins fall (pinChain, the ball straight down the lane):', [['h
   const { newFire, stepFire, igniteNear, FIRE } = await import('../src/progress/mechs/fire.js');
   const rng = (seed) => { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
   console.log('\nFIRE: a building lit at its ground floor\'s front, burned to its end (8 seeds: mean)');
-  for (const id of ['stall', 'house', 'shop', 'block', 'tower', 'kiln', 'souk', 'kiosk', 'bazaar', 'casa', 'pueblo']) {
+  for (const id of ['stall', 'house', 'shop', 'block', 'tower', 'kiln', 'souk', 'granary', 'kiosk', 'bazaar', 'casa', 'pueblo']) {
     const R = [];
     for (let s = 1; s <= 8; s++) {
       const b = newBuilding(id, s), rnd = rng(s * 7); newFire(b); const n0 = cellsLeft(b);

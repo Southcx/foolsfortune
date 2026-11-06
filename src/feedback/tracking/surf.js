@@ -4,7 +4,7 @@
 // (asked in docs/handoffs/dovina/2026-11-06-from-calissa-surf.md). A wipeout's line is the bail's (tracking/moves.js BAIL_SAYS: lip,
 // closeout). The words are placeholders for Espada's.
 //
-//   skiff.surf { on }   skiff.surf.turn { kind }   skiff.tube.exit { seconds, made }   skiff.submarine   (each with `by`)
+//   skiff.surf { on }   skiff.surf.turn { kind }   skiff.tube.exit { seconds, made }   skiff.submarine   skiff.surf.drag { on, side }   (each with `by`)
 //
 //   surfRules({ on, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
@@ -18,5 +18,6 @@ export function surfRules({ on, log }) {
     if (e.by !== 'courier' || !(e.seconds >= 0.5)) return;
     log.say('skiff', e.made ? `You come out of the barrel: ${e.seconds.toFixed(1)} s.` : `Out of the barrel: ${e.seconds.toFixed(1)} s.`, { key: 'surf.tube', throttle: 1 });
   });
+  on('skiff.surf.drag', (e) => { if (e.by === 'courier' && e.on) log.say('skiff', 'Your hand in the face of the wave.', { key: 'surf.drag', throttle: 20 }); });
   on('skiff.submarine', (e) => { if (e.by === 'courier') log.say('skiff', 'Under the swell, and out again.', { key: 'surf.sub', throttle: 3 }); });
 }

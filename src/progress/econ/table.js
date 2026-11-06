@@ -69,7 +69,7 @@ export const ECON = {
   // ---- the drains (cubes out)
   /** The Tithe: a sealed chest for six minutes' play (was 25, and with its pity and its dupes it paid back 229% of what it took: a
    *  faucet dressed as a drain). Now about three quarters comes back in cubes, and the curio is the prize (scripts/economy.mjs). */
-  tithe: { cost: 48 },
+  tithe: { cost: 48, nearMiss: 0.15 }, // (nearMiss: the share of sealed reveals under epic that climb past their tier and fall back, a look only: 0.42 was spectacle every other chest, South 2026-11-06 cut it to 0.15)
   /** A firing at the kiln (a new look fired onto the vessel: courier/vessel/vessel.js), in minutes of play. */
   firing: 2,
   /** Refiring the vessel's cracks at the kiln (R40), in minutes of play for a vessel at the edge of shattering (less for fewer cracks). */

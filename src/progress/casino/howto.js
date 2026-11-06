@@ -83,14 +83,14 @@ export const HOWTO = {
   entropy: {
     title: 'Entropy Tactics',
     steps: [
-      { say: 'You and Raku are two Major Arcana. In the middle of the board sits the Grand Bomb with a counter. When it runs out, whoever\'s ground the bomb is on loses.', show: 'goal' },
-      { say: 'Each turn you hold five cards. A run or a flush of three or more summons a token. A pair or more casts a spell. A court card (page to king) enchants a token.', show: 'hand' },
-      { say: 'Cards you do not use are fed to your Hungry Die. The more you feed, the bigger it grows, and its bank pays for extra moves. You may keep two cards secret for next turn.', show: 'seats' },
-      { say: 'Move and strike with your tokens. Each may act once for free; more costs bank.', show: 'moves' },
-      { say: 'Last, roll the Hungry Die. Push the bomb toward them (it clashes with their die), or count its counter down. The odds are printed on the choice.', show: 'moves' },
-      { say: 'Win by having the bomb go off on their ground, by taking their Arcana to 0 health, or with a royal straight flush: 10 to king of one suit.', show: 'goal' },
+      { say: 'You and Dovina each have the same deck of 56 cards. The Grand Bomb sits in the middle of the board. When its counter runs out, whoever owns the tile under it loses.', show: 'goal' },
+      { say: 'Every tile has a sum. Play a number card on a tile you own or next to one: its number adds to the sum. Hit exactly 21 and the tile turns yours. Go over 21 and the sum drops back to 0. Both of you add to the same sums!', show: 'tiles' },
+      { say: 'A court card (page, knight, queen, king) becomes a token on your back row. Each turn it walks forward: a page 1 tile, a king 4. Its suit is its job: wands hit their Arcana, pentacles claim tiles, swords fight and shove the bomb, cups heal you and come home.', show: 'hand' },
+      { say: 'Cards you don\'t play: keep two for next turn, feed some to your Hungry Die (gone for good, but the die grows), and discard the rest.', show: 'moves' },
+      { say: 'Then roll your Hungry Die: push the bomb toward them, or count its counter down. Your tokens move after.', show: 'moves' },
+      { say: 'Out of cards? Take fatigue (it hurts more each time) or shuffle your discards back in (that hurts too). Feed too many and you run dry. Win by the bomb on their tile, off their edge, or their health at 0.', show: 'seats' },
     ],
-    card: ['Goal: the bomb goes off on their ground, or their Arcana falls.', 'Turn: play one group, keep up to two cards, feed the rest, act with tokens, roll and push or count down.', 'Run or flush: a token. Pair or more: a spell. Court card: an enchantment.', 'The counter also falls one a round.', 'Royal straight flush wins at once.'],
+    card: ['Goal: the bomb goes off on their tile or off their edge, or their Arcana falls.', 'Number cards add to a tile\'s sum: exactly 21 turns it yours, over 21 resets it.', 'Court cards are tokens that walk forward; the suit says what they do.', 'Keep two, feed the die (gone for good) or discard the rest.', 'Roll: push the bomb or count it down.', 'An empty deck: fatigue, or a reshuffle for health.'],
   },
 };
 

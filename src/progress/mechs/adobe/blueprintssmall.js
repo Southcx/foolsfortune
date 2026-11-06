@@ -146,9 +146,9 @@ export const SMALL = {
   horno: { label: 'Horno oven', size: 'small', w: 5, d: 5, plan: horno },
   musgum: { label: 'Shell hut', size: 'small', w: 7, d: 7, plan: musgum },
   wellhouse: { label: 'Well house', size: 'small', w: 6, d: 6, plan: wellhouse },
-  souk: { label: 'Market stall', size: 'small', w: 7, d: 6, plan: souk },
+  souk: { label: 'Market stall', size: 'small', w: 7, d: 6, plan: souk, whole: true },   // (cane, palm and cloth over a skin of mud: it burns whole, South 2026-11-06)
   shrine: { label: 'Wayside shrine', size: 'small', w: 5, d: 5, plan: shrine },
-  granary: { label: 'Raised granary', size: 'small', w: 6, d: 6, plan: granary },
+  granary: { label: 'Raised granary', size: 'small', w: 6, d: 6, plan: granary, whole: true }, // (woven wattle daubed thin under thatch: the Sahel's basket granaries)
   kiosk: { label: 'Kiosk', size: 'small', w: 6, d: 6, plan: kiosk },
   dovecote: { label: 'Pigeon tower', size: 'small', w: 10, d: 10, plan: dovecote },
   gatewall: { label: 'Wall and gate', size: 'small', w: 10, d: 3, plan: gatewall },

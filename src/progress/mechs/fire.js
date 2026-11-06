@@ -16,7 +16,7 @@
 // tick (a burning block lights flammable neighbours by chance and burns away), Red Faction Guerrilla (a weakened structure falls under its
 // own weight), Battlefield's levolution, SimCity's fires (a city that burns building to building), the water tower as a fire bucket.
 //
-//   BURN[mat] = { burn (0..1 a chance's weight), fuel (real s), away (burns away at its end) }   STATE   FIRE   BURNT   HEAT   GIANT_FIRE
+//   BURN[mat] = { burn (0..1 a chance's weight), fuel (real s), away (burns away at its end) }   WHOLE   burnOf(b, i)   STATE   FIRE   BURNT   HEAT   GIANT_FIRE
 //   newFire(b) -> b.fire { state, fuel, heat, t, by }   burnable(b, i)   ignite(b, i, by) -> bool   igniteRay(b, from, dir, chance, rnd, by) -> n
 //   igniteNear(b, at, r, chance, rnd, by) -> n   stepFire(b, dt, rnd, { quench }) -> { burning, away: [i], glass: [i], scorched, soft, out }
 //   douse(b, at, r) -> n   burningOf(b) -> n   heatStep(k, inFire, dt) -> k   (all positions in the building's own cells)
@@ -33,6 +33,12 @@ export const BURN = {
 };
 /** A cell's fire state (b.fire.state): none; burning; scorched (brick or stone that sat beside fire: a look only); soft (steel heated
  *  through: destruction.js SOFT, half its span and hits); wet (doused: it cannot catch for FIRE.wet real s). */
+/** A building that burns whole (South, 2026-11-06: "some buildings should be entirely flammable"): a kind whose row says `whole` (the
+ *  market stall's cane and palm, the basket granary's wattle) has its thin mud skin burn as its frame does, and burn away. */
+export const WHOLE = { burn: 0.7, fuel: 14, away: true };
+/** What a cell burns as: its material's row, or WHOLE for the mud of a building that burns whole; null, it does not burn. */
+export const burnOf = (b, i) => BURN[b.mat[i]] || (b.whole && b.mat[i] === MAT.adobe ? WHOLE : null);
+
 export const STATE = { none: 0, burning: 1, scorched: 2, soft: SOFT, wet: 4 };
 
 /** The automaton's numbers, each with its reason.
@@ -80,12 +86,12 @@ export function newFire(b) {
   return b.fire;
 }
 const F = (b) => b.fire || newFire(b);
-export const burnable = (b, i) => !!BURN[b.mat[i]] && F(b).state[i] !== STATE.burning && F(b).state[i] !== STATE.wet;
+export const burnable = (b, i) => !!burnOf(b, i) && F(b).state[i] !== STATE.burning && F(b).state[i] !== STATE.wet;
 
 /** Light one cell. True when it caught. */
 export function ignite(b, i, by = 'courier') {
   if (!burnable(b, i)) return false;
-  const f = F(b); f.state[i] = STATE.burning; f.fuel[i] = BURN[b.mat[i]].fuel; f.t[i] = 0; if (!f.lit) f.by = by; f.lit++;
+  const f = F(b); f.state[i] = STATE.burning; f.fuel[i] = burnOf(b, i).fuel; f.t[i] = 0; if (!f.lit) f.by = by; f.lit++;
   return true;
 }
 const idx = (b, x, y, z) => x + b.w * (z + b.d * y);
@@ -97,8 +103,8 @@ export function igniteNear(b, at, r, chance, rnd, by) {
   for (let y = Math.max(0, Math.floor(at[1]) - R); y <= Math.min(b.h - 1, Math.floor(at[1]) + R); y++)
     for (let z = Math.max(0, Math.floor(at[2]) - R); z <= Math.min(b.d - 1, Math.floor(at[2]) + R); z++)
       for (let x = Math.max(0, Math.floor(at[0]) - R); x <= Math.min(b.w - 1, Math.floor(at[0]) + R); x++) {
-        const i = idx(b, x, y, z); if (!BURN[b.mat[i]] || Math.hypot(x - at[0], y - at[1], z - at[2]) > r) continue;
-        if (rnd() < chance * BURN[b.mat[i]].burn && ignite(b, i, by)) n++;
+        const i = idx(b, x, y, z); if (!burnOf(b, i) || Math.hypot(x - at[0], y - at[1], z - at[2]) > r) continue;
+        if (rnd() < chance * burnOf(b, i).burn && ignite(b, i, by)) n++;
       }
   return n;
 }
@@ -109,7 +115,7 @@ export function igniteRay(b, from, dir, chance, rnd, by, len = 200) {
   for (let s = 0; s <= len; s += 0.5) {
     const x = Math.round(from[0] + d[0] * s), y = Math.round(from[1] + d[1] * s), z = Math.round(from[2] + d[2] * s);
     if (!inside(b, x, y, z)) { if (s > Math.max(b.w, b.h, b.d) * 2) break; continue; }
-    const i = idx(b, x, y, z); if (BURN[b.mat[i]] && rnd() < chance * BURN[b.mat[i]].burn && ignite(b, i, by)) n++;
+    const i = idx(b, x, y, z); if (burnOf(b, i) && rnd() < chance * burnOf(b, i).burn && ignite(b, i, by)) n++;
   }
   return n;
 }
@@ -139,13 +145,13 @@ export function stepFire(b, dt, rnd, { quench = 0 } = {}) {
       if (!inside(b, x + dx, y + dy, z + dz)) continue;
       const j = idx(b, x + dx, y + dy, z + dz), m = b.mat[j]; if (!m) continue;
       if (between.length && between.some(([ax, ay, az]) => b.mat[idx(b, x + ax, y + ay, z + az)])) continue; // (only through open air)
-      if (BURN[m]) { if (f.state[j] !== STATE.burning && f.state[j] !== STATE.wet && rnd() < FIRE.spread[way] * w * BURN[m].burn * dt * spreadK) lit.push(j); continue; }
+      const bj = burnOf(b, j); if (bj) { if (f.state[j] !== STATE.burning && f.state[j] !== STATE.wet && rnd() < FIRE.spread[way] * w * bj.burn * dt * spreadK) lit.push(j); continue; }
       if (between.length) continue; // (heat on what does not burn: only what touches the flame)
       if (m === MAT.glass) { b.hp[j] -= FIRE.glass * dt; if (b.hp[j] <= 0) { b.mat[j] = 0; b.hp[j] = 0; glass.push(j); } continue; }
       if (m === MAT.steel && f.state[j] !== SOFT) { f.t[j] += dt; if (f.t[j] >= FIRE.soften) { f.state[j] = SOFT; b.hp[j] *= 0.5; soft++; } continue; }
       if ((m === MAT.brick || m === MAT.stone || m === MAT.adobe) && f.state[j] === STATE.none) { f.t[j] += dt; if (f.t[j] >= FIRE.scorch) { f.state[j] = STATE.scorched; b.hp[j] *= FIRE.scorchHp; scorched++; } }
     }
-    if (f.fuel[i] <= 0) { f.state[i] = STATE.none; f.fuel[i] = 0; if (BURN[b.mat[i]]?.away) { b.mat[i] = 0; b.hp[i] = 0; away.push(i); } }
+    if (f.fuel[i] <= 0) { f.state[i] = STATE.none; f.fuel[i] = 0; if (burnOf(b, i)?.away) { b.mat[i] = 0; b.hp[i] = 0; away.push(i); } }
   }
   for (const j of lit) ignite(b, j, f.by || 'courier');
   const now = burning - away.length + lit.length;

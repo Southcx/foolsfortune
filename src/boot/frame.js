@@ -142,7 +142,7 @@ export function bootFrame(game, made) {
     if (input.wasPressed('KeyN') && input.enabled && !play.guiOpen && !modalOpen() && god.controlling) game.cartography.survey(true);
     if (input.wasPressed('Backquote') && input.enabled && !play.guiOpen && !modalOpen() && !game.rail?.stage.active && !game.duel.active) { if (game.realm?.active) game.realm.camera.toggleOverhead(); else god.toggle(); } // (in the garden the god hand's view is straight down on the Jar: world/garden/gardencam.js)
     game.bazaarTable?.tick(game.rawDt ?? dt); // (a seat at Raku's tables: its cloth, cards and dice, its clock is the bazaar's own tickModal: vfx/bazaartable.js)
-    if (modalOpen()) { game.seam.update(game.rawDt); game.cartography.tickModal(); game.bazaar?.tickModal(game.rawDt); game.mooring?.update(game.rawDt); game.pier?.helmTick(); game.laidSpread?.update(game.rawDt); game.readingScene?.update(game.rawDt); game.scanner?.update(game.rawDt); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game; a seam under way still comes back up: GARDEN-SWEEP #1; the Box's window still recounts its spread and draws its reading)
+    if (modalOpen()) { game.seam.update(game.rawDt); game.cartography.tickModal(); game.bazaar?.tickModal(game.rawDt); game.entropyRoom?.tickModal(game.rawDt); game.mooring?.update(game.rawDt); game.pier?.helmTick(); game.laidSpread?.update(game.rawDt); game.readingScene?.update(game.rawDt); game.scanner?.update(game.rawDt); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game; a seam under way still comes back up: GARDEN-SWEEP #1; the Box's window still recounts its spread and draws its reading)
     if (play.started && overlayUp()) { game.seam.update(game.rawDt); if (!game.rail?.stage.active) game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause menu)
     game.duel.update(game.rawDt ?? dt, input); // (a puzzle duel takes the keys it reads, before anything below sees them: world/duel/duelsession.js)
     game.mood.begin(); // (what the last frame's dimming changed, put back before anything sets its own values)
@@ -323,7 +323,7 @@ export function bootFrame(game, made) {
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     game.graphics.shadowsWanted = under < 1; renderer.shadowMap.autoUpdate = under < 1 && (T.visual.shadowEvery | 0) <= 1; // (every frame, or on the graphics tier's own turns: render/graphics.js beforeDraw)
     game.bazaar?.light(); // (the bazaar's own air under its dome: world/bazaar/bazaar.js)
-    game.sandbox?.light(); game.hangar?.light(); game.strawmanWell?.light(); game.touchstone?.light(); // (the Touchstone's dark: world/touchstone/touchstone.js)
+    game.sandbox?.light(); game.hangar?.light(); game.strawmanWell?.light(); game.touchstone?.light(); game.entropyRoom?.light(); // (the Touchstone's dark: world/touchstone/touchstone.js)
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)
     diag.begin('fx'); fx.update(dt, camera); game.systems.run('fx', dt, game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
