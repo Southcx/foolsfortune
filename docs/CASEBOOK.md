@@ -1158,3 +1158,7 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 412. **What hides the body hides what it wears, where it runs every frame.** A worn piece that decides
   its own visibility in its own tick keeps the last answer once that tick stops (aboard, in a cutscene); the hiding is done by what
   always runs, and the piece's tick only puts it back.
+
+413. **A span kept across an insertion moves by what was inserted before its start, and only that.** A
+  running offset applied to every span on each insertion moves the earlier ones too; any span held to skip or protect text is
+  recomputed from the insertions that precede it, and tested with two insertions, never one.

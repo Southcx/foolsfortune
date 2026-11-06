@@ -5116,3 +5116,17 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   tick puts it back when it runs again. Probed: aboard, the Sondelass's group hidden and no rest bake drawn; the crossing 71 calls (the
   66 and the bunker's 5).
 - **Rule:** 412
+
+### 2026-11-06 · The constant-index rewrite broke a #define-sized array's declaration on the phone (Calissa's report)
+- **Seen:** building the Entropy room's portraits, Calissa's shader failed to compile on the phone path only:
+  `uniform vec4 uR[N];` came out as `uniform vec4 uR_ffAt(int(N));`, and a comma list (`uniform vec4 a[N], b[N];`) the same. She
+  worked round it with one array a line and literal sizes.
+- **Cause, as measured:** neither the comma list nor the `#define` alone. `rewriteShader` (render/constantindex.js) lays each helper
+  in after its declaration and keeps the declarations' spans so their own `[N]` is skipped; on each insertion it re-moved every earlier
+  declaration by the running shift, so with two declaration lines the first span slid off its text. Its `[N]` was then read as a
+  computed index and rewritten. A literal size (`[4]`) is a constant index and was left alone, which is why the slip went unseen on
+  every shader in the game.
+- **Fix:** each declaration's span moved by the sum of the helpers inserted at or before its start. Probed `rewriteShader` on two and
+  three `#define`-sized lines, a comma list followed by a line, literal comma lists, and an array read only at constants: declarations
+  intact, reads rewritten. The program census route with `?constindex=1`: every program compiles.
+- **Rule:** 413
