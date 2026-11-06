@@ -6,7 +6,10 @@
 //
 // Prior art: blackjack's card values (the ace soft or hard), Hearthstone's own-deck-each, the tarot's Minor Arcana as a playing-card deck.
 //
-//   SUITS ['cups','swords','pentacles','wands']   suitOf(c)   rankOf(c)   COURT   isCourt(c)   valuesOf(c) -> [v]   courtRank(c) -> 1..4
+// ATTUNED (version 2.1, 8.12): a number card of your class's own suit may be played at its value or one either side (1 to 11), so a deck
+// carved toward your suit finds 21 more easily; the Fool, with no suit, has none.
+//
+//   SUITS ['cups','swords','pentacles','wands']   suitOf(c)   rankOf(c)   COURT   isCourt(c)   valuesOf(c, attuned) -> [v]   courtRank(c) -> 1..4
 //   RANK_NAMES   nameOf(c)
 // ---------------------------------------------------------------------------------------
 
@@ -17,7 +20,12 @@ export const rankOf = (c) => (c >> 2) + 1;
 export const COURT = 11; // (page and up)
 export const isCourt = (c) => rankOf(c) >= COURT;
 /** What a number card may add to a tile: an ace 1 or 11 (the player's choice as it is played), else its rank. */
-export const valuesOf = (c) => (rankOf(c) === 1 ? [1, 11] : [rankOf(c)]);
+export function valuesOf(c, attuned = false) {
+  const base = rankOf(c) === 1 ? [1, 11] : [rankOf(c)];
+  if (!attuned) return base;
+  const out = new Set(); for (const v of base) for (const d of [-1, 0, 1]) if (v + d >= 1 && v + d <= 11) out.add(v + d);
+  return [...out].sort((a, b) => a - b);
+}
 /** A court card's rank as a token: page 1, knight 2, queen 3, king 4 (S, 8.4). */
 export const courtRank = (c) => rankOf(c) - COURT + 1;
 export const RANK_NAMES = ['', 'Ace', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Page', 'Knight', 'Queen', 'King'];

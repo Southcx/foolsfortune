@@ -19,7 +19,7 @@ import { maxHpOf } from '../entropy/tokens.js';
 import { CLASSES, HEALTH } from '../entropy/classes.js';
 import { seatsOf } from './seats.js';
 
-const SUIT_DOES = ['Cups: at the far edge it mends your Arcana and goes back into your deck', 'Swords: it fights tokens it meets and at the far edge pushes the bomb', 'Pentacles: every tile it crosses turns yours, and it holds their back rank', 'Wands: at the far edge it strikes their Arcana'];
+const SUIT_DOES = ['Cups: at the far edge it mends your Arcana by half its health and goes back into your deck', 'Swords: it fights tokens it meets and at the far edge pushes the bomb, if it has half its health left', 'Pentacles: every tile it crosses turns yours, and it holds their back rank', 'Wands: at the far edge it strikes their Arcana for its health left'];
 const whose = (seat, o) => (o === seat ? 'yours' : o < 0 ? 'nobody\'s' : 'theirs');
 const where = (x, z) => `column ${x + 1}, row ${z + 1}`;
 /** The push's odds on the roll now: the chance your roll plus your tokens beside the bomb beats their die plus theirs, and the tiles it then moves. */
@@ -59,7 +59,7 @@ export function entropyCoach({ T, S, seat, P, mine, R: result, V }) {
         const c = mine.card;
         if (m.back) { moves.push({ move: m, label: 'Back', what: 'Choose another card', tone: null, size: 'small' }); continue; }
         if (m.on != null) {
-          const h = previewPlay(V, seat, c, m), t = V.tokens.find((u) => u.id === m.on), ace = rankOf(c) === 1 ? ` as ${m.v}` : '', x2 = h.mult === 2 ? ` x2 (${SUITS[c & 3]} against ${SUITS[t.suit]})` : '';
+          const h = previewPlay(V, seat, c, m), t = V.tokens.find((u) => u.id === m.on), ace = rankOf(c) === 1 ? ` as ${m.v}` : '', x2 = (h.mult === 2 ? ` x2 (${SUITS[c & 3]} against ${SUITS[t.suit]})` : '') + (h.plated ? ', 2 off its plating' : '');
           moves.push({ move: m, label: `Hit their ${SUITS[t.suit]} token${ace}: ${h.dmg}`, what: `${m.v}${x2}: ${h.falls ? 'it falls' : `its health ${t.hp} to ${h.hp} of ${t.max}`}`, preview: h.falls ? 'Downed to their discard pile' : null, tone: h.falls ? 'good' : null, size: h.falls ? 'big' : 'small', pieceIds: [`c:${c}`, `k:${m.on}`] });
           continue;
         }
@@ -87,7 +87,7 @@ export function entropyCoach({ T, S, seat, P, mine, R: result, V }) {
     { label: 'Deck', value: V.deckN[q], kind: 'count' }, { label: 'Discard', value: V.disc[q].length, kind: 'count' }, { label: 'Fatigue', value: V.fatigue[q], kind: 'count' },
     { label: 'Tiles', value: V.tiles.filter((t) => t.o === q).length, kind: 'count' }, { label: 'Tokens', value: V.tokens.filter((t) => t.owner === q).length, kind: 'count' }], badge: CLASSES[V.cls[q]].label }), P?.seat);
   if (result) {
-    const W = { bomb: ': the bomb went off on their tile', 'bomb-neutral': ': the bomb went off on nobody\'s tile, and your health was higher', 'bomb-off': ': the bomb went off their board', strike: ': their Arcana fell to your tokens', fatigue: ': their Arcana fell to fatigue', reshuffle: ': their Arcana fell to a reshuffle' };
+    const W = { bomb: ': the bomb went off on their tile', 'bomb-ground': ': the bomb went off on nobody\'s tile, and you held more ground', 'bomb-neutral': ': the bomb went off on nobody\'s tile, and your health was higher', 'bomb-off': ': the bomb went off their board', strike: ': their Arcana fell to your tokens', fatigue: ': their Arcana fell to fatigue', reshuffle: ': their Arcana fell to a reshuffle' };
     say = result.winner == null ? 'A draw: the bomb went off on nobody\'s tile with your health equal.' : result.winner === seat ? `You win${W[result.how] || ''}.` : `${T.names[result.winner]} wins.`;
   }
   return { goal, turn: { say }, moves, seats, centre, extra: { board: { size: R.size, tiles: V.tiles, tokens: V.tokens, bomb: V.bomb, counter: V.counter }, hand: V.hand[seat].filter((c) => c >= 0), kept: V.kept[seat].filter((c) => c >= 0), picked: mine?.kind === 'place' ? mine.card : null, preview: (card, target) => previewPlay(V, seat, card, target),
