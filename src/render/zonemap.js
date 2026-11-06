@@ -6,7 +6,7 @@
 // Prior art: the console's room table (a stage's areas as bounds in a list, looked up by the player's position: Ocarina of Time's
 // scene/room split, Kingdom Hearts' worlds), kept as data apart from the code that loads or draws them.
 //
-//   zoneOf(pos) -> 'throwingRoom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | 'emocean' | 'garden' | 'margarite' | 'raceway' | 'bazaar' | null      wholeOf(pos) -> the zone, or its whole
+//   zoneOf(pos) -> 'throwingRoom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | 'emocean' | 'garden' | 'margarite' | 'raceway' | 'bazaar' | 'entropy' | null      wholeOf(pos) -> the zone, or its whole
 //   ZONE_TESTS [{ id, test(pos), partOf? }]   ZONE_SOUND[id] -> { floor, acoustic, wet? }   inDunes(pos)   nearShore(pos)
 // ---------------------------------------------------------------------------------------
 
@@ -52,6 +52,8 @@ export const ZONE_TESTS = [
   { id: 'provingground', test: (p) => p.x > 3900 && p.x < 4300 && Math.abs(p.z + 3000) < 200 && p.y > 150 && p.y < 450 },
   // the Touchstone (world/touchstone/touchstone.js TOUCHSTONE: x 3000, y 200, z -3000): the Assay's dark room, indoors
   { id: 'touchstone', test: (p) => Math.abs(p.x - 3000) < 150 && p.z > -3150 && p.z < -2850 && p.y > 150 && p.y < 450 }, // (Petra's place, 2026-10-29)
+  // the Entropy room (world/entropy/entropyroom.js ENTROPY_ROOM: x -1500, y 200, z -3000): Entropy Tactics' oasis in the void (South, 2026-11-06)
+  { id: 'entropy', test: (p) => Math.abs(p.x + 1500) < 150 && p.z > -3150 && p.z < -2850 && p.y > 100 && p.y < 450 },
   { id: 'bazaar', test: (p) => Math.abs(p.x) < 200 && p.z > -3200 && p.z < -2800 && p.y > 150 && p.y < 450 }, // (Petra's place, 2026-10-15)
   // the open sea (world/opensea/seaprops.js SEA: x 9800 at the Emocean's height): the Emocean off the lanes, 3.6 by 2.8 km, under the dunes' sky (Dovina's room)
   { id: 'opensea', test: (p) => p.x > 7900 && p.x < 11700 && p.z > -1600 && p.z < 1600 && p.y > -480 && p.y < -300 },
@@ -75,7 +77,7 @@ export const ZONE_LIGHT = {
   // sits, a violet fill off the upper sky, a dark ground under the hills; bg and fog as the hangar's own air for the yard (world/hangar/hangar.js AIR, which sets them after)
   provingground: { bg: 0x9a8a78, fog: 0x9a8a78, hemiSky: 0x6a5c9c, hemiGnd: 0x2a1e26, sunC: 0xffa452, hemiI: 1.15, ambI: 0.18, sunI: 2.3, sunDir: [-0.92, 0.2, 0.33] },
 };
-export const ROOFED = new Set(['touchstone', 'bazaar', 'sandbox', 'strawmanwell', 'hangar']); // (the bazaar's dome too: Calissa, 2026-10-30, "the sun through a dome is a leak, not a look")
+export const ROOFED = new Set(['touchstone', 'entropy', 'bazaar', 'sandbox', 'strawmanwell', 'hangar']); // (the bazaar's dome too: Calissa, 2026-10-30, "the sun through a dome is a leak, not a look")
 
 /** What each zone is underfoot and as a space (Wanda's hooks, 2026-10-30): its `floor`, a step's surface where nothing on the ground
  *  says otherwise (courier/stepsurface.js), and its `acoustic`, the kind of space it is heard as (audio/acoustics.js ACOUSTICS: room,
@@ -91,6 +93,7 @@ export const ZONE_SOUND = {
   emocean: { floor: 'wood', acoustic: 'sea' }, //       (a deck)
   garden: { floor: 'grass', acoustic: 'open' },
   raceway: { floor: 'sand', acoustic: 'open' },
+  entropy: { floor: 'stone', acoustic: 'open' }, // (a void: no walls to answer, Wanda's to make strange)
   touchstone: { floor: 'stone', acoustic: 'room', wet: 0.12 }, // (a test booth is dry: the trials' sounds heard as they are made)
   sandbox: { floor: 'clay', acoustic: 'hall' }, //      (a big clay-walled hall: the hand's physics room)
   strawmanwell: { floor: 'wood', acoustic: 'hall' }, // (a toy theatre's boards: Strawman's Well)

@@ -28,6 +28,7 @@ export function indexRooms() {
     { id: 'braid', code: 'KeyB', tag: 'B', name: 'THE BRAID', blurb: 'three lines over a pit: beams, bars, blinks · change at any junction', group: 'LAP CIRCUITS', spawn: 'circuit' },
     { id: 'millrace', code: 'KeyC', tag: 'C', name: 'THE MILL RACE', blurb: 'the mill in one loop: cogs, a fork, the ferris wheel, the steam', group: 'LAP CIRCUITS', spawn: 'circuit', circuit: 'mill' },
     { id: 'spindle', code: 'KeyP', tag: 'P', name: 'THE SPINDLE', blurb: 'up through a chain of skills, down a long chute', group: 'LAP CIRCUITS', spawn: 'circuit' },
+    { id: 'entropy', code: 'KeyX', tag: 'X', name: 'ENTROPY TACTICS', blurb: 'Two Major Arcana and a Grand Bomb on a board in the void: a duel of poker hands against Dovina', group: 'THE HUB', spawn: 'entropy' },
     { id: 'touchstone', code: 'KeyT', tag: 'T', name: 'THE TOUCHSTONE', blurb: 'the Assay\'s quiet room: five standard trials, one at each plinth', group: 'THE HUB', spawn: 'touchstone' },
     { id: 'sandbox', code: 'KeyN', tag: 'N', name: 'THE SANDBOX', blurb: 'the hand\'s physics room: a yard of loose things, a pen to try powers on, a pitch and a ball', group: 'THE HAND', spawn: 'sandbox' },
     { id: 'strawmanwell', code: 'KeyH', tag: 'H', name: "STRAWMAN'S WELL", blurb: 'the 2D platformer\'s test bench, side-on: the wings, the stages of verbs (run, climb, stomp, brawl, machine, flood) and two fighter stages', group: 'THE HAND', spawn: 'strawmanwell' },
@@ -73,6 +74,7 @@ export function goRoom(c, id) {
   else if (r.spawn === 'weir') toWeir(c);
   else if (r.spawn === 'dunemaw') toDunemaw(c);
   else if (r.spawn === 'shore') toShore(c);
+  else if (r.spawn === 'entropy') { c.game.entropyRoom?.arrive(); c.running = false; c.current = -1; c.lapT = null; sfx.geyser(); }
   else if (r.spawn === 'touchstone') { c.game.touchstone?.arrive(); c.running = false; c.current = -1; c.lapT = null; sfx.geyser(); }
   else if (r.spawn === 'sandbox') { c.game.sandbox?.arrive(); c.running = false; c.current = -1; c.lapT = null; sfx.geyser(); }
   else if (r.spawn === 'hangar') { c.game.hangar?.arrive(); c.running = false; c.current = -1; c.lapT = null; sfx.geyser(); }

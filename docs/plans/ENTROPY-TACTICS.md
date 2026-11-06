@@ -134,3 +134,45 @@ Measured with `node scripts/casino.mjs --game entropy --n 200` (search 40 on bot
 The Hermit is fixed. The Fool still leads, because a re-roll every turn is worth more than 1 from the bank. The first seat's edge did not
 answer to the bank or the game's length, so it is structural: the first seat moves the bomb first. Next levers, not yet tried: the
 first seat's first turn plays no group (Catan's and Go's komi idea), and the Fool's re-roll once a game round rather than once a turn.
+
+## 7. Its own zone and its board (South, 2026-11-06)
+
+South: "Entropy Tactics is supposed to be much more cosmic-themed, abstract, eldritch and avant-garde. Like playing on an oasis in
+high-entropy space. For the actual visual board layout, take the orientation of Hearthstone or MTG: arena as a base and give it tilt-shift
+look away from the viewer. The 7x7 board itself should be composed of individual tile meshes floating in space, so we can do cool cascading
+ripple effects for board setup and tile-flipping mechanics. And it doesn't belong in Raku's bazaar, it should be compartmentalized into its
+own zone." Also: "I don't want you guys to anchor to the current artstyle", so no Clay dress, no Gold Saucer, nothing of Anagami's kiln.
+
+### 7.1 Built (Dovina, 2026-11-06)
+
+- **The Entropy room** (`EntropyRoom`, `game.entropyRoom`, `src/world/entropy/entropyroom.js`; zone and area `entropy`): an oasis of
+  ground 9 m across hung in a void at x -1500, y 200, z -3000, with the seat stone at its north edge (F sits you down) and the door home
+  on its south rim. You reach it from the Index's row ENTROPY TACTICS (X) and leave by the door. It is built on entry and torn down whole
+  after you leave. A fall into the void puts you back on the oasis.
+- **The board as 49 tiles** (`room.tiles`, one mesh a cell, never merged; `tileAt(x, z)`; `BOARD`): 1.6 m tiles with 0.35 m gaps,
+  floating 0.6 m over the oasis's height north of the seat, row 6 (yours) nearest. Each tile carries `userData.cell { x, z, side, home }`.
+  The placeholder look is grey-blue for your rows, grey-red for theirs, grey for the neutral rank, a slow bob, and the setup's ripple: each
+  tile rises 6 m from below, 0.06 real s later per metre from the board's heart, over 0.7 real s, when you sit (`entropy.board { phase:
+  'setup' }`).
+- **The seat** (`ENTROPY_SEAT`): the house's seat (`TableSession`: lobby, how-to, practice, stakes in chips). You play the Fool and Dovina
+  plays the Chariot. The table is gone from Raku's bazaar (`world/bazaar/session.js TABLES`).
+- **The camera, as data** (`CAMERA`): the board from behind your seat, 6.5 m back and 9 m up, pitched down 0.95 rad, a 34-degree field of
+  view, row 4.5 held sharp in a band of 0.32 of the screen's height. These are first guesses for Petra's rig.
+
+### 7.2 Asked (handoffs, 2026-11-06)
+
+- **Calissa:** the look, the board view and the tilt-shift pass. The void and the oasis, cosmic and eldritch, nothing anchored to the
+  house's style. The tiles are hers to model and animate: the setup's cascade replaces the placeholder ripple, and a tile can turn over
+  on its own (`flip`). The pieces on the board (tokens, the Grand Bomb and its counter, the Hungry Die), your hand and the action bar as
+  the board's own, in place of the text page (`world/bazaar/views.js entropy`).
+- **Petra:** the board's camera rig while seated (from `CAMERA`), the gate's read of the hub rows I added (the zone, the area, the
+  Index row, the map's row, the frame's two hooks).
+- **Wanda:** the room's cue and the board's sounds (the setup cascade, a tile turned, the bomb's counter).
+
+### 7.3 Open
+
+1. **Tile flipping as a rule.** Nothing in the rules turns a tile over yet, so today a flip is a look only. Proposal, for South to rule:
+   a tile's face is whose ground it is, and a push of the bomb through a tile, or a token held on it for a round, turns it to the pusher's
+   side, so the zones move. This would replace the fixed three ranks a side, so it is a rules change and needs a new balance pass.
+2. **The class pick** in the seat's lobby (all four classes, and Dovina's at random).
+3. **The look's name.** Plain names until settled. Espada proposes a lore name for the room once South calls it final.
