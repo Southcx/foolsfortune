@@ -577,3 +577,12 @@ mk30 Glassed.
 - **A large adobe leaves a viga** on its street side when felled (the girder prop), as a steel frame leaves a girder. The adobe city has no
   steel, so the curtain of glass and soft steel have no building to happen in until a steel kind is laid again.
 
+
+## 14. Rulings, South, 2026-11-06
+
+- **Some buildings burn whole** (digest question 9: "some buildings should be entirely flammable, yes"). An adobe kind whose row says
+  `whole` has its mud burn as its frame does, and burn away (`WHOLE` and `burnOf`, `progress/mechs/fire.js`). Whole so far: the market
+  stall (souk: cane, palm and cloth over a skin of mud) and the raised granary (woven wattle daubed thin under thatch, the Sahel's
+  basket granaries). Measured (`node scripts/mechs.mjs`, lit at the front, 8 seeds): the souk is down in 16 real s and the granary in 14,
+  both 8 of 8; the lantern stall is unchanged (8 s). The rest stand, and BURNT (15% charred, felled within the real minute) still
+  counts them burned down.

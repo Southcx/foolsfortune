@@ -26,7 +26,7 @@ export const GOD_POWERS = {
   // the matter's verbs (GODHAND.md section 3)
   scoop: { domain: 'psychokinesis', label: 'Scoop', at: 1, built: true, does: 'take matter up and pour it out', made: 0.5 },
   shape: { domain: 'alteration', label: 'Shape', at: 1, built: true, does: 'raise or lower the ground; Shift to level it', made: 0.5 },
-  carve: { domain: 'alteration', label: 'Carve', at: 1, built: true, does: 'cut a channel' },
+  carve: { domain: 'alteration', label: 'Carve', at: 40, built: true, does: 'cut a channel' },
   // the seven miracles: Spellscription's (GODHAND.md section 4), each also needing its feeling known
   miracle: { domain: 'spellscription', label: 'Miracles', at: 1, built: true, does: 'draw a feeling\'s sign to call its weather down' },
   // the domains' other powers (GODHAND.md section 8): the order listed is the order they open

@@ -784,3 +784,9 @@ v0.1 describes a grid-tactics game; its systems are mined, its combat model is n
 A domain's level widens reach, capacity and options, **never accuracy**. Fifteen knobs, linear in the level, each read by its tool
 (`WIDEN`, `widenAt` in `progress/domains.js`; `game.psyche.widen(key)`; printed by `node scripts/combat.mjs`). Level 1 is the tool
 exactly as it is. `divination.reckon` lengthens the reckoning; `spellscription.copy` duplicates good Cogitomaps.
+
+### 18.3 Rulings, South, 2026-11-06
+
+- **Portal stays at 40** and Hasten at 20 (digest question 1: yes).
+- **Carve moves to 40** (`GOD_POWERS.carve.at`, `progress/godpowers.js`), so Alteration's climb has a power in its middle beside
+  Enhanced Re-type. Alteration opens with Sunder, Swell, Wring and Shape. A mimicry puzzle that copies a channel still lends Carve while it is open.
