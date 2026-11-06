@@ -45,11 +45,15 @@ export const POOL = { x: -500, z: 790, yaw: 0, L: 600, W: 150, y: 14, vb: 62, be
  *  about 3x magnitude": H 6.2 -> 18.6, the face, back, tube and pocket about 2.3 times as long, so the face stays a face to ride (Hokusai's
  *  "The Great Wave off Kanagawa", c. 1831: a tall hollow curl, its thick lip thrown far over the trough, the crest clawing into fingers). */
 export const WAVE = {
-  H: 18.6, c: 15, cw: 7.5, back: 30, face: 16, faceShoulder: 34, shoulder: 110, pocket: 8, pocketW: 16,
-  tube: 46, throwLen: 8, lead: 4, ww: 0.22, // (lead: metres ahead of the break where the lip begins to rise, 0 there, thrown whole throwLen behind)
+  H: 17, c: 15, cw: 7.5, back: 34, face: 17, faceShoulder: 36, shoulder: 110, pocket: 10, pocketW: 20,
+  tube: 60, throwLen: 12, lead: 6, ww: 0.22, // (lead: metres ahead of the break where the lip begins to rise, 0 there, thrown whole throwLen behind)
   wwDecay: 90, ramp: 4, lull: 16, margin: 40,
   ends: 40, deepEnd: 30, beachRun: 26, broke: 8,
-  lip: { rx: 0.7, up: 0.16, down: 0.95, sweep: 4.46 },
+  // the tube (South, 2026-11-06 night: "the bore of the wave barrel isn't anywhere close to a cylinder"): one ellipse about (F, H), its
+  // radii F across and H up, so H = F makes it a circle. The face is its lower-left quarter (`circleTo`: the metres along the crest past
+  // the break over which the face eases from that quarter to the shoulder's rolling profile); the lip the rest of it, from the crest's
+  // vertical over the top (2 H high, about 34 m) and down to its tip ahead of and outside the rider (sweep: radians round from the crest)
+  lip: { rx: 1.0, up: 1.0, down: 1.0, sweep: 4.39 }, circleTo: 20,
   roll: [[0.22, 0.19, 1.1, 0], [0.12, 0.47, -1.9, 1.7], [0.06, 1.13, 2.7, 0.4]], // (the bore's height rolling along it: amp, /m, /s, phase)
 };
 
@@ -130,8 +134,9 @@ export function wavePool() {
     let h;
     if (d < 0) h = H * Math.exp(-(d * d) / (Wv.back * Wv.back));
     else if (d < F) {
-      const x = d / F, p = 0.72 + 0.63 * clamp(s / 40, 0, 1); // (concave and steep at the break: its top nearly sheer; rolling out on the shoulder)
-      h = H * (1 - Math.pow(x, p)) - 0.08 * H * x * x; fr.face = 1 - x; // (its foot let down into the trough's level: no step at d = F)
+      const x = d / F, p = 0.72 + 0.63 * clamp(s / 40, 0, 1), k = sstep(-2, Wv.circleTo, s); // (the tube's quarter circle under the lip; rolling out on the shoulder)
+      const g = (1 - k) * Math.sqrt(Math.max(0, 1 - (1 - x) * (1 - x))) + k * Math.pow(x, p);
+      h = H * (1 - g) - 0.08 * H * x * x; fr.face = 1 - x; // (its foot let down into the trough's level: no step at d = F)
     } else { const e = (d - F) / F; h = -0.08 * H * Math.exp(-e * e); } // (the trough before it, drawn down)
     fr.h = h;
     fr.zone = d < -Wv.back * 1.4 || d > F * 2 || H < 1 ? 'flat' : s > Wv.pocket + Wv.pocketW ? 'shoulder' : s > 0 ? 'pocket' : s > -Wv.tube ? 'barrel' : 'whitewater';
@@ -198,8 +203,8 @@ export function wavePool() {
     if (!f || f.H < 3 || f.zone !== 'barrel' && !(f.zone === 'pocket' && f.s < Wv.lead)) return { k: 0, cover: 0, hr: 0, lipOver: -99, frame: f };
     const tau = sstep(-Wv.lead, Wv.throwLen, -f.s), gone = sstep(-Wv.tube * 0.88, -Wv.tube, f.s);
     const tip = lipCurve(f.H, f.F, tau, 1), hr = (y - P.y) / f.H;
-    const inside = f.d > 0.08 * f.F && f.d < f.F * 1.05 && hr < 0.88;
-    const cover = inside ? tau * (1 - gone) * sstep(-0.2 * f.F, 0.25 * f.F, tip.d - f.d * 0.6) : 0;
+    const u = (f.d - f.F) / f.F, w = hr - 1, inside = f.d > -0.05 * f.F && hr < 1.1 && u * u + w * w < 1.1; // (inside the tube's ellipse, on the face's side)
+    const cover = inside ? tau * (1 - gone) * sstep(-0.1 * f.F, 0.25 * f.F, tip.d - f.d) : 0;
     return { k: clamp(-f.s / Wv.tube, 0, 1), cover, hr, lipOver: tip.d - f.d, frame: f };
   }
   /** The surface's foam 0..1 for the look and the grip: the whitewater, the crest pitching, the lip's landing line, the beach's wash. */
@@ -209,7 +214,7 @@ export function wavePool() {
     let f = 0;
     if (w.H > 0.3) {
       if (w.zone === 'whitewater') f = Math.max(f, (sstep(-Wv.back, 0, w.d) * 0.42 + Math.exp(-((w.d - 0.3 * w.F) ** 2) / (0.25 * w.F * w.F)) * 0.5) * (1 - sstep(w.F, w.F * 2.2, w.d)));
-      if (w.zone === 'barrel') f = Math.max(f, Math.exp(-((w.d - w.F) ** 2) / 32) * 0.85, sstep(-4.6, 1.2, w.d) * (1 - sstep(1.2, 5.8, w.d)) * 0.5);
+      if (w.zone === 'barrel') f = Math.max(f, Math.exp(-((w.d - 1.31 * w.F) ** 2) / 32) * 0.85, sstep(-4.6, 1.2, w.d) * (1 - sstep(1.2, 5.8, w.d)) * 0.5);
       if (w.zone === 'pocket') f = Math.max(f, sstep(-2.8, 0.7, w.d) * (1 - sstep(0.7, 3.7, w.d)) * 0.45 * (1 - w.s / (Wv.pocket + Wv.pocketW)));
     }
     return Math.max(f, (1 - sstep(-P.beach, 6, v)) * 0.6);
@@ -218,7 +223,7 @@ export function wavePool() {
   function bedAt(x, z) {
     const u = toU(x, z), v = toV(x, z);
     if (u < 0 || u > P.L || v > P.W) return null;
-    if (v < 0) return P.y + (-v / P.beach) * P.rim - P.depth.foot * (1 - sstep(-P.beach, 0, v)); // (the beach rising out of it)
+    if (v < 0) return P.y + (-v / P.beach) * P.rim - P.depth.foot * sstep(-P.beach, 0, v); // (the beach rising out of it)
     const D = P.depth, d = v < P.vb ? D.foot + (D.reef - D.foot) * sstep(0, P.vb, v) : D.reef + (D.deep - D.reef) * sstep(P.vb, P.vb + 30, v);
     return P.y - d;
   }
@@ -271,7 +276,8 @@ vec4 wpWave(vec2 uv, out float H, out float F) {
   F = s > 0.0 ? uWP[4].w + (uWP[5].x - uWP[4].w) * (1.0 - exp(-s / 30.0)) : (s < -tube ? uWP[4].w * 1.6 : uWP[4].w);
   float h;
   if (d < 0.0) h = H * exp(-(d * d) / (uWP[4].z * uWP[4].z));
-  else if (d < F) { float x = d / F, p = 0.72 + 0.63 * clamp(s / 40.0, 0.0, 1.0); h = H * (1.0 - pow(x, p)) - 0.08 * H * x * x; }
+  else if (d < F) { float x = d / F, p = 0.72 + 0.63 * clamp(s / 40.0, 0.0, 1.0), k = wpS(-2.0, ${WAVE.circleTo.toFixed(1)}, s);
+    float g = (1.0 - k) * sqrt(max(0.0, 1.0 - (1.0 - x) * (1.0 - x))) + k * pow(x, p); h = H * (1.0 - g) - 0.08 * H * x * x; }
   else { float e = (d - F) / F; h = -0.08 * H * exp(-e * e); }
   float pocketEnd = ${WAVE.pocket + WAVE.pocketW}.0;
   float zone = (d < -uWP[4].z * 1.4 || d > F * 2.0 || H < 1.0) ? 0.0 : s > pocketEnd ? 1.0 : s > 0.0 ? 2.0 : s > -tube ? 3.0 : 4.0;

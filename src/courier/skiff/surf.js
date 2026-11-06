@@ -15,7 +15,9 @@
 //   (ridden over the crest on the water). An air off the lip; a trick off a swell's crest pays a small push (Mario Kart's trick boost).
 //   THE BARREL: S held is the stall (the skiff's own brake: the board falls back under the lip). Covered, the tube's clock runs and its
 //   balance wobbles with the height off the ideal and the foam ball's nearness; A / D answer it (Treyarch's Kelly Slater game's meter, 2002; shown
-//   on the grind's balance mark, vfx/grindbalancemark.js). Out of the mouth = made: the spit's push and the combo's big link. Too high under
+//   on the grind's balance mark, vfx/grindbalancemark.js). Forgiving (South, 2026-11-06 night: "the tolerance on navigating the bore is so tight that it resulted in a wipeout every
+//   time"): the needle stays put in a wide band round the sweet spot, a wrong line bites only after 0.6 real s of it, and with A / D let
+//   go the line is held (`holdLine`: SSX's and Wave Race 64's assists); a stall lets the wave catch you up. Out of the mouth = made: the spit's push and the combo's big link. Too high under
 //   the lip (or the needle off its top): the lip lands on you, a wipeout (skiff.bail { why: 'lip' }); too deep (or off its foot): the foam
 //   ball takes you (why: 'closeout'). The lip passing over eases game time a breath (core/time.js pulse).
 //   THE SUBMARINE (Wave Race 64's): landing nose down and fast on the pool's water, or with S held as you land, dives the board under;
@@ -48,7 +50,11 @@ export const SURF = {
   pump: { add: 2.8, least: 0.35, win: [0.22, 0.95], steep: [0.06, 0.4] },
   turn: { rate: 1.1, end: 0.5, min: 0.7, snap: 2.6, cool: 0.8 },
   floater: { speed: 8 },
-  tube: { cover: 0.45, out: 0.2, grace: 0.18, min: 0.6, ideal: 0.38, gain: 2.0, hold: 2.6, wobble: 0.9, home: 0.4, lip: 0.7, deep: 0.94, spit: [9, 1.2, 4] },
+  tube: { cover: 0.45, out: 0.2, grace: 0.18, min: 0.6, ideal: 0.28, band: 0.22, gain: 2.4, hold: 2.6, wobble: 0.45, home: 0.6, lip: 0.8, deep: 0.97, deepFrom: 0.7, bite: 0.6, spit: [9, 1.2, 4],
+    // the line held (SSX's and Wave Race 64's assists): with A / D let go in the tube, the heading eased toward the sweet spot's line
+    // (turn: rad/s), the board drawn toward its height up or down the face (lift: m/s^2 a share of H off it) and on along the crest
+    // ahead of the foam ball once deep (ahead: m/s^2)
+    assist: { turn: 0.9, tilt: 2.2, lift: 9, ahead: 7 } },
   sub: { fall: -9, speed: 16, depth: 1.4, t: 0.7, drag: 1.6, burst: [10, 1.0, 5], up: 6 },
   crest: [4, 0.6, 1.5],
   carryAir: 0.6,
@@ -101,9 +107,10 @@ export class SurfRide {
     const pu = S.push(P.pos.x, P.pos.z), B = S.barrel(P.pos.x, P.pos.y - (sk.cfg.hover + 0.1), P.pos.z);
     this.cover = wet ? B.cover : 0; this.k = B.k; this.hr = B.hr; this.lipOver = B.lipOver;
     this.light = this.cover * (0.45 + 0.55 * clamp(1 - this.hr, 0, 1));
-    if (wet && pu.k > 0) { const a = (SURF.push * pu.k + SURF.draw * this.cover * (1 - 0.5 * Math.abs(this.balance))) * dt; sk.v.x += pu.x * a; sk.v.z += pu.z * a; }
-    // the stall: S under the lip (the skiff's own brake slows it: here only said, for the look's hand in the face)
+    // the stall: S under the lip (the skiff's own brake slows it, and the pocket's push eases to a third so the wave can pass you and the
+    // tube come over: a stall lets the wave catch you up, South's "tolerance ... so tight", 2026-11-06 night)
     this.stall = onFace && inp.isDown('KeyS') && (f.zone === 'barrel' || f.zone === 'pocket');
+    if (wet && pu.k > 0) { const a = (SURF.push * pu.k * (this.stall ? 0.33 : 1) + SURF.draw * this.cover * (1 - 0.5 * Math.abs(this.balance))) * dt; sk.v.x += pu.x * a; sk.v.z += pu.z * a; }
     this.pump(dt, onFace, inp);
     this.turns(dt, f, wet);
     this.airs(f, inp);
@@ -197,14 +204,19 @@ export class SurfRide {
     const Tb = this.tube; if (!Tb) { this.balance *= Math.exp(-4 * dt); return; }
     Tb.t += dt; sk.combo.t = COMBO.link; // (the chain lives while the lip is over you)
     if (!Tb.lipped && this.cover > 0.5) { Tb.lipped = true; g.time?.pulse?.('surf.lip', 0.55, 0.22, { release: 0.3 }); } // (the lip passing over: a breath of game time)
-    // the balance: off the ideal height (+ the lip's side), the foam ball's pull (- the deep side), a wobble growing deeper; A / D answer it
-    const tt = sk.time || 0, err = X.gain * (this.hr - X.ideal) - 2 * Math.max(0, this.k - 0.55);
+    // the balance: off the ideal height only past a wide band round it (+ the lip's side), the foam ball's pull deep (- its side), a small
+    // wobble growing deeper; A / D answer it. The needle is the warning: it swings toward the side that will bite before it does
+    const tt = sk.time || 0, off = this.hr - X.ideal, err = X.gain * Math.sign(off) * Math.max(0, Math.abs(off) - X.band) - 3 * Math.max(0, this.k - X.deepFrom);
     const wob = X.wobble * (0.3 + this.k) * (Math.sin(tt * 2.3) * 0.6 + Math.sin(tt * 3.7 + 1.3) * 0.4);
     this.balance = clamp(this.balance + ((err + wob) - X.home * this.balance + X.hold * (sk.steer || 0)) * dt, -1.2, 1.2);
-    // wiped out: the lip lands on you, or the foam ball takes you
-    const underLip = f.zone === 'barrel' && this.k > 0.05 && f.d > 0 && f.d < f.F && this.hr > X.lip; // (up the face where the lip is thrown: it lands on you; the cover test stops counting you covered above 0.88 H, so it is asked of the wave, not of the cover)
-    if (underLip || this.balance >= 1) return this.wipe('lip');
-    if (this.k > X.deep || (f.zone === 'whitewater' && f.d > 0 && wet) || this.balance <= -1) return this.wipe('closeout');
+    if (wet && Math.abs(sk.steer || 0) < 0.2) this.holdLine(dt, f); // (the line held while you hold it)
+    // wiped out only when clearly wrong and still wrong after a grace (X.bite real s): the lip lands on you (high under it, or the needle
+    // pinned up), or the foam ball takes you (too deep, fallen behind into the bore, or the needle pinned down)
+    const high = (f.zone === 'barrel' && f.d > 0 && f.d < f.F && this.hr > X.lip) || this.balance >= 1;
+    const deep = this.k > X.deep || (f.zone === 'whitewater' && f.d > 0 && wet) || this.balance <= -1;
+    this.danger = high || deep ? (this.danger || 0) + dt : Math.max(0, (this.danger || 0) - 2 * dt);
+    if (this.danger >= X.bite) return this.wipe(high ? 'lip' : 'closeout');
+    if (f.zone === 'barrel' && this.k > 0.05 && f.d < 0.03 * f.F && this.hr > 0.9) return this.wipe('lip'); // (up over the crest under the curl: into the lip's own wall, at once)
     // out of it: made through the mouth, or out over the face or the back
     Tb.out = this.cover < X.out ? Tb.out + dt : 0;
     if (Tb.out < X.grace && wet) return;
@@ -214,10 +226,20 @@ export class SurfRide {
     if (made) { const [a, d, k] = X.spit; sk.kick(a, d, k); this.spit = 1; }
     if (Tb.t >= X.min) sk.combo.add('surf.tube', COMBO.points.surf.tube * Tb.t * (made ? COMBO.points.surf.made : 1));
   }
+  /** The line held: the heading eased toward the sweet spot's line along the crest, the board drawn toward its height on the face, and
+   *  on ahead of the foam ball once deep. A modifier of the tube's alone: nothing out of it. */
+  holdLine(dt, f) {
+    const sk = this.sk, X = SURF.tube, A = X.assist, off = this.hr - X.ideal;
+    const tilt = clamp(off * A.tilt, -0.6, 0.6); // (+: down the face, toward the wave's travel)
+    const want = Math.atan2(f.crest.x + f.travel.x * tilt, f.crest.z + f.travel.z * tilt);
+    sk.heading += clamp(wrap(want - sk.heading), -A.turn * dt, A.turn * dt);
+    const lift = clamp(off, -0.3, 0.3) * A.lift * dt, ahead = A.ahead * clamp((this.k - 0.3) / 0.5, 0, 1) * dt;
+    sk.v.x += f.travel.x * lift + f.crest.x * ahead; sk.v.z += f.travel.z * lift + f.crest.z * ahead;
+  }
   wipe(why) {
     const sk = this.sk;
     if (this.tube) this.game.events?.emit('skiff.tube.exit', { seconds: +this.tube.t.toFixed(2), made: false, by: 'courier' });
-    this.tube = null; this.balance = 0; this.tubeWait = 0.8; // (not back in at once: a wipeout in the bail's grace would re-enter every step)
+    this.tube = null; this.balance = 0; this.danger = 0; this.tubeWait = 0.8; // (not back in at once: a wipeout in the bail's grace would re-enter every step)
     if ((sk.rideT || 0) > 0.5) sk.bail(why);
   }
 

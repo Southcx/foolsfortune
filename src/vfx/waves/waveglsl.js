@@ -38,7 +38,7 @@ float wpFoamMask(float s, float d, float zone, float H, float F, float v) {
   float m = 0.0;
   if (H > 0.3) {
     if (zone > 3.5) m = (smoothstep(-uWP[4].z, 0.0, d) * 0.42 + exp(-(d - 0.3 * F) * (d - 0.3 * F) / (0.25 * F * F)) * 0.5) * (1.0 - smoothstep(F, F * 2.2, d)); // (the bore frothiest along its tumbling front, patchy behind)
-    else if (zone > 2.5) m = max(exp(-(d - F) * (d - F) / 32.0) * 0.85, smoothstep(-4.6, 1.2, d) * (1.0 - smoothstep(1.2, 5.8, d)) * 0.5);
+    else if (zone > 2.5) m = max(exp(-(d - 1.31 * F) * (d - 1.31 * F) / 32.0) * 0.85, smoothstep(-4.6, 1.2, d) * (1.0 - smoothstep(1.2, 5.8, d)) * 0.5);
     else if (zone > 1.5) m = smoothstep(-2.8, 0.7, d) * (1.0 - smoothstep(0.7, 3.7, d)) * 0.45 * (1.0 - s / ${f(WAVE.pocket + WAVE.pocketW)});
   }
   return max(m, (1.0 - smoothstep(-uWP[1].w, 6.0, v)) * 0.6);

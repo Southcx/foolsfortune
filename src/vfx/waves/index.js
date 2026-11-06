@@ -14,7 +14,7 @@
 // the same cycle): the look never waits on the ride. The board's barrel is `skiff.surf` (`cover`, `k`) while it rides, else the camera's own test.
 //
 // Cost (the desk, measured: see the round's report): 4 draws and their outline (the near water, the far water, the lip, the basin, the
-// car); the near grid about 180k triangles (0.5 m over the great wave's 210 x 108 m), the far 11k, the lip 12k; a lean machine (a phone, a tier below High) the same
+// car); the near grid about 208k triangles (0.55 m over the great wave's 240 x 132 m), the far 11k, the lip 24k (two skins); a lean machine (a phone, a tier below High) the same
 // shaders on coarser grids (0.7 m and 5 m) and fewer particles (CLAUDE.md: the desk's look is never cut for the phone).
 //
 // Prior art: Horizon Forbidden West's water (Guerrilla, SIGGRAPH 2022), Sea of Thieves (Rare, SIGGRAPH 2018), Wind Waker, GPU Gems

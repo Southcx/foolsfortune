@@ -67,3 +67,20 @@ the skiff is never taken (an active tech is not preempted), and a wipeout or ste
 Also mine, no hooks in yours: the wave three times as tall (WAVE in `surf/wavepool.js`, H 6.2 -> 18.6, the face, back, tube and pocket
 about 2.3 times as long, the pool deeper: reef 5 m, deep wall 11 m, so park.js's cut is deeper), the swell half as tall again, the lip's
 fingers, the face's streaks, and `vfx/watercontact.js` (the waterline ripple: two quads, one program, a 'marks' system from boot/tools.js).
+
+## The pool's banks (2026-11-06, late night)
+
+South on the phone: "sand dunes being sheared off on both sides of the pool". `world/raceway/park.js` (Dovina's file), the pool's own part
+only:
+
+- `PARK.poolBanks` (deck 1.45 m over the still water, the beach's rise, the flat and the fall as [at least m, a share of POOL.W], blendV)
+  and `poolBanksOf(POOL)` exported (read by `vfx/waves/basin.js` for the deck's pavers).
+- `park()`: `poolBanks(x, z, h)` grades the ground round the basin: the deck's level (the beach's sand on the beach side, rising gently)
+  out to the flat, the dunes eased back in over the fall by a smoothstep (no face anywhere); derived from POOL, so a grown pool grows
+  its banks. `heightAt` runs it after the pits, before the pool's cut.
+- `heightAt` inside the basin: on the beach (v < 0) the sand's own profile `beachAt(v)` (from the bank's top down to the bed's foot,
+  smooth at both ends), elsewhere `min(h, bedAt)` as before. `bedAt`'s beach term in `surf/wavepool.js` (not mine) leaves a 1.6 m step at
+  v = -beach and at v = 0 (`- foot * (1 - sstep(-beach, 0, v))`; `* sstep(...)` would close both): the terrain no longer follows it there.
+  The swim probe (`SurfPool.probe`) still reads `bedAt`, so the beach's last 7 m under the water wade rather than swim until that is fixed.
+- The terrain, the physics heightfield and the map follow (all from `heightAt`); the margin reaches 78 m round the pool (antlion pit 227 m off,
+  no track nearer than 316 m). The stress test after it: 24 runs, 21600 ticks, 0 violations.

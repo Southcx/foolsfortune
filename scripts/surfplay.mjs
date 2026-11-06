@@ -5,6 +5,7 @@
 //   barrel   set in the pocket, stall into the tube, hold the line and the balance, pump when deep: a made tube wants skiff.tube.exit made
 //   pump     on the shoulder's face, W in rhythm: skiff.surf.pump
 //   lip      set in the tube and driven up the face under the lip: a wipeout, skiff.bail { why: 'lip' }
+//   human    ten tries driven like a person (W / A / D / S, a quarter second's reaction, taps): how many make the tube
 //   slope    off the slope's crest down the face: an edge, a hop with a pre-wind countered, landings graded; a butter on the bench
 // A shot of the barrel cam's view is taken while covered (shots/surfplay-barrel.png).
 //   node scripts/surfplay.mjs [outDir] [--only barrel,pump] [--phone [--throttle: the first-draw budget left on, 60 frames drawn before the shot]]
@@ -71,7 +72,7 @@ try {
       }
       G.tick(1 / 60);
       if (i % (opt.every || 15) === 0) rows.push([i, sk.phase, sk.surf.tube ? 'T' : '-', +((f?.d ?? 0) / (f?.F || 1)).toFixed(2), f?.zone, +(f?.s ?? 0).toFixed(1), +(sk.surf.hr).toFixed(2), +sk.surf.cover.toFixed(2), +sk.surf.k.toFixed(2), +sk.surf.balance.toFixed(2), +sk.speed.toFixed(1)].join(' '));
-      if (opt.shot && !shot && sk.surf.cover > 0.8 && g.cinema?.shots?.has?.('barrel') && (g.cinema?.sk ?? 1) > 0.9) { shot = true; if (opt.nolip && g.wavePoolLook?.parts) { g.wavePoolLook.parts.lip.mesh.visible = false; g.wavePoolLook.parts.water.near.visible = false; } for (let k = 0; k < (opt.warm || 2); k++) G.draw(); window.__shot = true; const skb = sk.skiff?.group; window.__board = skb ? { drag: +(sk.surf.drag?.w ?? 0).toFixed(2), side: sk.surf.drag?.side, hand: sk.surf.drag ? +(sk.surf.drag.gap ?? -1).toFixed(2) : null, vis: skb.visible, y: +(skb.getWorldPosition(new G.THREE.Vector3()).y + 420).toFixed(2), water: +(g.raceway.rideHeight(P.pos.x, P.pos.z) + 420).toFixed(2), py: +(P.pos.y + 420).toFixed(2) } : null; const W = g.wavePoolLook, c = g.camera; window.__lookDbg = { near: W.near, vis: W.group?.visible, lipVis: W.parts?.lip?.mesh?.visible, wt: W.t, st: S.t, same: W.S === S.S, cam: [c.position.x - 6000, c.position.y + 420, c.position.z].map((x) => +x.toFixed(1)), pl: [P.pos.x - 6000, P.pos.y + 420, P.pos.z].map((x) => +x.toFixed(1)), cover: W.screen?.cover, inScene: !!W.group?.parent, layers: W.group?.layers?.mask }; return { rows, ev: __ev.slice(), shot: true }; }
+      if (opt.shot && !shot && sk.surf.cover > 0.8 && g.cinema?.reqs?.has?.('barrel') && (g.cinema?.cam?.dist ?? 0) < 0.62) { shot = true; if (opt.nolip && g.wavePoolLook?.parts) { g.wavePoolLook.parts.lip.mesh.visible = false; g.wavePoolLook.parts.water.near.visible = false; } for (let k = 0; k < (opt.warm || 2); k++) G.draw(); window.__shot = true; const skb = sk.skiff?.group; window.__board = skb ? { drag: +(sk.surf.drag?.w ?? 0).toFixed(2), side: sk.surf.drag?.side, hand: sk.surf.drag ? +(sk.surf.drag.gap ?? -1).toFixed(2) : null, vis: skb.visible, y: +(skb.getWorldPosition(new G.THREE.Vector3()).y + 420).toFixed(2), water: +(g.raceway.rideHeight(P.pos.x, P.pos.z) + 420).toFixed(2), py: +(P.pos.y + 420).toFixed(2) } : null; const W = g.wavePoolLook, c = g.camera; window.__lookDbg = { near: W.near, vis: W.group?.visible, lipVis: W.parts?.lip?.mesh?.visible, wt: W.t, st: S.t, same: W.S === S.S, cam: [c.position.x - 6000, c.position.y + 420, c.position.z].map((x) => +x.toFixed(1)), pl: [P.pos.x - 6000, P.pos.y + 420, P.pos.z].map((x) => +x.toFixed(1)), cover: W.screen?.cover, inScene: !!W.group?.parent, layers: W.group?.layers?.mask }; return { rows, ev: __ev.slice(), shot: true }; }
       if (i % 30 === 0) await new Promise((q) => setTimeout(q, 0));
     }
     return { rows, ev: __ev.slice(), shot: false };
@@ -83,6 +84,39 @@ try {
     let r = await surfPilot(10, { stall: true, pump: true, pumpFrom: -8, shot: true, warm: process.argv.includes('--throttle') ? 60 : 2, nolip: process.argv.includes('--nolip') });
     if (r.shot) { console.log('board', JSON.stringify(await page.evaluate('window.__board'))); console.log('lookDbg', JSON.stringify(await page.evaluate('window.__lookDbg'))); await page.screenshot({ path: path.join(out, `surfplay-barrel${phone ? '-phone' : ''}.png`), timeout: 180000 }); const r2 = await surfPilot(9, { pump: true, pumpFrom: -8 }); r = { rows: r.rows.concat(r2.rows), ev: r.ev.concat(r2.ev) }; }
     report.barrel = r;
+  }
+  if (want('human')) {
+    // ten tries driven like a person: W / A / D / S only, a quarter second's reaction, taps, no reading of the ideal height (the line
+    // held is the assist's: courier/skiff/surf.js holdLine); a try made is a tube exit with made: true
+    const tries = [[4, 0.4, 13], [6, 0.35, 12], [2, 0.45, 14], [5, 0.5, 13], [3, 0.3, 12], [7, 0.42, 15], [4, 0.55, 13], [1, 0.38, 12], [6, 0.48, 14], [3, 0.4, 13]];
+    report.human = { rows: [], ev: [], tries: [] };
+    for (const [i, [s0, dK, v0]] of tries.entries()) {
+      await placeOnWave(s0, dK, v0, 19.3 + i * 0.4);
+      const r = await page.evaluate(async (seed) => {
+        const G = __game, g = G.game, P = g.player, S = g.raceway.surf, sk = P.techs.get('skiff'), wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+        let held = null, heldT = 0, look = 0, pumpT = 0, rnd = seed * 9301 + 49297;
+        const rand = () => ((rnd = (rnd * 9301 + 49297) % 233280) / 233280);
+        for (let i = 0; i < 60 * 9; i++) {
+          __keys.clear(); const su = sk.surf, f = S.frame(P.pos.x, P.pos.z);
+          if (sk.phase !== 'ride') break;
+          if (i < 150 && !su.tube && su.k < 0.25) __keys.add('KeyS'); // (a stall until the lip is over them, as a person waits for the tube to come)
+          look -= 1 / 60;
+          if (look <= 0 && f) { // (a person looks every quarter second or so, and taps)
+            look = 0.22 + rand() * 0.08;
+            const dh = wrap(sk.heading - Math.atan2(f.crest.x, f.crest.z));
+            if (Math.abs(su.balance) > 0.6) { held = su.balance > 0 ? 'KeyA' : 'KeyD'; heldT = 0.15; }
+            else if (Math.abs(dh) > 0.4) { held = dh > 0 ? 'KeyD' : 'KeyA'; heldT = 0.12; }
+          }
+          if (heldT > 0) { __keys.add(held); heldT -= 1 / 60; }
+          pumpT += 1 / 60; if (su.onFace && su.k > 0.4 && pumpT > 0.5) { if (pumpT > 0.6) pumpT = 0; __keys.add('KeyW'); }
+          G.tick(1 / 60);
+          if (i % 30 === 0) await new Promise((q) => setTimeout(q, 0));
+        }
+        return __ev.slice();
+      }, i + 1);
+      const made = r.some((e) => /tube\.exit .*"made":true/.test(e)), bail = r.find((e) => /bail/.test(e)) || null, entered = r.some((e) => /tube\.enter/.test(e));
+      report.human.tries.push({ s0, dK, v0, entered, made, bail }); report.human.ev.push(...r);
+    }
   }
   if (want('pump')) { await placeOnWave(30, 0.4, 14); report.pump = await surfPilot(5, { pump: true }); }
   if (want('lip')) { await placeOnWave(-8, 0.4, 12); report.lip = await surfPilot(2, { climb: true, every: 2 }); }
@@ -166,6 +200,7 @@ try {
 const ev = (k) => (report[k]?.ev || []);
 const had = (k, re) => ev(k).some((e) => re.test(e));
 const verdict = {
+  human: report.human && { made: report.human.tries.filter((x) => x.made).length + ' of ' + report.human.tries.length, wipeouts: report.human.tries.filter((x) => x.bail).length, tries: report.human.tries },
   barrel: report.barrel && { entered: had('barrel', /tube\.enter/), made: had('barrel', /tube\.exit .*"made":true/), exit: ev('barrel').filter((e) => /tube\.exit|bail/.test(e)) },
   pump: report.pump && { pumps: ev('pump').filter((e) => /pump/.test(e)).length },
   lip: report.lip && { wipeout: ev('lip').filter((e) => /bail/.test(e)) },

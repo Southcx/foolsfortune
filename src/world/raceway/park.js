@@ -2,14 +2,15 @@
 // THE RACEWAY AS A PARK (docs/plans/SKIFF-RACING.md section 10; the owner, 2026-10-14: "quadruple the size ... nest multiple tracks into
 // one map ... THE zone where we test ALL of our racing module mechanics"). One height function for the whole place: the open sand, every
 // track's corridor pulled into it (track.js), then the park's own shapes laid over: the hub's plaza, the antlion pits (cones at the sand's
-// angle of repose), the half-pipes, the lakes. Where a point is on any track's running surface, that surface wins (two at once: their
+// angle of repose), the half-pipes, the lakes, the wave pool's banks (its ground graded down to its coping and beach: Surf Ranch's, URBNSURF's). Where a point is on any track's running surface, that surface wins (two at once: their
 // mean). And one water function: the lakes and the fords, where the board skims (rideHeight). Pure numbers, no three.js: the game, the
 // workbench and the Node tools (scripts/raceway/map.mjs) all lay the same ground.
 //
 // Prior art: Burnout Paradise's and SSX 3's open worlds threaded with events, Kirby Air Ride's City Trial (one map, many tests), Trackmania's
-// stadium (every block in one place); the house's own track.js, nested.
+// stadium (every block in one place); the house's own track.js, nested; Kelly Slater's Surf Ranch (Lemoore), URBNSURF (Melbourne) and BSR
+// Surf Resort (Waco) for the wave pool's banks: a deck flush with the coping, a beach running into the water, the land eased away beyond.
 //
-//   const P = park()   P.tracks [T]   P.track(id)   P.heightAt(lx, lz)   P.waterAt(lx, lz) -> surface | null   P.pits   P.pipes   P.lakes   PARK
+//   const P = park()   P.tracks [T]   P.track(id)   P.heightAt(lx, lz)   P.waterAt(lx, lz) -> surface | null   P.pits   P.pipes   P.lakes   PARK   poolBanksOf(POOL)
 // ---------------------------------------------------------------------------------------
 import { sandAt, track, SUN, CONTROL, FEATURES, BRANCH } from './track.js';
 import { GORGE } from './tracks/gorge.js';
@@ -32,7 +33,20 @@ export const PARK = {
   // a crater: a bowl sunk into the sand, its rim at `y` `r` out, falling to its floor at `floor` inside `rf` (the Gorge's spiral road
   // winds down its wall: tracks/gorge.js)
   craters: [{ id: 'crater', x: 560, z: -760, r: 260, rf: 60, y: 10, floor: -45 }],
+  // the wave pool's banks (Calissa's; South, 2026-11-06: "sand dunes being sheared off on both sides of the pool"): the ground graded down
+  // to the pool's coping round every side as a real wave pool sits in its ground (Surf Ranch at Lemoore, URBNSURF Melbourne, BSR Waco): a
+  // flat deck `deck` m over the still water (the coping 0.15 proud of it: vfx/waves/basin.js) on the deep side and the ends, the beach's
+  // sand running on up out of the water at `rise` on the beach side, then the dunes eased back in over the fall. The flat and the fall are
+  // [at least m, a share of the pool's width], so a grown pool grows its banks (POOL, surf/wavepool.js); `blendV` the metres along an end
+  // over which the beach's sand meets the deck.
+  poolBanks: { deck: 1.45, rise: 0.035, flat: [16, 0.12], fall: [44, 0.4], blendV: 20 },
 };
+/** The wave pool's banks' numbers for a pool (POOL): the deck's and the beach's tops (over the layer's floor), the flat's and the fall's
+ *  widths (m), and the beach blend; read by heightAt here and by the basin's dress (the deck's paving, vfx/waves/basin.js). */
+export function poolBanksOf(P) {
+  const B = PARK.poolBanks;
+  return { deck: P.y + B.deck, beach: P.y + P.rim, rise: B.rise, flat: Math.max(B.flat[0], P.W * B.flat[1]), fall: Math.max(B.fall[0], P.W * B.fall[1]), blendV: B.blendV };
+}
 /** A crater's bowl at `d` from its middle: the floor, the wall rising straight to the rim, the sand beyond falling back to it. */
 export const craterAt = (Cr, d) => (d < Cr.rf ? Cr.floor : d < Cr.r ? Cr.floor + ((d - Cr.rf) / (Cr.r - Cr.rf)) * (Cr.y - Cr.floor) : Cr.y + (d - Cr.r) * 0.8);
 
@@ -44,6 +58,20 @@ const len2 = (x, z) => Math.sqrt(x * x + z * z);
 export function park() {
   const WP = wavePool(); // (the wave pool: its basin's bed cut into the ground, its still level the water here: surf/wavepool.js, surf/surfpool.js)
   const H = PARK.hub, Rp = PARK.repose, CRATERS = PARK.craters, PIPES = PARK.pipes, PITS = PARK.pits;
+  const PP = WP.POOL, PB = poolBanksOf(PP), bankReach = PB.flat + PB.fall;
+  /** The wave pool's banks over the ground h at (x, z): inside the basin the deck's level (the bed is cut under it after), round it the
+   *  deck or the beach's sand, flat out to PB.flat, then the dunes eased back over PB.fall (a smoothstep: never a face). */
+  function poolBanks(x, z, h) {
+    const u = WP.toU(x, z), v = WP.toV(x, z), ou = u < 0 ? -u : u > PP.L ? u - PP.L : 0, ov = v < -PP.beach ? -PP.beach - v : v > PP.W ? v - PP.W : 0;
+    if (ou > bankReach || ov > bankReach) return h;
+    const d = len2(ou, ov); if (d >= bankReach) return h;
+    const bk = 1 - sstep(-PP.beach, -PP.beach + PB.blendV, v); // (1 on the beach's side, 0 along the deck)
+    const T = PB.deck + (PB.beach - PB.deck) * bk + PB.rise * bk * Math.min(d, PB.flat);
+    return T + (h - T) * sstep(PB.flat, bankReach, d);
+  }
+  /** The beach inside the basin (v from -beach to 0): the sand eased from the bank's top down to the bed's foot at v = 0, so it runs into
+   *  the water with no step at either end (bedAt's beach term, surf/wavepool.js, leaves a 1.6 m step at each: the other builder's file). */
+  const beachAt = (v) => PB.beach + (PP.y - PP.depth.foot - PB.beach) * sstep(-PP.beach, 0, v);
   const tracks = [track({ ...SUN, control: CONTROL, features: FEATURES, branch: BRANCH }, (x, z) => groundAt(x, z)), track(GORGE, (x, z) => groundAt(x, z)), track(COASTER, (x, z) => groundAt(x, z))];
   // the lakes: the park's, and each track's fords and its branch's pools, laid as ellipses along the line where they lie
   const lakes = PARK.lakes.map((L) => ({ rot: 0, ...L }));
@@ -84,7 +112,8 @@ export function park() {
     for (let k = 0; k < lakes.length; k++) { const Lk = lakes[k], e = lakeE(Lk, x, z); if (e < 1.3) h = Math.min(h, e < 1 ? Lk.y - Lk.depth * (1 - sstep(0.7, 1, e)) : Lk.y + (e - 1) * 40); }
     // the antlion pits: cones at the angle of repose, cut into whatever is there (a track crossing a rim drops in)
     for (let k = 0; k < PITS.length; k++) { const Pt = PITS[k], d = len2(x - Pt.x, z - Pt.z); if (d < Pt.r + 8) h = Math.min(h, Pt.y - Math.max(0, Pt.r - d) * Rp + (d > Pt.r ? (d - Pt.r) * 1.5 : 0)); }
-    if (WP.inPool(x, z)) h = Math.min(h, WP.bedAt(x, z) ?? h); // (the wave pool's basin)
+    h = poolBanks(x, z, h); // (the wave pool's banks: the ground graded down to its coping and its beach)
+    if (WP.inPool(x, z)) { const v = WP.toV(x, z); h = v < 0 ? beachAt(v) : Math.min(h, WP.bedAt(x, z) ?? h); } // (the wave pool's basin, cut under the deck's level; its beach the sand's own)
     return h;
   }
   /** The water's surface over the ground here, or null: the lakes, and each track's fords. */

@@ -32,9 +32,9 @@ import { WAVE_PARTS_GLSL, WAVE_SHADE_GLSL, SKY_FALLBACK_GLSL } from './waveglsl.
  *  their reach (a share of F) and how far down they hook (a share of their reach). */
 export const WAVE_LIP = { along: [180, 96], across: [34, 20] };
 export const LIP_FINGERS = { len: 0.3, reach: 0.24, hook: 0.85 };
-/** The lip's thickness (m): the outer skin stood off the inner along the curl's outward normal, none at the root (where it grows out
- *  of the face's own surface), most a quarter of the way round, thin at the tip. */
-export const LIP_THICK = 1.6;
+/** The lip's thickness (a share of H): the outer skin stood off the inner along the curl's outward normal, thickest at the root (where
+ *  it stands back over the wave's own back, so the curl reads as the wave's whole body rising round the tube), thin at the tip. */
+export const LIP_THICK = 0.2;
 
 const VERT = /* glsl */`
 #include <common>
@@ -55,7 +55,8 @@ void main() {
     n = normalize(mix(n, vec3(trP.x, -0.6, trP.y), 0.5 * q));
   }
   vQ = q;
-  float th = ${LIP_THICK.toFixed(2)} * smoothstep(0.0, 0.25, a) * (1.0 - 0.7 * a) * (1.0 - 0.75 * gone) * step(0.5, position.z); // (the outer skin)
+  float Hk, Fk; wpWave(wpBreakUV() + s * uWP[3].zw, Hk, Fk);
+  float th = ${LIP_THICK.toFixed(2)} * Hk * (1.0 - 0.8 * a) * (1.0 - 0.75 * gone) * step(0.5, position.z); // (the outer skin)
   L.xy += n.xz * th; L.z += n.y * th;
   vec2 uv = wpUV(L.xy);
   vOn = step(0.0, uv.x) * step(uv.x, uWP[1].x) * step(0.0, uv.y) * step(uv.y, uWP[1].y); // (a curl past the basin's walls is not drawn)

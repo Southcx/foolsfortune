@@ -39,7 +39,7 @@ import { WAVE_PARTS_GLSL, WAVE_SHADE_GLSL, SKY_FALLBACK_GLSL } from './waveglsl.
 /** The grids: the near one's reach along the crest (behind the break, ahead of it) and across it (behind the crest, ahead), its spacing
  *  on the desk and on a lean machine; the far one's spacing; the seam's overlap (m); the eps of the normals' differences. */
 export const WAVE_WATER = {
-  near: { s: [-130, 80], d: [-62, 46], step: 0.5, lean: 1.0 }, // (the great wave's reach: its back 30 m, its face 16, its tube 46: WAVE)
+  near: { s: [-150, 90], d: [-80, 52], step: 0.55, lean: 1.1 }, // (the great wave's reach: its back 34 m, its face 17, its tube 60, the lip landing 22 m out: WAVE)
   far: { step: 3, lean: 5 },
   seam: 3, eps: { near: 0.35, far: 0.9 },
 };

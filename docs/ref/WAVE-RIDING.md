@@ -17,8 +17,9 @@ The model: a foil-driven pool (Surf Ranch), 600 x 150 m, the beach along v = 0, 
 solitary wave whose crest travels to the beach at cw = 7.5 m/s, oblique to the reef line so its break point peels down the pool at
 c = 15 m/s (the board cruises at 24). Zones along the crest: the shoulder (unbroken, ahead), the pocket (just ahead of the break: the most
 power), the barrel (26 m behind the break: the face standing, the lip thrown over it, `lipCurve`), the whitewater (the bore behind). The wave is Hokusai's
-scale (South, 2026-11-06: "great wave of hokusai scale and roughness, probably about 3x magnitude"): 18.6 m at the break, its face 16 m
-wide, the tube 46 m, the lip thrown a full face width to land in the trough, its crest clawing into fingers of foam (vfx/waves/lip.js). A
+scale (South, 2026-11-06: "great wave of hokusai scale and roughness, probably about 3x magnitude"): 17 m to the crest and 34 m to the top of the curl, the tube a near
+circle 34 m across (one ellipse about (F, H): the face its lower quarter, the lip the rest, landing ahead of and outside the rider; South,
+2026-11-06 night: "the bore ... isn't anywhere close to a cylinder"), the tube 60 m long, its crest clawing into fingers of foam (vfx/waves/lip.js). A
 pass runs about 45 real s, then a 16 s lull of swell; the next pass peels the other way. Between and beyond, the swell (sharpened sines,
 bigger toward the deep wall) is wave riding's chop.
 
