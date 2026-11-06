@@ -85,6 +85,22 @@ try {
   }
   if (want('pump')) { await placeOnWave(30, 0.4, 14); report.pump = await surfPilot(5, { pump: true }); }
   if (want('lip')) { await placeOnWave(-8, 0.4, 12); report.lip = await surfPilot(2, { climb: true, every: 2 }); }
+  if (want('sub')) {
+    // wave riding's dive: in the lull's swell out by the deep wall, dropped onto it nose down with S held
+    report.sub = await page.evaluate(async () => {
+      const G = __game, g = G.game, P = g.player, R = g.raceway, S = R.surf, W = S.S, PO = W.POOL, sk = P.techs.get('skiff'), ax = W.axes, rows = [];
+      S.t = (W.WAVE ? (PO.L + 2 * W.WAVE.margin) / W.WAVE.c : 45) + 6; // (into the lull)
+      const du = 0, dv = PO.W / 2 - 20, wx = 6000 + PO.x + du * ax.ux + dv * ax.vx, wz = PO.z + du * ax.uz + dv * ax.vz;
+      g.course.teleport(new P.pos.constructor(wx, R.rideHeight(wx, wz) + 0.7, wz), Math.atan2(ax.ux, ax.uz));
+      for (let i = 0; i < 120 && !sk.active; i++) { sk.mount(); G.tick(1 / 60); }
+      sk.heading = Math.atan2(ax.ux, ax.uz); sk.v.set(ax.ux * 18, 0, ax.uz * 18); sk.rideT = 5; __ev.length = 0;
+      // off a swell: in the air 3 m up, falling, S held as it lands
+      P.pos.y += 3; P.vel.y = -9; sk.air = true; sk.airT = 0.6;
+      for (let i = 0; i < 150; i++) { __keys.clear(); if (i < 40) __keys.add('KeyS'); G.tick(1 / 60); if (i % 15 === 0) rows.push(`${i} air ${sk.air} sub ${!!sk.surf?.sub} y ${(P.pos.y - (R.rideHeight(P.pos.x, P.pos.z))).toFixed(2)} speed ${sk.speed?.toFixed?.(1)}`); }
+      for (let i = 0; i < 90; i++) { __keys.clear(); G.tick(1 / 60); }
+      return { rows, ev: __ev.slice() };
+    });
+  }
   if (want('slope')) {
     report.slope = await page.evaluate(async () => {
       const G = __game, g = G.game, P = g.player, sk = P.techs.get('skiff'), rows = [];
@@ -128,6 +144,7 @@ const verdict = {
   barrel: report.barrel && { entered: had('barrel', /tube\.enter/), made: had('barrel', /tube\.exit .*"made":true/), exit: ev('barrel').filter((e) => /tube\.exit|bail/.test(e)) },
   pump: report.pump && { pumps: ev('pump').filter((e) => /pump/.test(e)).length },
   lip: report.lip && { wipeout: ev('lip').filter((e) => /bail/.test(e)) },
+  sub: report.sub && { dives: ev('sub').filter((e) => /submarine/.test(e)) },
   slope: report.slope && { on: had('slope', /skiff\.slope /), skids: ev('slope').filter((e) => /skid/.test(e)).length, landings: ev('slope').filter((e) => /slope\.land/.test(e)), butter: ev('slope').filter((e) => /butter/.test(e)) },
 };
 fs.writeFileSync(path.join(out, 'surfplay.json'), JSON.stringify({ report, verdict, errs }, null, 1));

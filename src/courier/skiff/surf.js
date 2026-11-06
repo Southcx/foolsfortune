@@ -163,7 +163,7 @@ export class SurfRide {
       else if (!L.lip && sk.combo.n > L.n0) { const [a, d, k] = SURF.crest; sk.kick(a, d, k); this.trick('crest'); }
       const speed = Math.hypot(sk.v.x, sk.v.z);
       const water = !!this.pool?.waterNormal(P.pos.x, P.pos.z, this.n); // (landed on the basin's water: the skiff calls it wet only from the next step)
-      if (water && ((this.fallVy < SURF.sub.fall && speed > SURF.sub.speed) || inp.isDown('KeyS'))) {
+      if (water && !this.sub && !(this.subWait > 0) && ((this.fallVy < SURF.sub.fall && speed > SURF.sub.speed) || (inp.isDown('KeyS') && speed > SURF.sub.speed * 0.6))) { // (once a dive: its own bob out of the dip is no new landing, and a held S needs way on)
         this.sub = { t: 0, depth: 0 };
         this.game.events?.emit('skiff.submarine', { by: 'courier' });
       }
@@ -176,13 +176,14 @@ export class SurfRide {
   /** The submarine: under, slowed, then out with a push. */
   diving(dt) {
     const U = this.sub, sk = this.sk, P = sk.P, S = this.pool, D = S?.dip;
+    this.subWait = Math.max(0, (this.subWait || 0) - dt);
     if (!U || !D) return;
     U.t += dt;
     const k = Math.exp(-SURF.sub.drag * dt); sk.v.x *= k; sk.v.z *= k;
     U.depth = Math.min(SURF.sub.depth, U.depth + dt * 6);
     D.x = P.pos.x; D.z = P.pos.z; D.depth = U.depth;
     if (U.t >= SURF.sub.t) {
-      const [a, d, kk] = SURF.sub.burst; sk.kick(a, d, kk); P.vel.y += SURF.sub.up; this.sub = null; this.burst = 1;
+      const [a, d, kk] = SURF.sub.burst; sk.kick(a, d, kk); P.vel.y += SURF.sub.up; this.sub = null; this.burst = 1; this.subWait = 1.0;
       this.sk.combo.add('surf.submarine', COMBO.points.surf.submarine);
     }
   }
