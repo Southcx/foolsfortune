@@ -136,6 +136,9 @@ export class ToolBelt {
       if (!this.isWorn(t.id) && t.model?.visible) t.model.visible = false;
     }
     const ch = this.game.character;
+    // (the body hidden, the tools on it with it: aboard a crossing the tools' own ticks do not run, so a Sondelass worn on the back
+    // kept the visible it had on the pier and drew 10 calls in every crossing frame, v419: CASEBOOK 412)
+    if (ch?.hidden) for (const t of this.tools) if (t.model?.visible) t.model.visible = false;
     if (ch) { const off = !this.isWorn('psygun'); if (off !== ch.gunOff) { ch.gunOff = off; ch.gun.visible = !off && !ch.hidden; } }
   }
 

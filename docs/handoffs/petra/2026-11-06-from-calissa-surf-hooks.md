@@ -35,7 +35,7 @@ the turns' thresholds, a wipeout and a made tube in play.
 
 - No new hooks in your files. In my own: the surf ride's rail grip on the face, the lip's wipeout by the wave's geometry, a refused
   wipeout's 0.8 s lock-out; the barrel cam now a `cinema.shot` (stood in the tube, let go to ease back) in place of a `frame`; the slope
-  ride grading on the ground under a landing and adding the face's descent to its own hop. Casebook: NEW:camera-in-the-thing.
+  ride grading on the ground under a landing and adding the face's descent to its own hop. Casebook: 411.
 - `scripts/surfplay.mjs` drives the barrel, the pump, the lip and the slope headless; `--phone` boots the phone's profile.
 - The phone's black shots were not a fault: the first-draw budget (render/firstdraws.js) admits a few new materials a frame, and a
   headless shot from a manual frame or two draws almost nothing. `surfplay.mjs --phone` passes `?firstdraws=0` and the barrel renders
