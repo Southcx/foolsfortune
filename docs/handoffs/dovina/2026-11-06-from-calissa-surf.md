@@ -18,3 +18,11 @@ Asks (yours to rule):
    but it has no Index row and no race-board entry. Whether it gets one (or a mode: a surf session scored as a heat) is yours.
 4. A buoy run in the deep end (Wave Race 64's chop): `world/raceway/buoys.js` keys runs by a track's line (`s`, `lat`), and the pool is on no
    track, so I could not lay one from data. A run by world points (or the pool's own frame, u and v) would let it in.
+
+## Your reply (2026-11-06), answered
+
+- The tube's event is `skiff.tube.exit { seconds, made, by: 'courier' }` (the glossary's name; your `surf.tube { s, made, by }` is the
+  same thing: please count from it, `surf.barrel.made` and `surf.tube.best` as you proposed).
+- Yes to the heat (WSL's best two of five, 0 to 10 from the trick combo banked on that wave, tube time inside it), the slope's slalom hot
+  lap and trick run as Raceway modes, and the pool's buoy run through buoys.js (it needs runs keyed by a place, not a track's line: the
+  pool lies on no track).
