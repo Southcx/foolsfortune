@@ -20,10 +20,15 @@
 //   its sum       sum(x, z, s): the sum toward 21 written on the face in the board's stroke numerals (an atlas, pieces.js strokeText,
 //                 blank at 0) inside a ring of 21 notches filling clockwise from the top, warming toward the eldritch hue near 21;
 //                 bust(x, z): a shudder (the sum's own spray is the board view's)
+//   the territory (South, 2026-11-06: "readability is a little weak in terms of who owns what zone"): a bright ribbon round each owner's
+//                 connected ground, along every owned tile's side that borders other ground or the board's edge, lifted over the tiles
+//                 (one mesh, `entropy-territory`, rebuilt only when ground changes hands), and a soft wash of the owner's colour under
+//                 each owned tile so the gaps between them glow; hidden through the cascade, eased in as it lands. The faces apart in
+//                 value too (yours lifted bright and cool, theirs sunk deep and warm, nobody's a dimmer bone), so it reads in greyscale
 //
 // Prior art: Monument Valley's and Manifold Garden's tiles hung in an empty sky, Hearthstone's and MTG Arena's boards (a cell lit for a
 // legal choice), Annihilation's shimmer and Control's Astral Plane (things fraying into noise as they come and go), Lucas Pope's Obra
-// Dinn (the ordered dither of decay on the bone), Robert Penner's easing (the back ease's overshoot).
+// Dinn (the ordered dither of decay on the bone), Robert Penner's easing (the back ease's overshoot), Go's territory and Into the Breach's zones (ground read by its outline).
 //
 //   new EntropyTiles(game, look)   .attach(room)   .detach()   .tick(dt, t)   .setup()   .flip(x, z)   .tile(x, z) -> Mesh
 //   .top(x, z, out) -> Vector3 (a tile's top centre as drawn now)   .light(x, z, k, color)   .face(x, z) -> 0 | 1
@@ -52,7 +57,7 @@ float vn( vec3 x ) {
 		mix( mix( h3( i + vec3( 0, 0, 1 ) ), h3( i + vec3( 1, 0, 1 ) ), f.x ), mix( h3( i + vec3( 0, 1, 1 ) ), h3( i + vec3( 1, 1, 1 ) ), f.x ), f.y ), f.z );
 }
 float bayer( vec2 p ) { p = mod( floor( p ), 4.0 ); return ( mod( p.x * 2.0 + p.y * 3.0, 4.0 ) * 4.0 + mod( p.x + p.y * 2.0, 4.0 ) ) / 16.0; }
-vec3 sideCol( float s ) { return s < -0.5 ? vec3( 0.85, 0.78, 0.62 ) : s < 0.5 ? vec3( 0.45, 0.9, 1.0 ) : vec3( 1.0, 0.36, 0.22 ); }
+vec3 sideCol( float s ) { return s < -0.5 ? vec3( 0.62, 0.57, 0.47 ) : s < 0.5 ? vec3( 0.62, 0.93, 1.0 ) : vec3( 1.0, 0.4, 0.27 ); } // (pieces.js LOOK's sides; yours cool and bright, theirs warm and deep, nobody's a dim bone)
 void main() {
 	// the cascade's fray: the plate eaten into noise until it lands, its torn edge lit
 	float fn = vn( vL * 6.0 + uSeed * 13.0 + vec3( 0.0, uT * 0.5, 0.0 ) ), cut = uFray * 1.2 - 0.1;
@@ -73,9 +78,13 @@ void main() {
 		l = l * 0.8 + 0.2 * step( bayer( gl_FragCoord.xy ), l );
 		float decay = smoothstep( 0.62, 0.8, vn( vec3( p * 4.0, uSeed * 7.0 + uT * 0.01 ) ) );
 		c = vec3( 0.64, 0.58, 0.46 ) * l * ( 1.0 - 0.45 * lat ) * ( 1.0 - 0.35 * decay ) + uEld * lat * 0.06 + vec3( 0.5 ) * spec * 0.5;
-		float owned = step( -0.5, uSide ); // (an owned tile wears its owner over the whole face: version 2's ground is tile by tile, so it must read at a glance)
-		c = mix( c, c * ( 0.45 + mine * 0.9 ), owned * 0.6 );
-		c += mine * ( band * ( 1.1 + owned * 0.6 ) + inner * ( 0.25 + owned * 0.35 ) );
+		// an owned tile wears its owner over the whole face, apart in value as well as hue so it reads in greyscale: yours a cool pale
+		// cyan lifted bright, theirs a warm vermilion sunk deep; nobody's plain bone, dimmer than either's light
+		float owned = step( -0.5, uSide );
+		if ( uSide < -0.5 ) c *= 0.66;
+		else if ( uSide < 0.5 ) c = mix( c, c * 0.3 + vec3( 0.3, 0.78, 1.0 ) * 0.8, 0.85 );
+		else c = mix( c, c * 0.22 + vec3( 0.62, 0.17, 0.09 ) * 0.62, 0.84 );
+		c += mine * ( band * ( 0.7 + owned * 0.9 ) + inner * ( 0.15 + owned * 0.35 ) );
 		if ( uSum > 0.5 ) { // the sum: its numeral (an atlas of 0..21) and its ring of 21 notches, filled clockwise from the top
 			vec2 q = p / ( 0.5 * ${TILE.w.toFixed(2)} ); float r = length( q ), ang = fract( atan( q.x, -q.y ) / 6.2831853 + 1.0 );
 			float ring = smoothstep( 0.035, 0.0, abs( r - 0.6 ) ), notch = step( 0.18, fract( ang * 21.0 ) ), fill = step( ang, uSum / 21.0 );
@@ -113,6 +122,23 @@ void main() {
 const TETHER_FRAG = `
 uniform vec3 uEld; varying float vA;
 void main() { vec2 q = gl_PointCoord - 0.5; if ( dot( q, q ) > 0.25 ) discard; gl_FragColor = vec4( mix( uEld, vec3( 0.85, 0.8, 0.7 ), 0.35 ) * vA * 1.4, 1.0 ); ${OUT} }`;
+
+// the territory: each owner's connected ground outlined (a ribbon along every owned tile's edge that borders other ground) and washed
+// in its colour under the tiles, so the gaps between them glow (aKind 0 the line, 1 the wash; aUv across the ribbon / over the wash)
+const TERR_VERT = `
+attribute vec3 aCol; attribute vec3 aK; varying vec3 vCol, vK;
+void main() { vCol = aCol; vK = aK; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }`;
+const TERR_FRAG = `
+uniform float uT, uShow; varying vec3 vCol, vK;
+void main() {
+	float a;
+	if ( vK.x < 0.5 ) { float x = abs( vK.y * 2.0 - 1.0 ); a = ( smoothstep( 1.0, 0.35, x ) * 0.7 + smoothstep( 0.4, 0.0, x ) * 0.9 ) * ( 0.88 + 0.12 * sin( uT * 2.2 - vK.z * 0.9 ) ); }
+	else { vec2 q = abs( vK.yz * 2.0 - 1.0 ); a = 0.3 * smoothstep( 1.0, 0.55, max( q.x, q.y ) ); }
+	gl_FragColor = vec4( vCol * a * uShow, 1.0 );
+	${OUT}
+}`;
+const TERR = { lift: 0.16, inset: 0.07, width: 0.13, washBelow: 0.22, wash: 1.0 }; // (m: over a tile's top as laid; in from its edge; the ribbon's width; the wash's depth under the belly and its size a tile's pitch)
+const TERR_COL = { 0: new THREE.Color(0.4, 0.9, 1.0).multiplyScalar(2.0), 1: new THREE.Color(1.0, 0.3, 0.14).multiplyScalar(1.7) };
 
 /** The sums' numerals, 0 .. 21 in a row of 22 cells (alpha only: the shader inks them). */
 function numeralAtlas() {
@@ -157,6 +183,10 @@ export class EntropyTiles {
     this.tethers = new THREE.Points(g, this.tMat); this.tethers.frustumCulled = false; this.tethers.userData.entropyLook = true; this.per = per2;
     this.tethers.onBeforeRender = (r) => { const tg = r.getRenderTarget(); U.uScale.value = (tg ? tg.height : r.getDrawingBufferSize(_v2).y) * 0.9; };
     room.room.add(this.tethers);
+    // the territory line and its wash: one mesh, rebuilt only when the ground changes hands
+    this.terrMat = new THREE.ShaderMaterial({ name: 'entropy-territory', vertexShader: TERR_VERT, fragmentShader: TERR_FRAG, uniforms: { uT: U.uT, uShow: { value: 0 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
+    this.terr = new THREE.Mesh(new THREE.BufferGeometry(), this.terrMat); this.terr.frustumCulled = false; this.terr.renderOrder = 2; this.terr.userData.entropyLook = true; this.terr.name = 'entropy-territory';
+    room.room.add(this.terr); this.terrDirty = true;
     this.pose(this.look.t || 0);
   }
 
@@ -166,7 +196,7 @@ export class EntropyTiles {
       const m = s.m; m.geometry = s.was.geo; m.material = s.was.mat; m.onBeforeRender = s.was.onBR; m.position.copy(s.c.home); m.quaternion.identity(); m.scale.set(1, 1, 1);
       if (gone) s.was.mat.dispose?.(); // (torn down already: hers would never draw again)
     }
-    this.tethers?.parent?.remove(this.tethers);
+    this.tethers?.parent?.remove(this.tethers); this.terr?.parent?.remove(this.terr); this.terr?.geometry.dispose(); this.terrMat?.dispose(); this.terr = this.terrMat = null;
     this.geo?.dispose(); this.mat?.dispose(); this.numTex?.dispose(); this.numTex = null; this.tMat?.dispose(); this.tethers?.geometry.dispose();
     this.S = []; this.room = null; this.tethers = null; this.geo = this.mat = this.tMat = null; this.setupAt = -1;
   }
@@ -176,7 +206,7 @@ export class EntropyTiles {
   /** The tile at (x, z) turned a whole turn over, landing in owner `o`'s colour (its colour changes as its edge passes upright). */
   flip(x, z, o) { const s = this.S[z * 7 + x]; if (!s) return; s.from = 0; s.flipT = 0; s.toSide = o == null ? s.side : SIDE.at(o); }
   /** Its owner (0, 1, -1 nobody): the edge's colour, washed with a flash when it changes (never mid-flip: the flip lands its own). */
-  own(x, z, o) { const s = this.S[z * 7 + x], v = SIDE.at(o); if (!s || s.flipT >= 0 || s.side === v) return; s.side = s.toSide = v; s.flash = Math.max(s.flash, 0.8); }
+  own(x, z, o) { const s = this.S[z * 7 + x], v = SIDE.at(o); if (!s || s.flipT >= 0 || s.side === v) return; s.side = s.toSide = v; s.flash = Math.max(s.flash, 0.8); this.terrDirty = true; }
   /** Its sum toward 21 (0 blank). */
   sum(x, z, n) { const s = this.S[z * 7 + x]; if (s) s.sum = n; }
   /** Over 21: a shudder. */
@@ -193,9 +223,43 @@ export class EntropyTiles {
       s.lk = THREE.MathUtils.damp(s.lk, s.lt, 10, dt); if (s.lt === 0 && s.lk < 0.002) s.lk = 0;
       s.flash = Math.max(0, s.flash - dt / CASCADE.flash);
       s.shake = Math.max(0, s.shake - dt * 2.2);
-      if (s.flipT >= 0) { s.flipT += dt; if (s.flipT >= FLIP.dur * 0.5) s.side = s.toSide; if (s.flipT >= FLIP.dur) { s.flipT = -1; s.flash = 1; } }
+      if (s.flipT >= 0) { s.flipT += dt; if (s.flipT >= FLIP.dur * 0.5 && s.side !== s.toSide) { s.side = s.toSide; this.terrDirty = true; } if (s.flipT >= FLIP.dur) { s.flipT = -1; s.flash = 1; } }
+    }
+    if (this.terr) {
+      if (this.terrDirty) this.territory();
+      const landed = this.S.every((s) => s.landed); this.terrMat.uniforms.uShow.value = THREE.MathUtils.damp(this.terrMat.uniforms.uShow.value, landed ? 1 : 0, landed ? 3 : 12, dt);
     }
     this.pose(t);
+  }
+
+  /** The territory rebuilt: for each owned tile, a ribbon on every side whose neighbour is other ground (or the board's edge), joined at
+   *  the corners; and a soft square of its colour under it, so the gaps between owned tiles glow its owner's. Laid at the tiles' homes
+   *  (their drift is a few centimetres: the line rides loosely over it). */
+  territory() {
+    this.terrDirty = false;
+    const n = BOARD.size, at = (x, z) => (x < 0 || z < 0 || x >= n || z >= n ? -2 : this.S[z * n + x]?.side ?? -1);
+    const P = [], C = [], K = [], I = [], pitch = BOARD.tile + BOARD.gap, half = TILE.w / 2 - TERR.inset, W = TERR.width / 2;
+    const quad = (a, b, c, d, col, k0, k1, k2, k3) => { const o = P.length / 3; for (const v of [a, b, c, d]) { P.push(v.x, v.y, v.z); C.push(col.r, col.g, col.b); } K.push(...k0, ...k1, ...k2, ...k3); I.push(o, o + 1, o + 2, o, o + 2, o + 3); };
+    const V = (x, y, z) => new THREE.Vector3(x, y, z);
+    for (const s of this.S) {
+      if (s.side < 0) continue;
+      const col = TERR_COL[s.side], h = s.c.home, y = h.y + TILE.h / 2 + TERR.lift, x = s.c.x, z = s.c.z;
+      // the wash under the tile
+      const wy = h.y - TILE.h / 2 - TERR.washBelow, r = (pitch * TERR.wash) / 2;
+      quad(V(h.x - r, wy, h.z - r), V(h.x + r, wy, h.z - r), V(h.x + r, wy, h.z + r), V(h.x - r, wy, h.z + r), col, [1, 0, 0], [1, 1, 0], [1, 1, 1], [1, 0, 1]);
+      // the ribbon on each side bordering other ground: [neighbour dx, dz] and the side's two corners
+      for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        if (at(x + dx, z + dz) === s.side) continue;
+        const ax = dz !== 0 ? -1 : dx, az = dx !== 0 ? -1 : dz, bx = dz !== 0 ? 1 : dx, bz = dx !== 0 ? 1 : dz; // (the side's ends)
+        const e0 = V(h.x + ax * half, y, h.z + az * half), e1 = V(h.x + bx * half, y, h.z + bz * half);
+        const tx = Math.sign(e1.x - e0.x) * W, tz = Math.sign(e1.z - e0.z) * W, nx = dx * W, nz = dz * W; // (extend past each corner by half its width: the corners close)
+        const ph = (x + z) * 2;
+        quad(V(e0.x - tx - nx, y, e0.z - tz - nz), V(e1.x + tx - nx, y, e1.z + tz - nz), V(e1.x + tx + nx, y, e1.z + tz + nz), V(e0.x - tx + nx, y, e0.z - tz + nz), col, [0, 0, ph], [0, 0, ph + 1], [0, 1, ph + 1], [0, 1, ph]);
+      }
+    }
+    const g = this.terr.geometry; g.dispose();
+    const ng = new THREE.BufferGeometry(); ng.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); ng.setAttribute('aCol', new THREE.Float32BufferAttribute(C, 3)); ng.setAttribute('aK', new THREE.Float32BufferAttribute(K, 3)); ng.setIndex(I);
+    this.terr.geometry = ng;
   }
 
   /** Every tile's place and turn as drawn now, and the tethers under them. */
