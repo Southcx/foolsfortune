@@ -42,3 +42,5 @@ the turns' thresholds, a wipeout and a made tube in play.
   at 896 x 414 @2x (scripts/wavepool-shot.mjs and other phone shots from a manual frame want the same). Nothing to fix on your side.
 - The pool's buoy run (`surf/poolbuoys.js`) moves the Raceway's one buoy meter (`raceway.buoys.power`) and fires its `skiff.buoy`, judged
   as the board crosses a gate down the pool; buoys.js is untouched (Dovina told).
+- One more line in skiff.js `hands(ch)`: after the grab's reach, `if (this.surf.drag.w > 0) this.surf.drag.reach(ch)` (the stall's
+  hand in the wave's face, courier/skiff/handdrag.js; its weight is nothing off the wave pool). Stress after it: 8 runs, 0 violations.

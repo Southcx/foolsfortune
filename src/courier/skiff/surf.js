@@ -32,6 +32,7 @@
 //   skiff.surf = new SurfRide(skiff)   .rise() -> m/s   .ownsW   .step(dt)   .frame(dt) (per frame: the camera, the look's easing)   SURF
 // ---------------------------------------------------------------------------------------
 import { COMBO } from './combo.js';
+import { HandDrag } from './handdrag.js';
 import { BarrelCam } from './barrelcam.js';
 import { WAVE } from '../../world/raceway/surf/wavepool.js';
 
@@ -61,7 +62,7 @@ export class SurfRide {
   constructor(sk) {
     this.sk = sk; this.c = { x: 0, z: 0 }; this.n = { x: 0, y: 1, z: 0 }; this.on = false; this.ownsW = false;
     this.reset();
-    this.cam = new BarrelCam(this);
+    this.cam = new BarrelCam(this); this.drag = new HandDrag(this); // (the stall's hand in the face: handdrag.js)
     sk.game?.systems?.add?.('fx', (dt) => this.frame(dt), { clock: 'raw', name: 'surfRide' }); // (each frame, ridden or not: the barrel cam freed, the dip and the spit eased out)
   }
   get game() { return this.sk.game; }
@@ -227,6 +228,6 @@ export class SurfRide {
     if (!riding && (this.tube || this.sub)) { this.tube = null; this.sub = null; }
     if (S && !this.sub && S.dip.depth > 0) S.dip.depth = Math.max(0, S.dip.depth - dt * 4);
     if (!riding) { this.cover = 0; this.stall = false; }
-    this.cam.update(dt);
+    this.cam.update(dt); this.drag.ease(dt);
   }
 }

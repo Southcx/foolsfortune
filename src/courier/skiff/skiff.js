@@ -766,7 +766,7 @@ export class Skiffing extends Tech {
     R.phase(base, clip, this.phaseT, this.w);
   }
 
-  hands(ch) { if (this.phase === 'ride') this.rider.R?.grabs.reach(ch, this); } // (a grab's hands on the rail: grabreach.js)
+  hands(ch) { if (this.phase === 'ride') { this.rider.R?.grabs.reach(ch, this); if (this.surf.drag.w > 0) this.surf.drag.reach(ch); } } // (a grab's hands on the rail: grabreach.js; the stall's hand in the wave's face, only on the wave pool: handdrag.js)
 
   /** Once the body is posed: the sheet runs from the boom's end to the rider's high hand (while they ride). */
   afterPose(ch) {
