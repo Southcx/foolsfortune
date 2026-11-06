@@ -120,3 +120,17 @@ by under 8 points in 100 games: the bomb is more luck than search at this length
 - **Measured and open:** the Hermit wins 65% (its sixth card), the first seat 60%; a game is about 7 rounds. Next pass: the counter at 30
   and the Hermit's hand at five, re-simulated with `scripts/casino.mjs`. Not changed before a sim says so.
 - **You are the Fool at the table**, Dovina's seat the Chariot. A class choice comes with the second pass.
+
+## Tuned, South 2026-11-06 ("go for it")
+
+Measured with `node scripts/casino.mjs --game entropy --n 200` (search 40 on both sides, 200 games a pairing):
+
+| pass | change | the Fool | the Chariot | the Empress | the Hermit | the first seat |
+| --- | --- | --- | --- | --- | --- | --- |
+| before | counter 20; the Hermit holds six | 54.1% | 36.3% | 37.4% | 61.8% | 61.1% |
+| 1 | counter 30; every hand five; the Hermit keeps three between turns | 66.8% | 40.5% | 38.1% | 46.4% | 62.4% |
+| 2 | the Fool's re-roll costs 1; the second seat opens with a bank of 2 | 63.1% | 43.8% | 43.1% | 47.3% | 60.8% |
+
+The Hermit is fixed. The Fool still leads, because a re-roll every turn is worth more than 1 from the bank. The first seat's edge did not
+answer to the bank or the game's length, so it is structural: the first seat moves the bomb first. Next levers, not yet tried: the
+first seat's first turn plays no group (Catan's and Go's komi idea), and the Fool's re-roll once a game round rather than once a turn.
