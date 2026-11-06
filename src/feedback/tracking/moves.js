@@ -12,7 +12,7 @@ import { SONDELASS_MOVES } from '../../tools/sondelass/sondelassloadout.js';
 import { IDLES } from '../../courier/anim/idlebreak.js';
 import { ordinal, SPECIAL_SLOTS } from '../../tools/sondelass/loadoutwords.js';
 
-const BAIL_SAYS = { wall: 'Bailed: head-on hit.', sideways: 'Bailed: landed sideways.', land: 'Bailed: the drop was too steep.' };
+const BAIL_SAYS = { wall: 'Bailed: head-on hit.', sideways: 'Bailed: landed sideways.', land: 'Bailed: the drop was too steep.', lip: 'Wiped out: the lip landed on you.', closeout: 'Wiped out: the foam ball took you.' }; // (lip, closeout: the wave pool's, courier/skiff/surf.js)
 
 /** The melee loadout's rows that are learned (a `parent` in MOVES.sondelass: MELEE-LOADOUT-EARNING.md 2), checked after the acts that open them. */
 const LEARNABLE = Object.entries(MOVES.sondelass).filter(([, m]) => m.parent).map(([id]) => id);

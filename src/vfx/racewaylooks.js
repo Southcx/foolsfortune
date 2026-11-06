@@ -217,7 +217,7 @@ export class RacewayLooks {
     this.parent = o.parent || null; // (where the meshes go: the scene, or a Workbench stage)
     this.vfxOf = () => o.vfx || game.vfx;
     this.raceOf = o.race || (() => game.race);
-    this.boardOf = o.board || (() => { const S = game.player?.techs?.get?.('skiff'); return S?.active && S.skiff?.group ? { group: S.skiff.group, heading: S.heading, carve: S.carve, vel: S.v, boosting: S.boosting, combo: S.combo, grind: S.grind, boat: S.skiff, manual: S.phase === 'ride' && !!S.rules?.manualOn, manualLean: S.manualLean || 0 } : null; });
+    this.boardOf = o.board || (() => { const S = game.player?.techs?.get?.('skiff'); return S?.active && S.skiff?.group ? { group: S.skiff.group, heading: S.heading, carve: S.carve, vel: S.v, boosting: S.boosting, combo: S.combo, grind: S.grind, boat: S.skiff, manual: S.phase === 'ride' && !!S.rules?.manualOn, manualLean: S.manualLean || 0, tube: S.phase === 'ride' && !!S.surf?.tube, tubeLean: S.surf?.balance || 0 } : null; });
     this.skiffModelOf = o.skiffModel || (() => game.player?.techs?.get?.('skiff')?.skiff?.model || null);
     this.playerOf = o.player || (() => game.player?.pos);
     this.t = 0; this.plates = null; this.marks = null; this.ghost = null;
@@ -597,7 +597,7 @@ export class RacewayLooks {
       const power = B && this.game.raceway?.active ? this.game.raceway.buoys?.power || 0 : 0; // (the buoys' power: round 6)
       if (B?.combo && (this.combo || B.combo.n || B.combo.stocks > 0.01 || power > 0)) this.comboMarks(B);
       this.combo?.update(dt, B?.combo || null, this.t, power);
-      const bal = B?.grind?.on ? B.grind : B?.manual ? { on: true, lean: B.manualLean } : null; // (the manual's lean on the grind's mark: round 6)
+      const bal = B?.grind?.on ? B.grind : B?.manual ? { on: true, lean: B.manualLean } : B?.tube ? { on: true, lean: B.tubeLean } : null; // (and the barrel's balance on the wave pool: courier/skiff/surf.js) // (the manual's lean on the grind's mark: round 6)
       if (bal && !this.balance) this.balance = new GrindBalanceMark({ map: materials().map }); // (the grind's balance mark: made the first time a board grinds)
       if (this.balance) { if (B) this.balance.attach(B.group); this.balance.update(dt, bal, { t: this.t, camera: this.game.camera }); } }
     this.stakes?.update(dt);

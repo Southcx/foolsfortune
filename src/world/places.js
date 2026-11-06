@@ -14,6 +14,7 @@ import * as THREE from 'three';
 import { zoneOf, wholeOf } from '../render/zones.js';
 import { KILN_AT } from '../courier/moves/kiln.js';
 import { TR } from './throwingroom/layout.js';
+import { addSlopePlace } from './raceway/surf/slope.js'; // (the slope's crest, /goto raceway.slope: Calissa's, WAVE-RIDING.md 3)
 
 const r2 = (v) => +v.toFixed(2);
 
@@ -109,6 +110,8 @@ export function installPlaces(game) {
   if (game.bazaar) P.add('bazaar', { name: "Raku's bazaar", at: () => game.bazaar.spot('arrive').pos, via: () => { game.bazaar.arrive(); return true; }, note: 'the casino: Querent, Zodiac, Event Horizon; chips at the cage' });
   if (game.opensea) P.add('opensea', { name: 'the open sea', at: () => game.opensea.props?.quays.anagami.pos.clone() ?? null, via: () => { game.opensea.arrive(); return true; }, note: "Anagami's quay on the open sea; F at the ship: board" });
   if (game.raceway) P.add('raceway', { name: 'the Raceway', at: () => game.raceway.startPillar.clone(), via: () => { game.raceway.arrive(); return true; }, note: 'the Solar Skiff\'s test circuit; F at the start\'s pillar: a race' });
+  game.raceway?.surf?.place(P); // (the Raceway park's wave pool: world/raceway/surf/surfpool.js)
+  addSlopePlace(game, P); // (the slope's crest in the Raceway park: raceway/surf/slope.js)
   if (game.margarite) P.add('margarite', { name: "Margarite's dock", at: () => game.margarite.spot('landing').pos.clone().setX(game.margarite.spot('landing').pos.x - 6), yaw: -Math.PI / 2, note: 'the far end of the crossing: the Pearl Shrine, the Purser, Letty, the pier home' });
   if (game.well) P.add('well.mouth', { name: 'the mouth of the Great Dunemaw', at: () => game.well.mouthPos.clone(), near: 1, note: 'F: down into the Well' }); // (its reach is 2.4 m, and the sand round it slips)
   for (const n of game.folk?.list || []) P.add(`folk.${n.def?.id || n.id}`, { name: n.def?.name || n.name || 'one of the folk', at: () => n.pos.clone(), note: 'F: talk' });

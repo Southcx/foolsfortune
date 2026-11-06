@@ -23,6 +23,7 @@ import { qaisRules } from './qais.js';
 import { brushRules, brushToolRules } from './brush.js';
 import { partyRules } from './party.js';
 import { skiffRules, skiffSailingRules } from './skiff.js';
+import { surfRules } from './surf.js';
 import { moveRules } from './moves.js';
 import { heldStrikeRules } from './heldstrikes.js';
 import { blowRules } from './blows.js';
@@ -41,6 +42,7 @@ import { seaSerpentRules } from './seaserpent.js';
 import { seaFoldsRules } from './seafolds.js';
 import { chatroomRules } from './chatroom.js';
 import { raceModeRules } from './racemodes.js';
+import { slopeRideRules } from './sloperide.js';
 import { casinoRules } from './casino.js';
 import { duelRules } from './duel.js';
 import { graphicsRules } from './graphics.js';
@@ -122,6 +124,7 @@ export function areaRules(ctx) {
   groundMovementRules(ctx);
   movementArtRules(ctx);
   skiffSailingRules(ctx);
+  surfRules(ctx); // (the wave pool's surf ride: tracking/surf.js)
   godHandRules(ctx);
   mapRules(ctx);
   courseRules(ctx);
@@ -176,6 +179,7 @@ export function areaRules(ctx) {
   chatroomRules(ctx); // (the room: coop/chatroom.js, COOP.md C7)
   raceRules(ctx); // (the Raceway's race, and the skiff's carve, pop, plates: docs/plans/SKIFF-RACING.md)
   raceModeRules(ctx); // (the Raceway's modes, cups, licences, City Trial, wager and the board's rules: SKIFF-RACING.md 12)
+  slopeRideRules(ctx); // (the slope ride: the Solar Skiff furled on a downslope, a snowboard: tracking/sloperide.js)
   casinoRules(ctx); // (Raku's bazaar: the chips, the tables, what happens at them: docs/plans/CASINO.md)
   duelRules(ctx); // (a puzzle duel with an aberrant: docs/plans/PUZZLE-DUELS.md)
   cardBackRules(ctx); // (a deck's card back chosen: ui/cardbackchoice.js)

@@ -15,6 +15,8 @@ import { sandAt, track, SUN, CONTROL, FEATURES, BRANCH } from './track.js';
 import { GORGE } from './tracks/gorge.js';
 import { COASTER } from './tracks/coaster.js';
 import { LOT } from '../../progress/trackdef.js';
+import { slopeShape } from './surf/slope.js'; // (the slope, a dune for the snowboard ride: Calissa's, WAVE-RIDING.md 3)
+import { wavePool } from './surf/wavepool.js';
 
 /** The park's own shapes (local metres; y over the layer's floor). The hub: where the Index sets you down, a plaza flattened among the
  *  tracks' starts. An antlion pit: a cone whose sides stand at the sand's angle of repose (tan 33 degrees: dry sand will not lie steeper,
@@ -40,6 +42,7 @@ const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a)
 const len2 = (x, z) => Math.sqrt(x * x + z * z);
 
 export function park() {
+  const WP = wavePool(); // (the wave pool: its basin's bed cut into the ground, its still level the water here: surf/wavepool.js, surf/surfpool.js)
   const H = PARK.hub, Rp = PARK.repose, CRATERS = PARK.craters, PIPES = PARK.pipes, PITS = PARK.pits;
   const tracks = [track({ ...SUN, control: CONTROL, features: FEATURES, branch: BRANCH }, (x, z) => groundAt(x, z)), track(GORGE, (x, z) => groundAt(x, z)), track(COASTER, (x, z) => groundAt(x, z))];
   // the lakes: the park's, and each track's fords and its branch's pools, laid as ellipses along the line where they lie
@@ -67,6 +70,7 @@ export function park() {
   }
   function heightAt(x, z) {
     let h = tracksAt(x, z);
+    h = slopeShape(x, z, h); // (the slope: a long dune laid over the sand in the park's south, surf/slope.js)
     // the half-pipes: the floor, the quarter circles, the deck beyond, blended back over 20 m
     for (let q = 0; q < PIPES.length; q++) {
       const Pp = PIPES[q];
@@ -80,10 +84,12 @@ export function park() {
     for (let k = 0; k < lakes.length; k++) { const Lk = lakes[k], e = lakeE(Lk, x, z); if (e < 1.3) h = Math.min(h, e < 1 ? Lk.y - Lk.depth * (1 - sstep(0.7, 1, e)) : Lk.y + (e - 1) * 40); }
     // the antlion pits: cones at the angle of repose, cut into whatever is there (a track crossing a rim drops in)
     for (let k = 0; k < PITS.length; k++) { const Pt = PITS[k], d = len2(x - Pt.x, z - Pt.z); if (d < Pt.r + 8) h = Math.min(h, Pt.y - Math.max(0, Pt.r - d) * Rp + (d > Pt.r ? (d - Pt.r) * 1.5 : 0)); }
+    if (WP.inPool(x, z)) h = Math.min(h, WP.bedAt(x, z) ?? h); // (the wave pool's basin)
     return h;
   }
   /** The water's surface over the ground here, or null: the lakes, and each track's fords. */
   function waterAt(x, z) {
+    if (WP.inPool(x, z)) return WP.POOL.y; // (the wave pool's still level; its moving surface is the Raceway's: surf/surfpool.js rideY)
     for (let k = 0; k < lakes.length; k++) if (lakeE(lakes[k], x, z) < 1) return lakes[k].y;
     return null;
   }

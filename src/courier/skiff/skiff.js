@@ -61,6 +61,8 @@ import { SkiffCombo, COMBO } from './combo.js';
 import { BoardRules, SCORCH } from './boardrules.js';
 import { MASS } from '../../progress/skiffruler.js';
 import { keelSteer } from '../../world/raceway/keel.js';
+import { SurfRide } from './surf.js'; // (the surf ride on the wave pool: its push, pump, turns, barrel and submarine as modifiers; Calissa's, WAVE-RIDING.md 2)
+import { SlopeRide } from './sloperide.js'; // (the slope ride: furled on a downslope, a snowboard; Calissa's, WAVE-RIDING.md 3)
 
 const UP = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3();
@@ -137,6 +139,8 @@ export class Skiffing extends Tech {
     this.grind = new Grind(this); // (the board on a rail, the skiff alone: courier/skiff/grind.js)
     this.combo = new SkiffCombo(this); // (tricks linked into a chain, banked into free flares: courier/skiff/combo.js)
     game.events?.on?.('trap.smash', (e) => { if (e.by === 'courier' && this.active) this.combo.add('smash', COMBO.points.smash); }); // (a pot of the catapult trap smashed in the air: a link, world/raceway/trapkinds.js)
+    this.surf = new SurfRide(this); // (on the wave pool's water: surf.js; off it, nothing)
+    this.slope = new SlopeRide(this); // (the board as a snowboard on a downslope, furled: sloperide.js)
     this.rules = new BoardRules(this); // (the pool as the hull, the scorch, the manual, snaking, the shoulder, aftertouch, near misses: boardrules.js)
     this.grab = null; // { kind: 'nose' | 'tail' | 'double', t }: a grab held in the air
     this.phase = 'ride'; this.phaseT = 0; this.next = null;
@@ -356,7 +360,7 @@ export class Skiffing extends Tech {
       g.events?.emit('skiff.glide', { by: 'courier' }); // (the wind under the wings is the skiff's loop: sfxLoop.set's glide, Wanda's)
     }
     const manualOn = this.rules.manual(dt, inp, !this.air && !held && !this.carve, steerIn); // (W and S together with a combo live: the manual, boardrules.js)
-    const hoistKey = keyW && !this.gliding && !manualOn, furlKey = keyS && !this.gliding && !manualOn;
+    const hoistKey = keyW && !this.gliding && !manualOn && !this.surf.ownsW, furlKey = keyS && !this.gliding && !manualOn;
     if (!this.air && !held) this.rules.shoulder(dt, inp);
 
     // ---- the sail: hoisted with W, lowered with S (which also brakes); it stays where you leave it
@@ -364,6 +368,7 @@ export class Skiffing extends Tech {
     if (furlKey) this.L = Math.max(0, this.L - dt / c.furlTime);
     else if (hoistKey) this.L = Math.min(1, this.L + dt / c.hoistTime);
     this.hoistDir = Math.sign(this.L - wasL);
+    if (this.slope.on) this.slope.sail(wasL, keyW, keyS); // (on the slope a lone W presses the nose, it does not hoist: sloperide.js)
     // ---- pumping: run it back up from nearly down and it kicks, as in Wind Waker
     let pump = 0;
     if (this.L < 0.4) this.pumpReady = true;
@@ -402,7 +407,7 @@ export class Skiffing extends Tech {
     // ---- slopes: gravity along the ground
     const gy = D.rideHeight(P.pos.x, P.pos.z); // (the sand, or the oasis's water over it: the skiff skims the pond)
     const wet = gy > D.heightAt(P.pos.x, P.pos.z) + 0.01 && !this.air && !(D.decks?.length && P.pos.y > gy + 2); // (skimming water: a lake, a ford, the cavern's pool, the oasis)
-    if (wet) this.n.copy(UP); else D.normalAt(P.pos.x, P.pos.z, this.n);
+    if (wet) { if (!D.waterNormal?.(P.pos.x, P.pos.z, this.n)) this.n.copy(UP); } else D.normalAt(P.pos.x, P.pos.z, this.n); // (the wave pool's water answers with its wave's normal: surf/surfpool.js)
     if (wet !== !!this.onWater) { this.onWater = wet; g.events?.emit('skiff.water', { on: wet, speed: +this.v.length().toFixed(1), by: 'courier' }); } // (onto the water and off it: its splash and wake are Calissa's, its sound Wanda's)
     if (!this.air && !held) {
       const gt = _v3.set(0, -T.physics.gravity, 0);
@@ -447,6 +452,7 @@ export class Skiffing extends Tech {
       P.vel.y = -V * Math.sin(this.pitch) - Math.max(0, GLIDE.stall - V) * GLIDE.stallSink;
     } else {
       const h0 = this.heading;
+      if (D.surf) steerEff = this.slope.steer(steerEff, rate, dt, steerIn, sp2); // (on the slope the edge, the butter, the pre-wound spin: sloperide.js; off it, as it was)
       this.heading -= steerEff * rate * dt;
       if (this.air) {
         this.v.applyAxisAngle(UP, this.heading - h0); this.spin += -this.steer * 8 * dt; // (a turn in the air carries the flight with it: no speed thrown away on landing)
@@ -491,7 +497,7 @@ export class Skiffing extends Tech {
     // ---- height: hover over the sand, follow it with a little lag (that is what makes a crest a launch)
     const want = gy + c.hover * this.rules.mult('hover') + 0.1;
     const gap = P.pos.y - want;
-    const vyT = -(this.n.x * this.v.x + this.n.z * this.v.z) / Math.max(0.2, this.n.y);
+    const vyT = -(this.n.x * this.v.x + this.n.z * this.v.z) / Math.max(0.2, this.n.y) + (D.surf ? this.surf.rise() : 0); // (+ the wave pool's surface rising under the water's carry: surf.js)
     if (!this.air) {
       P.vel.y = damp(P.vel.y, vyT, c.follow * this.rules.mult('follow'), dt) - gap * 60 * dt;
       if (gap > 0.85 || (gap > 0.25 && P.vel.y > vyT + 5)) { this.air = true; this.spin = 0; this.airT = 0; this.launchT = 0; } // (off a crest or a kicker: a late pop's window opens)
@@ -515,6 +521,7 @@ export class Skiffing extends Tech {
       if (lost > 8) { sfx.thunk?.(1.2, 3); g.fx?.impact?.(P.pos.clone().setY(P.pos.y), UP, { sparks: 8, dust: 12 }); P.shake = Math.max(P.shake, 0.25); }
       this.v.copy(moved).multiplyScalar(0.95);
     }
+    if (D.surf) this.surf.step(dt); // (the wave pool: the water's carry, the pocket's push, the pump, turns, the barrel: surf.js; off it, nothing)
     const gy2 = D.rideHeight(P.pos.x, P.pos.z);
     if (P.pos.y < gy2 + 0.35) { P.pos.y = gy2 + 0.35; if (P.vel.y < 0) P.vel.y = 0; }
     P.grounded = !this.air;
@@ -601,6 +608,7 @@ export class Skiffing extends Tech {
   canBail() { return this.v.length() > BAIL.min && (this.rideT || 0) > BAIL.grace; }
 
   land(vyT) {
+    if (this.slope.on && this.slope.land(vyT)) return; // (on the slope a landing is graded clean, sketchy or a bail: sloperide.js)
     const P = this.P, g = this.game;
     // into the sand along its normal: what the hover takes (a steep landing hill takes a fall gently; R8: never the bare fall)
     const impact = (vyT - P.vel.y) * Math.max(0.2, this.n.y), fall = Math.max(0, -P.vel.y);

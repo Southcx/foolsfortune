@@ -21,7 +21,9 @@
  *  step for each kind past the first, and its cap; points to a banked flare, the most banked; a banked flare's real seconds of flare. */
 export const COMBO = {
   link: 2.0,
-  points: { spin: 100, grab: 80, tweak: 50, grind: 6, pop: 50, perfect: 100, carve: [40, 90, 160], ring: 60, slope: 50, smash: 120 }, // (smash: a lobbed pot struck from the air, the catapult trap's answer)
+  points: { spin: 100, grab: 80, tweak: 50, grind: 6, pop: 50, perfect: 100, carve: [40, 90, 160], ring: 60, slope: 50, smash: 120,
+    surf: { bottom: 60, top: 70, snap: 110, cutback: 120, floater: 140, air: 150, airT: 80, crest: 40, tube: 200, made: 2, submarine: 90 },
+    sloped: { clean: 70, sketchy: 15, butter: 60, carve: 30 } }, // (sloped: the slope ride's clean and sketchy landings, a butter a real second, a held carve a real second: courier/skiff/sloperide.js) (smash: a lobbed pot struck from the air, the catapult trap's answer; surf: the wave pool's turns, airs, tube a real second (made x2) and the submarine: courier/skiff/surf.js)
   kinds: 0.5, maxMult: 4,
   stock: 1000, stocks: 3, flare: 1.5,
 };

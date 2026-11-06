@@ -51,6 +51,7 @@ import { MadeTrack } from './madetrack.js';
 import { Traps } from './traps.js';
 import { PlateBeat } from './platebeat.js';
 import { markWorld, ownedSince, takeAway } from '../areaown.js';
+import { SurfPool } from './surf/surfpool.js';
 
 const WIND = { speed: 8 }; // (the course wind's strength; its way is the track's, turned by the track's own angle)
 const OFF = { far: 40, secs: 3 }; // (metres past a track's edge, and real seconds there, before the board is set back on the track)
@@ -68,6 +69,7 @@ export class Raceway {
     this.wind = { dir: new THREE.Vector2(1, 0), speed: WIND.speed, gust: 1 };
     this.built = false; this.releasers = [];
     this.made = new MadeTrack(this); this.traps = new Traps(this); this.platebeat = new PlateBeat(game); // (a made track on the build lot, and its traps: TRACK-EDITOR.md; madetrack.js, traps.js)
+    this.surf = new SurfPool(this); // (the wave pool: its clock, its moving surface, its normal and carry for the board: surf/surfpool.js)
     this.gaps = new Gaps(this); this.buoys = new Buoys(this); this.siphons = new Siphons(this); // (the named jumps, the buoy runs, the siphons: gaps.js, buoys.js, siphons.js)
     this.geysers = []; this.plates = []; this.rails = []; this.rings = []; this.decks = []; this.pits = []; this.sandfalls = []; this.pillars = [];
     const F = this.T.frame(this.T.line);
@@ -95,10 +97,15 @@ export class Raceway {
   /** The height a board rides at: the ground, the water over it (the lakes, the fords: skimmed), or the bridge deck the Courier is on. */
   rideHeight(x, z) {
     let h = this.heightAt(x, z);
-    const w = this.P.waterAt(x - RW.x, z - RW.z); if (w != null) h = Math.max(h, RW.y + w);
+    const sy = this.surf.rideY(x, z); // (over the wave pool's basin its moving surface, in place of the still level: surf/surfpool.js)
+    const w = sy != null ? sy - RW.y : this.P.waterAt(x - RW.x, z - RW.z); if (w != null) h = Math.max(h, RW.y + w);
     if (this.decks.length) { const top = deckAt(this, x, z, this.game.player?.pos.y ?? -1e9); if (top != null) h = Math.max(h, top); }
     return h;
   }
+  /** The water's normal under a board on the wave pool (the wave's face), or null elsewhere (the board takes UP on still water). */
+  waterNormal(x, z, out) { return this.surf.waterNormal(x, z, out); }
+  /** The water's own velocity at world x, z (the wave pool's carry: m/s, world x and z). */
+  carry(x, z, out) { return this.surf.carry(x, z, out); }
   normalAt(x, z, out = new THREE.Vector3()) {
     const e = 0.7, hx = this.heightAt(x + e, z) - this.heightAt(x - e, z), hz = this.heightAt(x, z + e) - this.heightAt(x, z - e);
     return out.set(-hx / (2 * e), 1, -hz / (2 * e)).normalize();
@@ -294,6 +301,7 @@ export class Raceway {
 
   // ------------------------------------------------------------------ per frame
   update(dt) {
+    this.surf.update(dt); // (the wave pool's clock runs whether or not anyone is there: its passes keep their place)
     if (!this.built) return;
     const g = this.game, cam = g.camera, here = this.active;
     if (here) { this.awayT = 0; this.buildGround(); } // (back by any way but the Index's: built here, a hitch, but never a fall through)
