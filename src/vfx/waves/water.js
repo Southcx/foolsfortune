@@ -34,7 +34,7 @@ import * as THREE from 'three';
 import { WAVEPOOL_GLSL, WAVE } from '../../world/raceway/surf/wavepool.js';
 import { LIQUID_GLSL, liquidUniforms } from '../liquid.js';
 import { RIPPLE_U, RIPPLE_GLSL } from '../ripples.js';
-import { WAVE_PARTS_GLSL, WAVE_SHADE_GLSL, SKY_FALLBACK_GLSL } from './waveglsl.js';
+import { WAVE_PARTS_GLSL, WAVE_SHADE_GLSL, SKY_FALLBACK_GLSL, LIP_END } from './waveglsl.js';
 
 /** The grids: the near one's reach along the crest (behind the break, ahead of it) and across it (behind the crest, ahead), its spacing
  *  on the desk and on a lean machine; the far one's spacing; the seam's overlap (m); the eps of the normals' differences. */
@@ -117,7 +117,7 @@ void main() {
   float onFace = smoothstep(-0.35 * F, 0.0, d) * (1.0 - smoothstep(0.85 * F, 1.2 * F, d)) * step(0.5, zone);
   float thin = smoothstep(0.3, 1.0, hw) * (0.35 + 0.65 * onFace) * step(0.2, H);
   // the tube: the face under the lip in its shade, lit through it
-  float tube = uWP[5].z, tau = smoothstep(-${WAVE.lead.toFixed(1)}, uWP[5].w, -s), gone = smoothstep(-tube * 0.84, -tube * 1.02, s);
+  float tube = uWP[5].z, tau = smoothstep(-${WAVE.lead.toFixed(1)}, uWP[5].w, -s), gone = smoothstep(-tube * ${LIP_END[0]}, -tube * ${LIP_END[1]}, s);
   float under = tau * (1.0 - gone) * smoothstep(-0.01 * F, 0.004 * F, d) * (1.0 - smoothstep(0.9 * F, 1.15 * F, d)) * step(3.0, H); // (to the crest itself: the curl's strip begins there)
   float mouth = smoothstep(-tube * 0.75, 2.0, s);
   col += wpThrough(V, N, thin) * (1.0 - 0.4 * under);

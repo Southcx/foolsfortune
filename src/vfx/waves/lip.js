@@ -26,7 +26,7 @@
 import * as THREE from 'three';
 import { WAVEPOOL_GLSL, WAVE } from '../../world/raceway/surf/wavepool.js';
 import { LIQUID_GLSL, liquidUniforms } from '../liquid.js';
-import { WAVE_PARTS_GLSL, WAVE_SHADE_GLSL, SKY_FALLBACK_GLSL } from './waveglsl.js';
+import { WAVE_PARTS_GLSL, WAVE_SHADE_GLSL, SKY_FALLBACK_GLSL, LIP_END } from './waveglsl.js';
 
 /** The strip's samples along the crest and across the curl (desk, lean); the fingers: their share of the strip past the tip (of a),
  *  their reach (a share of F) and how far down they hook (a share of their reach). */
@@ -35,6 +35,9 @@ export const LIP_FINGERS = { len: 0.3, reach: 0.24, hook: 0.85 };
 /** The lip's thickness (a share of H): the outer skin stood off the inner along the curl's outward normal, thickest at the root (where
  *  it stands back over the wave's own back, so the curl reads as the wave's whole body rising round the tube), thin at the tip. */
 export const LIP_THICK = 0.2;
+/** The root's overlap (of a, below the crest): the strip begins on the face's own quarter circle under the water's surface, held behind
+ *  it by a polygon offset, so the lip grows out of the face with no edge (South, 2026-11-06: "a flat ribbon seam"). */
+export const LIP_ROOT = 0.14;
 
 const VERT = /* glsl */`
 #include <common>
@@ -42,9 +45,9 @@ const VERT = /* glsl */`
 ${WAVEPOOL_GLSL}
 ${WAVE_PARTS_GLSL}
 uniform vec3 uRW;
-varying vec3 vW; varying vec3 vNo; varying float vA; varying float vS; varying float vTau; varying float vGone; varying float vOn; varying float vQ;
+varying vec3 vW; varying vec3 vNo; varying float vA; varying float vS; varying float vTau; varying float vGone; varying float vOn; varying float vQ; varying float vAng;
 void main() {
-  float s = mix(${WAVE.lead.toFixed(1)}, -uWP[5].z * 1.05, position.x), aa = position.y * ${(1 + LIP_FINGERS.len).toFixed(3)}, a = min(aa, 1.0);
+  float s = mix(${WAVE.lead.toFixed(1)}, -uWP[5].z * ${LIP_END[1].toFixed(2)}, position.x), aa = mix(-${LIP_ROOT.toFixed(3)}, ${(1 + LIP_FINGERS.len).toFixed(3)}, position.y), a = min(aa, 1.0);
   float q = max(aa - 1.0, 0.0) / ${LIP_FINGERS.len.toFixed(3)};
   vec3 n; float gone; vec4 L = wpLipAt(s, a, n, gone);
   if (q > 0.0) { // (the fingers: on from the tip, reaching forward over the trough and hooking down)
@@ -55,9 +58,13 @@ void main() {
     n = normalize(mix(n, vec3(trP.x, -0.6, trP.y), 0.5 * q));
   }
   vQ = q;
+  // the angle round the tube the shading reads (waveglsl.js wpTube): on the face's quarter (a < 0) as the water's own (0.4 x its share
+  // of H), on round from the crest as the curl's, so the colour runs on across the join
+  float psi = 3.14159265 - a * L.w * ${WAVE.lip.sweep.toFixed(3)};
+  vAng = a < 0.0 ? 0.4 * clamp(1.0 + sin(psi), 0.0, 1.0) : 0.4 + 0.6 * a;
   float Hk, Fk; wpWave(wpBreakUV() + s * uWP[3].zw, Hk, Fk);
-  float th = ${LIP_THICK.toFixed(2)} * Hk * (1.0 - 0.8 * a) * (1.0 - 0.75 * gone) * step(0.5, position.z); // (the outer skin)
-  L.xy += n.xz * th; L.z += n.y * th;
+  float ca = clamp(a, 0.0, 1.0), th = ${LIP_THICK.toFixed(2)} * Hk * (1.0 - ca) * (1.0 - ca * 0.3) * (1.0 - gone) * step(0.5, position.z); // (the outer skin: one sheet at the tip)
+  L.xy += n.xz * th; L.z += n.y * th - th * 1.6 * (1.0 - smoothstep(0.0, 0.3, a)); // (its root let down into the wave's own back: no edge stands)
   vec2 uv = wpUV(L.xy);
   vOn = step(0.0, uv.x) * step(uv.x, uWP[1].x) * step(0.0, uv.y) * step(uv.y, uWP[1].y); // (a curl past the basin's walls is not drawn)
   vec4 wp = vec4(L.x + uRW.x, L.z + uRW.y, L.y + uRW.z, 1.0);
@@ -74,24 +81,25 @@ uniform sampler2D uSky;
 //SKY
 ${LIQUID_GLSL}
 ${WAVE_SHADE_GLSL}
-varying vec3 vW; varying vec3 vNo; varying float vA; varying float vS; varying float vTau; varying float vGone; varying float vOn; varying float vQ;
+varying vec3 vW; varying vec3 vNo; varying float vA; varying float vS; varying float vTau; varying float vGone; varying float vOn; varying float vQ; varying float vAng;
 // the crest's claws: ridges along the crest at three scales (a finger, its split, its knuckles), each finger its own length; 1 inside
 float lipFinger(float s, float q, float n) {
   float c = s * 1.75 + 1.6 * sin(s * 0.29) + 0.8 * sin(s * 0.71 + 2.0), k = floor(c / 6.28318);
   float r1 = 0.5 + 0.5 * cos(c), r2 = 0.5 + 0.5 * cos(c * 2.13 + 1.3 + 0.9 * sin(s * 0.53)), r3 = 0.5 + 0.5 * cos(c * 4.7 + 0.6);
   float reach = 0.45 + 0.55 * fract(sin(k * 91.7 + 3.1) * 4373.5); // (each finger its own length)
   float w = r1 - (0.3 + 0.55 * q) + (r2 - 0.5) * 0.5 * smoothstep(0.35, 0.8, q) + (r3 - 0.5) * 0.18 + (n - 0.5) * 0.35;
-  return step(0.0, w) * step(q, reach);
+  return w - max(0.0, q - reach) * 3.0; // (soft: how far inside the finger, < 0 outside; the caller frays it)
 }
 void main() {
   if (vOn < 0.5 || vTau < 0.02) discard;
   float t = uTime;
   float n1 = liqTap(vW.xz * 0.11 + vec2(t * 0.06, -t * 0.04)).g * 0.6 + liqTap(LIQ_ROT * vW.xz * 0.27 + vec2(-t * 0.05, t * 0.07)).g * 0.4;
-  // the tip thick to its edge, the fingers past it, the end dissolving into the whitewater (a dithered cut: opaque, never sorted)
-  float feather = smoothstep(0.93, 1.0, vA) * 0.3, cut = feather + vGone * 1.1;
-  float dith = wpHash(gl_FragCoord.xy) * 0.18;
-  if (n1 + dith < cut) discard;
-  if (vQ > 0.0 && lipFinger(vS, vQ, n1 + dith * 0.5) < 0.5) discard;
+  // the tip fraying into spray: past a = 0.8 the sheet thins in a dithered dissolve on the water's own noise, so its edge breaks up into
+  // drops and foam, never a cut; the fingers the same, soft at their sides and ends; the end in the bore the same (opaque, never sorted)
+  float dith = wpHash(floor(vW.xz * 8.0) + floor(vW.y * 8.0) * 17.0), grain = n1 * 0.6 + dith * 0.4;
+  float fray = smoothstep(0.72, 1.0, vA) * 0.8 + vGone * 0.9; // (thinning to nothing at the very edge: drops and foam, no silhouette)
+  if (vQ > 0.0) fray = max(fray, 0.35 + clamp(-lipFinger(vS, vQ, n1) * 2.5, 0.0, 1.0) * 0.7 + vQ * 0.25);
+  if (grain < fray) discard;
   vec3 V = normalize(cameraPosition - vW), N = normalize(vNo);
   bool inner = dot(N, V) < 0.0; if (inner) N = -N;
   vec3 pn = liqNormal(vW.xz + vec2(vA * 3.0, 0.0), 0.2, t, 0.6); N = normalize(N + vec3(pn.x, 0.0, pn.z) * 0.5);
@@ -105,21 +113,29 @@ void main() {
     // the tip and the light comes through, darker the deeper into the tube from the mouth; slow bands of light along it (a tube is
     // read by that gradient: the roof's dark heel to the bright curtain, the mouth the brightest thing in the frame)
     // (one tube with the face: the wall's shading carried on round from the crest, waveglsl.js wpTube, so no seam where the strip begins)
-    float ang = 0.4 + 0.6 * clamp(vA + vQ * 0.3, 0.0, 1.0), mouth = smoothstep(-${(WAVE.tube * 0.75).toFixed(1)}, 2.0, vS);
+    float ang = clamp(vAng + vQ * 0.18, 0.0, 1.0), mouth = smoothstep(-${(WAVE.tube * 0.75).toFixed(1)}, 2.0, vS);
     float bands = liqGlow(vec2(vS * 0.35 - t * 0.6, vA * 2.0), 0.6, t) * 0.5 + 0.75;
     col = wpTube(ang, mouth, V, N, vTau) * mix(1.0, bands, smoothstep(0.6, 0.95, ang)); // (soft bands of light in the curtain only)
     col += WP_GLOW * 0.2 * smoothstep(0.86, 1.0, ang) * vTau * (0.6 + 0.4 * uDay); // (the thin edge lit from behind)
     col = mix(col, sky * 0.6, fres * 0.12 * smoothstep(0.6, 1.0, ang));
+    // the free edge, whatever the throw: thin water lit through (jade), so the curl's edge reads as water thinning, never a dark card
+    col = mix(col, mix(WP_BODY, WP_GLOW, 0.55) * (0.65 + 0.35 * uDay) + wpThrough(V, N, 1.0) * 0.45, smoothstep(0.7, 1.0, vA) * 0.75);
     col += liqFilm(vA * 0.8 + vS * 0.02 + fres * 0.6 + t * 0.01) * fres * 0.05; // (the film's schiller, at a grazing look only)
   } else {
-    col = mix(body, WP_DEEP, 0.45 * (1.0 - vA)) * 0.9 + wpThrough(V, N, thin);
-    col = mix(col, sky * 0.8, clamp(fres, 0.0, 0.35));
+    // the curl's outside: deep water, not a pale sheet; banded down its fall (the water's own noise run along the curl), lit through only
+    // where it thins toward the tip, the sky in it at a grazing look
+    float band = liqTap(vec2(vS * 0.09, vA * 2.4 - t * 0.05)).g;
+    col = mix(WP_DEEP * 1.15, WP_BODY * 0.85, clamp(0.25 + 0.45 * vA + (band - 0.5) * 0.5, 0.0, 1.0));
+    col *= 0.8 + 0.35 * clamp(dot(N, L), 0.0, 1.0);
+    col += wpThrough(V, N, thin * smoothstep(0.55, 1.0, vA)) * 0.7;
+    col = mix(col, sky * 0.75, clamp(fres, 0.0, 0.25));
+    col = mix(col, mix(WP_BODY, WP_GLOW, 0.4) * (0.65 + 0.35 * uDay) + wpThrough(V, N, 1.0) * 0.35, smoothstep(0.75, 1.0, vA) * 0.6); // (the edge thinning, lit through)
     float sp = max(dot(N, normalize(L + V)), 0.0);
     col += uSunC * (pow(sp, 90.0) * 0.35 + pow(sp, 12.0) * 0.03);
   }
   // the tip's foam: the noise thresholded crisp toward the edge, white and a shadowed rim
   float streaks = inner ? 0.0 : smoothstep(0.58, 0.82, liqTap(vec2(vS * 0.16, vA * 1.6 - t * 0.04)).g) * smoothstep(0.25, 0.7, vA) * 0.7; // (Hokusai's foam lines down the curl's outside)
-  float fmask = max(smoothstep(0.86, 1.0, vA) * 0.8, streaks) + vGone * 0.6 + vQ * 2.0, th = 1.0 - fmask * 0.9, w = max(fwidth(n1) * 0.9, 0.012);
+  float fmask = max(smoothstep(0.82, 1.0, vA) * (0.6 + 0.4 * fray), streaks) + vGone * 0.6 + vQ * 2.0, th = 1.0 - fmask * 0.9, w = max(fwidth(n1) * 0.9, 0.012);
   float foam = smoothstep(th - w, th + w, n1), rim = clamp(smoothstep(th - 0.13 - w, th - 0.13 + w, n1) - foam, 0.0, 1.0);
   vec3 foamLit = WP_FOAM * (0.6 + 0.4 * max(dot(N, L), 0.0)) * (0.55 + 0.45 * uDay) + sky * 0.1;
   col = mix(col, WP_FOAM_SH * (0.5 + 0.5 * uDay), rim * 0.5);
@@ -149,6 +165,7 @@ export class WavePoolLip {
     if (!sky?.texture) uniforms.uSky.value.needsUpdate = true;
     Object.assign(uniforms, U);
     this.mat = new THREE.ShaderMaterial({ name: 'wavepool-lip', uniforms, vertexShader: VERT, fragmentShader: FRAG.replace('//SKY', sky?.GLSL ?? SKY_FALLBACK_GLSL), fog: true, side: THREE.DoubleSide });
+    this.mat.polygonOffset = true; this.mat.polygonOffsetFactor = 1; this.mat.polygonOffsetUnits = 3; // (the root under the face's surface: where the two lie together the water wins, LIP_ROOT)
     this.mesh = new THREE.Mesh(stripGeometry(WAVE_LIP.along[li], WAVE_LIP.across[li]), this.mat);
     this.mesh.frustumCulled = false; this.mesh.name = 'wavepool-lip'; this.mesh.userData.zone = 'raceway';
   }

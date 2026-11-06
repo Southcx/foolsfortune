@@ -107,10 +107,10 @@ export class SurfRide {
     const pu = S.push(P.pos.x, P.pos.z), B = S.barrel(P.pos.x, P.pos.y - (sk.cfg.hover + 0.1), P.pos.z);
     this.cover = wet ? B.cover : 0; this.k = B.k; this.hr = B.hr; this.lipOver = B.lipOver;
     this.light = this.cover * (0.45 + 0.55 * clamp(1 - this.hr, 0, 1));
-    // the stall: S under the lip (the skiff's own brake slows it, and the pocket's push eases to a third so the wave can pass you and the
+    // the stall: S under the lip (the skiff's own brake slows it, and the pocket's push eases to 15% so the wave can pass you and the
     // tube come over: a stall lets the wave catch you up, South's "tolerance ... so tight", 2026-11-06 night)
     this.stall = onFace && inp.isDown('KeyS') && (f.zone === 'barrel' || f.zone === 'pocket');
-    if (wet && pu.k > 0) { const a = (SURF.push * pu.k * (this.stall ? 0.33 : 1) + SURF.draw * this.cover * (1 - 0.5 * Math.abs(this.balance))) * dt; sk.v.x += pu.x * a; sk.v.z += pu.z * a; }
+    if (wet && pu.k > 0) { const a = (SURF.push * pu.k * (this.stall ? 0.15 : 1) + SURF.draw * this.cover * (1 - 0.5 * Math.abs(this.balance))) * dt; sk.v.x += pu.x * a; sk.v.z += pu.z * a; }
     this.pump(dt, onFace, inp);
     this.turns(dt, f, wet);
     this.airs(f, inp);

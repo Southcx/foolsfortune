@@ -18,6 +18,10 @@
 // ---------------------------------------------------------------------------------------
 import { POOL, WAVE } from '../../world/raceway/surf/wavepool.js';
 
+/** Where the curl collapses into the bore, as shares of the tube's length behind the break: begun, and shrunk to nothing (the look's
+ *  alone: the rules' tube ends at WAVE.tube). The lip's strip runs on to LIP_END[1] so it never stops in a cut edge. */
+export const LIP_END = [0.78, 1.3];
+
 const f = (x) => (Number.isInteger(x) ? `${x}.0` : `${x}`);
 
 /** The bed, the foam mask, the lip and the frame's inverse (after WAVEPOOL_GLSL). */
@@ -53,8 +57,8 @@ vec4 wpLipAt(float s, float a, out vec3 nOut, out float gone) {
   float tube = uWP[5].z, tl = uWP[5].w;
   float tau = smoothstep(-${f(WAVE.lead)}, tl, -s); // (WAVE.lead: the lip begins to rise ahead of the break)
   // (no feather ahead of the break: standing alone on the crest it read as a fin, South 2026-11-06)
-  gone = smoothstep(-tube * 0.84, -tube * 1.02, s);
-  float shrink = 1.0 - 0.75 * gone;
+  gone = smoothstep(-tube * ${f(LIP_END[0])}, -tube * ${f(LIP_END[1])}, s); // (the curl collapsing into the bore: shrunk to nothing on the crest line, never cut off)
+  float shrink = 1.0 - gone;
   // lipCurve (WAVE.lip): one tube with the face, about (rx, H): up from the crest with the face's vertical, over, and down to the tip
   float rx = F * ${f(WAVE.lip.rx)} * shrink, psi = 3.14159265 - a * tau * ${f(WAVE.lip.sweep)}, r = H * (psi > 0.0 ? ${f(WAVE.lip.up)} : ${f(WAVE.lip.down)}) * shrink;
   float dd = rx + rx * cos(psi), hh = H + r * sin(psi) - gone * H * 0.35 * a;
