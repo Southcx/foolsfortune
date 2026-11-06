@@ -28,6 +28,7 @@ import { Bazaar, BAZAAR } from '../world/bazaar/bazaar.js';
 import { BazaarHall } from '../vfx/bazaarhall.js';
 import { TouchstoneLook } from '../vfx/touchstonelook.js';
 import { Touchstone } from '../world/touchstone/touchstone.js';
+import { EntropyRoom } from '../world/entropy/entropyroom.js';
 import { BazaarTable } from '../vfx/bazaartable.js';
 import { Chips } from '../progress/casino/chips.js';
 import { Rigging } from '../courier/moves/rigging.js';
@@ -84,9 +85,10 @@ export async function bootWorld(game, made) {
   game.duel = new DuelSession(game); game.duelFoes = new DuelFoes(game); // (a puzzle duel with an aberrant Figment where it was met: world/duel/, docs/plans/PUZZLE-DUELS.md 8)
   game.chips = new Chips(game); game.bazaar = new Bazaar(game); game.bazaarTable = new BazaarTable(game); // (Raku's bazaar, the casino: its hall with the level's static geometry, its chips; world/bazaar/, docs/plans/CASINO.md)
   const treasuryAt = { x: BAZAAR.treasury.x, y: BAZAAR.y, z: BAZAAR.treasury.z, yaw: BAZAAR.treasury.yaw }; buildTreasury(level, treasuryAt); // (the Treasury in its slot on the bazaar's north side: world/treasury.js)
+  game.entropyRoom = new EntropyRoom(game); // (Entropy Tactics' own zone, out of Raku's bazaar since 2026-11-06: world/entropy/)
   game.touchstone = new Touchstone(game); // (the Assay's room: the standard trials, world/touchstone/)
   // (the Well, the dock, the bazaar, the Touchstone and the duels' pull each frame, on the game's clock: core/systems.js, the `world` phase)
-  for (const name of ['margarite', 'bazaar', 'touchstone']) game.systems.add('world', game[name], { name });
+  for (const name of ['margarite', 'bazaar', 'touchstone', 'entropyRoom']) game.systems.add('world', game[name], { name });
   game.systems.add('world', () => game.duelFoes.update(), { name: 'duelFoes' });
   game.touchstoneLook = new TouchstoneLook(game); // (the Touchstone dressed as a dark assay hall, built and taken down with her area: vfx/touchstonelook.js)
   game.bazaarHall = new BazaarHall(game); // (the bazaar's Gold Saucer dress: dome, mosaic, stalls, neon, lanterns, carnival props; vfx/bazaarhall.js)

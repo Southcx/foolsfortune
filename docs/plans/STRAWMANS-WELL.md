@@ -318,3 +318,8 @@ Achievements are rows over these.
   par of its own.
 - **The rope's launch stands.** The probe measured +2.3 m/s added at the hands; the kick's own throw back takes 1.72 of it, as it should
   (the core movement's jump unchanged).
+
+## 7. Rulings, South, 2026-11-06
+
+- **The straw dummies are Pip's earlier tries**, the ones that did not stand back up: canon (digest question 4).
+- **Strawman is a Figment.** Espada writes it into LORE.md and the glossary's Strawman line.

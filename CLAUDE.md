@@ -55,6 +55,7 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
 - The core movement is the gold standard: techs and arts never change it; switching one off restores it exactly.
 
 ## The Courier
+- **The System never says "I"** (South, 2026-11-06: "No 'I' in system voice ever"): it speaks in the imperative and of what is, never of itself.
 - **Androgynous, a self-insert: never "she" or "he".** The game says "you" (log, System, help, item text); docs, comments and the folk say
   "they" or "the Courier". The model is not to change.
 

@@ -83,7 +83,7 @@ export const HOWTO = {
   entropy: {
     title: 'Entropy Tactics',
     steps: [
-      { say: 'You and Raku are two Major Arcana. In the middle of the board sits the Grand Bomb with a counter. When it runs out, whoever\'s ground the bomb is on loses.', show: 'goal' },
+      { say: 'You and Dovina are two Major Arcana. In the middle of the board sits the Grand Bomb with a counter. When it runs out, whoever\'s ground the bomb is on loses.', show: 'goal' },
       { say: 'Each turn you hold five cards. A run or a flush of three or more summons a token. A pair or more casts a spell. A court card (page to king) enchants a token.', show: 'hand' },
       { say: 'Cards you do not use are fed to your Hungry Die. The more you feed, the bigger it grows, and its bank pays for extra moves. You may keep two cards secret for next turn.', show: 'seats' },
       { say: 'Move and strike with your tokens. Each may act once for free; more costs bank.', show: 'moves' },

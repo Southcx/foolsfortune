@@ -1,9 +1,9 @@
 // ---------------------------------------------------------------------------------------
 // ASTROLL: ENTROPY TACTICS (docs/plans/ENTROPY-TACTICS.md, the owner's two drafts merged; GAPS G95): two Major Arcana duel across a 7 x 7
-// board with a Grand Bomb in the middle. A TURN: draw to five (the Hermit six), then PLAY one group of the hand (cards.js: a run or a flush
+// board with a Grand Bomb in the middle. A TURN: draw to five, then PLAY one group of the hand (cards.js: a run or a flush
 // summons a token, a pair or more casts, a court card enchants, the royal straight flush wins); keep up to two of the cards left and FEED
 // the rest to the Hungry Die; ACT with each token once (a move or a strike; more actions cost 2^(n-1) of the bank); then ROLL the Hungry Die
-// and PUSH the bomb toward the enemy or COUNT it down. The bomb goes off when its counter (20, down one every round) reaches 0, or is pushed
+// and PUSH the bomb toward the enemy or COUNT it down. The bomb goes off when its counter (30, down one every round) reaches 0, or is pushed
 // off the board: whose zone it is in loses; in the neutral rank the higher health wins. An Arcana at 0 health loses.
 // ZONES: three ranks each, the seat's own nearest its back edge, the fourth rank neutral (seat 0 rows 4 to 6, seat 1 rows 0 to 2).
 // THE HUNGRY DIE: the only bank and the only roll (ET 3a). Cards fed fill the bank (it pays for extra actions and class actives) and,
@@ -18,7 +18,7 @@
 // A summon of n cards has n - 3 health more. A token strikes an adjacent enemy token, or the enemy Arcana from the enemy's back rank.
 // A cast: a pair 2 to an enemy token, three of a kind 4 to the enemy Arcana, four 7. An enchantment: a court card matched to the token's
 // suit +2 health +1 strike, any other +1 health.
-// The second seat starts with a bank of 1 (measured: the first seat won 59%).
+// The second seat starts with a bank of 2 (measured: at 1 the first seat still won 62% with the counter at 30, 2026-11-06).
 // Not built: deck cycling at half health, the classes' second and third actives and ultimates, three and four players (ET 5 to 6).
 //
 // Prior art: Duelyst (a general with health on a small board), Inscryption's scale as the clock, Into the Breach's shown threats, video
@@ -32,7 +32,7 @@ import { groupsOf, rankOf, suitOf, KIND_OF_SUIT, COURT } from './cards.js';
 import { CLASSES, HEALTH } from './classes.js';
 
 export const ENTROPY_RULES = {
-  size: 7, counter: 20, hand: 5, keep: 2, feedAt: [0, 4, 9, 15, 22, 30], spell: { 2: 2, 3: 4, 4: 7 }, push: 1,
+  size: 7, counter: 30, hand: 5, keep: 2, reroll: 1, second: 2, feedAt: [0, 4, 9, 15, 22, 30], spell: { 2: 2, 3: 4, 4: 7 }, push: 1,
   tokens: { warrior: { hp: 3, atk: 2, mv: 1, rng: 1 }, rogue: { hp: 2, atk: 1, mv: 2, rng: 1 }, mage: { hp: 2, atk: 2, mv: 0, rng: 2 }, healer: { hp: 2, atk: 0, mv: 1, rng: 1, mend: 2 } },
 };
 const R = ENTROPY_RULES, N = R.size;
@@ -46,7 +46,8 @@ const tokAt = (S, x, z) => S.tokens.find((t) => t.x === x && t.z === z);
 const tokById = (S, id) => S.tokens.find((t) => t.id === id);
 const mine = (S, p) => S.tokens.filter((t) => t.owner === p);
 const other = (p) => 1 - p;
-const handSize = (S, p) => R.hand + (S.cls[p] === 'hermit' ? 1 : 0);
+const handSize = () => R.hand; // (every class five: the Hermit's sixth card won 62%, South 2026-11-06: ENTROPY-TACTICS.md)
+const keepSize = (S, p) => R.keep + (S.cls[p] === 'hermit' ? 1 : 0); // (the Hermit's control: three kept across turns, not two)
 
 function draw(S, p, k, r) {
   for (let i = 0; i < k; i++) {
@@ -115,7 +116,7 @@ function afterEffect(S) {
   if (S.done) return;
   const p = S.cur, left = S.hand[p].slice().sort((a, b) => rankOf(b) - rankOf(a) || b - a);
   if (!left.length) return toAct(S, true);
-  const moves = []; for (let k = 0; k <= Math.min(R.keep, left.length); k++) moves.push({ keep: k });
+  const moves = []; for (let k = 0; k <= Math.min(keepSize(S, p), left.length); k++) moves.push({ keep: k });
   S.phase = 'keep'; S.pending = [{ seat: p, kind: 'keep', moves }];
 }
 function keepFeed(S, k) {
@@ -151,7 +152,7 @@ function toBomb(S) { // (the roll is made as the bomb comes up: the die is publi
 }
 function bombMoves(S) {
   const p = S.cur, C = CLASSES[S.cls[p]], moves = [{ push: true }, { count: true }];
-  if (S.cls[p] === 'fool' && !S.ctx.rerolled) moves.push({ reroll: true });
+  if (S.cls[p] === 'fool' && !S.ctx.rerolled && S.bank[p] >= R.reroll) moves.push({ reroll: true }); // (a re-roll for 1: free, the Fool won 67%, 2026-11-06)
   if (C.active === 'lantern' && !S.ctx.lit && S.bank[p] >= C.cost) moves.push({ active: 'lantern' });
   return moves;
 }
@@ -173,7 +174,7 @@ export const ENTROPY = {
   setup({ r, opts = {} }) {
     rng = r;
     const cls = opts.classes || ['fool', 'fool'], first = (opts.first ?? 0) % 2;
-    const S = { n: 2, cls, hp: [HEALTH, HEALTH], hand: [[], []], deck: shuffle(r, [...Array(56).keys()]), disc: [], bank: [first === 0 ? 0 : 1, first === 1 ? 0 : 1], fed: [0, 0], tokens: [], nextTok: 1, bomb: { x: 3, z: 3 }, counter: R.counter, round: 0, first, cur: first, phase: 'play', ctx: null, pending: [], log: [], done: false, winner: null, how: null };
+    const S = { n: 2, cls, hp: [HEALTH, HEALTH], hand: [[], []], deck: shuffle(r, [...Array(56).keys()]), disc: [], bank: [first === 0 ? 0 : R.second, first === 1 ? 0 : R.second], fed: [0, 0], tokens: [], nextTok: 1, bomb: { x: 3, z: 3 }, counter: R.counter, round: 0, first, cur: first, phase: 'play', ctx: null, pending: [], log: [], done: false, winner: null, how: null };
     beginTurn(S, first, r); return S;
   },
   pending: (S) => (S.done ? null : S.pending[0] || null),
@@ -202,7 +203,7 @@ export const ENTROPY = {
         else if (m.strike != null) { const t = tokById(S, m.strike); pay(S, t.id); if (m.arcana) { S.hp[other(p)] -= strength(S, t); S.log.push({ strike: t.id, arcana: true, dmg: strength(S, t) }); checkHealth(S, p); } else hit(S, tokById(S, m.on), strength(S, t), p); }
         return S.done ? undefined : toAct(S);
       case 'bomb':
-        if (m.reroll) { S.ctx.rerolled = true; S.ctx.roll = die(r, sidesOf(S.fed[p])) + (S.ctx.lit ? 3 : 0); S.pending[0].moves = bombMoves(S); return; }
+        if (m.reroll) { spend(S, p, R.reroll); S.ctx.rerolled = true; S.ctx.roll = die(r, sidesOf(S.fed[p])) + (S.ctx.lit ? 3 : 0); S.pending[0].moves = bombMoves(S); return; }
         if (m.active === 'lantern') { spend(S, p, CLASSES.hermit.cost); S.ctx.lit = true; S.ctx.roll += 3; S.pending[0].moves = bombMoves(S); return; }
         return resolveBomb(S, m, r);
     }

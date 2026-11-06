@@ -5,16 +5,16 @@
 //   fool     tempo and cycling: re-roll the Hungry Die once a turn (passive); CYCLE (2): draw three more cards
 //   chariot  aggro: every token moves one tile further (passive); CHARGE (2): every token strikes two harder this turn
 //   empress  ramp: a summoned token has one more health (passive); BLOOM (2): your Arcana mends five
-//   hermit   control: a hand of six cards (passive); LANTERN (3): this turn's Hungry Die roll is three higher
+//   hermit   control: three cards kept across turns, not two (passive); LANTERN (3): this turn's Hungry Die roll is three higher
 // Prior art: Fatelink's and the Major Arcana as characters (the owner's draft), Hearthstone's hero powers, Duelyst's generals.
 //
 //   CLASSES { [id]: { id, label, passive, active, cost, does } }   CLASS_IDS   HEALTH
 // ---------------------------------------------------------------------------------------
 export const HEALTH = 20;
 export const CLASSES = {
-  fool: { id: 'fool', label: 'The Fool', passive: 'Once a turn, roll the Hungry Die again.', active: 'cycle', cost: 2, does: 'Cycle: draw three more cards.' },
+  fool: { id: 'fool', label: 'The Fool', passive: 'Once a turn, pay 1 to roll the Hungry Die again.', active: 'cycle', cost: 2, does: 'Cycle: draw three more cards.' },
   chariot: { id: 'chariot', label: 'The Chariot', passive: 'Your tokens move one tile further.', active: 'charge', cost: 2, does: 'Charge: your tokens hit two harder this turn.' },
   empress: { id: 'empress', label: 'The Empress', passive: 'Tokens you summon have one more health.', active: 'bloom', cost: 2, does: 'Bloom: your Arcana mends 5.' },
-  hermit: { id: 'hermit', label: 'The Hermit', passive: 'You hold six cards, not five.', active: 'lantern', cost: 3, does: 'Lantern: this turn\'s Hungry Die roll is 3 higher.' },
+  hermit: { id: 'hermit', label: 'The Hermit', passive: 'You keep three cards between turns, not two.', active: 'lantern', cost: 3, does: 'Lantern: this turn\'s Hungry Die roll is 3 higher.' },
 };
 export const CLASS_IDS = Object.keys(CLASSES);

@@ -296,3 +296,9 @@ real seconds. The clock runs on the wall clock, scaled, so the garden grows whil
 
 **Two kinds of number, never mixed:** the calendar (a Well's drift, ripening, caps, demand) is in game time; rates of income
 (`ECON.perMinute`) are per hour of play. "Seven days" in an achievement means seven game days.
+
+## Standing ruling: payouts wait for the mechanics (South, 2026-11-06)
+
+"Stop worrying about economy payout before mechanics are finalized." A module's pay (its multiple of the aim) is not tuned while the
+mechanic is in flux: measure it, record it, and leave it. Crude stays as it is (a tanker's best Entropolis run 0.99x the aim) until the
+Emocean's trade is called finalized. Then this file's numbers are tuned in one pass.
