@@ -8,9 +8,8 @@
 // fights, strikes, shoves and mends with, so every hit on it weakens all it will do:
 // - its POWER is its health left, and a Charge's +3 on its owner's turn; the Tower's LIGHTNING takes 3 off every token but its own wands;
 // - a NUMBER CARD played on an enemy token hurts it by its value (an ace 1 or 11), x2 when its suit is the token's CONTRARY (the Golden Dawn's
-//   dignities, SPREADS.md 4: Wands against Cups, Swords against Pentacles), x1 for the same suit or an adjacent one, only a token in your
-//   REACH (on a tile a number card of yours may go on: ground held forward is reach), the Fool's a tile further; the Chariot's tokens are
-//   plated (3 off every hit, never under 1). At 0 it is downed to its owner's discard pile (the Tower's fed to its Hungry Die);
+//   dignities, SPREADS.md 4: Wands against Cups, Swords against Pentacles), x1 for the same suit or an adjacent one (the Fool's tokens, of no suit, have no contrary: x1 always), only a
+//   token in your REACH (on a tile a number card of yours may go on: ground held forward is reach); the Chariot's tokens are plated (3 off every hit, never under 1). At 0 it is downed to its owner's discard pile (the Tower's fed to its Hungry Die);
 // - two tokens MEETING: the greater power goes on and loses the lesser's power from its health (never under 1; the Chariot's lose none), the
 //   lesser is discarded (or fed, the Tower's); a sword wins a tie against any other suit, two swords tied break each other, two others tied
 //   both stop this turn;
@@ -43,7 +42,7 @@ export const contrary = (a, b) => a + b === 3;
 export const multOf = (cardSuit, tokenSuit) => (contrary(cardSuit, tokenSuit) ? 2 : 1);
 /** A number card `card` played as `v` on token `t`: the damage, its multiplier, the health left and whether it falls (pure: the preview's). */
 export function hitOf(S, p, t, card, v) {
-  const mult = multOf(card & 3, t.suit), plated = S.cls[t.owner] === 'chariot';
+  const mult = S.cls[t.owner] === 'fool' ? 1 : multOf(card & 3, t.suit), plated = S.cls[t.owner] === 'chariot';
   const dmg = plated ? Math.max(1, v * mult - TOKEN.plating) : v * mult, hp = Math.max(0, t.hp - dmg);
   return { dmg, mult, plated, hp, falls: hp <= 0 };
 }

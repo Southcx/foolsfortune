@@ -84,11 +84,10 @@ export function legalTiles(S, p) {
 /** Has seat `p` anywhere at all for a number card (a tile of its own, a token of its own, or an enemy token to hit)? */
 const anyGround = (S, p) => S.tiles.some((t) => t.o === p) || S.tokens.some((t) => t.owner === p);
 /** The enemy tokens seat `p` can hit: those standing on a tile its number cards may go on (its ground and beside it, beside its tokens),
- *  so ground held forward is reach; the Fool's a tile further (version 2.1, 8.12: anywhere won 74%). */
+ *  so ground held forward is reach (version 2.1, 8.12; the Fool's reach anywhere won 74%, a tile further 60 to 70%). */
 export function reachTokens(S, p) {
   const foes = S.tokens.filter((t) => t.owner !== p); if (!foes.length) return foes;
   const ok = new Set(legalTiles(S, p));
-  if (S.cls[p] === 'fool') for (const i of [...ok]) { const x = i % N, z = (i / N) | 0; for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const a = x + dx, b = z + dz; if (a >= 0 && a < N && b >= 0 && b < N) ok.add(b * N + a); } }
   return foes.filter((t) => ok.has(t.z * N + t.x));
 }
 const feeds = (S, p, but) => { const out = []; for (const c of S.hand[p]) if (c !== but) out.push({ feed: c }); return out; };
