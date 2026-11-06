@@ -29,6 +29,7 @@ import { BazaarHall } from '../vfx/bazaarhall.js';
 import { TouchstoneLook } from '../vfx/touchstonelook.js';
 import { Touchstone } from '../world/touchstone/touchstone.js';
 import { EntropyRoom } from '../world/entropy/entropyroom.js';
+import { EntropyLook } from '../vfx/entropy/index.js';
 import { BazaarTable } from '../vfx/bazaartable.js';
 import { Chips } from '../progress/casino/chips.js';
 import { Rigging } from '../courier/moves/rigging.js';
@@ -86,6 +87,7 @@ export async function bootWorld(game, made) {
   game.chips = new Chips(game); game.bazaar = new Bazaar(game); game.bazaarTable = new BazaarTable(game); // (Raku's bazaar, the casino: its hall with the level's static geometry, its chips; world/bazaar/, docs/plans/CASINO.md)
   const treasuryAt = { x: BAZAAR.treasury.x, y: BAZAAR.y, z: BAZAAR.treasury.z, yaw: BAZAAR.treasury.yaw }; buildTreasury(level, treasuryAt); // (the Treasury in its slot on the bazaar's north side: world/treasury.js)
   game.entropyRoom = new EntropyRoom(game); // (Entropy Tactics' own zone, out of Raku's bazaar since 2026-11-06: world/entropy/)
+  game.entropyLook = new EntropyLook(game); // (its look: the void, the tiles, the board view, the tilt-shift; Calissa's, vfx/entropy/)
   game.touchstone = new Touchstone(game); // (the Assay's room: the standard trials, world/touchstone/)
   // (the Well, the dock, the bazaar, the Touchstone and the duels' pull each frame, on the game's clock: core/systems.js, the `world` phase)
   for (const name of ['margarite', 'bazaar', 'touchstone', 'entropyRoom']) game.systems.add('world', game[name], { name });

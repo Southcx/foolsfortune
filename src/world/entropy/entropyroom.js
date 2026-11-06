@@ -130,7 +130,7 @@ export class EntropyRoom {
     F.color.setHex(AIR.fog); F.density = AIR.density;
   }
   /** The seat's page ticks while it holds the game (the bazaar's tickModal calls this too). */
-  tickModal(dt) { if (this.session?.open) this.session.update(dt); }
+  tickModal(dt) { if (this.session?.open) this.session.update(dt); this.game.entropyLook?.tick(dt); } // (the look ticks under the seat's page too: vfx/entropy/)
   /** The tiles' placeholder life: a slow bob, and the setup's ripple out from the board's heart (Calissa's look replaces both). */
   animate() {
     const B = BOARD, h = (B.size - 1) / 2, rp = B.ripple;
@@ -145,12 +145,13 @@ export class EntropyRoom {
     this.wire();
     const g = this.game, it = g.interact?.cur, P = g.player;
     this.t += g.rawDt ?? dt;
-    if (this.built) this.animate();
+    if (this.built && !g.entropyLook?.owns) this.animate(); // (the placeholder life, until Calissa's tiles move them: vfx/entropy/tiles.js)
     if (it?.id === 'entropy' && P.peekLatch?.('KeyF')) {
       P.latch('KeyF');
       if (it.ref === 'door') this.leave(); else this.sit();
     }
     if (this.session) { this.session.update(g.rawDt ?? dt); if (!this.session.open) this.session = null; }
     if (this.session && !this.here) this.close();
+    g.entropyLook?.tick(g.rawDt ?? dt); // (its look: the void, the tiles, the board view: vfx/entropy/)
   }
 }
