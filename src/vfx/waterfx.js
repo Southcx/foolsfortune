@@ -2,11 +2,12 @@
 // WATER'S FEEDBACK: what a swim looks like on the water and on the Courier (the owner, R46: "there needs to be more visual feedback when
 // swimming around"; docs/plans/SUNSHINE-SYSTEMS.md phase 1). It takes every disturbance of a water surface (`game.water.onDisturb`) and:
 //
-//   RINGS        knocks it into the ripple tank (vfx/ripples.js), which the water's shader reads; the wake's V is the rings' own
+//   RINGS        knocks it into the ripple tank (vfx/ripples.js), which the water's shader reads; a swimmer's running wake is the
+//                waterline ripple's (vfx/watercontact.js), so its dents are kept out while that draws it (one wake, never two)
 //   THE CROWN    a dive or a belly-flop throws a crown: a ring of drops flung up and out, a column in the middle, the heavy ones last
 //                (bigger than the stroke's splash in courier/moves/swim.js, which it adds to)
-//   THE SKIFF    the Solar Skiff skimming: its splash on and off, the spray off the keel, its V dented into the tank (vfx/skiffwaterlook.js);
-//                while a board skims, the tank's rings run twice as fast, so the V behind a fast board opens wide enough to read
+//   THE SKIFF    the Solar Skiff skimming: its splash on and off and the spray off the keel (vfx/skiffwaterlook.js); its wake is the
+//                waterline ripple's (vfx/watercontact.js), never the tank's
 //   DRIPS        for a few real seconds after leaving the water the Courier drips: drops from all over the body, fewer as they dry
 //                (Sunshine's wet Mario); on Lachryma, ink drops
 //
@@ -27,9 +28,17 @@ export class WaterFx {
   constructor(game, renderer) {
     this.game = game; this.tank = new RippleTank(renderer);
     this.wet = 0; this.wetInk = false; this.dripAcc = 0;
-    this.skiff = new SkiffWaterLook(game); // (the Solar Skiff on water: its splash, spray and V)
+    this.skiff = new SkiffWaterLook(game); // (the Solar Skiff on water: its splash and spray)
     const W = game.water;
-    if (W) W.onDisturb = (d) => { this.tank.disturb(d); if (d.kind === 'dive' || d.kind === 'land') this.crown(d); };
+    if (W) W.onDisturb = (d) => { if (!this.drawnWake(d)) this.tank.disturb(d); if (d.kind === 'dive' || d.kind === 'land') this.crown(d); };
+  }
+
+  /** A body's running wake dent the waterline ripple already draws (the Courier swimming at the surface: vfx/watercontact.js's bow wave
+   *  and Kelvin arms), kept out of the tank so the wake is drawn once; strokes, dives and splashes still ring it. */
+  drawnWake(d) {
+    if (d.kind !== 'wake') return false;
+    const C = this.game.waterContact?.courier, P = this.game.player?.pos;
+    return !!(C?.visible && P && Math.abs(d.x - P.x) < 1.5 && Math.abs(d.z - P.z) < 1.5);
   }
 
   /** A dive's crown: a rim of drops flung up and out, a column in the middle. */
@@ -55,8 +64,8 @@ export class WaterFx {
     // the tank runs on the water nearest the eye (Lachryma's rings are slower)
     const eye = camera?.position || P.pos, near = W.volumes.find((w) => eye.x > w.x0 && eye.x < w.x1 && eye.z > w.z0 && eye.z < w.z1);
     this.skiff.update(raw);
-    const skim = this.skiff.kind; // (a board skimming: the water under it sets the rings, and they run faster, so its V opens)
-    this.tank.update(raw, eye, { lachryma: skim ? skim === 'lachryma' : near?.kind === 'lachryma', fast: !!skim });
+    const skim = this.skiff.kind; // (a board skimming: the water under it sets the rings' speed)
+    this.tank.update(raw, eye, { lachryma: skim ? skim === 'lachryma' : near?.kind === 'lachryma' });
     // wet: in the water (to the chest), then drying
     const v = W.at(P.pos.x, P.pos.y + 0.6, P.pos.z);
     if (v) { this.wet = 1; this.wetInk = v.kind === 'lachryma'; return; }

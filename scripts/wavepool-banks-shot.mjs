@@ -72,11 +72,15 @@ try {
       for (let i = 0; i < 120 && !sk.active; i++) { sk.mount(); G.tick(1 / 60); }
       for (let i = 0; i < 45; i++) { sk.heading = hd; sk.v.set(hx * ${speed}, 0, hz * ${speed}); P2.vel.x = hx * ${speed}; P2.vel.z = hz * ${speed}; sk.rideT = 5; G.tick(1 / 30); }
       const b = sk.skiff.group.position, back = new THREE.Vector3(-hx, 0, -hz), wc = g.waterContact?.skiff;
-      window.__sk = { active: sk.active, phase: sk.phase, onWater: sk.onWater, air: sk.air, sp: +Math.hypot(sk.v.x, sk.v.z).toFixed(2), wc: wc?.visible, k: +(wc?.userData.k ?? 0).toFixed(2), dy: +(b.y - (R.rideHeight(b.x, b.z))).toFixed(2) };`;
+      const bb = new THREE.Box3().setFromObject(sk.skiff.group), vh = Math.atan2(sk.v.x, sk.v.z);
+      window.__sk = { hullAlong: [+(bb.min.x - b.x).toFixed(2), +(bb.max.x - b.x).toFixed(2)], hullAcross: [+(bb.min.z - b.z).toFixed(2), +(bb.max.z - b.z).toFixed(2)], hullY: [+(bb.min.y - R.rideHeight(b.x, b.z)).toFixed(2)], headingVsTravel: +(Math.atan2(Math.sin(sk.heading - vh), Math.cos(sk.heading - vh))).toFixed(3), quadVsTravel: +((y) => { const a = Math.atan2(Math.cos(y), -Math.sin(y)) - vh; return Math.atan2(Math.sin(a), Math.cos(a)); })(wc.userData.yaw).toFixed(3), active: sk.active, phase: sk.phase, onWater: sk.onWater, air: sk.air, sp: +Math.hypot(sk.v.x, sk.v.z).toFixed(2), wc: wc?.visible, k: +(wc?.userData.k ?? 0).toFixed(2), dy: +(b.y - (R.rideHeight(b.x, b.z))).toFixed(2) };`;
     await shoot('skiff-idle', `${board(0)} ${cam('b.clone().addScaledVector(back, 5.5).add(new THREE.Vector3(1.5, 3.2, 0))', 'b.clone().addScaledVector(back, -0.5)')}`);
     await shoot('skiff-moving', `${board(12)} ${cam('b.clone().addScaledVector(back, -3).add(new THREE.Vector3(2.5, 9, 0))', 'b.clone().addScaledVector(back, 5)')}`);
     report[Z.id].skiff = await page.evaluate('window.__sk').catch(() => null);
     await shoot('skiff-moving-side', `${board(12)} ${cam('b.clone().add(new THREE.Vector3(0, 6, 9))', 'b.clone().addScaledVector(back, 4)')}`);
+    // the same view twice more, to tell whose a mark is: the waterline ripple hidden, then the blob shadow hidden
+    await shoot('skiff-moving-side-nocontact', `${board(12)} ${cam('b.clone().add(new THREE.Vector3(0, 6, 9))', 'b.clone().addScaledVector(back, 4)')} g.waterContact.skiff.visible = false;`);
+    await shoot('skiff-moving-side-noblob', `${board(12)} ${cam('b.clone().add(new THREE.Vector3(0, 6, 9))', 'b.clone().addScaledVector(back, 4)')} if (g.blobShadow) g.blobShadow.mesh.visible = false;`);
     // the Courier swimming: off the board into the deep water, W held, the camera above and behind
     await shoot('swim', `const P2 = g.player, sk = P2.techs.get('skiff'); if (sk.active) sk.dismount?.(); const p0 = at(P.L * 0.6, P.W * 0.7, P.y + 0.2);
       g.course.teleport(new THREE.Vector3(p0.x, p0.y - 0.6, p0.z), Math.atan2(ax.ux, ax.uz)); __keys.add('KeyW');
@@ -85,6 +89,7 @@ try {
       const b = P2.pos, back = new THREE.Vector3(-P2.vel.x, 0, -P2.vel.z).normalize();
       ${cam('b.clone().addScaledVector(back, 4.5).add(new THREE.Vector3(1, 3.4, 0))', 'b.clone().addScaledVector(back, -1)')}`);
     report[Z.id].swim = await page.evaluate('window.__swim').catch(() => null);
+    await shoot('swim-nocontact', `g.waterContact.courier.visible = false;`);
     report[Z.id].contact = await page.evaluate('({ courier: __game.game.waterContact?.courier?.visible, skiff: __game.game.waterContact?.skiff?.visible })').catch(() => null);
     await ctx.close();
   }
