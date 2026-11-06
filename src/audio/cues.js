@@ -518,12 +518,13 @@ const RULES = {
   'race.back': (s) => { s.skiffGrindEnd?.(null); s.raceBack?.(); },
   'skiff.bail': (s, e) => { s.skiffGrindEnd?.(null); s.surfBail?.(e.why); }, // (a bail mid-grind: the scrape stops; a wipeout's water by its why)
   // The surf ride and the slope (audio/surf.js; Calissa's wave pool and slope)
-  'skiff.surf': (s, e) => s.surfOn?.(e.on !== false),
+  'skiff.surf': (s, e) => { s.surfOn?.(e.on !== false); if (e.on === false) s.surfDrag?.(false); },
   'skiff.surf.pump': (s, e) => s.surfPump?.(e.steep),
   'skiff.surf.turn': (s, e) => s.surfTurn?.(e.kind),
   'skiff.tube.enter': (s, e, g) => { s.tubeEnter?.(); g.music?.duck?.(4, 0.3); },
   'skiff.tube.exit': (s, e) => s.tubeExit?.(e.seconds, e.made !== false),
   'skiff.submarine': (s) => s.surfSubmarine?.(),
+  'skiff.surf.drag': (s, e) => s.surfDrag?.(e.on !== false, e.side),
   'skiff.edge.skid': (s, e) => s.edgeSkid?.(e.k),
   'skiff.butter': (s, e) => s.butter?.(e.on !== false),
   'skiff.slope.land': (s, e) => s.slopeLand?.(e.grade),

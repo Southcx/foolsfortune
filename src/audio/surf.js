@@ -11,6 +11,8 @@
 //                  rail, a double's two, a floater's skitter over the foam, `air` the lip's release and a whoosh
 //   A WIPEOUT      (skiff.bail { why }) WIPE: `lip` the lip landing on you, a heavy crash of water; `closeout` the foam ball's churn
 //                  swallowing you; any other why is the skiff's own bail
+//   THE DRAG       (skiff.surf.drag { on, side }) the hand laid in the face: a splash as it lands, a held hiss of water past the fingers
+//                  while it stalls you (through the barrel too), panned to its side, let go with a flick
 //   UNDER          (skiff.submarine) a muffled plunge, the board under, and its burst out 0.7 real s later
 //   THE SLOPE      (skiff.edge.skid { k }, skiff.butter { on }, skiff.slope.land { grade }) an edge skidding (a scrape by its bite), a
 //                  butter's soft press and its spin, a landing by its grade (LAND: clean a crisp thud, sketchy a scuffed one, bail a
@@ -19,7 +21,7 @@
 // Prior art: the Kelly Slater surf games and Surf's Up for the barrel's hush and the spit, Riptide GP's spray, SSX and Steep for an edge
 // on snow and a landing by its grade, the real thing: a barrel's roar heard from inside on a GoPro.
 //
-//   sfx.surfOn(on) .tubeEnter() .tubeExit(seconds, made) .surfPump(steep) .surfTurn(kind) .surfBail(why) .surfSubmarine()
+//   sfx.surfOn(on) .tubeEnter() .tubeExit(seconds, made) .surfPump(steep) .surfTurn(kind) .surfBail(why) .surfSubmarine() .surfDrag(on, side)
 //   .edgeSkid(k) .butter(on) .slopeLand(grade)
 // ---------------------------------------------------------------------------------------
 
@@ -47,7 +49,7 @@ const LAND = {
 };
 /** Each moment's level against the parry's clang (set by ear in the probe). */
 const LEVEL = { pool: 1.2, roar: 0.65, spit: 1.9, caught: 2.5, pump: 4, carve: 1.5, snap: 1.6, cutback: 1.2, bottom: 1.6, double: 1,
-  floater: 2, air: 2, lip: 1, closeout: 1.1, under: 1.3, skid: 4.4, butter: 6.5, clean: 4.5, sketchy: 3.4, bail: 1.5 };
+  floater: 2, air: 2, lip: 1, closeout: 1.1, under: 1.3, drag: 1, skid: 4.4, butter: 6.5, clean: 4.5, sketchy: 3.4, bail: 1.5 };
 
 export class SurfSounds {
   surfOut(key, gain, verb, held = false) { const d = this.ctx.createGain(); d.gain.value = LEVEL[key] ?? 1; d.connect(this.out(gain, verb)); if (!held) setTimeout(() => d.disconnect(), 6000); return d; }
@@ -56,7 +58,7 @@ export class SurfSounds {
     const c = this.ctx, d = this.surfOut(key, 1, 0.5, true), src = c.createBufferSource(), flt = c.createBiquadFilter(), g = c.createGain();
     src.buffer = this.noiseBuf; src.loop = true; flt.type = type; flt.frequency.value = f; flt.Q.value = q; g.gain.value = 0;
     src.connect(flt).connect(g).connect(d); src.start(); g.gain.setTargetAtTime(gain, c.currentTime, 0.3);
-    return { flt, g, stop: (fade = 0.3) => { g.gain.setTargetAtTime(0, c.currentTime, fade); setTimeout(() => { try { src.stop(); d.disconnect(); } catch { /* gone */ } }, fade * 6000 + 200); } };
+    return { flt, g, d, stop: (fade = 0.3) => { g.gain.setTargetAtTime(0, c.currentTime, fade); setTimeout(() => { try { src.stop(); d.disconnect(); } catch { /* gone */ } }, fade * 6000 + 200); } };
   }
 
   surfOn(on = true) {
@@ -101,6 +103,17 @@ export class SurfSounds {
     const t = this.ctx.currentTime, d = this.surfOut('under', 0.4, 0.5);
     this.noise(t, 0.4, { type: 'lowpass', f0: 600, f1: 250, gain: 0.45, dest: d }); this.tone(t, 0.3, { f0: 120, f1: 60, gain: 0.2, dest: d }); // (a muffled plunge)
     this.noise(t + 0.7, 0.5, { type: 'bandpass', f0: 800, f1: 3000, q: 0.8, gain: 0.35, dest: d }); // (the burst out)
+  }
+  surfDrag(on = true, side = 'R') {
+    if (!this.ok()) return;
+    const c = this.ctx, t = c.currentTime;
+    if (!on) { const D = this.surfHand; this.surfHand = null; if (!D) return; D.stop(0.15); this.noise(t, 0.12, { type: 'bandpass', f0: 2500, f1: 1500, q: 1.2, gain: 0.2, dest: this.surfOut('drag', 0.3, 0.3) }); return; } // (the hand let go, a flick of spray)
+    if (this.surfHand) return;
+    const d = this.surfOut('drag', 0.3, 0.3);
+    this.noise(t, 0.15, { type: 'bandpass', f0: 1800, f1: 900, q: 1, gain: 0.3, dest: d }); // (the hand landing in the face)
+    const B = this.surfBed('drag', 'bandpass', 1400, 1.2, 0.1); // (water hissing past the fingers)
+    try { const p = c.createStereoPanner(); p.pan.value = side === 'L' ? -0.5 : 0.5; B.g.disconnect(); B.g.connect(p).connect(B.d); } catch { /* no panner: centred */ }
+    this.surfHand = B;
   }
   edgeSkid(k = 0.5) {
     if (!this.ok() || !this.allow('edgeSkid', 4)) return;
