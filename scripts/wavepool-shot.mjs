@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE WAVE POOL, SHOT: the wave pool's look (src/vfx/waves/) headless, at the Raceway park, on the desk (1280 x 720) and the phone (an
 // iPhone XR held landscape, 896 x 414 at 2x, its renderer stubbed to "Apple GPU" so it boots the phone's tier). The pool's clock is set
-// to a pass with its break point mid-pool, and the camera set by hand: the wave from the beach, the barrel from inside (the screen's
+// to a pass with its break point mid-pool, and the camera set by hand: the wave from the beach, the whitewater close, the break point, the barrel from inside (the screen's
 // vignette from the camera's own barrel test), the lip from its back. It measures what the look adds to a frame (draw calls and
 // triangles, renderer.info with the look shown and hidden) and the programs it compiled. One look, never a tune-and-rerun loop
 // (CLAUDE.md, Subagents).
@@ -56,7 +56,7 @@ try {
       G.tick(1 / 30);
       const at = (s, d, y) => { const u = st.ub + s * st.tu + d * st.nu, v = P.vb + s * st.tv + d * st.nv, du = u - P.L / 2, dv = v - P.W / 2; return new THREE.Vector3(RW.x + P.x + du * ax.ux + dv * ax.vx, RW.y + y, RW.z + P.z + du * ax.uz + dv * ax.vz); };
       const f0 = S.frameAt(at(-12, 0, 0).x - RW.x, at(-12, 0, 0).z - RW.z, t), H = f0?.H ?? 6, F = f0?.F ?? 7;
-      const C = { beach: [at(-8, 46, P.y + 6), at(-2, 0, P.y + 3)], tube: [at(-13, 0.5 * F, P.y + 0.42 * H), at(6, 0.48 * F, P.y + 0.42 * H)], back: [at(-20, -26, P.y + 9), at(-6, 2, P.y + 4)], side: [at(30, 22, P.y + 5), at(-6, 3, P.y + 4)] }[name];
+      const C = { beach: [at(-8, 46, P.y + 6), at(-2, 0, P.y + 3)], tube: [at(-13, 0.5 * F, P.y + 0.42 * H), at(6, 0.48 * F, P.y + 0.42 * H)], back: [at(-20, -26, P.y + 9), at(-6, 2, P.y + 4)], side: [at(30, 22, P.y + 5), at(-6, 3, P.y + 4)], white: [at(-58, 34, P.y + 6), at(-72, 2, P.y + 3)], break: [at(4, 52, P.y + 7), at(2, 4, P.y + 0.55 * H)] }[name];
       const cam = g.camera; cam.position.copy(C[0]); cam.lookAt(C[1]); cam.updateMatrixWorld();
       if (name === 'tube') { cam.fov = 82; cam.updateProjectionMatrix(); }
       W.update(0.25); W.update(0.25); W.update(0.25); // (the screen eased in for this camera)
@@ -65,7 +65,7 @@ try {
       return { name, H: +H.toFixed(2), F: +F.toFixed(2), cover: +W.screen.cover.toFixed(2), k: +W.screen.k.toFixed(2), on, off, added: { calls: on.calls - off.calls, tris: on.tris - off.tris } };
     }, name);
     report[Z.id].views = [];
-    for (const name of Z.id === 'desk' ? ['beach', 'tube', 'back', 'side'] : ['beach', 'tube']) {
+    for (const name of Z.id === 'desk' ? ['beach', 'tube', 'back', 'side', 'white', 'break'] : ['beach', 'tube', 'white']) {
       report[Z.id].views.push(await view(name));
       await page.screenshot({ path: path.join(out, `${Z.id}-${name}.png`) });
     }

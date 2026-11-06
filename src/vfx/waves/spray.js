@@ -22,10 +22,11 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RW } from '../../world/raceway/track.js';
+import { lipCurve } from '../../world/raceway/surf/wavepool.js';
 
 /** The rates (bursts a real second, desk and lean), the reach from the eye inside which the spray plays (m), the board's speed under
  *  which its rail throws none, the lens drops at a spit, and the skid's throttle (real s). */
-export const WAVE_SPRAY = { lip: [34, 12], near: 320, railFrom: 4, railFull: 24, drops: 14, skidEvery: 0.12 };
+export const WAVE_SPRAY = { lip: [34, 12], bore: [14, 5], near: 320, railFrom: 4, railFull: 24, drops: 14, skidEvery: 0.12 };
 /** The spit's drops on the lens: big, running, drying in a second and a half (vfx/weatherfx/lensdrops.js LENS's form). */
 const SPIT_DROPS = { kind: 0, r: [0.012, 0.045], run: 0.45, dry: 1.6 };
 
@@ -40,14 +41,23 @@ export function lipTip(S, t, s, a, out = new THREE.Vector3()) {
   const x = P.x + du * ax.ux + dv * ax.vx, z = P.z + du * ax.uz + dv * ax.vz, f = S.frameAt(x, z, t);
   if (!f || f.H < 0.8) return null;
   const W = S.WAVE, tl = W.throwLen, tube = W.tube;
-  let tau = sstep(0, tl, -s); if (s >= 0) tau = Math.max(tau, 0.14 * (1 - sstep(0, tl, s)));
-  const gone = sstep(-tube * 0.84, -tube * 1.02, s), shrink = 1 - 0.75 * gone;
-  const C = W.lip, rx = f.F * (C.rx[0] + C.rx[1] * tau) * shrink, ry = f.H * C.ry * shrink, phi = a * tau * Math.PI * C.arc; // (WAVE.lip; a past 1: a finger's curl, lip.js)
-  const dd = rx * Math.sin(phi), hh = f.H - ry + ry * Math.cos(phi) - gone * f.H * 0.35 * a;
+  const tau = sstep(-W.lead, tl, -s); // (as waveglsl.js: rising from WAVE.lead ahead of the break)
+  const gone = sstep(-tube * 0.84, -tube * 1.02, s), c = lipCurve(f.H, f.F, tau, a, 1 - 0.75 * gone); // (the pool's own curve: the GLSL's twin)
+  const dd = c.d, hh = c.h - gone * f.H * 0.35 * a;
   const tx = st.nu * ax.ux + st.nv * ax.vx, tz = st.nu * ax.uz + st.nv * ax.vz, px = x + dd * tx, pz = z + dd * tz;
   const base = (S.surfaceY(x, z, t) ?? P.y) - f.h; // (the still water and the swell under the crest)
   out.set(RW.x + px, RW.y + base + hh, RW.z + pz);
   out.tau = tau; out.gone = gone; out.H = f.H; out.F = f.F; out.travel = [tx, tz]; out.crest = [f.crest.x, f.crest.z];
+  return out;
+}
+
+/** The bore's top at s along the crest (behind the tube), in the world: its crest's height on the water there, or null. */
+function boreTop(S, t, s, out) {
+  const st = S.state(t), P = S.POOL, ax = S.axes; if (!st.env) return null;
+  const u = st.ub + s * st.tu, v = P.vb + s * st.tv, du = u - P.L / 2, dv = v - P.W / 2;
+  const x = P.x + du * ax.ux + dv * ax.vx, z = P.z + du * ax.uz + dv * ax.vz, f = S.frameAt(x, z, t), y = S.surfaceY(x, z, t);
+  if (!f || y == null || f.H < 1.5) return null;
+  out.set(RW.x + x, RW.y + y, RW.z + z); out.H = f.H; out.travel = [f.travel.x, f.travel.z]; out.crest = [f.crest.x, f.crest.z];
   return out;
 }
 
@@ -80,6 +90,16 @@ export class WaveSpray {
         V.play('wave.lip.spray', { pos: _p.copy(a).lerp(b, 0.5), from: this.from.clone(), to: this.to.clone(), dir: _d.clone(), power: lean ? 0.7 : 1 });
       }
     } else this.acc = 0;
+    // the bore behind the tube: spray and mist kicked up off its tumbling top, a few bursts a real second along it
+    if (live) {
+      this.boreAcc = (this.boreAcc || 0) + raw * WAVE_SPRAY.bore[lean ? 1 : 0] * st.env;
+      while (this.boreAcc >= 1) {
+        this.boreAcc -= 1;
+        const top = boreTop(S, t, -W.tube - 4 - Math.random() * 70, _b); if (!top) continue;
+        _d.set(top.travel[0] * 0.6, 1, top.travel[1] * 0.6).normalize();
+        V.play('wave.lip.spray', { pos: top.clone(), from: top.clone(), to: top.clone().addScaledVector(_r.set(top.crest[0], 0, top.crest[1]), 3), dir: _d.clone(), power: (lean ? 0.4 : 0.6) * Math.min(1, top.H / 5) });
+      }
+    } else this.boreAcc = 0;
     // the foam ball at the tube's end
     const fb = live ? lipTip(S, t, -W.tube * 0.93, 0.55, _a) : null;
     if (fb) {

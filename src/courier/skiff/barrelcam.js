@@ -19,7 +19,7 @@ const _pos = { x: 0, y: 0, z: 0, set(x, y, z) { this.x = x; this.y = y; this.z =
  *  side; eye: metres over the face under it (kept under the rider's own height + eye, so it never rises through the lip); ahead: metres
  *  down the crest to the point looked at, aim its height over the rider's; ease: cinema's rate (about 0.4 real s); in: the cover that
  *  begins it; spit: degrees more for its real seconds. */
-export const BARREL_CAM = { fov: [8, 15], back: 5, out: 1.8, eye: 2.2, ahead: 32, aim: 2.2, ease: 7.5, in: 0.25, spit: [4, 0.5] }; // (the great wave's tube: about 16 m across and 14 m tall, WAVE)
+export const BARREL_CAM = { fov: [8, 15], back: 5, out: 1.8, eye: 2.2, ahead: 22, aim: 2.2, ease: 7.5, in: 0.25, spit: [4, 0.5] }; // (the great wave's tube: about 16 m across and 14 m tall, WAVE)
 
 export class BarrelCam {
   constructor(surf) { this.surf = surf; this.k = 0; this.on = false; this.spitWas = 0; }

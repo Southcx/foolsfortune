@@ -25,7 +25,7 @@ import * as THREE from 'three';
  *  half width, corner radius), the lift over the surface (m: CASEBOOK 1), the speeds (m/s) a ring is at rest under and full over. */
 export const WATER_CONTACT = {
   courier: { half: 2.6, r: 0.24, crawl: [0.75, 0.22] },
-  skiff: { half: 4.2, box: [1.75, 0.5, 0.35] },
+  skiff: { half: 3.0, box: [1.75, 0.5, 0.35], rings: 0.55 }, // (rings: their strength against the Courier's: a hull's ring is a hem, never a halo)
   lift: 0.03, rest: 0.4, full: 8,
 };
 
@@ -36,7 +36,7 @@ void main() { vL = position.xy; vec4 w = modelMatrix * vec4(position.x, 0.0, -po
 const FRAG = /* glsl */`
 uniform vec4 uShape;  // x: kind (0 a capsule along local x, 1 a rounded box), y: half length, z: half width (capsule: its radius), w: corner radius
 uniform vec4 uMove;   // xy: the motion's way in local space (unit), z: its strength 0..1, w: the time
-uniform vec2 uLook;   // x: the light (the day's), y: the quad's half size
+uniform vec3 uLook;   // x: the light (the day's), y: the quad's half size, z: the rings' strength
 varying vec2 vL; varying vec3 vW;
 float hashC(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 float noiseC(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -60,12 +60,13 @@ void main() {
   float ph = (dd - t * speed) / spacing;
   float band = abs(fract(ph) - 0.5) * 2.0; // (1 between rings, 0 on one)
   float ring = pow(1.0 - smoothstep(0.0, 0.32, band), 1.5) * (0.6 + 0.4 * n);
-  float fall = exp(-dd / mix(0.85, 1.5, k)) * smoothstep(uLook.y, uLook.y * 0.6, length(p));
+  float fall = exp(-dd / mix(0.7, 1.2, k)) * (1.0 - smoothstep(uLook.y * 0.6, uLook.y, length(p)));
   float breathe = 0.65 + 0.35 * sin(t * 1.7);
   ring *= fall * mix(0.55 * breathe, 0.85, k) * smoothstep(0.03, 0.16, dd);
-  float a = clamp(line * 0.9 + ring * 0.55, 0.0, 1.0);
+  ring *= uLook.z;
+  float a = clamp(line * 0.9 + ring * 0.45, 0.0, 1.0);
   if (a < 0.004) discard;
-  vec3 col = mix(vec3(0.78, 0.9, 0.92), vec3(0.98, 0.99, 0.97), line) * (0.45 + 0.55 * uLook.x);
+  vec3 col = mix(vec3(0.6, 0.8, 0.84), vec3(0.98, 0.99, 0.97), clamp(line / max(line + ring, 1e-3), 0.0, 1.0)) * (0.45 + 0.55 * uLook.x); // (the rings a cooler water-light, the line foam-white)
   gl_FragColor = vec4(col, a);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -78,13 +79,13 @@ export class WaterContact {
   constructor(game) {
     this.game = game; this.t = 0;
     this.courier = this.quad('watercontact-courier', WATER_CONTACT.courier.half);
-    this.skiff = this.quad('watercontact-skiff', WATER_CONTACT.skiff.half);
+    this.skiff = this.quad('watercontact-skiff', WATER_CONTACT.skiff.half); this.skiff.material.uniforms.uLook.value.z = WATER_CONTACT.skiff.rings;
   }
   quad(name, half) {
     const g = new THREE.PlaneGeometry(half * 2, half * 2); // (its own 2D coordinates are the footprint's; the vertex lays it flat, facing up)
     const m = new THREE.ShaderMaterial({
       name: 'water-contact', vertexShader: VERT, fragmentShader: FRAG,
-      uniforms: { uShape: { value: new THREE.Vector4() }, uMove: { value: new THREE.Vector4() }, uLook: { value: new THREE.Vector2(1, half) } },
+      uniforms: { uShape: { value: new THREE.Vector4() }, uMove: { value: new THREE.Vector4() }, uLook: { value: new THREE.Vector3(1, half, 1) } },
       transparent: true, depthWrite: false, side: THREE.FrontSide,
     });
     const mesh = new THREE.Mesh(g, m); mesh.name = name; mesh.renderOrder = 3; mesh.frustumCulled = false; mesh.userData.zoneFree = true; mesh.visible = false;

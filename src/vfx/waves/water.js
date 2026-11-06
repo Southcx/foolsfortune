@@ -31,7 +31,7 @@
 //   const W = new WavePoolWater(game, { U, pool, lean })   (pool: wavePool())   W.near  W.far  (meshes)   W.place(S, t)   W.dispose()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { WAVEPOOL_GLSL } from '../../world/raceway/surf/wavepool.js';
+import { WAVEPOOL_GLSL, WAVE } from '../../world/raceway/surf/wavepool.js';
 import { LIQUID_GLSL, liquidUniforms } from '../liquid.js';
 import { RIPPLE_U, RIPPLE_GLSL } from '../ripples.js';
 import { WAVE_PARTS_GLSL, WAVE_SHADE_GLSL, SKY_FALLBACK_GLSL } from './waveglsl.js';
@@ -117,12 +117,13 @@ void main() {
   float onFace = smoothstep(-0.35 * F, 0.0, d) * (1.0 - smoothstep(0.85 * F, 1.2 * F, d)) * step(0.5, zone);
   float thin = smoothstep(0.3, 1.0, hw) * (0.35 + 0.65 * onFace) * step(0.2, H);
   // the tube: the face under the lip in its shade, lit through it
-  float tube = uWP[5].z, tau = smoothstep(0.0, uWP[5].w, -s), gone = smoothstep(-tube * 0.84, -tube * 1.02, s);
-  float under = tau * (1.0 - gone) * step(s, 0.0) * smoothstep(0.04 * F, 0.2 * F, d) * (1.0 - smoothstep(0.9 * F, 1.15 * F, d)) * step(1.5, H);
+  float tube = uWP[5].z, tau = smoothstep(-${WAVE.lead.toFixed(1)}, uWP[5].w, -s), gone = smoothstep(-tube * 0.84, -tube * 1.02, s);
+  float under = tau * (1.0 - gone) * smoothstep(-0.01 * F, 0.004 * F, d) * (1.0 - smoothstep(0.9 * F, 1.15 * F, d)) * step(3.0, H); // (to the crest itself: the curl's strip begins there)
+  float mouth = smoothstep(-tube * 0.75, 2.0, s);
   col += wpThrough(V, N, thin) * (1.0 - 0.4 * under);
-  col = mix(col, col * 0.62 + WP_GLOW * 0.16 * (0.5 + 0.5 * uDay), under * 0.85);
+  col = mix(col, wpTube(0.4 * hw, mouth, V, N, tau), under * 0.94); // (the tube's wall, shaded as the curl over it is: lip.js, one surface)
   // the sky in it, short of a mirror, dimmed in the tube
-  col = mix(col, sky * 0.85, clamp(fres, 0.0, 0.55) * (1.0 - 0.6 * under));
+  col = mix(col, sky * 0.85, clamp(fres, 0.0, 0.55) * (1.0 - 0.9 * under));
   // the sun: a soft highlight and glints where the swell's crests cross the fine noise
   float swl = wpSwell(uv, t);
   float glint = smoothstep(0.88, 0.96, liqTap(vW.xz * 0.85 + vec2(t * 0.05, -t * 0.03)).g) * pow(sp, 28.0) * smoothstep(0.1, 0.55, swl + hw * 0.5);
@@ -133,6 +134,7 @@ void main() {
   mask = max(mask, smoothstep(0.6, 1.0, hw) * step(1.5, zone) * 0.25 * step(s, 16.0)); // (the crest pitching)
   float streak = smoothstep(0.5, 0.72, ridge) * faceK * (0.25 + 0.75 * smoothstep(0.3, 0.95, hw)); // (Hokusai's foam bands up the face)
   mask = max(mask, streak * 0.85);
+  mask *= 1.0 - 0.9 * under * (1.0 - smoothstep(0.72 * F, 0.92 * F, d)); // (no foam on the tube's wall up to the curl: the lip's landing line kept)
   vec2 flowP = wpToPark(uv + uWP[3].xy) - wpToPark(uv);
   vec2 fm = wpFoam(vW.xz, -flowP * (zone > 3.5 ? uWP[4].y * 0.6 : 0.4), mask, t);
   col = mix(col, vec3(0.62, 0.86, 0.86) * (0.6 + 0.4 * uDay), mask * 0.3 * step(3.5, zone)); // (the bore is aerated: paler under its foam)

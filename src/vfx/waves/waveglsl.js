@@ -37,7 +37,7 @@ float wpBed(vec2 uv) {
 float wpFoamMask(float s, float d, float zone, float H, float F, float v) {
   float m = 0.0;
   if (H > 0.3) {
-    if (zone > 3.5) m = smoothstep(-uWP[4].z, 0.0, d) * (1.0 - smoothstep(F, F * 2.2, d)) * 0.95;
+    if (zone > 3.5) m = (smoothstep(-uWP[4].z, 0.0, d) * 0.42 + exp(-(d - 0.3 * F) * (d - 0.3 * F) / (0.25 * F * F)) * 0.5) * (1.0 - smoothstep(F, F * 2.2, d)); // (the bore frothiest along its tumbling front, patchy behind)
     else if (zone > 2.5) m = max(exp(-(d - F) * (d - F) / 32.0) * 0.85, smoothstep(-4.6, 1.2, d) * (1.0 - smoothstep(1.2, 5.8, d)) * 0.5);
     else if (zone > 1.5) m = smoothstep(-2.8, 0.7, d) * (1.0 - smoothstep(0.7, 3.7, d)) * 0.45 * (1.0 - s / ${f(WAVE.pocket + WAVE.pocketW)});
   }
@@ -51,15 +51,16 @@ vec4 wpLipAt(float s, float a, out vec3 nOut, out float gone) {
   vec2 cuv = wpBreakUV() + s * uWP[3].zw, tr = uWP[3].xy;
   float H, F; wpWave(cuv, H, F);
   float tube = uWP[5].z, tl = uWP[5].w;
-  float tau = smoothstep(0.0, tl, -s);
-  tau = max(tau, 0.14 * (1.0 - smoothstep(0.0, tl, s)) * step(-0.01, s)); // (the crest already pitching just ahead of the break: a feather)
+  float tau = smoothstep(-${f(WAVE.lead)}, tl, -s); // (WAVE.lead: the lip begins to rise ahead of the break)
+  // (no feather ahead of the break: standing alone on the crest it read as a fin, South 2026-11-06)
   gone = smoothstep(-tube * 0.84, -tube * 1.02, s);
   float shrink = 1.0 - 0.75 * gone;
-  float rx = F * (${f(WAVE.lip.rx[0])} + ${f(WAVE.lip.rx[1])} * tau) * shrink, ry = H * ${f(WAVE.lip.ry)} * shrink, phi = a * tau * ${(Math.PI * WAVE.lip.arc).toFixed(5)}; // (lipCurve: WAVE.lip; a past 1 the clawing fingers curl on round, lip.js)
-  float dd = rx * sin(phi), hh = H - ry + ry * cos(phi) - gone * H * 0.35 * a;
+  // lipCurve (WAVE.lip): one tube with the face, about (rx, H): up from the crest with the face's vertical, over, and down to the tip
+  float rx = F * ${f(WAVE.lip.rx)} * shrink, psi = 3.14159265 - a * tau * ${f(WAVE.lip.sweep)}, r = H * (psi > 0.0 ? ${f(WAVE.lip.up)} : ${f(WAVE.lip.down)}) * shrink;
+  float dd = rx + rx * cos(psi), hh = H + r * sin(psi) - gone * H * 0.35 * a;
   vec2 uv = cuv + dd * tr;
-  // the outward normal of the ellipse at phi, in the wave's (d, h) plane, turned into the park's
-  vec2 nd = normalize(vec2(sin(phi) / max(rx, 0.05), cos(phi) / max(ry, 0.05)));
+  // the outward normal of the ellipse at psi (away from the tube's axis), in the wave's (d, h) plane, turned into the park's
+  vec2 nd = normalize(vec2(cos(psi) / max(rx, 0.05), sin(psi) / max(r, 0.05)));
   vec2 trP = wpToPark(uv + tr) - wpToPark(uv);
   nOut = normalize(vec3(trP.x * nd.x, nd.y, trP.y * nd.x));
   return vec4(wpToPark(uv), uWP[0].w + wpSwell(uv, uWP[6].z) + hh, tau);
@@ -79,6 +80,24 @@ vec3 wpThrough(vec3 V, vec3 N, float thin) {
   float back = pow(clamp(dot(V, -normalize(L + N * 0.45)), 0.0, 1.0), 4.0) * 1.6;
   vec3 skyB = wpSky(-V + vec3(0.0, 0.25, 0.0));
   return WP_GLOW * thin * (skyB * (0.45 + 0.25 * uDay) + uSunC * back);
+}
+// THE TUBE round its circumference, shared by the face under the lip (water.js) and the curl (lip.js) so the two are one surface: ang 0
+// the face's foot .. 0.4 the crest (where the strip begins) .. 1 the lip's tip; mouth 0 deep in the tube .. 1 at its open end. The wall
+// teal, the roof dark and green under the water's whole weight with a soft occlusion where the curl closes over the crest, the curtain
+// luminous where the lip thins and the light comes through, the whole brighter toward the mouth (Clark Little's and Chris Burkard's
+// barrel photographs, the tube shots of "Riding Giants" and "Momentum Generation": the hollow read by that gradient round it).
+float wpTubeThin(float ang, float tau) { return smoothstep(0.5, 1.0, ang) * tau; }
+vec3 wpTube(float ang, float mouth, vec3 V, vec3 N, float tau) {
+  float roof = smoothstep(0.3, 0.55, ang) * (1.0 - smoothstep(0.72, 0.95, ang));
+  float closeK = exp(-(ang - 0.43) * (ang - 0.43) / 0.012);
+  vec3 wall = mix(WP_BODY * 0.62, WP_DEEP * 0.55 + WP_GLOW * 0.06, smoothstep(0.05, 0.42, ang));
+  vec3 roofC = vec3(0.012, 0.13, 0.11);
+  vec3 curtain = mix(WP_BODY, WP_GLOW, 0.45) * 0.85;
+  vec3 c = mix(wall, roofC, roof);
+  c = mix(c, curtain, smoothstep(0.66, 0.99, ang) * tau);
+  c *= 1.0 - 0.4 * closeK;
+  c += wpThrough(V, N, wpTubeThin(ang, tau)) * 0.5;
+  return c * mix(0.5, 1.2, mouth) * (0.6 + 0.4 * uDay);
 }
 // the cartoon foam: two scrolls of the bubbles' noise against the mask, crisp over a pixel; .x the foam, .y its shadowed rim
 vec2 wpFoam(vec2 xz, vec2 flow, float mask, float t) {
