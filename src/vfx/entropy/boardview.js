@@ -63,7 +63,9 @@ export const BOARD_VIEW = {
   rank: ['', 'Page', 'Knight', 'Queen', 'King', 'King+'], phase: { empty: 'Draw', play: 'Play', place: 'Play', carve: 'Carve', bomb: 'Bomb' },
   how: { bomb: ['The Grand Bomb went off on their tile.', 'The Grand Bomb went off on your tile.'], 'bomb-neutral': ['It went off on nobody\'s tile: the higher health took it.', 'It went off on nobody\'s tile: the higher health took it.'],
     'bomb-off': ['You pushed the Grand Bomb off their edge.', 'The Grand Bomb was pushed off your edge.'], strike: ['Your tokens struck their Arcana down.', 'Their tokens struck your Arcana down.'],
-    fatigue: ['Their Arcana fell to fatigue.', 'Your Arcana fell to fatigue.'], reshuffle: ['Their Arcana fell to a reshuffle.', 'Your Arcana fell to a reshuffle.'], draw: ['Nobody\'s tile, equal health: a draw.', 'Nobody\'s tile, equal health: a draw.'] },
+    fatigue: ['Their Arcana fell to fatigue.', 'Your Arcana fell to fatigue.'], reshuffle: ['Their Arcana fell to a reshuffle.', 'Your Arcana fell to a reshuffle.'], draw: ['Nobody\'s tile, equal health: a draw.', 'Nobody\'s tile, equal health: a draw.'],
+    'bomb-ground': ['The bomb went off on nobody\'s tile; you held more ground.', 'The bomb went off on nobody\'s tile; they held more ground.'] },
+  bolt: { life: 0.42, from: 9, steps: 9, jag: 0.55, color: 0xe8dcff }, // (the Tower's Lightning on a token: real s, m above, kinks, m sideways)
 };
 const N = BOARD.size, V = BOARD_VIEW, _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _c = new THREE.Color(), _q = new THREE.Quaternion(), WHITE = new THREE.Color(1, 1, 1), BONE = new THREE.Color(LOOK.bone);
 const ease3 = (u) => 1 - (1 - u) ** 3, backOut = (u) => 1 + 2.2 * (u - 1) ** 3 + 1.2 * (u - 1) ** 2;
@@ -129,6 +131,7 @@ export class EntropyBoardView {
     el?.removeEventListener('pointermove', this.onMove); el?.removeEventListener('pointerdown', this.onDown);
     for (const ev of ['pointerup', 'pointercancel']) el?.removeEventListener(ev, this.onUp);
     this.drag.detach(); this.count?.detach(); this.corners?.detach(); for (const a of this.arcana || []) a.p?.dispose(); this.count = null;
+    for (const b of this.bolts || []) { b.line.geometry.dispose(); b.line.material.dispose(); } this.bolts = [];
     this.plates?.unmount(); this.session?.menu?.root?.classList.remove('etboard'); document.getElementById('indexmenu')?.classList.remove('etboard'); g.ui?.want?.('entropyBoard', false);
     for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) this.look.tiles?.light?.(x, z, 0, this.hue);
     g.scene.remove(this.root); g.overlayScene?.remove(this.hand); this.kit.dispose(); for (const o of this.stone || []) o.visible = true; this.stone = null;
@@ -144,7 +147,7 @@ export class EntropyBoardView {
     this.pick(); this.lights();
     this.layTiles(S); this.layTokens(dt, t); this.layFlyers(dt); this.layPiles(S); this.layBomb(dt, t, S); this.layDice(dt, t, S); this.layArcana(dt, t, S); this.layHeld(t, S); this.layHand(dt, S);
     this.corners.hunger(this.drag.over === 'die:0' ? 1 : this.drag.on && this.drag.targets(this.drag.card).has('die:0') ? 0.35 : 0); this.corners.tick(dt, t, S);
-    this.drag.tick(dt, t); this.sparks.tick(dt); this.words(S); this.frame(dt);
+    this.layBolts(dt); this.drag.tick(dt, t); this.sparks.tick(dt); this.words(S); this.frame(dt);
   }
   /** A new game at the seat (again): the board cleared, the log read from its start. */
   reset(S) {
@@ -177,19 +180,34 @@ export class EntropyBoardView {
       else if (x.add != null) this.sparks.burst(top(x.at), 8 + x.v, LOOK.side(x.add), { speed: 0.7, up: 0.8, radius: 0.4 });
       else if (x.claim != null) this.sparks.burst(top(x.at), 26, LOOK.side(x.claim), { speed: 1.4, up: 0.5, radius: 0.7 });
       else if (x.meet != null) { const a = this.tokens.get(x.meet), b = this.tokens.get(x.with); if (a && b) { _v.lerpVectors(a.pos, b.pos, 0.5).y += 0.8; this.sparks.burst(_v, 60, WHITE, { speed: 3.2, up: 0.4 }); this.sparks.burst(_v, 30, this.hue, { speed: 2 }); a.flash = b.flash = 1; } }
-      else if (x.hurt != null) { const e = this.tokens.get(x.hurt); if (e) { e.flash = 1; this.sparks.burst(_v.copy(e.pos).setY(e.pos.y + 0.9), 20 + 8 * (x.mult || 1), x.mult === 2 ? 0xffd36a : 0xff5a4a, { speed: 2.2, up: 0.7 }); } } // (a card on a token: Dovina's { hurt, dmg, mult })
-      else if (x.down != null) this.downWhy.set(x.down, x.why);
+      else if (x.hurt != null) { const e = this.tokens.get(x.hurt); if (e) { e.flash = 1; if (x.bolt) this.strike(e.pos, e.top); this.sparks.burst(_v.copy(e.pos).setY(e.pos.y + 0.9), 20 + 8 * (x.mult || 1), x.mult === 2 ? 0xffd36a : 0xff5a4a, { speed: 2.2, up: 0.7 }); } } // (a card on a token: Dovina's { hurt, dmg, mult })
+      else if (x.down != null) { this.downWhy.set(x.down, x.why); const e = this.tokens.get(x.down); if (e) this.fell = { pos: e.pos.clone(), card: e.t?.card, owner: e.owner }; } // (kept: the Tower feeds its fallen to its die)
       else if (x.shove != null || x.push != null) { this.shake = 1; this.bombFlash = 1; this.sparks.burst(_v.copy(B).setY(B.y + 0.6), x.tiles === 0 ? 18 : 46, this.hue, { speed: 2.4, up: 0.3 }); }
       else if (x.boom !== undefined) { this.bombFlash = 2; this.shake = 1.5; this.sparks.burst(_v.copy(B).setY(B.y + 0.6), 160, WHITE, { speed: 5, up: 1, life: 1.6 }); this.sparks.burst(_v, 90, this.hue, { speed: 3, up: 1.2, life: 2 }); }
       else if (x.feed != null) { // (the feast: yours in the corner, corners.js; theirs a card flown from their hand into their die, which gulps the same)
-        if (x.feed === 0) this.corners.feed(x);
-        else { const d = this.dice[1]; this.fly(this.heldAt, d.pos, LOOK.side(1), V.fly, 1.2, () => d.feast.gulp(x.fed, x.die)); }
+        const F = x.fell ? this.fell : null; this.fell = null; // (the Tower: its fallen token flies into its die)
+        if (x.feed === 0) { if (F?.card != null) { _v.copy(F.pos).project(this.game.camera); this.corners.feast(F.card, { x: (_v.x * 0.5 + 0.5) * innerWidth, y: (_v.y * 0.5 + 0.5) * innerHeight }); } this.corners.feed(x); }
+        else { const d = this.dice[1]; this.fly(F ? F.pos : this.heldAt, d.pos, LOOK.side(1), V.fly, 1.2, () => d.feast.gulp(x.fed, x.die)); }
       }
       else if (x.discard != null) this.sparks.burst(this.piles[x.discard].disc.group.position, 8, BONE, { speed: 0.5, up: 0.5 });
       else if (x.fatigue != null) { this.arcana[x.fatigue].flash = 1; this.sparks.burst(this.arcana[x.fatigue].home, 40, 0xff5a3c, { speed: 1.6, up: 0.6, radius: 0.5 }); }
       else if (x.reshuffle != null) { const P = this.piles[x.reshuffle]; this.arcana[x.reshuffle].flash = 1; for (let i = 0; i < 6; i++) this.fly(P.disc.group.position, P.deck.group.position, BONE, 0.35 + i * 0.06, 0.6); }
       else if (x.count != null) this.bombFlash = 0.6;
     }
+  }
+  /** The Tower's Lightning striking a token: a jagged white-violet line from the sky to it, flickering out, a flash and sparks. */
+  strike(at, top = 1.5) {
+    const B = V.bolt, pts = [], to = at.clone().setY(at.y + top * V.scale.token * 0.6);
+    for (let i = 0; i <= B.steps; i++) { const u = i / B.steps, j = i === 0 || i === B.steps ? 0 : B.jag * (1 - u * 0.5); pts.push(new THREE.Vector3(to.x + (Math.random() - 0.5) * j * 2, to.y + B.from * (1 - u), to.z + (Math.random() - 0.5) * j * 2)); }
+    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: B.color, transparent: true, depthTest: false, toneMapped: false, blending: THREE.AdditiveBlending }));
+    line.renderOrder = 45; this.root.add(line); (this.bolts ||= []).push({ line, life: B.life });
+    this.sparks.burst(to, 50, B.color, { speed: 3, up: 0.6 }); this.sparks.burst(to, 30, WHITE, { speed: 1.5, up: 1.2 });
+  }
+  layBolts(dt) {
+    this.bolts = (this.bolts || []).filter((b) => {
+      b.life -= dt; const k = Math.max(0, b.life / V.bolt.life); b.line.material.opacity = k * (0.6 + 0.4 * (Math.random() < 0.5 ? 1 : 0)); // (a flicker)
+      if (b.life > 0) return true; this.root.remove(b.line); b.line.geometry.dispose(); b.line.material.dispose(); return false;
+    });
   }
   /** Something flying across the board as a trail of motes (a lance at their Arcana, a cup home, a card riffled); `end` when it lands. */
   fly(from, to, color, dur = V.fly, arc = 1.6, end = null) { this.flyers.push({ from: from.clone(), to: to.clone(), color: new THREE.Color(color), dur, arc, u: 0, end }); }
@@ -220,7 +238,7 @@ export class EntropyBoardView {
         this.sparks.burst(e.pos, 90, BONE, { speed: 1.1, up: 0.7, height: e.top, radius: 0.25, life: 1.5, gravity: 0.1 });
         this.sparks.burst(e.pos, 40, LOOK.side(e.owner), { speed: 1.6, up: 0.4, height: e.top, radius: 0.2, life: 1.2 });
       }
-      this.downWhy.delete(id); this.tokens.delete(id); e.die = 0; e.away = why === 'struck' || why === 'home'; this.dying.push(e); // (frayed away in layTokens)
+      this.downWhy.delete(id); this.tokens.delete(id); e.die = 0; e.away = why === 'struck' || why === 'home'; e.blunt = why === 'blunted'; this.dying.push(e); // (frayed away in layTokens)
     }
     for (const q of [0, 1]) { if (S.hp[q] < this.hpSeen[q]) { this.arcana[q].flash = 1; this.arcana[q].p?.hit(); } else if (S.hp[q] > this.hpSeen[q]) this.sparks.burst(this.arcana[q].home, 30, LOOK.side(q), { speed: 0.6, up: 1.2, radius: 0.5 }); this.hpSeen[q] = S.hp[q]; }
   }
@@ -292,13 +310,16 @@ export class EntropyBoardView {
       e.spin.forEach(([m, axis], i) => { m.rotation[axis] += dt * (0.6 + i * 0.7); });
       e.body.emissive.set(LOOK.side(e.owner)).multiplyScalar(0.22).add(_c.copy(this.hue).multiplyScalar(lit * 0.55)).lerp(WHITE, e.flash);
       e.ring.material.color.set(LOOK.side(e.owner)).lerp(this.hue, lit * 0.5).lerp(WHITE, e.flash * 0.6); e.tick(dt);
-      e.glyph.position.y = e.top + 0.4 + Math.sin(t * 1.6 + e.id) * 0.05; e.glyph.scale.setScalar(0.5 + lit * 0.12);
+      const charged = !!(this.S?.ctx?.boost && e.owner === this.S.cur); // (a Charge's +3 on its owner's turn: the token burns gold)
+      if (charged) e.body.emissive.lerp(_c.set(0xffc850), 0.35 + 0.25 * Math.sin(t * 8));
+      e.glyph.position.y = e.top + 0.4 + Math.sin(t * 1.6 + e.id) * 0.05; e.glyph.scale.setScalar(0.5 + lit * 0.12 + (charged ? 0.1 : 0));
     }
     // a downed token frays: it shudders, thins and sinks (a struck lance or a cup going home just shrinks into its flight)
     this.dying = this.dying.filter((e) => {
       e.die += dt / V.fray; const u = Math.min(1, e.die), j = e.away ? 0 : 0.06 * (1 - u);
       e.group.position.set(e.pos.x + (Math.random() - 0.5) * j, e.pos.y - u * (e.away ? 0 : 0.4), e.pos.z + (Math.random() - 0.5) * j);
-      e.group.scale.set(V.scale.token * (1 - u * (e.away ? 1 : 0.6)), V.scale.token * (1 - u), V.scale.token * (1 - u * (e.away ? 1 : 0.6))); e.body.emissive.copy(WHITE).multiplyScalar(1 - u);
+      e.group.scale.set(V.scale.token * (1 - u * (e.away ? 1 : 0.6)), V.scale.token * (1 - u), V.scale.token * (1 - u * (e.away ? 1 : 0.6))); e.body.emissive.copy(WHITE).multiplyScalar(e.blunt ? 0 : 1 - u);
+      if (e.blunt) { e.body.color.setRGB(0.42, 0.4, 0.38).lerp(BONE, 1 - Math.min(1, u * 3)); if (Math.random() < 0.8) this.sparks.burst(_v.copy(e.pos).setY(e.pos.y + Math.random() * e.top), 3, 0x8a8478, { speed: 0.3, up: 0, life: 1.0, gravity: -2.5 }); } // (a wounded sword dulls and crumbles: no shove)
       if (!e.away && Math.random() < 0.5) this.sparks.burst(_v.copy(e.pos).setY(e.pos.y + Math.random() * e.top), 2, LOOK.side(e.owner), { speed: 0.4, up: 0.4, life: 0.8 });
       if (u < 1) return true; this.root.remove(e.group); return false;
     });
@@ -412,7 +433,7 @@ export class EntropyBoardView {
     }
     if (id.startsWith('k:')) {
       const tk = S.tokens.find((x) => `k:${x.id}` === id); if (!tk) return null;
-      return { title: `${tk.owner === 0 ? 'Your' : 'Their'} ${V.rank[tk.rank] || ''} of ${SUITS[tk.suit]}`, lines: [`Strength ${strengthOf(S, tk)} · advances ${speedOf(S, tk, ENTROPY_RULES)} a turn${tk.hp != null ? ` · ${tk.hp} of ${tk.max} health` : ''}`, V.does[tk.suit]], moves };
+      return { title: `${tk.owner === 0 ? 'Your' : 'Their'} ${V.rank[tk.rank] || ''} of ${SUITS[tk.suit]}`, lines: [`Power ${strengthOf(S, tk)}${S.ctx?.boost && tk.owner === S.cur ? ` (Charge +${S.ctx.boost})` : ''}: its health left${tk.hp != null ? `, ${tk.hp} of ${tk.max}` : ''} · advances ${speedOf(S, tk, ENTROPY_RULES)} a turn`, V.does[tk.suit]], moves };
     }
     if (id === 'bomb') { const T = S.tiles[S.bomb.z * N + S.bomb.x]; return { title: 'The Grand Bomb', lines: [`Counter ${S.counter}: at 0 whoever owns its tile loses (now ${whose(T.o)})`], moves }; }
     if (id.startsWith('arcana:')) { const q = +id.slice(7), Cl = CLASSES[S.cls[q]]; return { title: Cl?.label, lines: [`${S.hp[q]} of ${HEALTH} health · deck ${S.deck[q].length} · discard ${S.disc[q].length} · fed ${S.fed[q]}`, Cl?.passive || ''], moves }; }

@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // AN ARCANA'S PORTRAIT (plain name; South, 2026-11-06: "for the busts of the Arcana classes, why don't we make animated portrait cards?
 // Like use the actual tarot card and animate the characters present on it"; ENTROPY-TACTICS.md 8). Each seat's Arcana class (the Fool,
-// the Chariot, the Empress, the Hermit) stood as its real Rider-Waite-Smith card, its figures alive, looks only:
+// the Chariot, the Empress, the Hermit, the Tower) stood as its real Rider-Waite-Smith card, its figures alive, looks only:
 //   the card      the card's scan (src/assets/tarot/<cls>.webp, fetched by scripts/fetch_tarot.mjs) on a plane in one program a card
 //                 (`entropy-portrait`), lightly graded toward the room's void; its edge a void rim lit in the eldritch hue (pieces.js
 //                 `eldritch`) and inside it a line in its owner's colour (pieces.js LOOK: yours the cool cyan, theirs the warm vermilion)
@@ -23,7 +23,7 @@
 // Into the Breach's health pips.
 //
 //   PORTRAIT { w, h }   new ArcanaPortrait(kit, cls, seat)   .group (card-sized, faces +z)   .set({ hp, max })   .hit()   .tick(dt, t)
-//   .dispose()          (cls: 'fool' | 'chariot' | 'empress' | 'hermit'; seat 0 yours, 1 theirs)
+//   .dispose()          (cls: 'fool' | 'chariot' | 'empress' | 'hermit' | 'tower'; seat 0 yours, 1 theirs)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LOOK, eldritch, Kit, numberSprite } from './pieces.js';
@@ -35,6 +35,7 @@ const HIT = { dur: 0.55, shake: 0.06 };
 const ART = {
   fool: () => import('../../assets/tarot/fool.webp?b64'), empress: () => import('../../assets/tarot/empress.webp?b64'),
   chariot: () => import('../../assets/tarot/chariot.webp?b64'), hermit: () => import('../../assets/tarot/hermit.webp?b64'),
+  tower: () => import('../../assets/tarot/tower.webp?b64'),
 };
 const KIND = { sway: 0, breathe: 1, shift: 2, glow: 3, flicker: 4, twinkle: 5, flow: 6 };
 // a region: [kind, centre x, centre y, radius x, radius y, amount, rate (rad a real s, or the flow's turns), phase, v x, v y, colour]
@@ -86,6 +87,18 @@ export const REGIONS = {
     R('shift', 0.5, 0.86, 0.46, 0.035, 0.01, 0.35, 0, 1, 0), // the snow's drift
     R('glow', 0.13, 0.21, 0.16, 0.16, 0.25, 7.0, 0.7, 0, 0, 0xffb860), // the lantern's halo on the dusk
     R('shift', 0.5, 0.45, 0.48, 0.22, 0.006, 0.2, 0, 1, 0), // the dusk's mist drifting
+  ],
+  tower: [
+    R('flicker', 0.8, 0.12, 0.17, 0.1, 1.0, 11.0, 0, 0, 0, 0xf4ecff), // the lightning bolt flashing
+    R('shift', 0.28, 0.12, 0.13, 0.08, 0.014, 0.7, 0, -0.35, 1), // the crown blown off, falling
+    R('flicker', 0.52, 0.19, 0.14, 0.07, 0.8, 6.0, 0.6, 0, 0, 0xff8a3a), // the flames off the top
+    R('shift', 0.2, 0.46, 0.16, 0.16, 0.012, 0.55, 0, 0.1, 1), // the left figure falling
+    R('shift', 0.74, 0.54, 0.15, 0.16, 0.012, 0.6, 1.9, -0.1, 1), // the right figure falling
+    R('twinkle', 0.13, 0.36, 0.1, 0.18, 0.8, 2.4, 0, 0, 0, 0xffe27a), // the yods falling, left
+    R('flicker', 0.49, 0.32, 0.07, 0.05, 0.7, 8.0, 1.3, 0, 0, 0xff6a2a), // the flames in the windows
+    R('twinkle', 0.84, 0.3, 0.1, 0.16, 0.8, 2.1, 1.1, 0, 0, 0xffe27a), // the yods falling, right
+    R('shift', 0.2, 0.28, 0.18, 0.08, 0.008, 0.35, 0, 1, 0.2), // the smoke churning, left
+    R('shift', 0.84, 0.42, 0.14, 0.08, 0.008, 0.3, 2.4, -1, 0.2), // the clouds churning, right
   ],
 };
 

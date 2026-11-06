@@ -5,8 +5,9 @@
 // through look.tiles.light, a token, the Hungry Die, your discard pile); held over one, what would happen is shown there before you let
 // go (preview.js: the tile's sum and its new one, 21 in your colour with the tile lifting in it, BUST in red, a court card's ghost and its
 // march, a hurt and its x2, the die's fed count and next size) and the coach's words for it in the tip; let go, it is played; let go over
-// nothing, it springs home. An ace asks 1 or 11 as two plates at the tile, each with its own preview. Looks and clicks only: what may be
-// done is the coach's (session.coach()), the move the same `session.move` a click makes. A card picked in the play step whose places only
+// nothing, it springs home. An ace (1 or 11) or an attuned card (its rank one down or up, cards.js) asks its value as plates at the
+// tile or token, each with its own preview; a card with one value drops at once. Looks and clicks only: what may be done is the
+// coach's (session.coach()), the move the same `session.move` a click makes. A card picked in the play step whose places only
 // exist once it is picked has them worked out on a copy of the state (rules.js cloneState, the coach on it), and played as two moves.
 // Dovina's shapes (claude/dovina-design c12516f): a move whose pieceIds name a card and a token `k:<id>` (a place move { on, v }) is a
 // card on that token; `{ feed: card }` (pieceIds [c, die:<seat>]) or the old `to: 'feed'` feeds the Hungry Die; `to: 'discard'` goes on
@@ -92,7 +93,7 @@ export class CardDrag {
     if (!this.on) return false; const card = this.card, over = this.over, opts = over ? this.targets(card).get(over) : null; this.cancel();
     if (!opts?.length) { const e = this.view.cards?.get(card); if (e) e.spring = 1; return false; }
     if (opts.length === 1) { if (opts[0].kind === 'feed') { const e = this.view.cards?.get(card); if (e) this.view.corners?.feast(card, { x: e.x + innerWidth / 2, y: e.y }); } opts[0].run(); return true; } // (fed: the card flies into the corner's die, corners.js)
-    const at = this.screenOf(over), cms = opts.map((o) => ({ ...o.cm, run: o.run, label: o.cm.move.v != null ? `As ${o.cm.move.v}` : o.cm.label, preview: this.say(o) }));
+    const at = this.screenOf(over), cms = opts.map((o) => ({ ...o.cm, run: o.run, label: o.cm.move.v != null ? `As ${o.cm.move.v}` : o.cm.label, preview: this.say(o) })); // (an ace's 1 or 11, an attuned card's rank -1, +0, +1: each value the coach offers)
     this.view.plates?.choose(cms, at.x, at.y); return true;
   }
   cancel() { this.on = false; this.card = null; this.over = null; this.preview?.hide(); }
@@ -116,12 +117,12 @@ export class CardDrag {
     const m = o.cm.move, S = this.view.session.S;
     if (o.cm.preview) return o.cm.preview;
     if (o.kind === 'sum') { const T = S.tiles[m.at[1] * R.size + m.at[0]], sum = T.s + m.v; return sum === R.twentyOne ? 'Exactly 21: the tile turns yours' : sum > R.twentyOne ? `${T.s} + ${m.v}: bust, back to 0` : `${T.s} to ${sum}`; }
-    if (o.kind === 'hurt') { const h = this.hurtOf(o); return `${h.dmg} damage${h.x2 ? ' (x2: the opposite suit)' : ''}${h.falls ? ': it falls' : ''}`; }
+    if (o.kind === 'hurt') { const h = this.hurtOf(o); return `${h.dmg} damage${h.x2 ? ' (x2: the opposite suit)' : ''}${h.plated ? ' (3 off: plated)' : ''}${h.falls ? ': it falls' : ''}`; }
     return o.cm.what || '';
   }
   hurtOf(o) {
     const m = o.cm.move, S = this.view.session.S, id = +(o.cm.pieceIds.find((x) => x.startsWith('k:')) || 'k:0').slice(2), t = S.tokens.find((x) => x.id === id), cs = suitOf(o.card);
-    if (o.pv?.dmg != null) return { dmg: o.pv.dmg, x2: o.pv.mult === 2, t, hp: o.pv.hp, falls: o.pv.falls ?? o.pv.kind === 'down' };
+    if (o.pv?.dmg != null) return { dmg: o.pv.dmg, x2: o.pv.mult === 2, plated: !!o.pv.plated, t, hp: o.pv.hp, falls: o.pv.falls ?? o.pv.kind === 'down' };
     const x2 = !!t && CARD_DRAG.opposite[cs] === t.suit, v = m.v ?? Math.max(...valuesOf(o.card)), dmg = m.dmg ?? v * (x2 ? 2 : 1);
     return { dmg, x2, t, hp: t?.hp, falls: t?.hp != null && t.hp - dmg <= 0 };
   }
@@ -142,8 +143,10 @@ export class CardDrag {
       return this.preview.show({ at, segs: [{ t: `rank ${rank}` }, ...(o.pv?.hp != null ? [{ n: o.pv.hp, color: OURS }, { t: 'hp', color: LOOK.inkDim }] : []), { t: `${speed} a turn`, color: OURS }], path, dir: -1, ghost: { suit: suitOf(card), owner: 0, rank, speed, at }, rise: 0.2, dz: 1.5 }) // (the plate before the tile, toward you: the column ahead is the march's);
     }
     if (o.kind === 'hurt') {
+      if (opts.length > 1) { const segs = []; opts.forEach((q, i) => { const g = this.hurtOf(q); if (i) segs.push({ t: '/', color: LOOK.inkDim }); segs.push({ n: g.dmg, color: g.falls ? CARD_DRAG.red : LOOK.ink }); }); return this.preview.show({ at, segs: [{ t: 'damage', color: CARD_DRAG.red }, ...segs], rise: 3.2 }); } // (an attuned card: each value it may be)
       const h = this.hurtOf(o), segs = [{ n: h.dmg, color: CARD_DRAG.red }, { t: 'damage', color: CARD_DRAG.red }];
       if (h.x2) segs.push({ t: 'x2', color: '#ffd36a' });
+      if (h.plated) segs.push({ t: '−3 plated', color: LOOK.inkDim }); // (the Chariot's plating, already taken off the damage shown)
       if (h.hp != null) { const left = Math.max(0, h.hp - h.dmg); segs.push({ n: h.hp, color: LOOK.inkDim }, { arrow: true }, left && !h.falls ? { n: left } : { t: 'down', color: CARD_DRAG.red }); }
       return this.preview.show({ at, segs, rise: 3.2 });
     }
