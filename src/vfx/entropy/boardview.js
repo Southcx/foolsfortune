@@ -8,22 +8,27 @@
 //   The camera: your own, from behind your seat, high and tipped down (CAMERA's pitch and field of view), its distance and aim fitted so the
 //     board, both Arcana and both dice stand above your hand at any aspect; eased in on enter, handed back exactly as found on leave.
 //   The pieces (pieces.js, the one look; version 2, ENTROPY-TACTICS.md 8): each tile's owner and sum from S.tiles (tiles.js own, sum; a
-//     21 turns it, flip; a bust shudders it), court tokens by suit and rank on look.tiles.top(x, z) every frame, advancing along their
-//     column, clashing where they meet, a wand's strike flying at their Arcana, a cup flying home to its deck, the rest frayed into motes
-//     when downed; each seat's deck and discard as stacks by its Arcana, its fed count under its die; the Grand Bomb sliding when
-//     pushed (a shudder and a flash), its thirty ticks burning down with the counter; the Hungry Die by its sides, yours at the near right
-//     and theirs at the far left, thrown tumbling beside the bomb when the roll comes up and settled with its number; each Arcana a slab at
-//     its back edge (yours behind row 6, theirs beyond row 0), flashed when struck; your hand fanned on the overlay's scene (render/
-//     overlayscene.js: drawn after the post pass, so the tilt-shift never blurs it), theirs face down at the far edge.
-//   The choices: a piece any choice names is lit (a tile through look.tiles.light, a token, card, the bomb or an Arcana by its rim) and
-//     lifts under the cursor with a tip; a card is played (click it), then placed (a lit tile; an ace's 1 or 11 as two plates; the card
-//     again puts it back), the rest carved card by card (keep, feed, discard as plates on the card); a piece naming several choices offers
-//     them as plates; the choices that are no piece stand on the bar (boardplates.js: done, fatigue or reshuffle, the bomb's). Touch: a tap a click,
-//     a long press the tip. The bots' turns play out on the board as the state changes (diffed each tick and from the table's log).
+//     21 turns it, flip; a bust shudders it), court tokens read by their parts (pieces.js makeToken: suit, owner, rank, speed, health) on
+//     look.tiles.top(x, z) every frame, advancing along their column, clashing where they meet, a hurt ticking out a segment, a wand's
+//     strike flying at their Arcana, a cup flying home to its deck, the rest frayed away when downed; each seat's deck and discard as
+//     stacks by its Arcana, its fed count under its die; the Grand Bomb sliding when pushed (a shudder and a flash), its ring of ticks
+//     burning down and its number the countdown's (countdown.js: on the bomb and on the screen's edge); the Hungry Die by its sides, yours
+//     at the near right and theirs at the far left, thrown tumbling beside the bomb when the roll comes up and settled with its number;
+//     each Arcana its living tarot card (portraits.js) at its back edge (yours behind row 6, theirs beyond row 0), turned to the camera,
+//     its health on it, hit when it is hurt; your hand fanned on the overlay's scene (render/overlayscene.js: drawn after the post pass, so
+//     the tilt-shift never blurs it), theirs face down at the far edge.
+//   The choices: a card of your hand is DRAGGED to where it goes (drag.js: the places it may go lit, what it would do shown at the one under
+//     it before you let go, preview.js; an ace's 1 or 11 as two plates at the tile; the Hungry Die and your discard pile are places too
+//     when a move feeds or discards it), or clicked as before: a piece any choice names is lit (a tile through look.tiles.light, a token,
+//     card, the bomb or an Arcana by its rim) and lifts under the cursor with a tip; a card is played (click it), then placed (a lit tile;
+//     the card again puts it back), the rest carved card by card (keep, feed, discard as plates on the card); a piece naming several
+//     choices offers them as plates; the choices that are no piece stand on the bar (boardplates.js: done, fatigue or reshuffle, the
+//     bomb's), and the turn's line says whose turn and which step. Touch: a tap a click, a drag a drag, a long press the tip. The bots'
+//     turns play out on the board as the state changes (diffed each tick and from the table's log).
 // It runs from the room's tick and its tickModal (the seat's page pauses the world: world/entropy/entropyroom.js), through EntropyLook.
 //
 // Prior art: Hearthstone's and MTG Arena's boards (your side, tipped away; your hand fanned low; the other's held cards face down far
-// away), Into the Breach's shown threats and moves, Inscryption's table seen from the seat, the house's table view (vfx/bazaartable.js:
+// away; a card dragged to its target), Slay the Spire's and Balatro's held cards, Into the Breach's shown threats and moves, Inscryption's table seen from the seat, the house's table view (vfx/bazaartable.js:
 // the page hidden by a class, the camera kept while the page pauses the world, the canvas raycast, a tap and a long press).
 //
 //   new EntropyBoardView(game, look)   .enter(session)   .leave()   .tick(dt, t)   .on
@@ -34,8 +39,11 @@ import { CLASSES, HEALTH } from '../../progress/casino/entropy/classes.js';
 import { sidesOf, speedOf, strengthOf, ENTROPY_RULES } from '../../progress/casino/entropy/rules.js';
 import { nameOf, SUITS } from '../../progress/casino/entropy/cards.js';
 import { ENTROPY_ROOM } from '../../world/entropy/entropyroom.js';
-import { LOOK, eldritch, Kit, numberSprite, makeToken, makeBomb, makeDie, makeArcana, makePile, cardTexture, backTexture, Sparks } from './pieces.js';
+import { LOOK, eldritch, Kit, numberSprite, makeToken, makeBomb, makeDie, makePile, cardTexture, backTexture, Sparks } from './pieces.js';
 import { BoardPlates } from './boardplates.js';
+import { ArcanaPortrait } from './portraits.js';
+import { BombCountdown } from './countdown.js';
+import { CardDrag } from './drag.js';
 
 /** The numbers: the camera's ease (per real s) and the screen band the board is fitted into (NDC: below `lo` is the hand's), a token's
  *  glide and hop (real s, m), the lift under the cursor (m), a spawn's grow, the die's throw, hold and way back (real s), a tap and a long
@@ -44,13 +52,13 @@ import { BoardPlates } from './boardplates.js';
 export const BOARD_VIEW = {
   ease: 1.5, band: { lo: -0.46, hi: 0.92, x: 0.94 }, glide: 0.42, hop: 0.5, lift: 0.22, spawn: 0.5, throw: 0.95, hold: 1.4, back: 0.6, slide: 0.6,
   longPress: 0.42, still: 10, coachFor: 0.5,
-  at: { arcana: [{ x: 1.3, z: 6.95, y: 1.2 }, { x: 4.7, z: -0.95, y: 1.5 }], die: [{ x: 7.1, z: 6.4 }, { x: -1.1, z: -0.4 }], held: { x: 2.0, z: -0.95 }, throw: [{ x: 0.75, z: 0.55 }, { x: -0.75, z: -0.55 }],
+  at: { arcana: [{ x: -1.45, z: 5.7, y: 1.35 }, { x: 4.7, z: -0.95, y: 1.5 }], die: [{ x: 7.1, z: 6.4 }, { x: -1.1, z: -0.4 }], held: { x: 2.0, z: -0.95 }, throw: [{ x: 0.75, z: 0.55 }, { x: -0.75, z: -0.55 }],
     piles: [{ deck: { x: 0.25, z: 7.0 }, disc: { x: -0.5, z: 7.0 } }, { deck: { x: 5.85, z: -1.0 }, disc: { x: 6.6, z: -1.0 } }] },
   fly: 0.7, // (real s: a lance flying at their Arcana, a cup going home, a card riffled)
-  hand: { h: 0.16, min: 60, max: 130, bar: 46, step: 0.74, fan: 0.06 },
+  hand: { h: 0.19, min: 72, max: 156, bar: 46, step: 0.74, fan: 0.06, picked: 0.3, held: 300 }, fray: 0.5, // (a downed token's fray, real s)
   scale: { token: 1.45, die: 2.1, arcana: [1.15, 1.6] },
   suit: ['Cup', 'Sword', 'Pentacle', 'Wand'], does: ['At the far edge it mends your Arcana and goes home into your deck', 'It fights what it meets; at the far edge it pushes the bomb', 'Every tile it crosses turns its owner\'s; it holds their back rank', 'At the far edge it strikes their Arcana'],
-  rank: ['', 'Page', 'Knight', 'Queen', 'King', 'King+'],
+  rank: ['', 'Page', 'Knight', 'Queen', 'King', 'King+'], phase: { empty: 'Draw', play: 'Play', place: 'Play', carve: 'Carve', bomb: 'Bomb' },
   how: { bomb: ['The Grand Bomb went off on their tile.', 'The Grand Bomb went off on your tile.'], 'bomb-neutral': ['It went off on nobody\'s tile: the higher health took it.', 'It went off on nobody\'s tile: the higher health took it.'],
     'bomb-off': ['You pushed the Grand Bomb off their edge.', 'The Grand Bomb was pushed off your edge.'], strike: ['Your tokens struck their Arcana down.', 'Their tokens struck your Arcana down.'],
     fatigue: ['Their Arcana fell to fatigue.', 'Your Arcana fell to fatigue.'], reshuffle: ['Their Arcana fell to a reshuffle.', 'Your Arcana fell to a reshuffle.'], draw: ['Nobody\'s tile, equal health: a draw.', 'Nobody\'s tile, equal health: a draw.'] },
@@ -65,17 +73,26 @@ export class EntropyBoardView {
   constructor(game, look) {
     this.game = game; this.look = look; this.on = false; this.ray = new THREE.Raycaster(); this.hue = new THREE.Color(); this.lit = new Map();
     const at = (e) => { this.ndc = { x: (e.clientX / innerWidth) * 2 - 1, y: -(e.clientY / innerHeight) * 2 + 1 }; this.mouse = { x: e.clientX, y: e.clientY }; };
-    this.onMove = (e) => { if (this.on && (e.pointerType !== 'touch' || this.press)) at(e); };
+    // a press on a card may become a drag (drag.js); a press anywhere else is a click as it always was (a touch's on its lift)
+    this.onMove = (e) => {
+      if (!this.on || (e.pointerType === 'touch' && !this.press)) return; at(e); const P = this.press;
+      if (P?.card != null && !this.drag.on && Math.hypot(e.clientX - P.x, e.clientY - P.y) > (P.touch ? V.still : 7) && this.drag.begin(P.card, e.clientX, e.clientY, P.touch)) P.dragged = true;
+      this.drag.move(e.clientX, e.clientY);
+    };
     this.onDown = (e) => {
       if (!this.on) return; at(e);
-      if (e.pointerType === 'touch') { this.press = { id: e.pointerId, t: performance.now(), x: e.clientX, y: e.clientY }; return; }
-      if (e.button === 2) { this.sel = null; this.plates?.choose(null); } else if (e.button === 0) this.click();
+      if (e.button === 2) { this.drag.cancel(); this.sel = null; this.plates?.choose(null); return; }
+      this.pick(); const card = this.hover?.startsWith('c:') && this.P?.seat === 0 && !this.plates.busy ? +this.hover.slice(2) : null;
+      if (e.pointerType === 'touch' || card != null) { this.press = { id: e.pointerId, t: performance.now(), x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch', card }; this.canvas?.setPointerCapture?.(e.pointerId); return; }
+      if (e.button === 0) this.click();
     };
     this.onUp = (e) => {
       const P = this.press; if (!P || e.pointerId !== P.id) return; this.press = null;
-      if (e.type === 'pointerup' && performance.now() - P.t < V.longPress * 1000 && Math.hypot(e.clientX - P.x, e.clientY - P.y) < V.still) this.click();
-      this.ndc = null;
+      if (P.dragged) { if (e.type === 'pointerup') this.drag.end(); else this.drag.cancel(); }
+      else if (e.type === 'pointerup' && (!P.touch || (performance.now() - P.t < V.longPress * 1000 && Math.hypot(e.clientX - P.x, e.clientY - P.y) < V.still))) this.click();
+      if (P.touch) this.ndc = null;
     };
+    this.drag = new CardDrag(this);
   }
 
   enter(session) {
@@ -84,13 +101,14 @@ export class EntropyBoardView {
     this.session = session; this.on = true; root.name = 'entropy-board'; root.userData.zone = 'entropy'; g.scene.add(root);
     this.S = null; this.tokens = new Map(); this.cards = new Map(); this.sel = null; this.hover = null; this.coach = null; this.coachKey = null; this.lit = new Map(); this.ndc = null;
     this.bomb = makeBomb(kit); this.bomb.core.userData.pid = 'bomb'; root.add(this.bomb.group);
+    this.count = new BombCountdown(g, this.look); this.count.attach(root); this.countSeen = null; this.drag.attach(kit, root);
     this.dice = [0, 1].map((seat) => { const p = makeDie(kit); p.spinner.userData.pid = `die:${seat}`; root.add(p.group); p.fedNum = numberSprite(kit, 0.32); p.group.add(p.fedNum.sprite); const rest = cellAt(V.at.die[seat].x, V.at.die[seat].z, 0.9).clone(); return { p, seat, state: 'rest', u: 0, rest, pos: rest.clone(), settle: new THREE.Quaternion() }; });
-    this.arcana = [0, 1].map((seat) => { const p = makeArcana(kit, seat), A = V.at.arcana[seat]; p.mesh.userData.pid = `arcana:${seat}`; root.add(p.mesh); return { p, seat, flash: 0, lift: 0, home: cellAt(A.x, A.z, A.y).clone() }; });
+    this.arcana = [0, 1].map((seat) => { const A = V.at.arcana[seat]; return { p: null, cls: null, seat, flash: 0, lift: 0, home: cellAt(A.x, A.z, A.y).clone() }; }); // (its portrait made for its class: portraits.js, in layArcana)
     const backMat = kit.shared('mat.back', () => new THREE.MeshBasicMaterial({ map: backTexture(kit), toneMapped: false, side: THREE.DoubleSide })), backGeo = kit.shared('geo.back', () => new THREE.PlaneGeometry(0.42, 0.6));
     this.held = Array.from({ length: 8 }, () => { const m = new THREE.Mesh(backGeo, backMat); m.visible = false; root.add(m); return m; });
     this.heldAt = cellAt(V.at.held.x, V.at.held.z, 0.9).clone();
     this.sparks = new Sparks(kit); root.add(this.sparks.points); this.flyers = []; this.downWhy = new Map();
-    this.piles = [0, 1].map((seat) => { const A = V.at.piles[seat], deck = makePile(kit), disc = makePile(kit); deck.group.position.copy(cellAt(A.deck.x, A.deck.z, 0.05)); disc.group.position.copy(cellAt(A.disc.x, A.disc.z, 0.05)); root.add(deck.group, disc.group); return { deck, disc }; });
+    this.piles = [0, 1].map((seat) => { const A = V.at.piles[seat], deck = makePile(kit), disc = makePile(kit); disc.mesh.userData.pid = `disc:${seat}`; deck.group.position.copy(cellAt(A.deck.x, A.deck.z, 0.05)); disc.group.position.copy(cellAt(A.disc.x, A.disc.z, 0.05)); root.add(deck.group, disc.group); return { deck, disc }; });
     const ER = ENTROPY_ROOM, sx = ER.x + ER.seat.x, sz = ER.z + ER.seat.z; this.stone = [];
     g.entropyRoom?.room?.traverse?.((o) => { if (o.isMesh && o.visible && Math.abs(o.position.x - sx) < 0.4 && Math.abs(o.position.z - sz) < 0.4 && o.position.y < ER.y + 2) { o.visible = false; this.stone.push(o); } }); // (the seat stone sits in the seated frame's foot: hidden while seated)
     this.hand = new THREE.Group(); this.cardGeo = kit.own(new THREE.PlaneGeometry(1, 1)); this.rimMat = kit.own(new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false, transparent: true, opacity: 0.9 }));
@@ -107,6 +125,7 @@ export class EntropyBoardView {
     const g = this.game, el = this.canvas, cam = g.camera;
     el?.removeEventListener('pointermove', this.onMove); el?.removeEventListener('pointerdown', this.onDown);
     for (const ev of ['pointerup', 'pointercancel']) el?.removeEventListener(ev, this.onUp);
+    this.drag.detach(); this.count?.detach(); for (const a of this.arcana || []) a.p?.dispose(); this.count = null;
     this.plates?.unmount(); this.session?.menu?.root?.classList.remove('etboard'); document.getElementById('indexmenu')?.classList.remove('etboard'); g.ui?.want?.('entropyBoard', false);
     for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) this.look.tiles?.light?.(x, z, 0, this.hue);
     g.scene.remove(this.root); g.overlayScene?.remove(this.hand); this.kit.dispose(); for (const o of this.stone || []) o.visible = true; this.stone = null;
@@ -121,12 +140,13 @@ export class EntropyBoardView {
     this.refreshCoach(dt); this.readLog(S); this.diff(S);
     this.pick(); this.lights();
     this.layTiles(S); this.layTokens(dt, t); this.layFlyers(dt); this.layPiles(S); this.layBomb(dt, t, S); this.layDice(dt, t, S); this.layArcana(dt, t, S); this.layHeld(t, S); this.layHand(dt, S);
-    this.sparks.tick(dt); this.words(S); this.frame(dt);
+    this.drag.tick(dt, t); this.sparks.tick(dt); this.words(S); this.frame(dt);
   }
   /** A new game at the seat (again): the board cleared, the log read from its start. */
   reset(S) {
     for (const e of this.tokens.values()) this.root.remove(e.group);
-    this.tokens.clear(); this.flyers.length = 0; this.downWhy.clear(); this.S = S; this.seen = 0; this.hpSeen = S.hp.slice(); this.bombAt = null; this.bombPos = null; this.dieKey = null; this.sel = null; this.coach = null; this.coachKey = null;
+    for (const e of this.dying || []) this.root.remove(e.group);
+    this.tokens.clear(); this.dying = []; this.drag.cancel(); this.flyers.length = 0; this.downWhy.clear(); this.S = S; this.seen = 0; this.hpSeen = S.hp.slice(); this.bombAt = null; this.bombPos = null; this.dieKey = null; this.sel = null; this.coach = null; this.coachKey = null;
     for (const d of this.dice) { d.state = 'rest'; d.pos.copy(d.rest); }
     this.plates.result(null); this.plates.choose(null);
   }
@@ -137,7 +157,7 @@ export class EntropyBoardView {
     this.coachAge = (this.coachAge || 0) + dt;
     if (key === this.coachKey && this.coach && this.coachAge < V.coachFor) return;
     const moved = key !== this.coachKey; this.coachKey = key; this.coachAge = 0; this.coach = s.coach?.() || null; this.P = P;
-    if (moved) { this.plates.choose(null); if (this.sel && !this.coach?.moves?.some((m) => isActor(m) && m.pieceIds[0] === this.sel)) this.sel = null; }
+    if (moved) { this.drag.cancel(); this.plates.choose(null); if (this.sel && !this.coach?.moves?.some((m) => isActor(m) && m.pieceIds[0] === this.sel)) this.sel = null; }
   }
 
   // ------------------------------------------------------------- what changed
@@ -153,6 +173,7 @@ export class EntropyBoardView {
       else if (x.add != null) this.sparks.burst(top(x.at), 8 + x.v, LOOK.side(x.add), { speed: 0.7, up: 0.8, radius: 0.4 });
       else if (x.claim != null) this.sparks.burst(top(x.at), 26, LOOK.side(x.claim), { speed: 1.4, up: 0.5, radius: 0.7 });
       else if (x.meet != null) { const a = this.tokens.get(x.meet), b = this.tokens.get(x.with); if (a && b) { _v.lerpVectors(a.pos, b.pos, 0.5).y += 0.8; this.sparks.burst(_v, 60, WHITE, { speed: 3.2, up: 0.4 }); this.sparks.burst(_v, 30, this.hue, { speed: 2 }); a.flash = b.flash = 1; } }
+      else if (x.hurt != null) { const e = this.tokens.get(x.hurt); if (e) { e.flash = 1; this.sparks.burst(_v.copy(e.pos).setY(e.pos.y + 0.9), 20 + 8 * (x.mult || 1), x.mult === 2 ? 0xffd36a : 0xff5a4a, { speed: 2.2, up: 0.7 }); } } // (a card on a token: Dovina's { hurt, dmg, mult })
       else if (x.down != null) this.downWhy.set(x.down, x.why);
       else if (x.shove != null || x.push != null) { this.shake = 1; this.bombFlash = 1; this.sparks.burst(_v.copy(B).setY(B.y + 0.6), x.tiles === 0 ? 18 : 46, this.hue, { speed: 2.4, up: 0.3 }); }
       else if (x.boom !== undefined) { this.bombFlash = 2; this.shake = 1.5; this.sparks.burst(_v.copy(B).setY(B.y + 0.6), 160, WHITE, { speed: 5, up: 1, life: 1.6 }); this.sparks.burst(_v, 90, this.hue, { speed: 3, up: 1.2, life: 2 }); }
@@ -177,11 +198,12 @@ export class EntropyBoardView {
     for (const t of S.tokens) {
       seen.add(t.id); let e = this.tokens.get(t.id);
       if (!e) {
-        const p = makeToken(this.kit, t.suit, t.owner, t.rank); p.group.userData.pid = `k:${t.id}`; this.root.add(p.group);
+        const p = makeToken(this.kit, t.suit, t.owner, t.rank, speedOf(S, t, ENTROPY_RULES)); p.group.userData.pid = `k:${t.id}`; this.root.add(p.group);
         e = { ...p, id: t.id, x: t.x, z: t.z, pos: tiles.top(t.x, t.z, new THREE.Vector3()), born: 0, flash: 0, lift: 0, glide: null };
         this.tokens.set(t.id, e); this.sparks.burst(e.pos, 36, LOOK.side(t.owner), { speed: 1.2, up: 1.4, height: 0.2 });
       } else if (t.x !== e.x || t.z !== e.z) e.glide = { from: e.pos.clone(), u: 0, dur: V.glide * Math.max(1, Math.abs(t.z - e.z) * 0.55) }; // (the advance: along its column)
-      Object.assign(e, { x: t.x, z: t.z, t });
+      if (t.hp != null && e.t?.hp != null && t.hp < e.t.hp) { e.flash = 1; this.sparks.burst(_v.copy(e.pos).setY(e.pos.y + 0.9), 30, 0xff5a4a, { speed: 1.8, up: 0.6 }); } // (a token hurt: its segments tick out, tokens.js health)
+      e.health(t.hp, t.max); Object.assign(e, { x: t.x, z: t.z, t });
     }
     for (const [id, e] of this.tokens) if (!seen.has(id)) {
       const why = this.downWhy.get(id), from = _v2.copy(e.pos).setY(e.pos.y + 0.8).clone();
@@ -191,9 +213,9 @@ export class EntropyBoardView {
         this.sparks.burst(e.pos, 90, BONE, { speed: 1.1, up: 0.7, height: e.top, radius: 0.25, life: 1.5, gravity: 0.1 });
         this.sparks.burst(e.pos, 40, LOOK.side(e.owner), { speed: 1.6, up: 0.4, height: e.top, radius: 0.2, life: 1.2 });
       }
-      this.downWhy.delete(id); this.root.remove(e.group); this.tokens.delete(id);
+      this.downWhy.delete(id); this.tokens.delete(id); e.die = 0; e.away = why === 'struck' || why === 'home'; this.dying.push(e); // (frayed away in layTokens)
     }
-    for (const q of [0, 1]) { if (S.hp[q] < this.hpSeen[q]) this.arcana[q].flash = 1; else if (S.hp[q] > this.hpSeen[q]) this.sparks.burst(this.arcana[q].home, 30, LOOK.side(q), { speed: 0.6, up: 1.2, radius: 0.5 }); this.hpSeen[q] = S.hp[q]; }
+    for (const q of [0, 1]) { if (S.hp[q] < this.hpSeen[q]) { this.arcana[q].flash = 1; this.arcana[q].p?.hit(); } else if (S.hp[q] > this.hpSeen[q]) this.sparks.burst(this.arcana[q].home, 30, LOOK.side(q), { speed: 0.6, up: 1.2, radius: 0.5 }); this.hpSeen[q] = S.hp[q]; }
   }
   /** Each tile's owner and sum from the state (a turn's flip lands its own colour: tiles.js). */
   layTiles(S) { const tiles = this.look.tiles; for (let i = 0; i < N * N; i++) { const T = S.tiles?.[i]; if (!T) continue; const x = i % N, z = (i / N) | 0; tiles.own?.(x, z, T.o); tiles.sum?.(x, z, T.s); } }
@@ -211,11 +233,11 @@ export class EntropyBoardView {
   pick() {
     this.hover = null; if (!this.ndc || this.plates.busy) return;
     const OS = this.game.overlayScene;
-    if (OS && this.cards.size) {
+    if (OS && this.cards.size && !this.drag.on) {
       OS.camera.updateMatrixWorld(); this.hand.updateMatrixWorld(true); this.ray.setFromCamera(this.ndc, OS.camera);
       const hit = this.ray.intersectObjects([...this.cards.values()].map((c) => c.mesh), false)[0]; if (hit) { this.hover = hit.object.userData.pid; return; }
     }
-    const tiles = this.look.tiles, map = new Map(), objs = [...[...this.tokens.values()].map((e) => e.group), this.bomb.core, ...this.arcana.map((a) => a.p.mesh), ...this.dice.map((d) => d.p.spinner)];
+    const tiles = this.look.tiles, map = new Map(), objs = [...[...this.tokens.values()].map((e) => e.group), this.bomb.core, ...this.arcana.map((a) => a.p.mesh), ...this.dice.map((d) => d.p.spinner), this.piles[0].disc.mesh, ...this.arcana.filter((a) => a.p).map((a) => a.p.group)];
     for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) { const m = tiles.tile(x, z); if (m) { map.set(m, `t:${x}.${z}`); objs.push(m); } }
     this.ray.setFromCamera(this.ndc, this.game.camera);
     for (const h of this.ray.intersectObjects(objs, true)) {
@@ -236,16 +258,17 @@ export class EntropyBoardView {
   offer(list) { if (list.length === 1) this.play(list[0]); else if (list.length) this.plates.choose(list, this.mouse?.x ?? innerWidth / 2, this.mouse?.y ?? innerHeight / 2); }
   play(cm) {
     const s = this.session; if (!cm?.move || !s || s.done || this.P?.seat !== 0) return;
-    this.sel = null; this.plates.choose(null); s.move(cm.move);
+    this.sel = null; this.plates.choose(null); if (cm.run) cm.run(); else s.move(cm.move); // (a drop's two moves: drag.js)
   }
   /** What is lit and how much (0..1): every piece a choice names (a token of yours, not its targets, until it is chosen or hovered). */
   lights() {
-    const ms = this.coach?.moves || [], lit = (this.lit = new Map()), up = (id, k) => lit.set(id, Math.max(lit.get(id) || 0, k)), h = this.hover;
+    const ms = this.coach?.moves || [], lit = (this.lit = new Map()), up = (id, k) => lit.set(id, Math.max(lit.get(id) || 0, k)), h = this.hover, colors = new Map(), tiles = this.look.tiles;
+    if (this.drag.on) { this.drag.lights(up, colors); for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) { const id = `t:${x}.${z}`; tiles.light(x, z, lit.get(id) || 0, colors.get(id) || this.hue); } return; }
+    if (h?.startsWith('c:') && this.P?.seat === 0 && !this.press) for (const id of this.drag.targets(+h.slice(2)).keys()) up(id, 0.45); // (a card under the cursor: where it may be dropped, faintly)
     if (this.sel) { up(this.sel, 1); for (const m of ms) if (m.pieceIds[0] === this.sel) for (const id of m.pieceIds.slice(1)) up(id, 0.6); }
     else for (const m of ms) { if (isActor(m)) up(m.pieceIds[0], 0.5); else for (const id of m.pieceIds) up(id, id.startsWith('t:') ? 0.8 : 0.5); }
     if (h && !this.sel) for (const m of ms) if (isActor(m) && m.pieceIds[0] === h) for (const id of m.pieceIds.slice(1)) up(id, 0.3);
     if (h && (lit.has(h) || h.startsWith('c:'))) { const c = this.cands(h); if (h.startsWith('c:') && c.length === 1) for (const id of c[0].pieceIds) up(id, 0.85); if (lit.has(h)) up(h, 1); }
-    const tiles = this.look.tiles;
     for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) tiles.light(x, z, lit.get(`t:${x}.${z}`) || 0, this.hue);
   }
 
@@ -260,8 +283,17 @@ export class EntropyBoardView {
       e.group.position.copy(e.pos); e.group.position.y += e.lift; e.group.scale.setScalar(Math.max(0.001, backOut(e.born)) * V.scale.token);
       e.spin.forEach(([m, axis], i) => { m.rotation[axis] += dt * (0.6 + i * 0.7); });
       e.body.emissive.set(LOOK.side(e.owner)).multiplyScalar(0.22).add(_c.copy(this.hue).multiplyScalar(lit * 0.55)).lerp(WHITE, e.flash);
-      e.ring.material.opacity = 0.45 + 0.55 * lit;
+      e.ring.material.color.set(LOOK.side(e.owner)).lerp(this.hue, lit * 0.5).lerp(WHITE, e.flash * 0.6); e.tick(dt);
+      e.glyph.position.y = e.top + 0.4 + Math.sin(t * 1.6 + e.id) * 0.05; e.glyph.scale.setScalar(0.5 + lit * 0.12);
     }
+    // a downed token frays: it shudders, thins and sinks (a struck lance or a cup going home just shrinks into its flight)
+    this.dying = this.dying.filter((e) => {
+      e.die += dt / V.fray; const u = Math.min(1, e.die), j = e.away ? 0 : 0.06 * (1 - u);
+      e.group.position.set(e.pos.x + (Math.random() - 0.5) * j, e.pos.y - u * (e.away ? 0 : 0.4), e.pos.z + (Math.random() - 0.5) * j);
+      e.group.scale.set(V.scale.token * (1 - u * (e.away ? 1 : 0.6)), V.scale.token * (1 - u), V.scale.token * (1 - u * (e.away ? 1 : 0.6))); e.body.emissive.copy(WHITE).multiplyScalar(1 - u);
+      if (!e.away && Math.random() < 0.5) this.sparks.burst(_v.copy(e.pos).setY(e.pos.y + Math.random() * e.top), 2, LOOK.side(e.owner), { speed: 0.4, up: 0.4, life: 0.8 });
+      if (u < 1) return true; this.root.remove(e.group); return false;
+    });
   }
   layBomb(dt, t, S) {
     const B = this.bomb, T = this.look.tiles.top(S.bomb.x, S.bomb.z, _v), at = `${S.bomb.x}.${S.bomb.z}`;
@@ -275,6 +307,8 @@ export class EntropyBoardView {
     B.corona.material.color.copy(this.hue).multiplyScalar(0.75 + 0.25 * Math.sin(t * 1.7)).lerp(WHITE, Math.min(1, this.bombFlash * 0.6));
     B.corona.scale.setScalar(2.5 + 0.14 * Math.sin(t * 0.9) + this.bombFlash * 0.7 + (this.lit.get('bomb') || 0) * 0.35);
     B.setCounter(S.counter, this.hue);
+    if (S.counter !== this.countSeen) { this.count.set(S.counter, { max: ENTROPY_RULES.counter, delta: this.countSeen == null ? 0 : this.countSeen - S.counter }); this.countSeen = S.counter; }
+    this.count.place(B.group.getWorldPosition(_v)); this.count.tick(dt, t);
   }
   layDice(dt, t, S) {
     if (S.phase === 'bomb' && S.ctx) {
@@ -300,7 +334,8 @@ export class EntropyBoardView {
         P.num.sprite.visible = true; P.num.set(`d${sidesOf(S.fed[d.seat])}`, LOOK.inkDim); P.num.sprite.scale.set(1.2, 0.6, 1);
       }
       P.fedNum.sprite.position.y = -0.2 - 0.3 * V.scale.die; P.fedNum.set(S.fed[d.seat], `#${this.hue.getHexString()}`); P.fedNum.sprite.visible = d.state === 'rest';
-      P.group.position.copy(d.pos); P.spinner.scale.setScalar(V.scale.die); P.num.sprite.position.y = 0.45 * V.scale.die + (d.state === 'rest' ? 0.35 : 0.9);
+      const dl = this.lit.get(`die:${d.seat}`) || 0; if (dl) P.edges.color.lerp(WHITE, dl * 0.7);
+      P.group.position.copy(d.pos); P.spinner.scale.setScalar(V.scale.die * (1 + dl * 0.18 + (this.drag.over === `die:${d.seat}` ? 0.08 * Math.sin(t * 9) : 0))); P.num.sprite.position.y = 0.45 * V.scale.die + (d.state === 'rest' ? 0.35 : 0.9);
     }
   }
   layArcana(dt, t, S) {
@@ -308,9 +343,10 @@ export class EntropyBoardView {
     for (const a of this.arcana) {
       const pid = `arcana:${a.seat}`, lit = this.lit.get(pid) || 0; a.flash = Math.max(0, a.flash - dt * 1.8);
       a.lift += ((this.hover === pid ? V.lift : 0) - a.lift) * k;
-      a.p.mesh.position.copy(a.home); a.p.mesh.position.y += a.lift + Math.sin(t * 0.6 + a.seat * 3) * 0.05; a.p.mesh.lookAt(to); a.p.mesh.scale.setScalar(V.scale.arcana[a.seat]);
-      a.p.side.emissive.copy(BONE).multiplyScalar(0.12).lerp(this.hue, lit * 0.6).lerp(WHITE, a.flash);
-      a.p.draw({ label: CLASSES[S.cls[a.seat]]?.label || '', hp: S.hp[a.seat], max: HEALTH, flash: a.flash, lit, suit: CLASSES[S.cls[a.seat]]?.suit ?? null });
+      if (a.cls !== S.cls[a.seat]) { a.p?.dispose(); a.cls = S.cls[a.seat]; a.p = new ArcanaPortrait(this.kit, a.cls, a.seat); a.p.group.userData.pid = pid; this.root.add(a.p.group); a.hp = null; }
+      const G = a.p.group; G.position.copy(a.home); G.position.y += a.lift + Math.sin(t * 0.6 + a.seat * 3) * 0.05; G.lookAt(to); G.scale.setScalar(V.scale.arcana[a.seat]);
+      if (a.hp !== S.hp[a.seat]) { a.hp = S.hp[a.seat]; a.p.set({ hp: a.hp, max: HEALTH }); }
+      a.p.light?.(Math.max(lit, a.flash)); a.p.tick(dt, t);
     }
   }
   layHeld(t, S) {
@@ -328,10 +364,15 @@ export class EntropyBoardView {
         e = { mesh: new THREE.Mesh(this.cardGeo, mat), rim: new THREE.Mesh(this.cardGeo, this.rimMat), x: innerWidth * 0.6, y: -ch, r: 0, lift: 0 };
         e.mesh.userData.pid = `c:${c}`; this.hand.add(e.rim, e.mesh); this.cards.set(c, e);
       }
-      const pid = `c:${c}`, lit = this.lit.get(pid) || 0, isKept = i >= nh, tx = (i - mid) * cw * H.step + (isKept ? cw * 0.35 : 0), ty = bar + ch * 0.5 + 6 - (i - mid) ** 2 * ch * 0.014, tr = -(i - mid) * H.fan;
-      e.x += (tx - e.x) * k; e.y += (ty - e.y) * k; e.r += (tr - e.r) * k; e.lift += ((this.hover === pid ? ch * 0.2 : lit >= 0.85 ? ch * 0.1 : lit ? ch * 0.04 : 0) - e.lift) * k;
-      e.mesh.position.set(e.x, e.y + e.lift - (isKept ? ch * 0.12 : 0), i * 4 + 2); e.mesh.rotation.z = e.r; e.mesh.scale.set(cw, ch, 1); e.mesh.material.color.setScalar(isKept ? 0.5 : 1); // (a kept card set aside, dimmed: held for next turn)
-      e.rim.visible = lit > 0; e.rim.position.set(e.x, e.y + e.lift, i * 4); e.rim.rotation.z = e.r; e.rim.scale.set(cw + (lit >= 0.85 ? 8 : 4), ch + (lit >= 0.85 ? 8 : 4), 1);
+      const pid = `c:${c}`, lit = this.lit.get(pid) || 0, isKept = i >= nh, picked = this.P?.kind === 'place' && this.P.card === c, held = this.drag.card === c;
+      let tx = (i - mid) * cw * H.step + (isKept ? cw * 0.35 : 0), ty = bar + ch * 0.5 + 6 - (i - mid) ** 2 * ch * 0.014, tr = -(i - mid) * H.fan, ts = 1, z = i * 4;
+      if (held) { const D = this.drag.held(ch); tx = D.x; ty = D.y; tr = D.tilt; ts = D.small; z = H.held; } // (in the hand of the cursor or the finger: drag.js)
+      const lift = held ? 0 : picked ? ch * H.picked : this.hover === pid ? ch * 0.2 : lit >= 0.85 ? ch * 0.1 : lit ? ch * 0.04 : 0;
+      if (e.spring > 0) { e.spring = Math.max(0, e.spring - dt * 1.4); e.vx = ((e.vx || 0) + (tx - e.x) * 180 * dt) * Math.exp(-11 * dt); e.vy = ((e.vy || 0) + (ty - e.y) * 180 * dt) * Math.exp(-11 * dt); e.x += e.vx * dt; e.y += e.vy * dt; } // (let go over nothing: it springs home)
+      else { const kk = held ? 1 - Math.exp(-30 * dt) : k; e.x += (tx - e.x) * kk; e.y += (ty - e.y) * kk; e.vx = e.vy = 0; }
+      e.r += (tr - e.r) * k; e.lift += (lift - e.lift) * k; e.s = (e.s ?? 1) + (ts - (e.s ?? 1)) * (1 - Math.exp(-16 * dt));
+      e.mesh.position.set(e.x, e.y + e.lift - (isKept ? ch * 0.12 : 0), z + 2); e.mesh.rotation.z = e.r; e.mesh.scale.set(cw * e.s, ch * e.s, 1); e.mesh.material.color.setScalar(isKept && !held ? 0.5 : 1); // (a kept card set aside, dimmed: held for next turn)
+      const rl = picked || held ? 1 : lit, pad = rl >= 0.85 ? 10 : 4; e.rim.visible = rl > 0; e.rim.position.set(e.x, e.y + e.lift - (isKept ? ch * 0.12 : 0), z); e.rim.rotation.z = e.r; e.rim.scale.set(cw * e.s + pad, ch * e.s + pad, 1);
     });
     this.rimMat.color.copy(this.hue);
     for (const [c, e] of this.cards) if (!keep.has(c)) { this.hand.remove(e.mesh, e.rim); this.cards.delete(c); }
@@ -341,26 +382,30 @@ export class EntropyBoardView {
   words(S) {
     const s = this.session, T = s.T, R = T.game.result(S), P = this.P, C = this.coach, mine = P?.seat === 0;
     this.plates.hue(`#${this.hue.getHexString()}`);
-    this.plates.turn(R ? '' : mine ? `${C?.turn?.say || ''}  ·  bank ${S.bank[0]}  ·  d${sidesOf(S.fed[0])}` : `${T.names[P?.seat] || 'They'} is playing`, mine || !!R);
+    const who = T.names[P?.seat] || 'They', name = who.charAt(0).toUpperCase() + who.slice(1);
+    this.plates.turn(R ? '' : mine ? `${C?.turn?.say || ''}  ·  bank ${S.bank[0]}  ·  d${sidesOf(S.fed[0])}` : `${name} is playing: ${V.phase[S.phase] || ''}`, mine || !!R, { who: mine ? 'Your turn' : `${name}'s turn`, step: V.phase[S.phase] || '' });
     this.plates.bar(mine ? (C?.moves || []).filter((m) => !m.pieceIds.length || m.pieceIds.every((id) => id === 'bomb')) : [], `${this.coachKey}|${mine}`);
     this.plates.result(R && s.done ? { won: R.winner === 0, title: R.winner === 0 ? 'You win' : `${T.names[R.winner]} wins`, how: (V.how[R.how] || ['', ''])[R.winner === 0 ? 0 : 1], practice: !!s.practice } : null);
-    this.plates.tip(this.tipFor(S), this.mouse?.x ?? 0, this.mouse?.y ?? 0);
+    if (this.drag.on) this.plates.tip(this.tipFor(S), innerWidth - 300, innerHeight * 0.62); else this.plates.tip(this.tipFor(S), this.mouse?.x ?? 0, this.mouse?.y ?? 0); // (while a card is dragged the tip stands aside: the board is the preview's)
     const d = this.dice.find((x) => x.state === 'hold'); if (d) { _v.copy(d.pos).project(this.game.camera); this.plates.roll(d.roll, (_v.x * 0.5 + 0.5) * innerWidth, (-_v.y * 0.5 + 0.5) * innerHeight, LOOK.sideCss(d.seat)); } else this.plates.roll(null);
   }
   tipFor(S) {
+    if (this.drag.on) return this.drag.tip();
     const id = this.hover; if (!id || (this.press && performance.now() - this.press.t < V.longPress * 1000)) return null;
     const moves = this.cands(id).map((m) => ({ label: m.label, what: m.what, preview: m.preview })), whose = (o) => (o === 0 ? 'yours' : o === 1 ? 'theirs' : 'nobody\'s');
     if (id.startsWith('c:')) {
       const c = +id.slice(2);
       if (this.P?.kind === 'place' && this.P.card === c) return { title: nameOf(c), lines: ['Chosen: now a lit tile', 'Click it again to put it back'], moves: [] };
-      return { title: nameOf(c), lines: moves.length ? [] : [(S.kept?.[0] || []).includes(c) ? 'Kept for next turn' : 'Not playable now'], moves };
+      const n = this.P?.seat === 0 ? this.drag.targets(c).size : 0;
+      return { title: nameOf(c), lines: [...(n ? [`Drag it to a lit place (${n}), or click it`] : []), ...(moves.length || n ? [] : [(S.kept?.[0] || []).includes(c) ? 'Kept for next turn' : 'Not playable now'])], moves };
     }
     if (id.startsWith('k:')) {
       const tk = S.tokens.find((x) => `k:${x.id}` === id); if (!tk) return null;
-      return { title: `${tk.owner === 0 ? 'Your' : 'Their'} ${V.rank[tk.rank] || ''} of ${SUITS[tk.suit]}`, lines: [`Strength ${strengthOf(S, tk)} · advances ${speedOf(S, tk, ENTROPY_RULES)} a turn`, V.does[tk.suit]], moves };
+      return { title: `${tk.owner === 0 ? 'Your' : 'Their'} ${V.rank[tk.rank] || ''} of ${SUITS[tk.suit]}`, lines: [`Strength ${strengthOf(S, tk)} · advances ${speedOf(S, tk, ENTROPY_RULES)} a turn${tk.hp != null ? ` · ${tk.hp} of ${tk.max} health` : ''}`, V.does[tk.suit]], moves };
     }
     if (id === 'bomb') { const T = S.tiles[S.bomb.z * N + S.bomb.x]; return { title: 'The Grand Bomb', lines: [`Counter ${S.counter}: at 0 whoever owns its tile loses (now ${whose(T.o)})`], moves }; }
     if (id.startsWith('arcana:')) { const q = +id.slice(7), Cl = CLASSES[S.cls[q]]; return { title: Cl?.label, lines: [`${S.hp[q]} of ${HEALTH} health · deck ${S.deck[q].length} · discard ${S.disc[q].length} · fed ${S.fed[q]}`, Cl?.passive || ''], moves }; }
+    if (id === 'disc:0') return { title: 'Your discard pile', lines: [`${S.disc[0].length} cards: a reshuffle brings them back`], moves };
     if (id.startsWith('die:')) { const q = +id.slice(4); return { title: `${q ? 'Their' : 'Your'} Hungry Die: d${sidesOf(S.fed[q])}`, lines: [`${S.fed[q]} cards fed (gone for good) · bank ${S.bank[q]}`, 'Feed 4, 9, 15, 22, 30 for a bigger die'], moves }; }
     if (id.startsWith('t:')) { const [x, z] = id.slice(2).split('.').map(Number), T = S.tiles[z * N + x]; return { title: `Tile ${x + 1}, ${z + 1}: ${whose(T.o)}, ${T.s} of 21`, lines: [], moves }; }
     return null;
