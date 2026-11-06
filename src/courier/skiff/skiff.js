@@ -61,7 +61,7 @@ import { SkiffCombo, COMBO } from './combo.js';
 import { BoardRules, SCORCH } from './boardrules.js';
 import { MASS } from '../../progress/skiffruler.js';
 import { keelSteer } from '../../world/raceway/keel.js';
-import { SurfRide } from './surf.js'; // (the surf ride on the wave pool: its push, pump, turns, barrel and submarine as modifiers; Calissa's, WAVE-RIDING.md 2)
+import { SurfRide, SURF } from './surf.js'; // (the surf ride on the wave pool: its push, pump, turns, barrel and submarine as modifiers; Calissa's, WAVE-RIDING.md 2)
 import { SlopeRide } from './sloperide.js'; // (the slope ride: furled on a downslope, a snowboard; Calissa's, WAVE-RIDING.md 3)
 
 const UP = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
@@ -495,7 +495,8 @@ export class Skiffing extends Tech {
     this.spaceWas = sp2;
 
     // ---- height: hover over the sand, follow it with a little lag (that is what makes a crest a launch)
-    const want = gy + c.hover * this.rules.mult('hover') + 0.1;
+    let want = gy + c.hover * this.rules.mult('hover') + 0.1;
+    if (this.surf.on) want = gy + SURF.seat; // (on the wave pool's water the board sits in it: surf.js)
     const gap = P.pos.y - want;
     const vyT = -(this.n.x * this.v.x + this.n.z * this.v.z) / Math.max(0.2, this.n.y) + (D.surf ? this.surf.rise() : 0); // (+ the wave pool's surface rising under the water's carry: surf.js)
     if (!this.air) {

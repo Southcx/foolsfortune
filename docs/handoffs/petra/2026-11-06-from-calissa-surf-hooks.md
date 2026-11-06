@@ -44,3 +44,5 @@ the turns' thresholds, a wipeout and a made tube in play.
   as the board crosses a gate down the pool; buoys.js is untouched (Dovina told).
 - One more line in skiff.js `hands(ch)`: after the grab's reach, `if (this.surf.drag.w > 0) this.surf.drag.reach(ch)` (the stall's
   hand in the wave's face, courier/skiff/handdrag.js; its weight is nothing off the wave pool), and `drag: this.surf.drag.w` in the rider's state (rider.js crouches by it as by the hop's charge). Stress after it: 8 runs, 0 violations.
+
+**Added 2026-11-06 (late):** skiff.js, the height: `let want = ...` as before, then `if (this.surf.on) want = gy + SURF.seat;` (SURF.seat 0.35, surf.js). On the wave pool's water the deck sits 0.35 m over it, where it hovered 0.6: the board read as floating over the face and the stall's hand could not reach the water (now 0.44 m short, was 0.85). Off the pool `want` is unchanged. 0.15 was tried and broke the pump and the dive in the full playtest; 0.35 keeps all of them.

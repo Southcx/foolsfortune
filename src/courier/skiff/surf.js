@@ -44,7 +44,7 @@ import { WAVE } from '../../world/raceway/surf/wavepool.js';
  *  [m/s, s, kick now]. sub: the fall (m/s) and speed that dive, the depth (m), the time under (s), its drag, the burst [m/s, s, kick] and
  *  its lift (m/s). crest: a swell's trick's push. carryAir: the carry's ease a real second off the water. */
 export const SURF = {
-  push: 12, draw: 6,
+  push: 12, draw: 6, seat: 0.35, // seat: the deck's height over the pool's water (m): a board sits in the water, where on the sand it hovers (skiff cfg.hover + 0.1)
   pump: { add: 2.8, least: 0.35, win: [0.22, 0.95], steep: [0.06, 0.4] },
   turn: { rate: 1.1, end: 0.5, min: 0.7, snap: 2.6, cool: 0.8 },
   floater: { speed: 8 },
