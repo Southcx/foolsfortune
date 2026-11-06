@@ -12,6 +12,8 @@
 // tipped away, a tilt-shift falloff into the far rows) is data here, CAMERA, for Petra's rig and Calissa's pass.
 // The board's moments for the look: entropy.board { phase: 'setup' } as you sit (the tiles' placeholder ripple plays here), and the
 // table's own casino.play events after.
+// YOUR ARCANA (version 2.1, 8.12): `/arcana <fool | chariot | empress | hermit | tower>` picks the class you sit as (event entropy.class);
+// Dovina takes each of the others in turn, game by game, so every match-up comes round.
 //
 // Prior art: Hearthstone's and Magic: The Gathering Arena's boards (a table seen from your own side, tilted away, the far edge falling off
 // in focus), Monument Valley's and Manifold Garden's floating tiles in an empty sky, the Touchstone (world/touchstone/touchstone.js: the
@@ -28,6 +30,7 @@ import { TableSession } from '../bazaar/session.js';
 import { ENTROPY, startOwner as boardSide } from '../../progress/casino/entropy/rules.js';
 import { entropyBot } from '../../progress/casino/entropy/bot.js';
 import { seatOf } from '../../progress/casino/folk.js';
+import { CLASSES, CLASS_IDS } from '../../progress/casino/entropy/classes.js';
 
 /** Where it stands (empty space west of the bazaar's row, at the rooms' height: nothing else drawn from it), the oasis's radius, and
  *  where things are on it (local metres; north is -z: the board lies north of the seat, your rows nearest). */
@@ -44,11 +47,14 @@ export const BOARD = { size: 7, tile: 1.6, gap: 0.35, lift: 0.6, near: -5.2, rip
 export const CAMERA = { back: 6.5, up: 9, pitch: -0.95, fov: 34, focus: 4.5, band: 0.32 };
 /** Its air: a near-black violet void (Calissa's to make cosmic). */
 export const AIR = { fog: 0x0a0612, density: 0.004 };
+/** Your class, and how many games Dovina has sat (her class the next of the others each game). Not kept: progress resets every build. */
+export const ENTROPY_PICK = { you: 'fool', games: 0 };
+const rivalOf = (you, n) => { const rest = CLASS_IDS.filter((c) => c !== you); return rest[n % rest.length]; };
 /** The seat's table row (the house's TableSession reads it): two seats, you and Dovina's style (progress/casino/folk.js), a pot stake. */
 export const ENTROPY_SEAT = {
   id: 'entropy', game: ENTROPY, seats: 2, names: ['you', 'Dovina'], bots: [null, seatOf('Dovina', 'entropy', entropyBot)],
-  stake: 25, rake: 0.1, settle: 'pot', opts: (first) => ({ first, classes: ['fool', 'chariot'] }), label: 'Entropy Tactics',
-  line: 'Two Major Arcana and a Grand Bomb on a 7 x 7 board: make a tile\'s sum exactly 21 to turn it yours, march court cards as tokens, carve your deck, and have the bomb go off on their tile. You are the Fool.',
+  stake: 25, rake: 0.1, settle: 'pot', opts: (first) => ({ first, classes: [ENTROPY_PICK.you, rivalOf(ENTROPY_PICK.you, ENTROPY_PICK.games++)] }), label: 'Entropy Tactics',
+  line: 'Two Major Arcana and a Grand Bomb on a 7 x 7 board: make a tile\'s sum exactly 21 to turn it yours, march court cards as tokens, carve your deck, and have the bomb go off on their tile. Choose your Major Arcana with /arcana.',
 };
 const span = BOARD.tile + BOARD.gap;
 /** A cell's world position (its tile's top centre). */
@@ -141,7 +147,17 @@ export class EntropyRoom {
       m.position.y = c.home.y - rp.from * (1 - ease) + Math.sin(this.t * 0.8 + c.x * 0.7 + c.z * 0.5) * 0.05;
     }
   }
+  /** `/arcana [class]`: the class you sit as. */
+  commands() {
+    const g = this.game; if (this.cmds || !g.chat?.add) return; this.cmds = true;
+    g.chat.add('arcana', { help: `your Major Arcana at Entropy Tactics: ${CLASS_IDS.join(', ')}`, run: (a) => {
+      const id = String(a?.[0] || '').toLowerCase();
+      if (!CLASSES[id]) { g.log?.say('info', `Choose one: ${CLASS_IDS.map((c) => `${c} (${CLASSES[c].label})`).join(', ')}.`, { key: 'arcana', throttle: 1 }); return; }
+      ENTROPY_PICK.you = id; g.events?.emit('entropy.class', { cls: id, label: CLASSES[id].label, passive: CLASSES[id].passive, does: CLASSES[id].does, by: 'courier' });
+    } });
+  }
   update(dt) {
+    this.commands();
     this.wire();
     const g = this.game, it = g.interact?.cur, P = g.player;
     this.t += g.rawDt ?? dt;

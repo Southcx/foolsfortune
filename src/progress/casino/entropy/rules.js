@@ -11,8 +11,8 @@
 // Hungry Die (gone for good: the die grows d4 > d6 > d8 > d10 > d12 > d20 at 0, 4, 9, 15, 22, 30 fed, the bank +1) or DISCARD them (a
 // reshuffle brings them back); ROLL the Hungry Die and PUSH the bomb (version 1's open clash) or COUNT its counter down; then every token of
 // yours ADVANCES its speed in tiles along its column toward the far edge (tokens.js).
-// THE BOMB goes off at counter 0 (30, down one a round and by every count): whoever owns the tile under it loses; nobody's tile, the higher
-// health wins, an equal health a draw. Pushed off past a back rank, that rank's player loses. An Arcana at 0 health loses.
+// THE BOMB goes off at counter 0 (30, down one a round and by every count): whoever owns the tile under it loses; nobody's tile, the one
+// holding more tiles wins, then the higher health, else a draw (2.1: ground held breaks the tie, so the 21s count to the end). Pushed off past a back rank, that rank's player loses. An Arcana at 0 health loses.
 // Kept from version 1 (section 8 does not change them): the Hungry Die, its bank and the push clash, the counter, the classes' actives,
 // the Fool's re-roll for 1, the second seat's opening bank of 2. Gone (8.8): the poker groups, the enchantments, the royal straight flush.
 // Choices where section 8 is silent (each a line below or in tokens.js): fatigue and the reshuffle once a turn's draw, the draw then
@@ -28,12 +28,12 @@
 //   pending kinds: empty { fatigue | reshuffle }, play { card | done | active | feed }, place { at, v? | on: tokenId, v | back | feed },
 //   carve { card, to: keep | discard } | { feed }, bomb { push | count | reroll | active | feed }   opts: { classes: [id, id], first }
 //   previewPlay(V, seat, card, { at, v } | { on, v }) -> { kind: add | turn | bust | hurt | down | token, ... } (pure: the drag's preview)
-//   result: { winner (null a draw), how: bomb | bomb-neutral | bomb-off | draw | strike | fatigue | reshuffle, hp, rounds, stats }
+//   result: { winner (null a draw), how: bomb | bomb-ground | bomb-neutral | bomb-off | draw | strike | fatigue | reshuffle, hp, rounds, stats }
 // ---------------------------------------------------------------------------------------
 import { shuffle, die, rngOf, DIE_STEPS } from '../table.js';
 import { SUITS, suitOf, isCourt, valuesOf, courtRank } from './cards.js';
 import { CLASSES, HEALTH } from './classes.js';
-import { advanceTokens, strengthOf, speedOf, maxHpOf, hitOf, hitToken } from './tokens.js';
+import { advanceTokens, strengthOf, speedOf, maxHpOf, hitOf, hitToken, zapAll } from './tokens.js';
 
 export const ENTROPY_RULES = {
   size: 7, // (7 x 7 tiles: the board of version 1, 8.1)
@@ -43,13 +43,14 @@ export const ENTROPY_RULES = {
   keep: 2, hermitKeep: 3, // (cards kept between turns: two, the Hermit three, 8.2.3)
   twentyOne: 21, // (exactly this flips a tile; past it busts, 8.3)
   feedAt: [0, 4, 9, 15, 22, 30], // (cards fed for each step of the Hungry Die, d4 .. d20, 8.2.3)
-  reroll: 1, // (the Fool's re-roll costs 1: free, the Fool won 67%, 2026-11-06)
-  second: 2, // (the second seat opens with a bank of 2: at 1 the first seat still won 62%, 2026-11-06)
+  reroll: 2, // (the Fool's re-roll costs 2: free it won 67%, at 1 in version 2.1 60%)
+  second: 2, // (the second seat opens with a bank of 2: at 1 version 2.1's first seat won 58.5%)
+  secondCard: 1, // (and draws one card more on its first turn, Hearthstone's: at 2 alone the first seat still won 58%)
   push: 1, // (a token beside the bomb adds 1 to its side's roll in a clash, version 1's Q4 default)
   suitStep: 1, // (a class's own suit's tokens advance one tile further, 8.7)
   chariotStep: 1, // (the Chariot's passive, kept from version 1: every token one tile further)
   empressRank: 1, // (the Empress's passive in version 2: tokens she places one rank stronger, never faster)
-  charge: 2, bloom: 5, lantern: 3, cycle: 3, // (the actives as in version 1: +2 strength, mend 5, roll +3, draw 3)
+  charge: 3, lantern: 3, cycle: 3, lightning: 3, // (Bloom claims the tiles under the Empress's tokens since 2.1; the Tower's bolt spares its own wands) // (the actives: Charge +3 power (2.1: power is health now), mend 5, roll +3, draw 3, the Tower's bolt 3)
   swordPush: 1, // (a sword token at the far edge pushes the bomb one tile toward them, 8.4)
   fatigue: 1, // (fatigue's step: 1, then 2, then 3, the count kept for the game, 8.6)
   reshuffle: 2, // (the reshuffle's step: 2, then 4, then 6, 8.6)
@@ -66,6 +67,8 @@ const at = (x, z) => z * N + x;
 export const ownerAt = (S, x, z) => S.tiles[at(x, z)].o;
 export const tokAt = (S, x, z) => S.tokens.find((t) => t.x === x && t.z === z);
 const mine = (S, p) => S.tokens.filter((t) => t.owner === p);
+/** Is card `c` attuned for seat `p` (its class's own suit: played one up or down, cards.js)? */
+export const attunedOf = (S, p, c) => CLASSES[S.cls[p]]?.suit === suitOf(c);
 const keepSize = (S, p) => (S.cls[p] === 'hermit' ? R.hermitKeep : R.keep);
 const isBomb = (S, x, z) => S.bomb.x === x && S.bomb.z === z;
 const AT = [...Array(N * N).keys()].map((i) => Object.freeze([i % N, (i / N) | 0])); // (a tile's [x, z], one array a tile shared by every move: the search makes thousands)
@@ -79,7 +82,14 @@ export function legalTiles(S, p) {
   const out = []; for (let i = 0; i < N * N; i++) if (ok[i]) out.push(i); return out;
 }
 /** Has seat `p` anywhere at all for a number card (a tile of its own, a token of its own, or an enemy token to hit)? */
-const anyGround = (S, p) => S.tiles.some((t) => t.o === p) || S.tokens.length > 0;
+const anyGround = (S, p) => S.tiles.some((t) => t.o === p) || S.tokens.some((t) => t.owner === p);
+/** The enemy tokens seat `p` can hit: those standing on a tile its number cards may go on (its ground and beside it, beside its tokens),
+ *  so ground held forward is reach (version 2.1, 8.12; the Fool's reach anywhere won 74%, a tile further 60 to 70%). */
+export function reachTokens(S, p) {
+  const foes = S.tokens.filter((t) => t.owner !== p); if (!foes.length) return foes;
+  const ok = new Set(legalTiles(S, p));
+  return foes.filter((t) => ok.has(t.z * N + t.x));
+}
 const feeds = (S, p, but) => { const out = []; for (const c of S.hand[p]) if (c !== but) out.push({ feed: c }); return out; };
 /** A card fed from the hand to the Hungry Die, whenever the play is yours: gone for good, the die grown, the bank +1. */
 function feedCard(S, p, c) {
@@ -94,25 +104,28 @@ export function hurt(S, p, n, how) { S.hp[p] -= n; if (S.hp[p] <= 0) lose(S, p, 
 function detonate(S, by) {
   const o = ownerAt(S, S.bomb.x, S.bomb.z); S.log.push({ boom: o, by });
   if (o >= 0) return lose(S, o, 'bomb');
+  const held = [0, 1].map((q) => S.tiles.filter((t) => t.o === q).length); // (nobody's tile: the more ground held wins, then health: version 2.1)
+  if (held[0] !== held[1]) return lose(S, held[0] < held[1] ? 0 : 1, 'bomb-ground');
   if (S.hp[0] !== S.hp[1]) return lose(S, S.hp[0] < S.hp[1] ? 0 : 1, 'bomb-neutral');
   drawn(S, 'draw'); // (nobody's tile, equal health: a draw, 8.5)
 }
 /** The bomb moved `tiles` toward seat `p`'s far edge: past a back rank, that rank's player loses (8.5). */
-export function moveBomb(S, p, tiles) {
+export function moveBomb(S, p, tiles, why = 'clash') {
   S.bomb.z += dir(p) * tiles;
-  if (S.bomb.z < 0 || S.bomb.z >= N) { S.bomb.z = Math.max(0, Math.min(N - 1, S.bomb.z)); S.log.push({ boom: other(p), by: p, off: true }); lose(S, other(p), 'bomb-off'); }
+  if (S.bomb.z < 0 || S.bomb.z >= N) { S.bomb.z = Math.max(0, Math.min(N - 1, S.bomb.z)); S.stats.offBy[why]++; S.log.push({ boom: other(p), by: p, off: true, why }); lose(S, other(p), 'bomb-off'); }
 }
 
 // ------------------------------------------------------------- the turn's steps
 function beginTurn(S, p, r) {
-  S.cur = p; S.ctx = { boost: 0, rerolled: false, cycled: false, lit: false, roll: 0, emptied: false, card: null };
+  S.cur = p; S.ctx = { boost: 0, rerolled: false, cycled: false, lit: false, bolted: false, roll: 0, emptied: false, card: null };
   if (p === S.first) { S.round++; if (S.round > 1) { S.counter--; if (S.counter <= 0) { detonate(S, null); return; } } }
   drawStep(S, r);
 }
 /** Draw up to five. An empty deck asks once a turn: fatigue (the draw stops) or a reshuffle (the draw goes on); no discard, fatigue. */
 function drawStep(S, r) {
   const p = S.cur;
-  while (S.hand[p].length < R.hand) {
+  const want = R.hand + (S.round === 1 && p !== S.first ? R.secondCard : 0);
+  while (S.hand[p].length < want) {
     if (!S.deck[p].length) {
       if (S.ctx.emptied) break;
       if (!S.disc[p].length) { takeFatigue(S, p); if (S.done) return; break; }
@@ -140,7 +153,8 @@ function playMoves(S) {
   if (S.bank[p] >= C.cost) {
     if (C.active === 'cycle' && !S.ctx.cycled && S.deck[p].length) moves.push({ active: 'cycle' });
     if (C.active === 'charge' && !S.ctx.boost && mine(S, p).length) moves.push({ active: 'charge' });
-    if (C.active === 'bloom' && S.hp[p] < HEALTH) moves.push({ active: 'bloom' });
+    if (C.active === 'bloom' && S.tokens.some((t) => t.owner === p && ownerAt(S, t.x, t.z) !== p)) moves.push({ active: 'bloom' });
+    if (C.active === 'lightning' && !S.ctx.bolted && S.tokens.length) moves.push({ active: 'lightning' });
   }
   if (moves.length) { moves.unshift({ done: true }); moves.push(...feeds(S, p)); }
   return moves;
@@ -150,8 +164,8 @@ function playMoves(S) {
 export function placeMoves(S, p, c) {
   const moves = [{ back: true }];
   if (isCourt(c)) { for (const i of backTiles(S, p)) moves.push({ at: AT[i] }); moves.push(...feeds(S, p, c)); return moves; }
-  const vs = valuesOf(c); for (const i of legalTiles(S, p)) for (const v of vs) moves.push({ at: AT[i], v });
-  for (const t of S.tokens) if (t.owner !== p) for (const v of vs) moves.push({ on: t.id, v });
+  const vs = valuesOf(c, attunedOf(S, p, c)); for (const i of legalTiles(S, p)) for (const v of vs) moves.push({ at: AT[i], v });
+  for (const t of reachTokens(S, p)) for (const v of vs) moves.push({ on: t.id, v });
   moves.push(...feeds(S, p, c));
   return moves;
 }
@@ -160,8 +174,8 @@ export function placeMoves(S, p, c) {
  *  hp, max); a court card's `token` (speed, hp). Null for a target that is not a move. */
 export function previewPlay(V, seat, card, target) {
   if (isCourt(card)) { const rank = courtRank(card) + (V.cls[seat] === 'empress' ? R.empressRank : 0); return { kind: 'token', rank, hp: maxHpOf(rank), speed: speedOf(V, { owner: seat, suit: suitOf(card), speed: courtRank(card) }, R) }; }
-  const v = target.v ?? valuesOf(card)[valuesOf(card).length - 1];
-  if (target.on != null) { const t = V.tokens.find((u) => u.id === target.on); if (!t || t.owner === seat) return null; const h = hitOf(t, card, v); return { kind: h.falls ? 'down' : 'hurt', id: t.id, ...h, max: t.max, v }; }
+  const vs = valuesOf(card, attunedOf(V, seat, card)), v = target.v ?? vs[vs.length - 1];
+  if (target.on != null) { const t = V.tokens.find((u) => u.id === target.on); if (!t || t.owner === seat) return null; const h = hitOf(V, seat, t, card, v); return { kind: h.falls ? 'down' : 'hurt', id: t.id, ...h, max: t.max, v }; }
   const T = V.tiles[at(target.at[0], target.at[1])], sum = T.s + v;
   if (sum === R.twentyOne) return { kind: 'turn', from: T.o, sum: 0, v, bomb: isBomb(V, target.at[0], target.at[1]) };
   if (sum > R.twentyOne) return { kind: 'bust', was: T.s, sum: 0, owner: T.o, v };
@@ -216,7 +230,7 @@ function resolveBomb(S, m, r) {
     const atk = roll + R.push * beside(S, p), dsides = sidesOf(S.fed[q]), def = die(r, dsides) + R.push * beside(S, q);
     const tiles = atk > def ? Math.max(1, Math.floor((atk - def) / dsides)) : 0;
     S.log.push({ push: p, atk, def, tiles });
-    if (tiles) moveBomb(S, p, tiles);
+    if (tiles) moveBomb(S, p, tiles, 'clash');
   } else { S.counter -= roll; S.log.push({ count: p, roll, counter: S.counter }); if (S.counter <= 0) detonate(S, p); }
   if (S.done) return;
   advanceTokens(S, p, r, TOKEN_KIT);
@@ -234,7 +248,7 @@ export const ENTROPY = {
     const S = { n: 2, cls, hp: [HEALTH, HEALTH], hand: [[], []], kept: [[], []], deck: [shuffle(r, [...Array(56).keys()]), shuffle(r, [...Array(56).keys()])], disc: [[], []], fedCards: [[], []],
       bank: [first === 0 ? 0 : R.second, first === 1 ? 0 : R.second], fed: [0, 0], fatigue: [0, 0], reshuffles: [0, 0], tiles, tokens: [], nextTok: 1,
       bomb: { x: R.bomb[0], z: R.bomb[1] }, counter: R.counter, round: 0, first, cur: first, phase: 'play', ctx: null, pending: [], log: [], done: false, winner: null, how: null,
-      stats: { flips: 0, busts: 0, fatigue: 0, reshuffles: 0 } };
+      stats: { flips: 0, busts: 0, fatigue: 0, reshuffles: 0, hits: 0, downs: 0, strikes: 0, struck: 0, mends: 0, blunted: 0, offBy: { clash: 0, shove: 0 } } };
     beginTurn(S, first, r); return S;
   },
   pending: (S) => (S.done ? null : S.pending[0] || null),
@@ -257,7 +271,8 @@ export const ENTROPY = {
           const C = CLASSES[S.cls[p]]; S.bank[p] -= C.cost; S.log.push({ active: m.active, seat: p });
           if (m.active === 'cycle') { S.ctx.cycled = true; for (let i = 0; i < R.cycle && S.deck[p].length; i++) S.hand[p].push(S.deck[p].pop()); }
           else if (m.active === 'charge') S.ctx.boost = R.charge;
-          else if (m.active === 'bloom') S.hp[p] = Math.min(HEALTH, S.hp[p] + R.bloom);
+          else if (m.active === 'bloom') { for (const t of S.tokens) if (t.owner === p) { const T = S.tiles[at(t.x, t.z)]; if (T.o !== p) { S.log.push({ claim: p, at: [t.x, t.z], from: T.o, bloom: true }); T.o = p; T.s = 0; } } }
+          else if (m.active === 'lightning') { S.ctx.bolted = true; zapAll(S, p, R.lightning); }
           return toPlay(S);
         }
         return toPlace(S, m.card);
@@ -271,7 +286,7 @@ export const ENTROPY = {
         return resolveBomb(S, m, r);
     }
   },
-  result: (S) => (S.done ? { winner: S.winner, how: S.how, scores: S.hp.slice(), chips: S.hp.slice(), hp: S.hp.slice(), rounds: S.round, counter: S.counter, classes: S.cls.slice(), stats: { ...S.stats } } : null),
+  result: (S) => (S.done ? { winner: S.winner, how: S.how, scores: S.hp.slice(), chips: S.hp.slice(), hp: S.hp.slice(), rounds: S.round, counter: S.counter, classes: S.cls.slice(), stats: { ...S.stats, offBy: { ...S.stats.offBy } } } : null),
   /** All a seat may know: the board, banks, the counter, the discard piles, its own hand, kept cards, fed cards and its deck's contents (not
    *  its order); the other's hand, kept and fed cards and both decks' order are hidden (`unseen`: the other seat's cards it cannot place). */
   view(S, seat) {
@@ -280,7 +295,7 @@ export const ENTROPY = {
       deck: [0, 1].map((q) => (q === seat ? S.deck[q].slice().sort((a, b) => a - b) : [])), deckN: S.deck.map((d) => d.length),
       fedCards: [0, 1].map((q) => (q === seat ? S.fedCards[q].slice() : [])), disc: S.disc.map((d) => d.slice()), log: S.log.slice(-12), pending: S.pending[0]?.seat === seat ? S.pending : [], seat };
     const shown = new Set([...S.disc[o], ...S.tokens.filter((t) => t.owner === o).map((t) => t.card)]); v.unseen = [...Array(56).keys()].filter((c) => !shown.has(c));
-    v.tiles = S.tiles.map((t) => ({ ...t })); v.tokens = S.tokens.map((t) => ({ ...t })); v.bomb = { ...S.bomb }; v.ctx = { ...S.ctx }; v.stats = { ...S.stats };
+    v.tiles = S.tiles.map((t) => ({ ...t })); v.tokens = S.tokens.map((t) => ({ ...t })); v.bomb = { ...S.bomb }; v.ctx = { ...S.ctx }; v.stats = { ...S.stats, offBy: { ...S.stats.offBy } };
     v.oppHeld = S.hand[o].length + S.kept[o].length;
     return v;
   },
@@ -291,7 +306,7 @@ export function cloneState(V) {
   const two = (a) => [a[0].slice(), a[1].slice()];
   return { ...V, cls: V.cls.slice(), hp: V.hp.slice(), hand: two(V.hand), kept: two(V.kept), deck: two(V.deck), disc: two(V.disc), fedCards: two(V.fedCards), bank: V.bank.slice(), fed: V.fed.slice(),
     fatigue: V.fatigue.slice(), reshuffles: V.reshuffles.slice(), tiles: V.tiles.map((t) => ({ o: t.o, s: t.s })), tokens: V.tokens.map((t) => ({ ...t })), bomb: { ...V.bomb }, ctx: V.ctx && { ...V.ctx },
-    pending: V.pending.map((P) => ({ ...P })), log: V.log.slice(), stats: { ...V.stats } };
+    pending: V.pending.map((P) => ({ ...P })), log: V.log.slice(), stats: { ...V.stats, offBy: { ...V.stats.offBy } } };
 }
 /** A full state from a seat's view: the other seat's unseen cards dealt at random into its hand, kept cards, deck and fed cards, and this
  *  seat's own deck shuffled (information-set search: neither deck's order is known). */

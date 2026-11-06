@@ -19,6 +19,7 @@ export function casinoRules({ on, L, log }) {
     if (e.practice) { L.inc(`casino.${e.game}.practised`); say('info', `Seated at ${NAMES[e.game]} for practice. No chips at stake.`, 'sit'); return; }
     L.inc('casino.sit'); L.inc(`casino.${e.game}.played`); say('info', `Seated at ${NAMES[e.game]}. Stake: ${e.stake} chips.`, 'sit');
   });
+  on('entropy.class', (e) => say('info', `At Entropy Tactics you sit as ${e.label}. ${e.passive} ${e.does}`, 'arcana')); // (world/entropy/entropyroom.js /arcana)
   on('casino.howto', (e) => { L.inc(`casino.${e.game}.howto`); }); // (seen once, finished or skipped: the how-to no longer opens by itself; progress/casino/howto.js)
   on('casino.play', (e) => {
     const w = e.who === 'you' ? 'You' : e.who;
