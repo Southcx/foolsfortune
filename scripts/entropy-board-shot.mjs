@@ -1,8 +1,9 @@
 // ---------------------------------------------------------------------------------------
 // ENTROPY TACTICS' BOARD VIEW, SHOT: the board view (src/vfx/entropy/boardview.js) headless, seated at the Entropy room's stone for a
 // practice game, on the desk (1280 x 720) and the phone (an iPhone XR held landscape, 896 x 414 at 2x, its renderer stubbed to "Apple GPU"
-// so it boots the phone's tier). Shots: the start of your turn with the hand, a hover tip on a lit tile, the bomb's phase with the die
-// thrown, and the result's plate after many moves (yours the coach's first or suggested choice, the bot's its own). One look, never a
+// so it boots the phone's tier). Version 2 (ENTROPY-TACTICS.md 8): the hand rigged with an ace, a court card and a 5 and a tile set to 20,
+// then shots of the start, a hover tip on a lit tile, the ace's 1 or 11 as plates, the tile turned at 21, the carve's plates, the bomb's
+// phase with the die thrown, the token advanced over a turn, and the result after many moves (yours the coach's suggestion). One look, never a
 // tune-and-rerun loop (CLAUDE.md, Subagents).
 //
 // Prior art: scripts/wavepool-shot.mjs (the phone's boot, the manual frame, shots saved for a look).
@@ -51,43 +52,75 @@ try {
       return { frames: f, built: R.built, where: s.where, phase: s.S?.phase, on: g.entropyLook?.board?.on, tier: g.graphics?.tier, mobile: !!g.graphics?.machine?.mobile };
     });
     const step = (n) => page.evaluate((n) => window.__step(n), n);
-    // until it is your play phase
-    for (let i = 0; i < 60 && !(await page.evaluate(() => window.__mine() && __game.game.entropyRoom.session.S.phase === 'play')); i++) await step(10);
+    const shot = (name) => page.screenshot({ path: path.join(out, `${Z.id}-${name}.png`), timeout: 180000 });
+    // helpers in the page: a piece's place on the screen, a move by the coach's label, a phase
+    await page.evaluate(() => {
+      const g = __game.game, s = g.entropyRoom.session, B = () => g.entropyLook.board, V3 = __game.THREE.Vector3;
+      window.__at = (id) => {
+        if (id.startsWith('c:')) { const e = B().cards.get(+id.slice(2)); if (!e) return null; const v = e.mesh.getWorldPosition(new V3()); return { x: v.x, y: -v.y }; }
+        let v; if (id.startsWith('t:')) { const [x, z] = id.slice(2).split('.').map(Number); v = g.entropyLook.tiles.top(x, z); } else v = B().bomb.core.getWorldPosition(new V3());
+        v.project(g.camera); return { x: (v.x * 0.5 + 0.5) * innerWidth, y: (-v.y * 0.5 + 0.5) * innerHeight };
+      };
+      window.__phase = () => (window.__mine() ? s.S.phase : 'wait');
+      window.__move = (re) => { const c = s.coach(), m = c?.moves?.find((x) => re.test(x.label)); if (!m) return null; s.move(m.move); return m.label; };
+      // a hand for the look: an ace, a court card and a number swapped in from the deck, and a tile next to yours set to 20 so the ace makes 21
+      window.__rig = () => {
+        const S = s.S, H = S.hand[0], D = S.deck[0], P = S.pending[0], want = [(c) => c >> 2 === 0, (c) => c >> 2 >= 11 && (c & 3) === 2, (c) => (c >> 2) + 1 === 5];
+        want.forEach((ok, i) => { const j = D.findIndex(ok); if (j < 0 || i >= H.length) return; const old = H[i]; H[i] = D[j]; D[j] = old; const m = P?.moves?.find((x) => x.card === old); if (m) m.card = H[i]; });
+        S.tiles[5 * 7 + 2].s = 20; return H.slice();
+      };
+    });
+    for (let i = 0; i < 80 && (await page.evaluate(() => window.__phase())) !== 'play'; i++) await step(10);
+    report[Z.id].hand = await page.evaluate(() => window.__rig());
     await step(20);
-    await page.screenshot({ path: path.join(out, `${Z.id}-start.png`), timeout: 180000 });
+    await shot('start');
     if (Z.id === 'desk') {
-      // play the hand into a summon if it can (its place phase lights tiles), then hover a lit tile
-      const did = await page.evaluate(() => window.__playOne((m) => /Summon/.test(m.label)) || null);
-      await step(20);
-      const at = await page.evaluate(() => {
-        const g = __game.game, B = g.entropyLook.board, id = [...B.lit.keys()].find((k) => k.startsWith('t:')) || 'bomb';
-        const v = id === 'bomb' ? B.bomb.core.getWorldPosition(new (__game.THREE.Vector3)()).project(g.camera) : (() => { const [x, z] = id.slice(2).split('.').map(Number); return g.entropyLook.tiles.top(x, z).project(g.camera); })();
-        return { id, x: (v.x * 0.5 + 0.5) * innerWidth, y: (-v.y * 0.5 + 0.5) * innerHeight };
-      });
-      report[Z.id].hover = { did, at };
-      if (at) { await page.mouse.move(at.x, at.y); await step(12); }
-      await page.screenshot({ path: path.join(out, `${Z.id}-hover.png`), timeout: 180000 });
+      // a number card onto a tile: the 5, hovered over a lit tile (the tip)
+      report[Z.id].five = await page.evaluate(() => window.__move(/Play the 5 /));
+      await step(8);
+      const t5 = await page.evaluate(() => window.__at('t:3.5')); await page.mouse.move(t5.x, t5.y); await step(10);
+      await shot('hover');
+      await page.mouse.click(t5.x, t5.y); await step(6); await page.mouse.move(5, 5);
+      // the ace: its 1 or 11 offered as plates on the tile set to 20
+      report[Z.id].ace = await page.evaluate(() => window.__move(/Play the Ace/));
+      await step(8);
+      const t2 = await page.evaluate(() => window.__at('t:2.5')); await page.mouse.click(t2.x, t2.y); await step(8);
+      await shot('ace');
+      report[Z.id].turned = await page.evaluate(() => window.__move(/as 1: 21/));
+      await step(12);
+      await shot('turned');
+      // the court card as a token on your back rank
+      report[Z.id].court = await page.evaluate(() => window.__move(/as a token/));
+      await step(6); report[Z.id].placed = await page.evaluate(() => window.__move(/Token at/)); await step(20);
+      report[Z.id].done = await page.evaluate(() => window.__move(/Done playing/)); await step(10);
+      // the carve: a card clicked, its keep, feed and discard as plates
+      const card = await page.evaluate(() => { const c = __game.game.entropyRoom.session.S.hand[0][0]; return c == null ? null : window.__at(`c:${c}`); });
+      if (card) { await page.mouse.click(card.x, card.y); await step(6); }
+      await shot('carve');
       await page.mouse.move(5, 5);
-      // on to your bomb phase
-      for (let i = 0; i < 40; i++) {
-        const ph = await page.evaluate(() => { const s = __game.game.entropyRoom.session; return window.__mine() ? s.S.phase : 'wait'; });
-        if (ph === 'bomb') break;
-        if (ph === 'wait') await step(10); else { await page.evaluate(() => window.__playOne((m) => /End actions|Keep|Place/.test(m.label))); await step(4); }
-      }
-      await step(24);
+      for (let i = 0; i < 8 && (await page.evaluate(() => window.__phase())) === 'carve'; i++) { await page.evaluate(() => window.__move(/^Keep|^Feed/)); await step(4); }
+      await step(36);
       report[Z.id].bomb = await page.evaluate(() => { const S = __game.game.entropyRoom.session.S; return { phase: S.phase, roll: S.ctx?.roll, counter: S.counter }; });
-      await page.screenshot({ path: path.join(out, `${Z.id}-bomb.png`), timeout: 180000 });
+      await shot('bomb');
+      await page.evaluate(() => window.__move(/Push the bomb|Count it down/)); await step(30);
+      // over their turn to yours: the token advanced
+      for (let i = 0; i < 80 && (await page.evaluate(() => window.__phase())) === 'wait'; i++) await step(10);
+      await step(20);
+      report[Z.id].advanced = await page.evaluate(() => __game.game.entropyRoom.session.S.tokens.map((t) => ({ owner: t.owner, suit: t.suit, rank: t.rank, x: t.x, z: t.z })));
+      await shot('advanced');
       // many moves, to the end
-      for (let i = 0; i < 900; i++) {
+      for (let i = 0; i < 1500; i++) {
         const st = await page.evaluate(() => { const s = __game.game.entropyRoom.session; if (s.done) return 'done'; if (window.__mine()) { window.__playOne(); return 'mine'; } return 'wait'; });
         if (st === 'done') break;
         await step(st === 'mine' ? 2 : 12);
       }
-      await step(30);
+      await step(40);
       report[Z.id].end = await page.evaluate(() => { const s = __game.game.entropyRoom.session; return { done: s.done, result: s.T.game.result(s.S), tokens: s.S.tokens.length, log: s.S.log.length }; });
-      await page.screenshot({ path: path.join(out, `${Z.id}-result.png`), timeout: 180000 });
-      // stand up: the camera handed back and the page put away
+      await shot('result');
       report[Z.id].leave = await page.evaluate(() => { const g = __game.game, s = g.entropyRoom.session; s.close(); window.__step(4); return { on: g.entropyLook.board.on, etb: !!document.getElementById('etb'), cls: document.getElementById('indexmenu')?.className, fov: g.camera.fov }; });
+    } else {
+      await page.evaluate(() => window.__move(/Play the 5 /)); await step(12);
+      await shot('place');
     }
     await ctx.close();
   }

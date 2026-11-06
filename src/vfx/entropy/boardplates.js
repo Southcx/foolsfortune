@@ -11,8 +11,10 @@
 // Engineering's and Swiss typography's hairline rules and spaced capitals.
 //
 //   new BoardPlates({ play(cm), again(), close() })   .mount()   .unmount()   .hue(css)   .turn(text, mine)   .bar(moves, key)
-//   .tip(info | null, x, y)   .choose(moves | null, x, y)   .result(r | null)   .busy (a choice or the result is up)
+//   .tip(info | null, x, y)   .choose(moves | null, x, y)   .roll(n | null, x, y, css)   .result(r | null)   .busy (a choice or the result is up)
 // ---------------------------------------------------------------------------------------
+
+import { strokeText } from './pieces.js';
 
 const CSS = `
 #indexmenu.etboard { pointer-events: none; } #indexmenu.etboard .im { visibility: hidden; pointer-events: none; }
@@ -42,6 +44,7 @@ const CSS = `
 #etb .end h2.won { color: var(--hue); }
 #etb .end p { margin: 10px 0 16px; font-size: 13px; opacity: 0.8; } #etb .end .row { display: flex; gap: 8px; justify-content: center; }
 #etb .end .tag { font-size: 9px; letter-spacing: 0.3em; opacity: 0.55; text-transform: uppercase; }
+#etb .roll { position: absolute; width: 96px; height: 72px; margin: -84px 0 0 -48px; display: none; filter: drop-shadow(0 0 6px rgba(0,0,0,0.9)); }
 #etb .rule { position: absolute; left: 0; right: 0; height: 1px; background: rgba(236, 230, 214, 0.35); }
 @media (max-height: 500px) { #etb .pl { font-size: 10px; padding: 4px 9px 3px; min-height: 22px; } #etb .pl small { display: none; } #etb .turn { font-size: 10px; } }
 `;
@@ -55,7 +58,7 @@ export class BoardPlates {
     if (this.root) return;
     this.style = document.createElement('style'); this.style.textContent = CSS; document.head.appendChild(this.style);
     const R = (this.root = el('div', null, document.body)); R.id = 'etb';
-    this.turnEl = el('div', 'turn glass', R); this.barEl = el('div', 'bar', R); this.tipEl = el('div', 'tip glass', R); this.pickEl = el('div', 'pick', R); this.endEl = el('div', 'end glass', R);
+    this.turnEl = el('div', 'turn glass', R); this.barEl = el('div', 'bar', R); this.tipEl = el('div', 'tip glass', R); this.pickEl = el('div', 'pick', R); this.endEl = el('div', 'end glass', R); this.rollEl = el('canvas', 'roll', R); this.rollEl.width = 192; this.rollEl.height = 144;
     this.pickEl.addEventListener('pointerdown', (e) => e.stopPropagation());
   }
   unmount() { this.root?.remove(); this.style?.remove(); this.root = this.style = null; this.barKey = this.tipKey = null; this.picking = this.ended = null; }
@@ -97,6 +100,13 @@ export class BoardPlates {
     for (const cm of moves) this.plate(cm, this.pickEl);
     const w = this.pickEl.offsetWidth, h = this.pickEl.offsetHeight;
     this.pickEl.style.left = `${Math.max(10, Math.min(innerWidth - w - 10, x - w / 2))}px`; this.pickEl.style.top = `${Math.max(10, Math.min(innerHeight - h - 60, y - h - 16))}px`;
+  }
+  /** The settled die's roll, face on over it in the board's stroke numerals (crisp: the tilt-shift never takes the DOM). */
+  roll(n, x, y, css) {
+    if (!this.root) return; const E = this.rollEl;
+    if (n == null) { E.style.display = 'none'; this.rollKey = null; return; }
+    const k = `${n}|${css}`; if (k !== this.rollKey) { this.rollKey = k; const c = E.getContext('2d'); c.clearRect(0, 0, 192, 144); c.strokeStyle = c.fillStyle = 'rgba(3,2,6,0.9)'; strokeText(c, n, 96, 72, 96, { lw: 22 }); c.strokeStyle = c.fillStyle = css; strokeText(c, n, 96, 72, 96, { lw: 9 }); }
+    E.style.display = 'block'; E.style.left = `${x}px`; E.style.top = `${y}px`;
   }
   /** The game's end: { won, title, how, practice } or null. */
   result(r) {

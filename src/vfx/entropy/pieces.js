@@ -2,9 +2,9 @@
 // THE BOARD'S PIECES (plain names; South, 2026-11-06: "cosmic-themed, abstract, eldritch and avant-garde", "I don't want you guys to anchor
 // to the current artstyle"; docs/plans/ENTROPY-TACTICS.md 7): what the board view (boardview.js) stands on Entropy Tactics' tiles, made in
 // one look of its own: bone-ivory made things against void black, a hue drifting slowly between ultraviolet and acid chartreuse, your side
-// a cool pale cyan and theirs a warm pale vermilion. Abstract sculptures, never figurines: a warrior a monolith with a slit of void, a rogue
-// a blade-shard split down its length, a mage an orb of void ringed and hovering, a healer a double cone. The Grand Bomb a black sphere in a
-// corona with a ring of thirty ticks burning down, the Hungry Die a polyhedron by its sides, an Arcana a slab with its name and health,
+// a cool pale cyan and theirs a warm pale vermilion. Abstract sculptures, never figurines, a court token by its suit (version 2):
+// wands a lance, pentacles a wheel, swords a blade, cups a vessel, its rank as tiers at its foot. A seat's deck and discard as stacks. The Grand Bomb a black sphere in a
+// corona with a ring of thirty ticks burning down, the Hungry Die a polyhedron by its sides, an Arcana a slab with its name, its class's suit and its health,
 // a card ivory strokes on black. Numbers and ranks are drawn in the board's own stroke type (`strokeText`: a hairline constructivist face,
 // a dot at each stroke's start), never the house's fonts; names in a plain light sans, letter-spaced.
 // Looks only; every rule is Dovina's (progress/casino/entropy/).
@@ -13,8 +13,8 @@
 // Tetris Effect's hue drift, El Lissitzky's and Rodchenko's constructivist type, Into the Breach's health pips as countable marks.
 //
 //   LOOK   eldritch(t, out, phase)   strokeText(ctx, str, x, y, h, opts)   new Kit()   .own(x)   .shared(key, make)   .dispose()
-//   makeToken(kit, kind, owner)   makeBomb(kit)   makeDie(kit)   makeArcana(kit, seat)   cardTexture(kit, card)   backTexture(kit)
-//   numberSprite(kit, scale)   new Sparks(kit, cap)   .burst(at, n, color, opts)   .tick(dt)   new Motes(kit, cap)   .begin()   .add(p, c)   .end()
+//   makeToken(kit, suit, owner, rank)   makePile(kit)   makeBomb(kit)   makeDie(kit)   makeArcana(kit, seat)   cardTexture(kit, card)   backTexture(kit)
+//   numberSprite(kit, scale)   new Sparks(kit, cap)   .burst(at, n, color, opts)   .tick(dt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { rankOf, suitOf } from '../../progress/casino/entropy/cards.js';
@@ -100,35 +100,50 @@ export function numberSprite(kit, scale = 0.8) {
   } };
 }
 
-// ------------------------------------------------------------- a token by its kind
-/** { group, body (its bone material, lit and flashed alone), ring (its side's mark on the tile), spin (parts that turn) }. Its own height `top`. */
-export function makeToken(kit, kind, owner) {
+// ------------------------------------------------------------- a court token by its suit
+/** { group, body (its bone material, lit and flashed alone), ring (its side's mark on the tile), spin ([mesh, axis] that turn), top }.
+ *  By suit (version 2, ENTROPY-TACTICS.md 8.4): wands a lance (the strike), pentacles a wheel (the claim), swords a blade (the fight),
+ *  cups a vessel (the return); its rank (page 1 .. king 4, the Empress's +1) as that many tiers of its owner's colour at its foot. */
+export function makeToken(kit, suit, owner, rank = 1) {
   const g = new THREE.Group(), body = boneMat(kit), side = glowMat(kit, LOOK.side(owner)), vm = voidMat(kit), spin = [];
-  const add = (key, make, mat, x, y, z, rx = 0, ry = 0, rz = 0) => { const m = new THREE.Mesh(kit.shared(`geo.${key}`, make), mat); m.position.set(x, y, z); m.rotation.set(rx, ry, rz); g.add(m); return m; };
-  let top = 1.3;
-  if (kind === 'warrior') {
-    add('mono', () => new THREE.BoxGeometry(0.5, 1.25, 0.26), body, 0, 0.625, 0);
-    add('slit', () => new THREE.BoxGeometry(0.07, 0.8, 0.28), vm, 0.08, 0.6, 0);
-    add('monoBand', () => new THREE.BoxGeometry(0.53, 0.05, 0.29), side, 0, 0.98, 0);
-  } else if (kind === 'rogue') {
-    add('shard', () => new THREE.ConeGeometry(0.17, 1.2, 3), body, -0.13, 0.62, 0, 0, 0.3, 0.2);
-    add('shard', () => new THREE.ConeGeometry(0.17, 1.2, 3), body, 0.13, 0.55, 0, 0, -0.5, -0.2);
-    add('split', () => new THREE.BoxGeometry(0.025, 0.95, 0.025), side, 0, 0.55, 0);
-  } else if (kind === 'mage') {
-    top = 1.35;
-    add('plinth', () => new THREE.CylinderGeometry(0.12, 0.26, 0.3, 6), body, 0, 0.15, 0);
-    add('orb', () => new THREE.SphereGeometry(0.2, 22, 14), vm, 0, 0.92, 0);
-    spin.push(add('halo', () => new THREE.TorusGeometry(0.42, 0.024, 6, 48), body, 0, 0.92, 0, 1.2, 0, 0.3));
-    spin.push(add('haloIn', () => new THREE.TorusGeometry(0.33, 0.01, 4, 48), side, 0, 0.92, 0, 1.9, 0.4, 0));
-  } else {
-    add('coneDown', () => new THREE.ConeGeometry(0.28, 0.55, 5), body, 0, 0.42, 0, Math.PI, 0, 0);
-    spin.push(add('coneUp', () => new THREE.ConeGeometry(0.28, 0.55, 5), body, 0, 0.97, 0));
-    add('waist', () => new THREE.TorusGeometry(0.29, 0.018, 4, 40), side, 0, 0.695, 0, Math.PI / 2, 0, 0);
+  const add = (key, make, mat, x, y, z, rx = 0, ry = 0, rz = 0, sc = null) => { const m = new THREE.Mesh(kit.shared(`geo.${key}`, make), mat); m.position.set(x, y, z); m.rotation.set(rx, ry, rz); if (sc) m.scale.set(...sc); g.add(m); return m; };
+  let top = 1.4;
+  if (suit === 3) { // wands: a lance, its point up, a void collar
+    add('lance', () => new THREE.ConeGeometry(0.14, 1.25, 4), body, 0, 0.98, 0, 0, Math.PI / 4, 0);
+    add('shaft', () => new THREE.CylinderGeometry(0.05, 0.07, 0.4, 6), body, 0, 0.36, 0);
+    spin.push([add('collar', () => new THREE.TorusGeometry(0.17, 0.035, 4, 4), vm, 0, 0.42, 0, Math.PI / 2, 0, 0), 'z']);
+    top = 1.62;
+  } else if (suit === 2) { // pentacles: a wheel stood up, a void pentagon at its hub
+    spin.push([add('wheel', () => new THREE.CylinderGeometry(0.44, 0.44, 0.07, 40), body, 0, 0.66, 0, Math.PI / 2, 0, 0), 'y']);
+    add('hub', () => new THREE.CylinderGeometry(0.2, 0.2, 0.09, 5), vm, 0, 0.66, 0, Math.PI / 2, 0, 0);
+    add('axle', () => new THREE.BoxGeometry(0.06, 0.24, 0.06), body, 0, 0.12, 0);
+    top = 1.15;
+  } else if (suit === 1) { // swords: a blade, point up, over a guard
+    add('blade', () => new THREE.OctahedronGeometry(0.5, 0), body, 0, 0.98, 0, 0, 0, 0, [0.26, 1.5, 0.06]);
+    add('guard', () => new THREE.BoxGeometry(0.5, 0.05, 0.09), vm, 0, 0.26, 0);
+    add('grip', () => new THREE.CylinderGeometry(0.035, 0.035, 0.22, 6), body, 0, 0.12, 0);
+    top = 1.75;
+  } else { // cups: a vessel, its mouth a void
+    add('cup', () => new THREE.LatheGeometry([[0, 0], [0.24, 0], [0.26, 0.04], [0.06, 0.12], [0.05, 0.42], [0.12, 0.5], [0.3, 0.72], [0.36, 0.98], [0.34, 1.0]].map(([x, y]) => new THREE.Vector2(x, y)), 24), body, 0, 0.02, 0);
+    add('mouth', () => new THREE.CircleGeometry(0.33, 24), vm, 0, 0.99, 0, -Math.PI / 2, 0, 0);
+    top = 1.15;
   }
+  for (let i = 0; i < Math.min(5, rank); i++) add('tier', () => new THREE.CylinderGeometry(0.4, 0.42, 0.035, 24), side, 0, 0.1 + i * 0.055, 0, 0, 0, 0, [1 - i * 0.12, 1, 1 - i * 0.12]);
   add('plinthVoid', () => new THREE.CylinderGeometry(0.52, 0.56, 0.06, 32), vm, 0, 0.03, 0);
   const ring = new THREE.Mesh(kit.shared('geo.base', () => new THREE.RingGeometry(0.56, 0.64, 48)), glowMat(kit, LOOK.side(owner), { transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
   ring.rotation.x = -Math.PI / 2; ring.position.y = 0.065; g.add(ring);
-  return { group: g, body, ring, spin, top, kind, owner };
+  return { group: g, body, ring, spin, top, suit, owner, rank };
+}
+/** A seat's deck or discard pile: a short stack of cards, its height its count, its top a card's face or the back; its count over it. */
+export function makePile(kit) {
+  const side = kit.shared('mat.pileSide', () => new THREE.MeshBasicMaterial({ color: 0x2a2630, toneMapped: false })), topM = kit.own(new THREE.MeshBasicMaterial({ toneMapped: false, map: backTexture(kit) }));
+  const mesh = new THREE.Mesh(kit.shared('geo.pile', () => new THREE.BoxGeometry(0.5, 1, 0.7).translate(0, 0.5, 0)), [side, side, topM, side, side, side]);
+  const num = numberSprite(kit, 0.34), g = new THREE.Group(); g.add(mesh, num.sprite);
+  let last = null;
+  return { group: g, mesh, set(n, face) {
+    mesh.scale.y = 0.02 + 0.011 * n; mesh.visible = n > 0; num.sprite.position.y = mesh.scale.y + 0.35; num.set(n, LOOK.ink);
+    const map = face == null ? backTexture(kit) : cardTexture(kit, face); if (map !== last) { last = map; topM.map = map; topM.needsUpdate = true; }
+  } };
 }
 
 // ------------------------------------------------------------- the Grand Bomb
@@ -180,8 +195,8 @@ export function makeArcana(kit, seat) {
   const { c, tex } = kit.canvas(256, 400), face = kit.own(new THREE.MeshBasicMaterial({ map: tex, toneMapped: false })), side = boneMat(kit, 0.12), back = voidMat(kit);
   const mesh = new THREE.Mesh(kit.shared('geo.slab', () => new THREE.BoxGeometry(1.25, 1.95, 0.09)), [side, side, side, side, face, back]);
   let last = '';
-  return { mesh, side, draw({ label, hp, max, flash = 0, lit = 0 }) {
-    const key = `${label}|${hp}|${max}|${Math.round(flash * 8)}|${Math.round(lit * 4)}`; if (key === last) return; last = key;
+  return { mesh, side, draw({ label, hp, max, flash = 0, lit = 0, suit = null }) {
+    const key = `${label}|${hp}|${max}|${Math.round(flash * 8)}|${Math.round(lit * 4)}|${suit}`; if (key === last) return; last = key;
     const col = LOOK.sideCss(seat), W = 256, H = 400;
     c.fillStyle = '#050307'; c.fillRect(0, 0, W, H);
     c.strokeStyle = LOOK.ink; c.lineWidth = 2; c.strokeRect(9, 9, W - 18, H - 18); c.lineWidth = 1; c.strokeStyle = LOOK.inkDim; c.strokeRect(16, 16, W - 32, H - 32);
@@ -189,8 +204,10 @@ export function makeArcana(kit, seat) {
     c.fillStyle = LOOK.ink; c.textAlign = 'center'; c.textBaseline = 'middle'; c.letterSpacing = '5px';
     let px = 24; do { c.font = `300 ${px}px "Helvetica Neue", Helvetica, Arial, sans-serif`; px--; } while (c.measureText(label.toUpperCase()).width > W - 56 && px > 10);
     c.fillText(label.toUpperCase(), W / 2 + 2, 52); c.letterSpacing = '0px';
-    c.strokeStyle = LOOK.ink; c.lineWidth = 1.5; c.beginPath(); c.ellipse(W / 2, 140, 54, 26, 0, 0, 7); c.stroke(); c.beginPath(); c.arc(W / 2, 140, 15, 0, 7); c.stroke();
-    c.fillStyle = col; c.beginPath(); c.arc(W / 2, 140, 6, 0, 7); c.fill(); c.beginPath(); c.moveTo(W / 2, 84); c.lineTo(W / 2, 108); c.moveTo(W / 2, 172); c.lineTo(W / 2, 196); c.stroke();
+    c.strokeStyle = LOOK.ink; c.lineWidth = 1.5;
+    if (suit == null) { c.beginPath(); c.ellipse(W / 2, 140, 54, 26, 0, 0, 7); c.stroke(); c.beginPath(); c.arc(W / 2, 140, 15, 0, 7); c.stroke(); c.fillStyle = col; c.beginPath(); c.arc(W / 2, 140, 6, 0, 7); c.fill(); } // (the Fool: no suit, the open eye)
+    else { c.strokeStyle = col; suitGlyph(c, suit, W / 2, 140, 44, 4); c.strokeStyle = LOOK.ink; }
+    c.beginPath(); c.moveTo(W / 2, 84); c.lineTo(W / 2, 92); c.moveTo(W / 2, 188); c.lineTo(W / 2, 196); c.stroke();
     c.strokeStyle = LOOK.ink; c.fillStyle = LOOK.ink; strokeText(c, Math.max(0, hp), W / 2, 268, 74, { lw: 5 });
     const bw = W - 64, k = Math.max(0, Math.min(1, hp / max));
     c.strokeStyle = LOOK.inkDim; c.lineWidth = 1; c.strokeRect(32, 330, bw, 12); c.fillStyle = col; c.fillRect(34, 332, (bw - 4) * k, 8);
@@ -253,14 +270,4 @@ export class Sparks {
     }
     const g = this.points.geometry; g.attributes.position.needsUpdate = true; g.attributes.color.needsUpdate = true;
   }
-}
-/** The health motes: one point of health a small lit bead orbiting its token, all in one instanced draw. */
-export class Motes {
-  constructor(kit, cap = 200) {
-    this.mesh = new THREE.InstancedMesh(kit.own(new THREE.IcosahedronGeometry(0.075, 0)), glowMat(kit, 0xffffff), cap); this.cap = cap; this.n = 0;
-    this.mesh.frustumCulled = false; this.m = new THREE.Matrix4(); this.mesh.setColorAt(0, new THREE.Color());
-  }
-  begin() { this.n = 0; }
-  add(p, c) { if (this.n >= this.cap) return; this.m.makeTranslation(p.x, p.y, p.z); this.mesh.setMatrixAt(this.n, this.m); this.mesh.setColorAt(this.n, c); this.n++; }
-  end() { this.mesh.count = this.n; this.mesh.instanceMatrix.needsUpdate = true; if (this.mesh.instanceColor) this.mesh.instanceColor.needsUpdate = true; }
 }
