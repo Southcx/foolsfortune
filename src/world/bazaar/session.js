@@ -112,7 +112,9 @@ export class TableSession {
       else if (x.callout != null) e('callout', { who: who(x.seat), on: who(x.callout), bluff: x.bluff, worth: x.worth, claim: x.claim });
       else if (x.deposits) { e('deposits', { total: x.total, line: x.line, winners: x.winners.map(who), share: x.share }); for (const d of x.deposits) if (d.said !== d.deposit) e('liar', { who: who(d.seat), said: d.said, dropped: d.deposit }); }
       else if (x.summon != null) e('summon', { who: who(x.summon), kind: x.kind });
-      else if (x.cast != null) e('spell', { who: who(x.cast), n: x.n, dmg: x.dmg, arcana: x.arcana });
+      else if (x.turned != null) e('tile', { who: who(x.turned), at: x.at }); // (Entropy Tactics: a tile's sum made exactly 21)
+      else if (x.fatigue != null) e('fatigue', { who: who(x.fatigue), n: x.n });
+      else if (x.reshuffle != null) e('reshuffle', { who: who(x.reshuffle), n: x.n });
       else if (x.push != null) e('push', { who: who(x.push), tiles: x.tiles, atk: x.atk, def: x.def });
       else if (x.count != null) e('countdown', { who: who(x.count), counter: x.counter });
       else if (x.boom != null) e('boom', { zone: x.boom < 0 ? null : who(x.boom) });

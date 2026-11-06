@@ -278,3 +278,31 @@ the mono-colour play. Wands are left for a fifth class.
 6. The bust keeps the owner.
 7. The class suits above.
 8. Two-player only.
+
+### 8.10 Built and measured (2026-11-06)
+
+Built to section 8 (`rules.js`, `tokens.js`, the bot, the coach, the how-to, the text page). Measured with `node scripts/casino.mjs
+--game entropy --n 100` (search 40 on both sides, 1,600 class games), once, untuned:
+- **Class means:** the Fool 33.5%, the Chariot 45.8%, the Empress 50.8%, the Hermit 49.0%.
+- **Seats:** the first seat wins 48.2% and the second 41.9%, with 9.9% draws (v1's first-seat edge was 61%).
+- **Length:** 9.9 rounds a game.
+- **How games end:**
+  - 39% pushed off a back rank;
+  - 29% the counter run out on nobody's tile;
+  - 22% the counter run out on an owned tile;
+  - 10% draws;
+  - **none on health.**
+- **Flips and busts:** 5.1 tiles turned by 21 a game, against 0.33 busts.
+- **Running out:** fatigue in 13% of games, a reshuffle in 12%.
+- **The bot:** search beats random 75%, down from 93%. v2's choice space is wider, so the bot is weaker.
+
+Read plainly:
+1. **Nothing kills on health.** Wands and fatigue never close a game.
+2. **The bomb's off-board push decides two games in five.** Swords' arrival push may be too strong a lever.
+3. **The Fool, with no suit, is weakest.**
+
+Choices the builder made where section 8 was open:
+- The fatigue-or-reshuffle choice comes once a turn's draw.
+- A number card may sit on a token's tile and on the bomb's.
+- Equal swords both break.
+- A draw counts as a loss at a pot table.

@@ -97,25 +97,28 @@ function charityFolk(n = 3000) {
   for (let s = seed0; s < seed0 + n; s++) { const { result } = play(CHARITY, { seats, bots, seed: s, opts: { first: s % seats } }); w[result.winner]++; result.chips.forEach((c, i) => (ret[i] += c / CHARITY_RULES.chips)); }
   console.log(`  CHARITY the folk (${names.join(', ')}): wins ${w.map((x) => pct(x, n)).join(' ')}; purse returned ${ret.map((v) => (v / n).toFixed(2)).join(' ')}`);
 }
-/** Entropy Tactics (two seats only). The search bot against the random floor, then every class against every other with the search bot on
- *  both sides (a row's win rate against a column, the first seat alternating), then how a game ends and how long it runs. */
+/** Entropy Tactics, version 2 (two seats only; ENTROPY-TACTICS.md 8). The search bot against the random floor, then every class against
+ *  every other with the search bot on both sides (a row's win rate against a column, the first seat alternating; a draw counts for
+ *  neither), then how a game ends, how long it runs, and how often a tile turned by 21 or busted, and fatigue or a reshuffle was taken. */
 function entropy(n = 200, iters = 40) {
   const think = (it) => (V, P, r) => entropyBot(V, P, r, { iters: it });
   let w = 0, rounds = 0; const how = {};
   for (let s = seed0; s < seed0 + n; s++) { const { result } = play(ENTROPY, { seats: 2, bots: [think(iters), randomEntropyBot], seed: s, opts: { first: s % 2 } }); if (result.winner === 0) w++; }
   console.log(`ENTROPY search (${iters} iterations) vs random x${n}: search wins ${pct(w, n)}`);
-  const m = {}; let first = 0, games = 0;
+  const m = {}, st = { flips: 0, busts: 0, fatigue: 0, reshuffles: 0 }; let first = 0, games = 0, fatigued = 0, reshuffled = 0;
   for (const a of CLASS_IDS) for (const b of CLASS_IDS) {
     let won = 0;
     for (let s = seed0; s < seed0 + n; s++) {
       const f = s % 2, { result } = play(ENTROPY, { seats: 2, bots: [think(iters), think(iters)], seed: s, opts: { first: f, classes: [a, b] } });
       if (result.winner === 0) won++; if (result.winner === f) first++; games++; rounds += result.rounds; how[result.how] = (how[result.how] || 0) + 1;
+      for (const k in st) st[k] += result.stats[k]; if (result.stats.fatigue) fatigued++; if (result.stats.reshuffles) reshuffled++;
     }
     (m[a] ||= {})[b] = won / n;
   }
   console.log(`  ENTROPY classes, row against column (search ${iters} both sides, x${n} each): ${CLASS_IDS.join(' ')}`);
   for (const a of CLASS_IDS) console.log(`    ${a.padEnd(8)} ${CLASS_IDS.map((b) => (100 * m[a][b]).toFixed(0).padStart(4)).join('')}   mean ${(100 * CLASS_IDS.reduce((x, b) => x + m[a][b], 0) / CLASS_IDS.length).toFixed(1)}%`);
   console.log(`  ENTROPY the first seat wins ${pct(first, games)}; rounds a game ${(rounds / games).toFixed(1)}; ends by ${JSON.stringify(how)}`);
+  console.log(`  ENTROPY a game: tiles turned by 21 ${(st.flips / games).toFixed(2)}, busts ${(st.busts / games).toFixed(2)}; fatigue taken ${(st.fatigue / games).toFixed(2)} (in ${pct(fatigued, games)} of games), reshuffles ${(st.reshuffles / games).toFixed(2)} (in ${pct(reshuffled, games)})`);
 }
 function entropyStyles(n = 200) {
   for (const [name, st] of [['Espada 90', { iters: 90, greed: 0.5 }], ['Petra 80', { iters: 80, greed: 0.3 }], ['Crock 20', { iters: 20, greed: 0.9 }]]) {
