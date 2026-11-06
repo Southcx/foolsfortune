@@ -324,3 +324,12 @@ turn". Built (`tokens.js` `hitOf`, `hitToken`; `rules.js` `previewPlay`, `feedCa
 - Choices South left open (strike any): **any enemy token anywhere** may be hit (a king of wands crosses in two turns, out of reach of the
   tiles beside your ground); a **meeting still goes by strength**, never the health left; feeding is not offered at an empty deck's
   fatigue-or-reshuffle choice (the draw is not done).
+
+Measured once (`node scripts/casino.mjs --game entropy --n 60`, search 40 both sides, 960 class games), untuned:
+- **The bot:** the search beats random 85% (75% before: hits and an early feed are moves it finds).
+- **Class means:** the Fool 41.3% (33.5%), the Chariot 35.8% (45.8%), the Empress 45.8%, the Hermit 49.2%. The Chariot is the token
+  class, and its tokens can now be shot down.
+- **Seats:** the first seat 47.4%. **Length:** 10.1 rounds.
+- **Ends:** 36% the counter on nobody's tile, 32% off a back rank, 17% on an owned tile, 15% draws; on health 2 of 960.
+- **Per game:** 3.1 tiles turned (5.1 before: cards go to tokens now), 0.12 busts; fatigue in 19%, a reshuffle in 26%.
+Read plainly: health still never ends a game; the swords' shove still decides a third; the Chariot wants something back.
