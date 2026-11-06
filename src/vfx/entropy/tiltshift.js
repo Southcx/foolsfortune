@@ -16,7 +16,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
-const SHIFT = { ease: 3.5, reachUp: 0.008, reachDown: 0.0045, split: 0.0025, grain: 0.035 }; // (reach: a tap's spacing, of the screen's height, at full blur)
+const SHIFT = { ease: 3.5, reachUp: 0.006, reachDown: 0.0015, split: 0.0025, grain: 0.035 }; // (reach: a tap's spacing, of the screen's height, at full blur)
 const VERT = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4( position.xy, 0.0, 1.0 ); }';
 const COMMON = `
 uniform sampler2D tSrc; uniform vec2 uTexel; uniform float uK, uFocus, uBand, uUp, uDown, uT; varying vec2 vUv;
@@ -45,7 +45,7 @@ const V = BLUR('vec2( 0.0, 1.0 )', true);
 
 export class TiltShift {
   constructor(game, look) {
-    this.game = game; this.look = look; this.want = false; this.k = 0; this.focus = 0.42; this.band = 0.32; this.mats = null; this.a = null; this.b = null; this.last = 0;
+    this.game = game; this.look = look; this.want = false; this.k = 0; this.focus = 0.5; this.band = 0.42; this.mats = null; this.a = null; this.b = null; this.last = 0;
     this.join();
   }
   /** On the glow's volumes (at boot, or the first time it is asked for if the glow came later). */
