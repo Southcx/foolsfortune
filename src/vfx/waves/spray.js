@@ -22,7 +22,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RW } from '../../world/raceway/track.js';
-import { lipCurve } from '../../world/raceway/surf/wavepool.js';
+import { lipCurve, lipRise } from '../../world/raceway/surf/wavepool.js';
 import { LIP_END } from './waveglsl.js';
 
 /** The rates (bursts a real second, desk and lean), the reach from the eye inside which the spray plays (m), the board's speed under
@@ -43,7 +43,7 @@ export function lipTip(S, t, s, a, out = new THREE.Vector3()) {
   if (!f || f.H < 0.8) return null;
   const W = S.WAVE, tl = W.throwLen, tube = W.tube;
   const tau = sstep(-W.lead, tl, -s); // (as waveglsl.js: rising from WAVE.lead ahead of the break)
-  const gone = sstep(-tube * LIP_END[0], -tube * LIP_END[1], s), c = lipCurve(f.H, f.F, tau, a, 1 - gone); // (the pool's own curve: the GLSL's twin)
+  const gone = sstep(-tube * LIP_END[0], -tube * LIP_END[1], s), c = lipCurve(f.H, f.F, tau, a, 1 - gone, lipRise(s)); // (the pool's own curve: the GLSL's twin)
   const dd = c.d, hh = c.h - gone * f.H * 0.35 * a;
   const tx = st.nu * ax.ux + st.nv * ax.vx, tz = st.nu * ax.uz + st.nv * ax.vz, px = x + dd * tx, pz = z + dd * tz;
   const base = (S.surfaceY(x, z, t) ?? P.y) - f.h; // (the still water and the swell under the crest)

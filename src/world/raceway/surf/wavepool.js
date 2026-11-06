@@ -27,7 +27,7 @@
 //
 //   const S = wavePool()   S.inPool(x, z)   S.surfaceY(x, z, t) | null   S.normalAt(x, z, t, out)   S.carry(x, z, t, out) -> {x, z}
 //   S.push(x, z, t) -> { x, z, k }   S.frameAt(x, z, t) -> { s, d, H, F, zone, ... }   S.barrelAt(x, y, z, t) -> { k, cover, ... }
-//   S.foamAt(x, z, t)   S.state(t)   POOL WAVE SWELL   lipCurve(H, F, tau, a)   uniformsOf(S, t, out)   WAVEPOOL_GLSL
+//   S.foamAt(x, z, t)   S.state(t)   POOL WAVE SWELL   lipCurve(H, F, tau, a, shrink, rise)   lipRise(s)   uniformsOf(S, t, out)   WAVEPOOL_GLSL
 // ---------------------------------------------------------------------------------------
 
 /** The basin, park-local metres (park.js's frame): its middle, its long axis's yaw (0: u runs along +x), its length L and width W, its
@@ -45,7 +45,7 @@ export const POOL = { x: -500, z: 790, yaw: 0, L: 600, W: 150, y: 14, vb: 62, be
  *  about 3x magnitude": H 6.2 -> 18.6, the face, back, tube and pocket about 2.3 times as long, so the face stays a face to ride (Hokusai's
  *  "The Great Wave off Kanagawa", c. 1831: a tall hollow curl, its thick lip thrown far over the trough, the crest clawing into fingers). */
 export const WAVE = {
-  H: 17, c: 15, cw: 7.5, back: 34, face: 17, faceShoulder: 36, shoulder: 110, pocket: 10, pocketW: 20,
+  H: 17, c: 15, cw: 7.5, back: 34, face: 17, faceShoulder: 36, shoulder: 55, shoalMin: 0.2, pocket: 10, pocketW: 20, // (the shoulder: H falls toward shoalMin over its e-fold, so the crest ramps down the pool from the break, never level)
   tube: 60, throwLen: 12, lead: 6, ww: 0.22, // (lead: metres ahead of the break where the lip begins to rise, 0 there, thrown whole throwLen behind)
   wwDecay: 90, ramp: 4, lull: 16, margin: 40,
   ends: 40, deepEnd: 30, beachRun: 26, broke: 8,
@@ -54,6 +54,11 @@ export const WAVE = {
   // the break over which the face eases from that quarter to the shoulder's rolling profile); the lip the rest of it, from the crest's
   // vertical over the top (2 H high, about 34 m) and down to its tip ahead of and outside the rider (sweep: radians round from the crest)
   lip: { rx: 1.0, up: 1.0, down: 1.0, sweep: 4.39 }, circleTo: 20,
+  // the curl's rise along the crest (South, 2026-11-06: "a peeling wave seen from the side should be a ramp"): the tube's upper half
+  // grows from `rise[0]` of H at the lead to whole `rise[1]` m behind the break, and sags by `sag[0]` toward the collapse (from sag[1]
+  // to sag[2] m behind), so from the beach the top edge climbs to its peak behind the break and falls away into the bore (height only:
+  // the lip's reach over the face, and so the cover test, is the same)
+  rise: [0.2, 16], sag: [0.18, 18, 60],
   roll: [[0.22, 0.19, 1.1, 0], [0.12, 0.47, -1.9, 1.7], [0.06, 1.13, 2.7, 0.4]], // (the bore's height rolling along it: amp, /m, /s, phase)
 };
 
@@ -78,9 +83,14 @@ export const cycleTime = () => 2 * (passTime() + WAVE.lull);
  *  ellipse about (rx, H): up from the crest with the face's own tangent, over the top a little above it, and down the far side to the tip
  *  near the face's foot), the throw running further round it as tau grows (Fournier and Reeves' curl; every barrel photograph: the wall,
  *  the roof and the curtain one surface). `shrink` the collapse's (the whitewater). The tube is about 1.4 F wide and H tall. */
-export function lipCurve(H, F, tau, a, shrink = 1) {
-  const C = WAVE.lip, rx = F * C.rx * shrink, psi = Math.PI - a * tau * C.sweep, r = H * (psi > 0 ? C.up : C.down) * shrink;
+export function lipCurve(H, F, tau, a, shrink = 1, rise = 1) {
+  const C = WAVE.lip, rx = F * C.rx * shrink, psi = Math.PI - a * tau * C.sweep, r = H * (psi > 0 ? C.up * rise : C.down) * shrink;
   return { d: rx + rx * Math.cos(psi), h: H + r * Math.sin(psi) };
+}
+/** The curl's rise at s along the crest (WAVE.rise, .sag): the share of H its upper half stands, for lipCurve's `rise`. */
+export function lipRise(s) {
+  const R = WAVE.rise, G = WAVE.sag;
+  return (R[0] + (1 - R[0]) * sstep(-WAVE.lead, R[1], -s)) * (1 - G[0] * sstep(-G[1], -G[2], s));
 }
 /** The bore's height factor at s behind the tube (1 elsewhere): rolling along its length and in time, so it tumbles, never a wall. */
 export function rollOf(s, t) {
@@ -124,7 +134,7 @@ export function wavePool() {
     const pu = u - S.ub, pv = v - P.vb, s = pu * S.tu + pv * S.tv, d = pu * S.nu + pv * S.nv;
     fr.s = s; fr.d = d;
     // the height along the crest: shoaling up out of the deep to the break; standing through the tube; the whitewater behind
-    const shoal = s > 0 ? 0.42 + 0.58 * Math.exp(-s / Wv.shoulder) : 1;
+    const shoal = s > 0 ? Wv.shoalMin + (1 - Wv.shoalMin) * Math.exp(-s / Wv.shoulder) : 1;
     const broke = s < -Wv.tube ? Wv.ww + (1 - Wv.ww) * Math.exp((s + Wv.tube) / Wv.broke) : 1;
     const decay = s < -Wv.tube ? Math.exp((s + Wv.tube) / Wv.wwDecay) * 0.65 + 0.35 : 1;
     const walls = sstep(-2, Wv.beachRun, v + P.beach * 0.3) * sstep(0, Wv.ends, u) * sstep(0, Wv.ends, P.L - u) * sstep(0, Wv.deepEnd, P.W - v);
@@ -266,7 +276,7 @@ vec4 wpWave(vec2 uv, out float H, out float F) {
   vec2 pr = vec2(uv.x - uWP[2].z, uv.y - uWP[1].z);
   float s = dot(pr, uWP[3].zw), d = dot(pr, uWP[3].xy);
   float Hb = uWP[4].x, tube = uWP[5].z;
-  float shoal = s > 0.0 ? 0.42 + 0.58 * exp(-s / uWP[5].y) : 1.0;
+  float shoal = s > 0.0 ? ${WAVE.shoalMin.toFixed(3)} + ${(1 - WAVE.shoalMin).toFixed(3)} * exp(-s / uWP[5].y) : 1.0;
   float broke = s < -tube ? uWP[6].x + (1.0 - uWP[6].x) * exp((s + tube) / ${WAVE.broke.toFixed(1)}) : 1.0;
   float decay = s < -tube ? exp((s + tube) / uWP[6].y) * 0.65 + 0.35 : 1.0;
   float roll = 1.0; if (s < -tube) { float rw = clamp((-tube - s) / 12.0, 0.0, 1.0); float tt = uWP[6].z; rw = rw * rw * (3.0 - 2.0 * rw);

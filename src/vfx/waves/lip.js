@@ -9,6 +9,9 @@
 //             the water's weight, a soft occlusion where the curl closes over the crest, the curtain luminous where it thins, the whole
 //             brighter toward the mouth), so face, roof and curtain read as one hollow cylinder with no seam where the strip begins
 //             (South, 2026-11-06: "the wave barrel should read more cylindrical"; Clark Little's and Chris Burkard's barrel photographs)
+//   YOUNG     where the throw is young (the mouth, just past the break) the curl's inside is the face's own water going over: the water's
+//             look carried up it (water.js: the deep, the light through, the sky, the face's streaks and crest foam, d run on as the arc
+//             up the curl), turning to the tube's shading as the face under it does, so the face runs into the curl with no line
 //   THICK     two skins, the outer stood off along the curl's normal (none at the root, LIP_THICK a quarter round, thin at the tip): its
 //             edge lit from behind; OUTSIDE, the curl's back is the water's own look, with Hokusai's foam lines run down it
 //   THE TIP   foam, the lip thick to its edge, and past it THE FINGERS (Hokusai's "The Great Wave off Kanagawa", c. 1831: the crest
@@ -45,7 +48,7 @@ const VERT = /* glsl */`
 ${WAVEPOOL_GLSL}
 ${WAVE_PARTS_GLSL}
 uniform vec3 uRW;
-varying vec3 vW; varying vec3 vNo; varying float vA; varying float vS; varying float vTau; varying float vGone; varying float vOn; varying float vQ; varying float vAng;
+varying vec3 vW; varying vec3 vNo; varying float vA; varying float vS; varying float vTau; varying float vGone; varying float vOn; varying float vQ; varying float vAng; varying vec2 vFlow; varying vec2 vCr; varying vec2 vHF; varying float vArc;
 void main() {
   float s = mix(${WAVE.lead.toFixed(1)}, -uWP[5].z * ${LIP_END[1].toFixed(2)}, position.x), aa = mix(-${LIP_ROOT.toFixed(3)}, ${(1 + LIP_FINGERS.len).toFixed(3)}, position.y), a = min(aa, 1.0);
   float q = max(aa - 1.0, 0.0) / ${LIP_FINGERS.len.toFixed(3)};
@@ -63,6 +66,10 @@ void main() {
   float psi = 3.14159265 - a * L.w * ${WAVE.lip.sweep.toFixed(3)};
   vAng = a < 0.0 ? 0.4 * clamp(1.0 + sin(psi), 0.0, 1.0) : 0.4 + 0.6 * a;
   float Hk, Fk; wpWave(wpBreakUV() + s * uWP[3].zw, Hk, Fk);
+  // the water's own frame carried up the curl (water.js reads it per fragment from wpWave): across the crest and along it in the park,
+  // H and F here, and d run on past the crest as the arc up the curl (< 0), so the face's streaks, foam and light continue onto it
+  vFlow = wpToPark(uWP[3].xy) - wpToPark(vec2(0.0)); vCr = wpToPark(uWP[3].zw) - wpToPark(vec2(0.0)); vHF = vec2(Hk, Fk);
+  vArc = a < 0.0 ? Fk * (1.0 + cos(psi)) : -a * L.w * ${WAVE.lip.sweep.toFixed(3)} * Hk * 0.9;
   float ca = clamp(a, 0.0, 1.0), th = ${LIP_THICK.toFixed(2)} * Hk * (1.0 - ca) * (1.0 - ca * 0.3) * (1.0 - gone) * step(0.5, position.z); // (the outer skin: one sheet at the tip)
   L.xy += n.xz * th; L.z += n.y * th - th * 1.6 * (1.0 - smoothstep(0.0, 0.3, a)); // (its root let down into the wave's own back: no edge stands)
   vec2 uv = wpUV(L.xy);
@@ -79,9 +86,11 @@ const FRAG = /* glsl */`
 #include <fog_pars_fragment>
 uniform sampler2D uSky;
 //SKY
+${WAVEPOOL_GLSL}
+${WAVE_PARTS_GLSL}
 ${LIQUID_GLSL}
 ${WAVE_SHADE_GLSL}
-varying vec3 vW; varying vec3 vNo; varying float vA; varying float vS; varying float vTau; varying float vGone; varying float vOn; varying float vQ; varying float vAng;
+varying vec3 vW; varying vec3 vNo; varying float vA; varying float vS; varying float vTau; varying float vGone; varying float vOn; varying float vQ; varying float vAng; varying vec2 vFlow; varying vec2 vCr; varying vec2 vHF; varying float vArc;
 // the crest's claws: ridges along the crest at three scales (a finger, its split, its knuckles), each finger its own length; 1 inside
 float lipFinger(float s, float q, float n) {
   float c = s * 1.75 + 1.6 * sin(s * 0.29) + 0.8 * sin(s * 0.71 + 2.0), k = floor(c / 6.28318);
@@ -109,6 +118,16 @@ void main() {
   vec3 body = mix(WP_DEEP, WP_BODY, 0.55 + 0.4 * vA);
   vec3 col;
   if (inner) {
+    // the open face as the water draws it (water.js), carried up the curl from the crest: where the throw is young (the mouth, the
+    // break) the curl is the face's own water going over, lit and streaked as the face is; it turns to the tube's shading as the face
+    // under it does (water.js "under": the throw, less the collapse), so face and curl meet at the crest with no line
+    float under = vTau * (1.0 - vGone), F = vHF.y;
+    float faceK = smoothstep(-0.2 * F, 0.05 * F, vArc) * smoothstep(3.0, 8.0, vHF.x);
+    vec2 sd = vec2(vS * 0.21, vArc * 0.045);
+    float ridge = liqTap(sd + vec2(0.0, -t * 0.05)).g * 0.65 + liqTap(sd * 2.3 + vec2(0.37, t * 0.03)).g * 0.35;
+    N = normalize(N + (ridge - 0.5) * 0.35 * faceK * vec3(vCr.x, 0.0, vCr.y));
+    ndv = clamp(dot(N, V), 0.0, 1.0); fres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0); sky = wpSky(reflect(-V, N));
+    vec3 open = WP_DEEP + wpThrough(V, N, 1.0) * (1.0 - 0.4 * under);
     // inside the tube: dark where the lip is thick (its root over the crest, the water's whole weight), luminous jade where it thins to
     // the tip and the light comes through, darker the deeper into the tube from the mouth; slow bands of light along it (a tube is
     // read by that gradient: the roof's dark heel to the bright curtain, the mouth the brightest thing in the frame)
@@ -116,6 +135,10 @@ void main() {
     float ang = clamp(vAng + vQ * 0.18, 0.0, 1.0), mouth = smoothstep(-${(WAVE.tube * 0.75).toFixed(1)}, 2.0, vS);
     float bands = liqGlow(vec2(vS * 0.35 - t * 0.6, vA * 2.0), 0.6, t) * 0.5 + 0.75;
     col = wpTube(ang, mouth, V, N, vTau) * mix(1.0, bands, smoothstep(0.6, 0.95, ang)); // (soft bands of light in the curtain only)
+    col = mix(open, col, clamp(under * 0.94 + smoothstep(0.35, 0.7, vA) * vTau, 0.0, 1.0)); // (the young curl the face's water; the formed one the tube)
+    col = mix(col, sky * 0.85, clamp(fres, 0.0, 0.55) * (1.0 - 0.9 * under));
+    float spI = max(dot(N, normalize(L + V)), 0.0);
+    col += min(uSunC * (pow(spI, 120.0) * 0.4 + pow(spI, 14.0) * 0.03) * mix(0.15, 1.0, smoothstep(0.04, 0.4, abs(V.y))), vec3(0.75)) * (1.0 - under);
     col += WP_GLOW * 0.2 * smoothstep(0.86, 1.0, ang) * vTau * (0.6 + 0.4 * uDay); // (the thin edge lit from behind)
     col = mix(col, sky * 0.6, fres * 0.12 * smoothstep(0.6, 1.0, ang));
     // the free edge, whatever the throw: thin water lit through (jade), so the curl's edge reads as water thinning, never a dark card
@@ -132,6 +155,18 @@ void main() {
     col = mix(col, mix(WP_BODY, WP_GLOW, 0.4) * (0.65 + 0.35 * uDay) + wpThrough(V, N, 1.0) * 0.35, smoothstep(0.75, 1.0, vA) * 0.6); // (the edge thinning, lit through)
     float sp = max(dot(N, normalize(L + V)), 0.0);
     col += uSunC * (pow(sp, 90.0) * 0.35 + pow(sp, 12.0) * 0.03);
+  }
+  if (inner) { // the face's foam run on up the curl's root (water.js: the crest pitching, the zone's band at the crest, the streaks)
+    float F = vHF.y, under = vTau * (1.0 - vGone), zone = vS > ${(WAVE.pocket + WAVE.pocketW).toFixed(1)} ? 1.0 : vS > 0.0 ? 2.0 : 3.0;
+    float faceK = smoothstep(-0.2 * F, 0.05 * F, vArc) * smoothstep(3.0, 8.0, vHF.x);
+    vec2 sd = vec2(vS * 0.21, vArc * 0.045);
+    float ridge = liqTap(sd + vec2(0.0, -t * 0.05)).g * 0.65 + liqTap(sd * 2.3 + vec2(0.37, t * 0.03)).g * 0.35;
+    float mk = max(wpFoamMask(vS, vArc, zone, vHF.x, F, 99.0), 0.25 * step(vS, 16.0) * smoothstep(-0.35 * F, 0.0, vArc));
+    mk = max(mk, smoothstep(0.5, 0.72, ridge) * faceK * 0.85) * (1.0 - 0.9 * under);
+    vec2 fmF = wpFoam(vW.xz, -vFlow * 0.4, mk, t);
+    vec3 foamF = WP_FOAM * (0.55 + 0.45 * max(dot(N, L), 0.0)) * (0.55 + 0.45 * uDay) + sky * 0.12;
+    col = mix(col, WP_FOAM_SH * (0.5 + 0.5 * uDay), fmF.y * 0.55);
+    col = mix(col, foamF * (1.0 - 0.35 * under), fmF.x);
   }
   // the tip's foam: the noise thresholded crisp toward the edge, white and a shadowed rim
   float streaks = inner ? 0.0 : smoothstep(0.58, 0.82, liqTap(vec2(vS * 0.16, vA * 1.6 - t * 0.04)).g) * smoothstep(0.25, 0.7, vA) * 0.7; // (Hokusai's foam lines down the curl's outside)

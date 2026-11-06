@@ -60,7 +60,9 @@ vec4 wpLipAt(float s, float a, out vec3 nOut, out float gone) {
   gone = smoothstep(-tube * ${f(LIP_END[0])}, -tube * ${f(LIP_END[1])}, s); // (the curl collapsing into the bore: shrunk to nothing on the crest line, never cut off)
   float shrink = 1.0 - gone;
   // lipCurve (WAVE.lip): one tube with the face, about (rx, H): up from the crest with the face's vertical, over, and down to the tip
-  float rx = F * ${f(WAVE.lip.rx)} * shrink, psi = 3.14159265 - a * tau * ${f(WAVE.lip.sweep)}, r = H * (psi > 0.0 ? ${f(WAVE.lip.up)} : ${f(WAVE.lip.down)}) * shrink;
+  // the curl's rise along the crest (wavepool.js lipRise): its upper half low at the lead, whole behind the break, sagging to the bore
+  float rise = (${f(WAVE.rise[0])} + ${f(1 - WAVE.rise[0])} * smoothstep(-${f(WAVE.lead)}, ${f(WAVE.rise[1])}, -s)) * (1.0 - ${f(WAVE.sag[0])} * smoothstep(-${f(WAVE.sag[1])}, -${f(WAVE.sag[2])}, s));
+  float rx = F * ${f(WAVE.lip.rx)} * shrink, psi = 3.14159265 - a * tau * ${f(WAVE.lip.sweep)}, r = H * (psi > 0.0 ? ${f(WAVE.lip.up)} * rise : ${f(WAVE.lip.down)}) * shrink;
   float dd = rx + rx * cos(psi), hh = H + r * sin(psi) - gone * H * 0.35 * a;
   vec2 uv = cuv + dd * tr;
   // the outward normal of the ellipse at psi (away from the tube's axis), in the wave's (d, h) plane, turned into the park's
