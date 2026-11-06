@@ -16,6 +16,7 @@ import { RACEWAY_CAVERN_EFFECTS } from './racewaycaverneffects.js'; // (a crysta
 import { RACEWAY_PROPS_EFFECTS } from './racewaypropseffects.js'; // (the vein lanes, the pots, the antlion chaser, the patches: vfx/racewayprops.js plays them)
 import { RACEWAY_KNOCK_EFFECTS } from './racewayknockeffects.js'; // (clay struck at speed: a rival bumped or taken down, a pot's plume: vfx/racewayrivals.js, vfx/racewayprops.js)
 import { RACEWAY_PARK_EFFECTS } from './racewayparkeffects.js'; // (the antlion's maw snapping: vfx/racewaypark.js plays it)
+import { WAVE_EFFECTS } from './waves/effects.js'; // (the wave pool's spray: the lip's sheet, the foam ball, the rail, the spit, the slope's sand: vfx/waves/spray.js plays them)
 import { DUNES_DRESS_EFFECTS } from './dunes/effects.js'; // (the dust devils' scuff, a fulgurite's strike and glint: vfx/dunes/)
 import { RACEWAY_DRESS_EFFECTS } from './raceway/effects.js'; // (the race's fireworks, a Raceway lantern catching: vfx/raceway/)
 import { JELLY_MOUNT_EFFECTS } from './jellymount/effects.js'; // (the slip jelly mount's call, hops, hurt, drink, slump and burst: vfx/jellymount/look.js)
@@ -431,6 +432,7 @@ export const LIBRARY = {
   ...RACEWAY_EFFECTS,
   ...RACEWAY_CAVERN_EFFECTS,
   ...RACEWAY_PARK_EFFECTS,
+  ...WAVE_EFFECTS,
   ...DUNES_DRESS_EFFECTS,
   ...RACEWAY_DRESS_EFFECTS,
   ...JELLY_MOUNT_EFFECTS,

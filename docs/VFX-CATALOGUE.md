@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-11-03). 700 effects in 49 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-11-06). 707 effects in 51 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -427,7 +427,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `raceway.lane.enter` | one-shot | decal:shockring, sprites:core, sprites:glint |  | vfx/racewayprops.js |
 | `raceway.lantern.light` | one-shot | sprites:soft, sprites:glint |  | vfx/raceway/lanterns.js |
 | `raceway.patch.take` | one-shot | sprites:core, sprites:ringthin, sprites:facet |  | vfx/racewayprops.js |
-| `raceway.pit.slide` | one-shot | sprites:chip, sprites:puff |  | vfx/racewaypark.js |
+| `raceway.pit.slide` | one-shot | sprites:chip, sprites:puff |  | vfx/racewaypark.js, vfx/waves/effects.js |
 | `raceway.pit.snap` | one-shot | sprites:puff, sprites:chip, sprites:shard |  | vfx/racewaypark.js, vfx/racewaytraps/bodies.js |
 | `raceway.plate` | one-shot | decal:shockring, sprites:core, sprites:glint, sprites:streak×2, light | ---- a sun plate ridden over: F-Zero's dash plate, a ring of light run out over the sand (`tint` and `power` the sun's: dimmer and cooler toward dusk) and the push in Lachryma's colour thrown on up the track (`dir` the track's way); a da... | vfx/racewaylooks.js |
 | `raceway.plate.dark` | one-shot | decal:shockring, sprites:puff, sprites:ringthin |  | vfx/racewaylooks.js |
@@ -447,7 +447,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `hit` | one-shot | sprites:core, shape:disc, sprites:streak, sprites:soft | what every blow shows, whatever struck what: the 0.1 s white core, a star of rays, sparks thrown along the blow, motes left hanging | audio/crossing.js, audio/cues.js, audio/godpowers.js +39 |
+| `hit` | one-shot | sprites:core, shape:disc, sprites:streak, sprites:soft | what every blow shows, whatever struck what: the 0.1 s white core, a star of rays, sparks thrown along the blow, motes left hanging | audio/crossing.js, audio/cues.js, audio/godpowers.js +40 |
 | `hit.blunt` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff | a blunt blow: a ring of rays knocked out flat, and dust lifting off | vfx/blowfeeleffects.js, world/strawmanwell/fighter/kit.js |
 | `hit.blunt.clay` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff, sprites:chip | extends `hit.blunt`. what clay gives up: chips of it, falling, and a puff of its dust | vfx/vfx.js |
 | `hit.blunt.clay.kill` | one-shot | sprites:core, shape:ring×2, sprites:streak, sprites:soft, sprites:puff, sprites:chip, sprites:star4 | extends `hit.blunt.clay`. a kill: what it was made of bursts in a pop of its colour (a second shape), and a few stars of it go up (a finishing beat on top of its own death) | vfx/mechs/partsbody.js |
@@ -506,7 +506,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `skiff.water.enter` | one-shot | sprites:soft, sprites:puff | ---- the board on water (the owner's notes on v198: no wake, no trail, no splash): drops blended over, never added, so they never glare | vfx/anglingeffects.js, vfx/skiffwaterlook.js |
 | `skiff.water.enter.lachryma` | one-shot | sprites:soft×2, sprites:glint, light |  | vfx/skiffwaterlook.js |
 | `skiff.water.exit` | one-shot | sprites:soft |  | vfx/skiffwaterlook.js |
-| `skiff.water.spray` | held | sprites:soft, sprites:puff | h.k the speed: the rate follows it | vfx/skiffwaterlook.js |
+| `skiff.water.spray` | held | sprites:soft, sprites:puff | h.k the speed: the rate follows it | vfx/skiffwaterlook.js, vfx/waves/effects.js |
 | `skiff.water.spray.lachryma` | held | sprites:soft, sprites:glint | Lachryma is heavier: fewer, fatter drops, lower, and the film's glints in them | vfx/skiffwaterlook.js |
 | `skiff.wreck` | one-shot | sprites:core, sprites:ring×2, sprites:puff, sprites:chip, sprites:glint, light |  | audio/cues.js, courier/skiff/boardrules.js, feedback/tracking/racemodes.js +3 |
 | `skiff.wreck.mend` | one-shot | sprites:core, sprites:ringthin, sprites:sparkle, light |  | vfx/skiffboardlooks.js |
@@ -620,7 +620,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `giant.sand.pour` | one-shot | sprites:streak, sprites:puff | a windup's tell: sand running off the arm about to swing, in a falling sheet | vfx/mechs/giants/colossusmarks.js |
 | `giant.sand.shed` | one-shot | sprites:soft, sprites:puff |  | vfx/mechs/giants/colossus.js |
 | `giant.sand.slump` | one-shot | sprites:puff, sprites:chip, shake |  | vfx/mechs/giants/colossus.js |
-| `giant.slam` | one-shot | shape:ring×2, sprites:puff, sprites:chip, shake, hitstop | a giant driven into the ground at the mech's feet: the powerbomb | feedback/tracking/mechnight.js, vfx/mechs/giants/grapple.js, world/hangar/giantgrapple.js |
+| `giant.slam` | one-shot | shape:ring×2, sprites:puff, sprites:chip, shake, hitstop | a giant driven into the ground at the mech's feet: the powerbomb | audio/cues.js, feedback/tracking/mechnight.js, vfx/mechs/giants/grapple.js +1 |
 | `giant.strain.spark` | one-shot | sprites:streak, sprites:puff | the frame's joint under a held giant: embers spat from it | vfx/mechs/giants/grapple.js |
 | `giant.straw.burn` | held | sprites:streak, sprites:tongue, sprites:star4, sprites:cloud |  | vfx/mechs/fire/bodies.js |
 | `giant.straw.burst` | one-shot | sprites:streak, sprites:puff |  | vfx/mechs/giants/straw.js |
@@ -656,7 +656,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 |---|---|---|---|---|
 | `sea.bottle.cork` | one-shot | sprites:drip, sprites:star4 |  | vfx/opensea/bottlelooks.js |
 | `sea.bottle.glint` | one-shot | sprites:star4, sprites:soft |  | vfx/opensea/bottlelooks.js |
-| `sea.dig` | one-shot | sprites:chip, sprites:puff |  | audio/cues.js, feedback/tracking/opensea.js, progress/cosmetics.js +4 |
+| `sea.dig` | one-shot | sprites:chip, sprites:puff |  | audio/cues.js, feedback/tracking/opensea.js, progress/cosmetics.js +5 |
 | `sea.dig.find` | one-shot | sprites:star4, sprites:glint, light |  | vfx/opensea/puzzlelooks.js |
 | `sea.salvage.drip` | one-shot | sprites:drip |  | vfx/opensea/salvagelooks.js |
 | `sea.salvage.land` | one-shot | sprites:chip, sprites:drip |  | vfx/opensea/salvagelooks.js |
@@ -820,6 +820,16 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `swing.dreamvane` | one-shot | trail×2, sprites:glint, sprites:chip | the Dreamvane's pick brought down overhead: a heavy arc of Lachryma, gold at the head, stone chips and glints thrown off it | tools/dreamvane/dreamvane.js |
 | `swing.kick` | one-shot | trail, sprites:puff | a kick: a short pale arc and a puff of dust off the toe (a kick is quick: the ribbon is too) | courier/moves/kick.js |
 
+### wave (5)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `wave.foamball` | held | sprites:disc×2, sprites:puff | h.k: the foam ball's size, its rate | vfx/waves/spray.js |
+| `wave.lip.spray` | one-shot | sprites:disc×2, sprites:puff |  | vfx/waves/spray.js |
+| `wave.rail.spray` | held | sprites:disc×2, sprites:puff | h.k: speed and slip, the rate follows it | vfx/waves/spray.js |
+| `wave.skid.sand` | one-shot | sprites:chip, sprites:disc, sprites:puff |  | vfx/waves/spray.js |
+| `wave.spit` | one-shot | sprites:disc×2, sprites:puff, sprites:ring |  | vfx/waves/spray.js |
+
 ### temper (4)
 
 | effect | kind | layers | what | asked by |
@@ -860,6 +870,13 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `wisp.cast` | one-shot | sprites:core, sprites:soft | its cast leaving the lantern: a puff of the flame and a spark; its ember in flight (held, following the ember): a short hot tail, a halo, sparks shed and falling; put out (when the Death clip ends): the wick's smoke, its last embers and ... | audio/cues.js, feedback/tracking/wisps.js, vfx/lanternwisplook.js +1 |
 | `wisp.cast.flight` | held | sprites:core, sprites:soft×2 |  | vfx/lanternwisplook.js, vfx/racewaytraps/bodies2.js |
 | `wisp.snuff` | one-shot | sprites:core, sprites:puff, sprites:soft, sprites:sparkle |  | vfx/duelview/aberrants/wisp.js, vfx/lanternwisplook.js, vfx/racewaytraps/bodies2.js |
+
+### agate (2)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `agate.flame` | held | shape:cone, shape:pillar, sprites:soft | a tongue of the second feeling on the creature's crown; its scale (the agate look's) is its height | vfx/agatelook.js |
+| `agate.vein` | held | shape:band | one of the agate's two feelings marbled over the body (the Two-Tone knack's): played once a feeling | vfx/agatelook.js |
 
 ### drop (2)
 
@@ -918,7 +935,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `cut` | one-shot | shape:disc, sprites:streak, sprites:glint | a cut through the air (the cutlass meeting something, the blade mode's planes, the god hand's slash): a seam of light along the stroke, a hot star at its middle, glints thrown off it ('from' -> 'to' in the context: spawn 'line') | cine/overture.board.js, cine/sequence.js, music/lockheart.js +13 |
+| `cut` | one-shot | shape:disc, sprites:streak, sprites:glint | a cut through the air (the cutlass meeting something, the blade mode's planes, the god hand's slash): a seam of light along the stroke, a hot star at its middle, glints thrown off it ('from' -> 'to' in the context: spawn 'line') | cine/overture.board.js, cine/sequence.js, music/lockheart.js +15 |
 
 ### dunemaw (1)
 
@@ -930,13 +947,13 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `embers` | one-shot | shape:sphere, sprites:soft | what a lantern or a fire leaves in the air: a breath of heat, embers rising out of it, twinkling, falling back | progress/skiffpaint.js, vfx/flourishes.js, vfx/particles.js +2 |
+| `embers` | one-shot | shape:sphere, sprites:soft | what a lantern or a fire leaves in the air: a breath of heat, embers rising out of it, twinkling, falling back | progress/skiffpaint.js, ui/skiffsetcards.js, vfx/flourishes.js +3 |
 
 ### impact (1)
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `impact` | one-shot | shape:cone, sprites:streak, sprites:puff |  | audio/cues.js, audio/damage.js, audio/shellparts.js +56 |
+| `impact` | one-shot | shape:cone, sprites:streak, sprites:puff |  | audio/cues.js, audio/damage.js, audio/shellparts.js +59 |
 
 ### implode (1)
 
