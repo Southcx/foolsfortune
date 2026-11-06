@@ -12,7 +12,7 @@
 // ---------------------------------------------------------------------------------------
 export const HEALTH = 20;
 export const CLASSES = {
-  fool: { id: 'fool', label: 'The Fool', passive: 'Once a turn, roll the Hungry Die again.', active: 'cycle', cost: 2, does: 'Cycle: draw three more cards.' },
+  fool: { id: 'fool', label: 'The Fool', passive: 'Once a turn, pay 1 to roll the Hungry Die again.', active: 'cycle', cost: 2, does: 'Cycle: draw three more cards.' },
   chariot: { id: 'chariot', label: 'The Chariot', passive: 'Your tokens move one tile further.', active: 'charge', cost: 2, does: 'Charge: your tokens hit two harder this turn.' },
   empress: { id: 'empress', label: 'The Empress', passive: 'Tokens you summon have one more health.', active: 'bloom', cost: 2, does: 'Bloom: your Arcana mends 5.' },
   hermit: { id: 'hermit', label: 'The Hermit', passive: 'You keep three cards between turns, not two.', active: 'lantern', cost: 3, does: 'Lantern: this turn\'s Hungry Die roll is 3 higher.' },
