@@ -78,15 +78,16 @@ export function rewriteShader(src) {
   if (!used.size) return { text: src, arrays: [] };
   // the helpers laid in after their declarations, in order, the declarations' spans moved with them
   const ends = [...new Set(decls.filter((d) => used.has(d.name)).map((d) => d.span[1]))].sort((a, b) => a - b);
-  let text = '', last = 0, shift = 0;
-  const moved = decls.map((d) => [...d.span]);
+  // (a declaration moves by the helpers laid in at or before its start, and only those: v420 moved every earlier one by the running
+  // shift too, so with two declaration lines the first fell out of the skip and its `[N]` was read as an index: CASEBOOK 413)
+  let text = '', last = 0;
+  const added = [];
   for (const e of ends) {
     const add = decls.filter((d) => used.has(d.name) && d.span[1] === e).map((d) => helper(d.type, d.name, d.size)).join('');
-    text += src.slice(last, e) + add; last = e;
-    decls.forEach((d, k) => { if (d.span[0] >= e) { moved[k][0] = d.span[0] + shift + add.length; moved[k][1] = d.span[1] + shift + add.length; } else if (d.span[1] <= e) { moved[k][0] = d.span[0] + shift; moved[k][1] = d.span[1] + shift; } });
-    shift += add.length;
+    text += src.slice(last, e) + add; last = e; added.push([e, add.length]);
   }
   text += src.slice(last);
+  const moved = decls.map(({ span: [a, b] }) => { const by = added.reduce((s, [e, n]) => s + (e <= a ? n : 0), 0); return [a + by, b + by]; });
   return { text: rewriteReads(text, [...used], moved).text, arrays: [...used] };
 }
 
