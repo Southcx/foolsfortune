@@ -31,7 +31,7 @@ bigger toward the deep wall) is wave riding's chop.
   at the lip, spray thrown), a cutback (turned back toward the pocket), a floater (ridden over the falling lip); each a link in the trick
   combo. An air: off the lip with the vertical speed it has.
 - **The barrel**: S held is the stall (a hand dragged in the face: the board slows and falls back under the lip). Covered (`cover`), the
-  tube's clock runs and a balance needle (Kelly Slater's Pro Surfer's) wobbles with how far you are off the ideal height and line and how
+  tube's clock runs and a balance needle (Treyarch's Kelly Slater game's, 2002) wobbles with how far you are off the ideal height and line and how
   near the foam ball is; A / D hold it. Out of the mouth with the spit = made (a push, the combo's big link). Too high under the lip: it
   lands on you (a wipeout, the bail's `lip`). Too deep: the foam ball takes you (`closeout`).
 - **Wave riding's chop** (Wave Race 64's): the swell's crests launch the board; a trick off a crest gives a little push (Mario Kart);
@@ -71,7 +71,7 @@ Desk first; a phone gets the same look on a coarser grid and fewer particles (`m
 
 ## Prior art (sourced in the research pass, 2026-11-06)
 
-Kelly Slater's Pro Surfer (the tube's balance meter), TransWorld Surf (tube time as a goal), Surf World Series and Barton Lynch Pro
+Treyarch's Kelly Slater game, 2002 (the tube's balance meter), TransWorld Surf (tube time as a goal), Surf World Series and Barton Lynch Pro
 Surfing (pump, pocket, foam ball, the spit), Wave Race 64 (buoys fill a meter, a miss resets it; water's momentum), Riptide GP (readable,
 deterministic swell), SSX Tricky (tricks fill boost, repeats score less), Shaun White Snowboarding and the sidecut model (edge carving),
 Alto's Odyssey (landing angle), Horizon Forbidden West's SIGGRAPH 2022 water talk (one cross-section swept along the wavefront, the peel

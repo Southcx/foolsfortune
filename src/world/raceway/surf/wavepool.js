@@ -22,7 +22,7 @@
 //
 // Prior art: Kelly Slater's Surf Ranch (the foil's pass, the peel along a reef contour), Tessendorf's and GPU Gems ch. 1's sums of
 // sharpened sines (the swell), Fournier and Reeves 1986 "A simple model of ocean waves" (the crest's profile steepening over the shoaling
-// floor, the curl as an ellipse thrown off the crest), Surf World Series' and Kelly Slater's Pro Surfer's tube (the pocket, the foam ball,
+// floor, the curl as an ellipse thrown off the crest), Surf World Series' and the tube in Treyarch's Kelly Slater game (2002) (the pocket, the foam ball,
 // the cover); the house's own park.js (a pure height function shared by game and tools).
 //
 //   const S = wavePool()   S.inPool(x, z)   S.surfaceY(x, z, t) | null   S.normalAt(x, z, t, out)   S.carry(x, z, t, out) -> {x, z}
