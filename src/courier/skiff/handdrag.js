@@ -22,11 +22,14 @@ export const HAND_DRAG = { in: 7, out: 4, w: 0.9, reach: 0.9, back: 0.2, dip: 0.
 const _t = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quaternion(), _d = new THREE.Vector3();
 
 export class HandDrag {
-  constructor(surf) { this.surf = surf; this.w = 0; this.side = null; this.spray = null; this.at = new THREE.Vector3(); }
+  constructor(surf) { this.surf = surf; this.on = false; this.w = 0; this.side = null; this.spray = null; this.at = new THREE.Vector3(); }
   /** Each frame (real time): the weight toward the stall or the cover, and the spray let go when it is gone. */
   ease(dt) {
     const S = this.surf, want = S.sk.active && S.sk.phase === 'ride' && !S.sk.air && (S.stall || (S.tube && S.cover > HAND_DRAG.from));
     this.w += ((want ? HAND_DRAG.w : 0) - this.w) * (1 - Math.exp(-(want ? HAND_DRAG.in : HAND_DRAG.out) * dt));
+    // the event, once a drag (on as its hand lands, off as it lets go): `skiff.surf.drag { on, side, by }`, for the ear (Wanda's audio/surf.js)
+    const on = this.on ? this.w >= 0.02 : this.w > 0.3;
+    if (on !== !!this.on) { this.on = on; S.game?.events?.emit('skiff.surf.drag', { on, side: this.side || null, by: 'courier' }); }
     if (this.w < 0.02) { this.w = 0; this.side = null; if (this.spray) { this.spray.stop?.(); this.spray = null; } }
   }
   /** In the skiff's hands() (after the clips and the grab's reach): the face's arm onto the water. */

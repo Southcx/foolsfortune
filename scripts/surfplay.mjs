@@ -38,7 +38,7 @@ try {
   await page.evaluate(async () => {
     const G = __game, g = G.game;
     window.__keys = new Set(); g.input.isDown = (c) => __keys.has(c);
-    window.__ev = []; for (const n of ['skiff.surf', 'skiff.surf.pump', 'skiff.surf.turn', 'skiff.tube.enter', 'skiff.tube.exit', 'skiff.submarine', 'skiff.bail', 'skiff.slope', 'skiff.edge.skid', 'skiff.butter', 'skiff.slope.land', 'skiff.buoy']) g.events.on(n, (e) => __ev.push(n + ' ' + JSON.stringify(Object.fromEntries(Object.entries(e).filter(([k]) => k !== 'name' && k !== 't' && k !== 'by')))));
+    window.__ev = []; for (const n of ['skiff.surf', 'skiff.surf.pump', 'skiff.surf.turn', 'skiff.tube.enter', 'skiff.tube.exit', 'skiff.submarine', 'skiff.bail', 'skiff.slope', 'skiff.edge.skid', 'skiff.butter', 'skiff.slope.land', 'skiff.buoy', 'skiff.surf.drag']) g.events.on(n, (e) => __ev.push(n + ' ' + JSON.stringify(Object.fromEntries(Object.entries(e).filter(([k]) => k !== 'name' && k !== 't' && k !== 'by')))));
     g.places.travel('wavepool');
     let f = 0; do { G.tick(1 / 30); f++; if (f % 5 === 0) await new Promise((q) => setTimeout(q, 0)); } while ((g.seam?.busy || !g.raceway?.built) && f < 1500);
     for (let i = 0; i < 30; i++) G.tick(1 / 60);
