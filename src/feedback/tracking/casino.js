@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // TRACKING, RAKU'S BAZAAR (docs/plans/CASINO.md): the casino's moments said in the log (the only text feedback) and kept on the ledger:
 // the chips bought and cashed, a seat taken, a table's big moments (a Major Arcana flipped, a steal, a Fate Clause, a four, Death, a lock,
-// an upgrade, a d20 fused, a Supernova, a bluff called, a reveal), and each game's end with what it won or cost. The words are placeholders for Espada's.
+// an upgrade, a d20 fused, a Supernova, a bluff called, a reveal, Entropy Tactics' tile turned by 21, fatigue and reshuffle), and each game's end with what it won or cost. The words are placeholders for Espada's.
 //
 //   bazaar.enter   casino.chips { buy | cash, n }   casino.sit { game, practice }   casino.howto { game, skipped }   casino.play { game, what, who,
 //   ... }   casino.result { game, won, net, forfeit, practice }   (each with `by`; practice counts nothing but itself)
@@ -36,10 +36,12 @@ export function casinoRules({ on, L, log }) {
     else if (e.what === 'deposits') say('info', `The jar held ${e.total} against a line of ${e.line}: ${e.winners.length ? `${e.winners.join(', ')} bet right${e.share ? `, ${e.share} chips each` : ''}.` : 'no one was right; it carries over.'}`, 'deposits', 0.3);
     else if (e.what === 'liar') say('info', `${w} ${e.who === 'you' ? 'said' : 'said'} ${e.said} and had dropped ${e.dropped}.`, 'liar', 0.3);
     else if (e.what === 'summon') say('info', `${w} ${e.who === 'you' ? 'summoned' : 'summoned'} a ${e.kind}.`, 'summon', 0.3);
-    else if (e.what === 'spell') say('info', `${w} ${e.who === 'you' ? 'cast' : 'cast'} ${e.n} of a kind${e.arcana ? ` for ${e.dmg} to the Arcana` : ''}.`, 'spell', 0.3);
+    else if (e.what === 'tile') say('info', `${w} made 21 at column ${e.at[0] + 1}, row ${e.at[1] + 1}: the tile turns ${e.who === 'you' ? 'yours' : 'theirs'}.`, 'tile', 0.3);
+    else if (e.what === 'fatigue') say('warn', `${w} ${e.who === 'you' ? 'take' : 'takes'} fatigue: ${e.n} health.`, 'fatigue', 0.3);
+    else if (e.what === 'reshuffle') say('info', `${w} ${e.who === 'you' ? 'reshuffle' : 'reshuffles'} the discard pile into the deck for ${e.n} health.`, 'reshuffle', 0.3);
     else if (e.what === 'push') say('info', `${w} ${e.who === 'you' ? 'pushed' : 'pushed'} the bomb: ${e.tiles ? `${e.tiles} tile${e.tiles === 1 ? '' : 's'}` : 'it held'} (${e.atk} against ${e.def}).`, 'push', 0.3);
     else if (e.what === 'countdown') say('info', `${w} ${e.who === 'you' ? 'counted' : 'counted'} the bomb down to ${e.counter}.`, 'countdown', 0.3);
-    else if (e.what === 'boom') say('warn', `The Grand Bomb goes off${e.zone === 'you' ? ' on your ground' : e.zone ? ` on ${e.zone}'s ground` : ' in the middle'}.`, 'boom', 0.3);
+    else if (e.what === 'boom') say('warn', `The Grand Bomb goes off${e.zone === 'you' ? ' on your tile' : e.zone ? ` on ${e.zone}'s tile` : ' on nobody\'s tile'}.`, 'boom', 0.3);
     else if (e.what === 'reveal') say('info', `Raises over. Hands shown: ${e.shown.join(', ')}.`, 'reveal', 0.3);
   });
   on('casino.result', (e) => {

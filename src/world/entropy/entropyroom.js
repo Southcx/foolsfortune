@@ -25,7 +25,7 @@ import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { zoneOf as zoneAt } from '../../render/zonemap.js';
 import { TableSession } from '../bazaar/session.js';
-import { ENTROPY, zoneOf as boardSide } from '../../progress/casino/entropy/rules.js';
+import { ENTROPY, startOwner as boardSide } from '../../progress/casino/entropy/rules.js';
 import { entropyBot } from '../../progress/casino/entropy/bot.js';
 import { seatOf } from '../../progress/casino/folk.js';
 
@@ -36,7 +36,7 @@ export const ENTROPY_ROOM = {
   killDrop: 60, // (m below the oasis: a fall into the void sets you back on it, the player's own killY)
 };
 /** The board: 7 x 7 cells, each its own tile floating `lift` m over the oasis's height, `tile` m across with `gap` between (so each reads
- *  as a thing alone); row 0 the far one (the other seat's ground, progress/casino/entropy/rules.js zoneOf), row 6 yours. `ripple`:
+ *  as a thing alone); row 0 the far one (the other seat's back rank at the start, progress/casino/entropy/rules.js startOwner), row 6 yours. `ripple`:
  *  the placeholder setup, a tile rising from `from` m below, `per` real s later for each metre from the board's heart, `rise` real s. */
 export const BOARD = { size: 7, tile: 1.6, gap: 0.35, lift: 0.6, near: -5.2, ripple: { from: 6, per: 0.06, rise: 0.7 } };
 /** The board's camera (Petra's rig; Calissa's tilt-shift): from behind your seat, high and tipped down across the board, the far rows
@@ -48,7 +48,7 @@ export const AIR = { fog: 0x0a0612, density: 0.004 };
 export const ENTROPY_SEAT = {
   id: 'entropy', game: ENTROPY, seats: 2, names: ['you', 'Dovina'], bots: [null, seatOf('Dovina', 'entropy', entropyBot)],
   stake: 25, rake: 0.1, settle: 'pot', opts: (first) => ({ first, classes: ['fool', 'chariot'] }), label: 'Entropy Tactics',
-  line: 'Two Major Arcana and a Grand Bomb on a 7 x 7 board: turn poker hands into tokens and spells, then push the bomb onto their ground. You are the Fool.',
+  line: 'Two Major Arcana and a Grand Bomb on a 7 x 7 board: make a tile\'s sum exactly 21 to turn it yours, march court cards as tokens, carve your deck, and have the bomb go off on their tile. You are the Fool.',
 };
 const span = BOARD.tile + BOARD.gap;
 /** A cell's world position (its tile's top centre). */

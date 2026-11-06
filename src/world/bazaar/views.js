@@ -166,13 +166,26 @@ const MINE = {
     const x = C.extra, b = K.block(); b.appendChild(K.line(`<b>YOUR DEPOSIT</b> <span style="font-size:1.3em;font-weight:700">${x.mine || '·'}</span> · the line <b>${x.line}</b>`));
     const L = x.last; if (L?.deposits) b.appendChild(K.line(`Last round: the jar held <b>${L.total}</b> · ${L.deposits.map((d) => `${S.T.names[d.seat]} dropped ${d.deposit}${d.said !== d.deposit ? ` (said ${d.said})` : ''}, bet ${d.bet}${d.right ? ' ✔' : ''}`).join(' · ')}`, { opacity: 0.85 }));
   },
-  entropy(S, C, K) {
-    const x = C.extra, B = x.board, b = K.block(); b.appendChild(K.line(`<b>THE BOARD</b> (you at the bottom) · your class: ${x.cls[0]} · ${x.passive}`));
+  entropy(S, C, K) { // (version 2, ENTROPY-TACTICS.md 8: each tile's owner and sum, the tokens by suit and rank, the hand, the piles)
+    const x = C.extra, B = x.board, b = K.block(), SUIT = 'CSPW', RK = [null, 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Pg', 'Kn', 'Q', 'K'];
+    const cardOf = (c) => `${RK[(c >> 2) + 1]}${'♥♠♦♣'[c & 3]}`;
+    b.appendChild(K.line(`<b>THE BOARD</b> (you at the bottom) · your class: ${x.cls[0]} · ${x.passive}`));
     const g = K.line('', { 'font-family': 'monospace', 'line-height': '1.25', 'white-space': 'pre' });
-    const rows = []; for (let z = 0; z < B.size; z++) { let row = ''; for (let c = 0; c < B.size; c++) { const t = B.tokens.find((k) => k.x === c && k.z === z), bomb = B.bomb.x === c && B.bomb.z === z; row += `[${bomb ? '*' : ' '}${t ? `${'wrmh'[['warrior', 'rogue', 'mage', 'healer'].indexOf(t.kind)] || '?'}`[t.owner === 0 ? 'toUpperCase' : 'toLowerCase']() + t.hp : '  '}]`; } rows.push(row); }
-    g.textContent = rows.join('\n'); b.appendChild(g);
-    b.appendChild(K.line('Capitals are yours (W warrior, R rogue, M mage, H healer, then health); * is the Grand Bomb.', { opacity: 0.7 }));
-    if (x.hand.length) b.appendChild(K.line(`<b>YOUR HAND</b> ${x.hand.map((c) => `${(c >> 2) + 1}${x.suits[c & 3][0]}`).join('  ')} (1 ace .. 11 page, 12 knight, 13 queen, 14 king)`, { margin: '4px 0' }));
+    const rows = [];
+    for (let z = 0; z < B.size; z++) {
+      let row = '';
+      for (let c = 0; c < B.size; c++) {
+        const T = B.tiles[z * B.size + c], k = B.tokens.find((t) => t.x === c && t.z === z), bomb = B.bomb.x === c && B.bomb.z === z;
+        const own = T.o === 0 ? 'Y' : T.o === 1 ? 'T' : '.', tk = k ? (k.owner === 0 ? SUIT[k.suit] : SUIT[k.suit].toLowerCase()) + k.rank : '  ';
+        row += `[${own}${String(T.s).padStart(2)}${bomb ? '*' : ' '}${tk}]`;
+      }
+      rows.push(`${z + 1} ${row}`);
+    }
+    g.textContent = `  ${[...Array(B.size)].map((_, c) => `   ${c + 1}    `).join('')}\n${rows.join('\n')}`; b.appendChild(g);
+    b.appendChild(K.line('Each tile: its owner (Y yours, T theirs, . nobody), its sum toward 21, * the Grand Bomb, then a token: its suit (C cups, S swords, P pentacles, W wands; capitals yours) and its rank (page 1 .. king 4).', { opacity: 0.7 }));
+    const pile = (q) => { const P = x.piles[q]; return `deck ${P.deck} · discard ${P.discard} · fed ${P.fed} · fatigue ${P.fatigue}${P.reshuffles ? ` · reshuffled ${P.reshuffles}` : ''}`; };
+    b.appendChild(K.line(`<b>YOU</b> ${pile(0)}<br><b>${S.T.names[1].toUpperCase()}</b> ${pile(1)}`, { margin: '4px 0' }));
+    if (x.hand.length || x.kept.length) b.appendChild(K.line(`<b>YOUR HAND</b> ${x.hand.map((c) => (c === x.picked ? `<u>${cardOf(c)}</u>` : cardOf(c))).join('  ')}${x.kept.length ? ` · kept ${x.kept.map(cardOf).join('  ')}` : ''} (A is 1 or 11)`, { margin: '4px 0' }));
   },
 };
 /** A game whose choices are made on its pieces above (the buttons would repeat them): true to skip the list. */
