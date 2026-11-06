@@ -6,7 +6,7 @@
 // over the times it was available (Cowling, Powley and Whitehouse 2012). Version 2's play is a card picked, then its place (a number card
 // may go on dozens of tiles), so at a place the tree and the rollout see a SHORTLIST (`considered`): the places a quick read ranks best
 // (`placeScore`: a 21 that flips their tile or the bomb's, a build the rest of the hand can finish to 21 this turn, a court token, a bust
-// that saves a tile), never back; a carve is decided for the
+// that saves a tile, a hit that downs a token near your edge: `tokenScore`), never back nor a feed; a carve is decided for the
 // hand's first card only (the rest follow, so the tree has no orderings of one choice). A leaf is rolled out by the same read for a few moves and scored
 // by the position (health, the bomb's tile and row, tiles held, tokens, decks left). The move tried most is played. A style leans it:
 // `iters` is how long it thinks, `greed` how much the bomb's place is worth to it.
@@ -20,6 +20,7 @@
 // ---------------------------------------------------------------------------------------
 import { ENTROPY, ENTROPY_RULES as R, determinize, ownerAt, sidesOf, legalTiles } from './rules.js';
 import { rankOf, isCourt, valuesOf } from './cards.js';
+import { hitOf } from './tokens.js';
 import { CLASSES, HEALTH } from './classes.js';
 
 const KEY = (m) => JSON.stringify(m);
@@ -45,13 +46,20 @@ function numScore(p, o, s, v, reach, bomb, near) {
   if (reach & (1 << gap)) return 4 + (o === 1 - p ? 2 : 0) + (bomb ? 6 : 0) + (near ? 0.5 : 0) - v * 0.02; // (the rest of the hand can finish it this turn)
   return (gap > 11 ? 0.4 : gap === 11 ? -0.5 : -1.5) + (bomb ? 0.6 : 0) - v * 0.05;
 }
+/** A number card's hit on enemy token `t` for seat `p` (value `v`): downing it is worth its rank and more the nearer it stands to your back
+ *  rank (a wand there strikes, a sword shoves the bomb); a hit that leaves it standing is a small chip, worth it only when it nearly falls. */
+function tokenScore(p, t, c, v) {
+  const h = hitOf(t, c, v), near = 1 - Math.abs((p === 0 ? R.size - 1 : 0) - t.z) / (R.size - 1);
+  return h.falls ? 2 + t.rank * 0.9 + near * 3 - (h.dmg - t.hp) * 0.08 : -1.5 + (1 - h.hp / t.max) * 2 + near;
+}
 const courtScore = (S, p, c, x) => 2 + 0.6 * (rankOf(c) - 10) + (CLASSES[S.cls[p]].suit === (c & 3) ? 1 : 0) - (x === S.bomb.x ? 1.5 : 0);
 /** A quick read of card `c` placed by seat `p` at `m` ({ at, v }) (higher is better; ending the step is 0): the bot's prior over its widest
  *  choice. A 21 that flips their tile or the bomb's is best, then a build the rest of the hand finishes this turn; a court token is good;
  *  a bust is good only to save a tile they were building. */
 export function placeScore(S, p, c, m, reach = reachOf(S.hand[p], c)) {
-  const x = m.at[0], z = m.at[1];
+  const x = m.at?.[0], z = m.at?.[1];
   if (isCourt(c)) return courtScore(S, p, c, x);
+  if (m.on != null) { const t = S.tokens.find((u) => u.id === m.on); return t ? tokenScore(p, t, c, m.v) : -9; }
   const T = S.tiles[z * R.size + x], dx = Math.abs(S.bomb.x - x) + Math.abs(S.bomb.z - z);
   return numScore(p, T.o, T.s, m.v, reach, dx === 0, dx === 1);
 }
@@ -68,8 +76,9 @@ function bestPlace(S, p, c, tiles, out) {
   const reach = reachOf(S.hand[p], c), lo = rankOf(c), hi = lo === 1 ? 11 : lo, bx = S.bomb.x, bz = S.bomb.z;
   for (const i of tiles) {
     const T = S.tiles[i], x = i % N, z = (i / N) | 0, d = Math.abs(bx - x) + Math.abs(bz - z);
-    for (let v = lo; v <= hi; v += 10) { const sc = numScore(p, T.o, T.s, v, reach, d === 0, d === 1); if (sc > best) { best = sc; if (out) { out.at = [x, z]; out.v = v; } } }
+    for (let v = lo; v <= hi; v += 10) { const sc = numScore(p, T.o, T.s, v, reach, d === 0, d === 1); if (sc > best) { best = sc; if (out) { out.at = [x, z]; out.v = v; out.on = undefined; } } }
   }
+  for (const t of S.tokens) { if (t.owner === p) continue; const sc = tokenScore(p, t, c, hi); if (sc > best) { best = sc; if (out) { out.at = undefined; out.on = t.id; out.v = hi; } } }
   return best;
 }
 const activeScore = (S, p, a) => (a === 'bloom' ? (S.hp[p] <= HEALTH - 5 ? 3 : -1) : a === 'cycle' ? (S.deck[p].length > 8 ? 1 : -1) : 1);
@@ -79,18 +88,18 @@ const squash = (x) => 1 / (1 + Math.exp(-x / 2));
 function considered(S, P) {
   const p = P.seat;
   if (P.kind === 'carve') {
-    const c = P.moves[0].card, keepIt = isCourt(c) || rankOf(c) >= 8, small = sidesOf(S.fed[p]) < 12, moves = P.moves.filter((m) => m.card === c);
-    return { moves, prior: moves.map((m) => (m.to === 'keep' ? (keepIt ? 0.7 : 0.35) : m.to === 'feed' ? (small ? 0.6 : 0.4) : 0.45)) };
+    const c = P.moves[0].card ?? P.moves[0].feed, keepIt = isCourt(c) || rankOf(c) >= 8, small = sidesOf(S.fed[p]) < 12, moves = P.moves.filter((m) => m.card === c || m.feed === c);
+    return { moves, prior: moves.map((m) => (m.to === 'keep' ? (keepIt ? 0.7 : 0.35) : m.feed != null ? (small ? 0.6 : 0.4) : 0.45)) };
   }
   if (P.kind === 'play') {
     let tiles = null;
-    return { moves: P.moves, prior: P.moves.map((m) => squash(m.done ? 0 : m.active ? activeScore(S, p, m.active) : bestPlace(S, p, m.card, isCourt(m.card) ? null : (tiles ??= legalTiles(S, p))))) };
+    return { moves: P.moves, prior: P.moves.map((m) => squash(m.done ? 0 : m.feed != null ? -1.5 : m.active ? activeScore(S, p, m.active) : bestPlace(S, p, m.card, isCourt(m.card) ? null : (tiles ??= legalTiles(S, p))))) };
   }
   if (P.kind === 'place') {
-    const reach = reachOf(S.hand[p], P.card), all = P.moves.slice(1).map((m) => [placeScore(S, p, P.card, m, reach), m]).sort((a, b) => b[0] - a[0]).slice(0, SHORT);
+    const reach = reachOf(S.hand[p], P.card), all = P.moves.filter((m) => !m.back && m.feed == null).map((m) => [placeScore(S, p, P.card, m, reach), m]).sort((a, b) => b[0] - a[0]).slice(0, SHORT);
     return { moves: all.map((x) => x[1]), prior: all.map((x) => squash(x[0])) };
   }
-  return { moves: P.moves, prior: P.moves.map(() => 0.5) };
+  return { moves: P.moves, prior: P.moves.map((m) => (m.feed != null ? 0.2 : 0.5)) };
 }
 /** The rollout's hand: the card whose best place reads well (else end the step), its best place, a carve by the card (a court or a high
  *  card kept, a low one fed while the die is small). */
@@ -98,18 +107,20 @@ function rolloutMove(S, P, r) {
   if (P.kind === 'play') { // (the card and its place chosen together, the place carried to the next step; one read a rank, two sevens read alike)
     let best = P.moves[0], bs = 0.2, tiles = null; const byRank = new Map(), spot = {};
     for (const m of P.moves) {
-      if (m.done) continue;
+      if (m.done || m.feed != null) continue;
       let read; if (m.active) read = { s: activeScore(S, P.seat, m.active) }; else { const k = rankOf(m.card); read = byRank.get(k); if (!read) { const o = {}; read = { s: bestPlace(S, P.seat, m.card, isCourt(m.card) ? null : (tiles ??= legalTiles(S, P.seat)), o), o }; byRank.set(k, read); } }
       const sc = read.s + r() * 0.8; if (sc > bs) { bs = sc; best = m; spot.o = read.o; }
     }
     S.ctx.aim = best.card != null ? spot.o : null; return best;
   }
   if (P.kind === 'place') {
-    const aim = S.ctx.aim; if (aim?.at) { const m = P.moves.find((x) => x.at && x.at[0] === aim.at[0] && x.at[1] === aim.at[1] && (x.v ?? 0) === (aim.v ?? 0)); if (m) return m; }
-    let best = P.moves[0], bs = -99; const reach = reachOf(S.hand[P.seat], P.card); for (const m of P.moves) { if (m.back) continue; const s = placeScore(S, P.seat, P.card, m, reach) + r() * 0.5; if (s > bs) { bs = s; best = m; } } return best;
+    const aim = S.ctx.aim;
+    if (aim?.on != null) { const m = P.moves.find((x) => x.on === aim.on && x.v === aim.v); if (m) return m; }
+    if (aim?.at) { const m = P.moves.find((x) => x.at && x.at[0] === aim.at[0] && x.at[1] === aim.at[1] && (x.v ?? 0) === (aim.v ?? 0)); if (m) return m; }
+    let best = P.moves[0], bs = -99; const reach = reachOf(S.hand[P.seat], P.card); for (const m of P.moves) { if (m.back || m.feed != null) continue; const s = placeScore(S, P.seat, P.card, m, reach) + r() * 0.5; if (s > bs) { bs = s; best = m; } } return best;
   }
   if (P.kind === 'carve') {
-    const c = P.moves[0].card, can = (to) => P.moves.find((m) => m.card === c && m.to === to), k = can('keep');
+    const c = P.moves[0].card ?? P.moves[0].feed, can = (to) => P.moves.find((m) => (to === 'feed' ? m.feed === c : m.card === c && m.to === to)), k = can('keep');
     if (k && (isCourt(c) || rankOf(c) >= 8) && r() < 0.7) return k;
     return (r() < (sidesOf(S.fed[P.seat]) < 12 ? 0.6 : 0.3) ? can('feed') : can('discard')) || P.moves[0];
   }
@@ -143,4 +154,4 @@ export function entropyBot(V, P, r, style = {}) {
   return best ? P.moves[P.moves.findIndex((m) => KEY(m) === best.k)] : P.moves[0];
 }
 /** The floor: a random legal move, though it ends its play step now and then so a turn finishes, and never takes a pick back. */
-export function randomEntropyBot(V, P, r) { if (P.kind === 'play' && r() < 0.3) return P.moves[0]; const ms = P.kind === 'place' && P.moves.length > 1 ? P.moves.slice(1) : P.moves; return ms[Math.floor(r() * ms.length)]; }
+export function randomEntropyBot(V, P, r) { if (P.kind === 'play' && r() < 0.3) return P.moves[0]; const ms = P.kind === 'place' && P.moves.length > 1 ? P.moves.filter((m) => !m.back && m.feed == null) : P.moves; if (!ms.length) return P.moves[0]; return ms[Math.floor(r() * ms.length)]; }

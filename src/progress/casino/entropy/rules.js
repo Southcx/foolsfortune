@@ -2,10 +2,11 @@
 // ASTROLL: ENTROPY TACTICS, VERSION 2 (docs/plans/ENTROPY-TACTICS.md section 8, South 2026-11-06: "a 'deck-carving' srpg where everyone
 // starts with the same base material (a tarot deck)"; GAPS G95): two Major Arcana on a 7 x 7 board of TILES, each with an OWNER (seat 0,
 // seat 1, or nobody: -1) and a SUM (0 to 21), and the Grand Bomb on the middle tile. Each seat has its OWN DECK of the 56 Minor Arcana.
-// A TURN: DRAW up to five (an empty deck: take FATIGUE, 1 then 2 then 3 for the game, or RESHUFFLE the discard pile back in, 2 then 4
+// A TURN (South, 2026-11-06, evening: "the hungry dice should be able to be fed at any point during the turn": a card of the hand FED
+// to the Hungry Die is a move offered in every step you hold the play, `{ feed: card }`, the die and bank grown at once): DRAW up to five (an empty deck: take FATIGUE, 1 then 2 then 3 for the game, or RESHUFFLE the discard pile back in, 2 then 4
 // then 6); PLAY any number of cards, each a card picked (`play`) then its place (`place`, or back): a NUMBER card on a tile you own or
 // beside one (or beside a token of yours), its value added to the
-// tile's shared sum (exactly 21 FLIPS the tile to the player who made it, its sum to 0; over 21 BUSTS, the sum to 0, the owner kept), a
+// tile's shared sum, or ON an enemy court token anywhere, hurting it by its value (x2 a contrary suit: tokens.js), (exactly 21 FLIPS the tile to the player who made it, its sum to 0; over 21 BUSTS, the sum to 0, the owner kept), a
 // COURT card as a TOKEN on a back-rank tile of yours; CARVE the rest card by card: keep up to two (the Hermit three), FEED the others to the
 // Hungry Die (gone for good: the die grows d4 > d6 > d8 > d10 > d12 > d20 at 0, 4, 9, 15, 22, 30 fed, the bank +1) or DISCARD them (a
 // reshuffle brings them back); ROLL the Hungry Die and PUSH the bomb (version 1's open clash) or COUNT its counter down; then every token of
@@ -24,14 +25,15 @@
 //
 //   ENTROPY (the game: table.js's interface)   ENTROPY_RULES   startOwner(z)   sidesOf(fed)   legalTiles(S, p)   placeMoves(S, p, card)
 //   determinize(view, r)   cloneState(S)   ownerAt(S, x, z)   tokAt(S, x, z)   beside(S, p)   strengthOf(S, t)   speedOf(S, t, R)
-//   pending kinds: empty { fatigue | reshuffle }, play { card | done | active }, place { at, v? | back }, carve { card, to: keep | feed |
-//   discard }, bomb { push | count | reroll | active }   opts: { classes: [id, id], first }
+//   pending kinds: empty { fatigue | reshuffle }, play { card | done | active | feed }, place { at, v? | on: tokenId, v | back | feed },
+//   carve { card, to: keep | discard } | { feed }, bomb { push | count | reroll | active | feed }   opts: { classes: [id, id], first }
+//   previewPlay(V, seat, card, { at, v } | { on, v }) -> { kind: add | turn | bust | hurt | down | token, ... } (pure: the drag's preview)
 //   result: { winner (null a draw), how: bomb | bomb-neutral | bomb-off | draw | strike | fatigue | reshuffle, hp, rounds, stats }
 // ---------------------------------------------------------------------------------------
 import { shuffle, die, rngOf, DIE_STEPS } from '../table.js';
 import { SUITS, suitOf, isCourt, valuesOf, courtRank } from './cards.js';
 import { CLASSES, HEALTH } from './classes.js';
-import { advanceTokens, strengthOf, speedOf } from './tokens.js';
+import { advanceTokens, strengthOf, speedOf, maxHpOf, hitOf, hitToken } from './tokens.js';
 
 export const ENTROPY_RULES = {
   size: 7, // (7 x 7 tiles: the board of version 1, 8.1)
@@ -76,8 +78,14 @@ export function legalTiles(S, p) {
   for (const t of S.tokens) if (t.owner === p) near(t.x, t.z);
   const out = []; for (let i = 0; i < N * N; i++) if (ok[i]) out.push(i); return out;
 }
-/** Has seat `p` anywhere at all for a number card (a tile of its own or a token)? */
-const anyGround = (S, p) => S.tiles.some((t) => t.o === p) || S.tokens.some((t) => t.owner === p);
+/** Has seat `p` anywhere at all for a number card (a tile of its own, a token of its own, or an enemy token to hit)? */
+const anyGround = (S, p) => S.tiles.some((t) => t.o === p) || S.tokens.length > 0;
+const feeds = (S, p, but) => { const out = []; for (const c of S.hand[p]) if (c !== but) out.push({ feed: c }); return out; };
+/** A card fed from the hand to the Hungry Die, whenever the play is yours: gone for good, the die grown, the bank +1. */
+function feedCard(S, p, c) {
+  S.hand[p].splice(S.hand[p].indexOf(c), 1); S.fedCards[p].push(c); S.fed[p]++; S.bank[p]++;
+  S.log.push({ feed: p, die: sidesOf(S.fed[p]), fed: S.fed[p] }); // (which card is never said: the munch history is hidden)
+}
 
 export function lose(S, p, how) { if (!S.done) { S.done = true; S.winner = other(p); S.how = how; S.log.push({ over: S.winner, how }); } }
 function drawn(S, how) { if (!S.done) { S.done = true; S.winner = null; S.how = how; S.log.push({ over: -1, how }); } }
@@ -134,21 +142,38 @@ function playMoves(S) {
     if (C.active === 'charge' && !S.ctx.boost && mine(S, p).length) moves.push({ active: 'charge' });
     if (C.active === 'bloom' && S.hp[p] < HEALTH) moves.push({ active: 'bloom' });
   }
-  if (moves.length) moves.unshift({ done: true });
+  if (moves.length) { moves.unshift({ done: true }); moves.push(...feeds(S, p)); }
   return moves;
 }
-/** Where the picked card may go: a court card on a free back-rank tile of yours; a number card on any legal tile, an ace as 1 or 11; or back. */
+/** Where the picked card may go: a court card on a free back-rank tile of yours; a number card on any legal tile or on any enemy token, an
+ *  ace as 1 or 11; or back; and the hand's other cards fed. */
 export function placeMoves(S, p, c) {
   const moves = [{ back: true }];
-  if (isCourt(c)) { for (const i of backTiles(S, p)) moves.push({ at: AT[i] }); return moves; }
+  if (isCourt(c)) { for (const i of backTiles(S, p)) moves.push({ at: AT[i] }); moves.push(...feeds(S, p, c)); return moves; }
   const vs = valuesOf(c); for (const i of legalTiles(S, p)) for (const v of vs) moves.push({ at: AT[i], v });
+  for (const t of S.tokens) if (t.owner !== p) for (const v of vs) moves.push({ on: t.id, v });
+  moves.push(...feeds(S, p, c));
   return moves;
+}
+/** What playing `card` at `target` ({ at, v } a tile, { on, v } a token; a court card { at }) would do, made on nothing (the table view's
+ *  drag preview, the coach's lines): a tile's `add` (sum), `turn` (21: from whom) or `bust` (was); a token's `hurt` or `down` (dmg, mult,
+ *  hp, max); a court card's `token` (speed, hp). Null for a target that is not a move. */
+export function previewPlay(V, seat, card, target) {
+  if (isCourt(card)) { const rank = courtRank(card) + (V.cls[seat] === 'empress' ? R.empressRank : 0); return { kind: 'token', rank, hp: maxHpOf(rank), speed: speedOf(V, { owner: seat, suit: suitOf(card), speed: courtRank(card) }, R) }; }
+  const v = target.v ?? valuesOf(card)[valuesOf(card).length - 1];
+  if (target.on != null) { const t = V.tokens.find((u) => u.id === target.on); if (!t || t.owner === seat) return null; const h = hitOf(t, card, v); return { kind: h.falls ? 'down' : 'hurt', id: t.id, ...h, max: t.max, v }; }
+  const T = V.tiles[at(target.at[0], target.at[1])], sum = T.s + v;
+  if (sum === R.twentyOne) return { kind: 'turn', from: T.o, sum: 0, v, bomb: isBomb(V, target.at[0], target.at[1]) };
+  if (sum > R.twentyOne) return { kind: 'bust', was: T.s, sum: 0, owner: T.o, v };
+  return { kind: 'add', was: T.s, sum, owner: T.o, v, left: R.twentyOne - sum };
 }
 function toPlay(S) { const moves = playMoves(S); if (!moves.length) return toCarve(S); S.phase = 'play'; S.ctx.card = null; S.pending = [{ seat: S.cur, kind: 'play', moves }]; }
 function toPlace(S, c) { S.phase = 'place'; S.ctx.card = c; S.pending = [{ seat: S.cur, kind: 'place', card: c, moves: placeMoves(S, S.cur, c) }]; }
 function playNumber(S, c, m) {
-  const p = S.cur, T = S.tiles[at(m.at[0], m.at[1])];
+  const p = S.cur;
   S.hand[p].splice(S.hand[p].indexOf(c), 1); S.disc[p].push(c);
+  if (m.on != null) { const t = S.tokens.find((u) => u.id === m.on); if (t) hitToken(S, p, t, c, m.v); return; }
+  const T = S.tiles[at(m.at[0], m.at[1])];
   const was = T.s; T.s += m.v;
   if (T.s === R.twentyOne) { const from = T.o; T.o = p; T.s = 0; S.stats.flips++; S.log.push({ turned: p, at: m.at, from, card: c }); }
   else if (T.s > R.twentyOne) { T.s = 0; S.stats.busts++; S.log.push({ bust: p, at: m.at, was, card: c }); }
@@ -157,18 +182,18 @@ function playNumber(S, c, m) {
 function playCourt(S, c, m) {
   const p = S.cur; S.hand[p].splice(S.hand[p].indexOf(c), 1);
   const t = { id: S.nextTok++, owner: p, card: c, suit: suitOf(c), rank: courtRank(c) + (S.cls[p] === 'empress' ? R.empressRank : 0), speed: courtRank(c), x: m.at[0], z: m.at[1] };
+  t.max = t.hp = maxHpOf(t.rank);
   S.tokens.push(t); S.log.push({ summon: p, kind: `token of ${SUITS[t.suit]}`, suit: t.suit, rank: t.rank, at: m.at, card: c });
 }
 function toCarve(S) {
   const p = S.cur; if (!S.hand[p].length) return finishCarve(S);
   const room = S.kept[p].length < keepSize(S, p), moves = [];
-  for (const c of S.hand[p]) { if (room) moves.push({ card: c, to: 'keep' }); moves.push({ card: c, to: 'feed' }, { card: c, to: 'discard' }); }
+  for (const c of S.hand[p]) { if (room) moves.push({ card: c, to: 'keep' }); moves.push({ feed: c }, { card: c, to: 'discard' }); }
   S.phase = 'carve'; S.pending = [{ seat: p, kind: 'carve', moves }];
 }
 function carve(S, m) {
   const p = S.cur; S.hand[p].splice(S.hand[p].indexOf(m.card), 1);
   if (m.to === 'keep') S.kept[p].push(m.card);
-  else if (m.to === 'feed') { S.fedCards[p].push(m.card); S.fed[p]++; S.bank[p]++; S.log.push({ feed: p, die: sidesOf(S.fed[p]), fed: S.fed[p] }); } // (which card is never said: the munch history is hidden)
   else { S.disc[p].push(m.card); S.log.push({ discard: p, card: m.card }); }
   toCarve(S);
 }
@@ -181,6 +206,7 @@ function bombMoves(S) {
   const p = S.cur, C = CLASSES[S.cls[p]], moves = [{ push: true }, { count: true }];
   if (S.cls[p] === 'fool' && !S.ctx.rerolled && S.bank[p] >= R.reroll) moves.push({ reroll: true });
   if (C.active === 'lantern' && !S.ctx.lit && S.bank[p] >= C.cost) moves.push({ active: 'lantern' });
+  moves.push(...feeds(S, p)); // (fed after the roll: the bank for a re-roll or the Lantern, the die bigger for the re-roll; the roll made stands)
   return moves;
 }
 export const beside = (S, p) => mine(S, p).filter((t) => Math.abs(t.x - S.bomb.x) + Math.abs(t.z - S.bomb.z) <= 1).length;
@@ -214,6 +240,13 @@ export const ENTROPY = {
   pending: (S) => (S.done ? null : S.pending[0] || null),
   apply(S, m, r) {
     rng = r; const P = S.pending[0], p = P.seat;
+    if (m.feed != null) { // (fed any time the play is yours; the step goes on where it was)
+      feedCard(S, p, m.feed);
+      if (P.kind === 'carve') return toCarve(S);
+      if (P.kind === 'place') return toPlace(S, P.card);
+      if (P.kind === 'bomb') { S.pending[0].moves = bombMoves(S); return; }
+      return toPlay(S);
+    }
     switch (P.kind) {
       case 'empty':
         if (m.reshuffle) { takeReshuffle(S, p, r); if (S.done) return; return drawStep(S, r); }

@@ -37,6 +37,7 @@ export function casinoRules({ on, L, log }) {
     else if (e.what === 'liar') say('info', `${w} ${e.who === 'you' ? 'said' : 'said'} ${e.said} and had dropped ${e.dropped}.`, 'liar', 0.3);
     else if (e.what === 'summon') say('info', `${w} ${e.who === 'you' ? 'summoned' : 'summoned'} a ${e.kind}.`, 'summon', 0.3);
     else if (e.what === 'tile') say('info', `${w} made 21 at column ${e.at[0] + 1}, row ${e.at[1] + 1}: the tile turns ${e.who === 'you' ? 'yours' : 'theirs'}.`, 'tile', 0.3);
+    else if (e.what === 'tokenhit') say('info', `${w} ${e.who === 'you' ? 'hit' : 'hits'} ${e.who === 'you' ? 'their' : 'your'} token for ${e.dmg}${e.mult === 2 ? ' (double: the opposite suit)' : ''}${e.down ? ': it falls.' : `: ${e.left} health left.`}`, 'tokenhit', 0.3);
     else if (e.what === 'fatigue') say('warn', `${w} ${e.who === 'you' ? 'take' : 'takes'} fatigue: ${e.n} health.`, 'fatigue', 0.3);
     else if (e.what === 'reshuffle') say('info', `${w} ${e.who === 'you' ? 'reshuffle' : 'reshuffles'} the discard pile into the deck for ${e.n} health.`, 'reshuffle', 0.3);
     else if (e.what === 'push') say('info', `${w} ${e.who === 'you' ? 'pushed' : 'pushed'} the bomb: ${e.tiles ? `${e.tiles} tile${e.tiles === 1 ? '' : 's'}` : 'it held'} (${e.atk} against ${e.def}).`, 'push', 0.3);
