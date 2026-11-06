@@ -306,3 +306,30 @@ Choices the builder made where section 8 was open:
 - A number card may sit on a token's tile and on the bomb's.
 - Equal swords both break.
 - A draw counts as a loss at a pot table.
+
+### 8.11 Token health, hits and feeding any time (South, 2026-11-06, evening, through Calissa)
+
+South: "giving the court tokens a health value, such that they can also be targeted by cards, with damage taken being 1x magnitude if of
+the same or adjacent suit, and 2x magnitude if of the opposite suit", and "the hungry dice should be able to be fed at any point during the
+turn". Built (`tokens.js` `hitOf`, `hitToken`; `rules.js` `previewPlay`, `feedCard`):
+- **A token's health** (`t.hp` of `t.max`): three a rank, page 3 .. king 12 (the Empress's +1 rank, +3). Three a rank so a ten of the
+  contrary suit (20) downs a queen or less and a same-suit ten downs a knight or less: a king costs two cards or a contrary ace (22).
+- **A hit**: a number card played on an enemy token (the place move `{ on: tokenId, v }`, an ace 1 or 11) hurts it by its value in place
+  of adding to a tile. x2 when the card's suit is the token's contrary (SPREADS.md 4: Wands against Cups, Swords against Pentacles), x1
+  for the same suit or an adjacent one. At 0 it is downed to its owner's discard pile (a cup does not go home). The log: `{ hurt, owner,
+  by, dmg, mult, hp, card }`, then `{ down, why: 'card' }`.
+- **Feeding** (`{ feed: card }`) is offered in every step that holds the play: the play, a card's place (the hand's other cards), the carve
+  (it replaces the carve's old `to: 'feed'`), and the bomb (after the roll: the roll stands, the bank and a re-roll's die grow). Fed in
+  the play step, the die is bigger for this turn's roll.
+- Choices South left open (strike any): **any enemy token anywhere** may be hit (a king of wands crosses in two turns, out of reach of the
+  tiles beside your ground); a **meeting still goes by strength**, never the health left; feeding is not offered at an empty deck's
+  fatigue-or-reshuffle choice (the draw is not done).
+
+Measured once (`node scripts/casino.mjs --game entropy --n 60`, search 40 both sides, 960 class games), untuned:
+- **The bot:** the search beats random 85% (75% before: hits and an early feed are moves it finds).
+- **Class means:** the Fool 41.3% (33.5%), the Chariot 35.8% (45.8%), the Empress 45.8%, the Hermit 49.2%. The Chariot is the token
+  class, and its tokens can now be shot down.
+- **Seats:** the first seat 47.4%. **Length:** 10.1 rounds.
+- **Ends:** 36% the counter on nobody's tile, 32% off a back rank, 17% on an owned tile, 15% draws; on health 2 of 960.
+- **Per game:** 3.1 tiles turned (5.1 before: cards go to tokens now), 0.12 busts; fatigue in 19%, a reshuffle in 26%.
+Read plainly: health still never ends a game; the swords' shove still decides a third; the Chariot wants something back.

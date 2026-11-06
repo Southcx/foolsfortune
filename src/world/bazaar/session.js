@@ -113,6 +113,7 @@ export class TableSession {
       else if (x.deposits) { e('deposits', { total: x.total, line: x.line, winners: x.winners.map(who), share: x.share }); for (const d of x.deposits) if (d.said !== d.deposit) e('liar', { who: who(d.seat), said: d.said, dropped: d.deposit }); }
       else if (x.summon != null) e('summon', { who: who(x.summon), kind: x.kind });
       else if (x.turned != null) e('tile', { who: who(x.turned), at: x.at }); // (Entropy Tactics: a tile's sum made exactly 21)
+      else if (x.hurt != null) e('tokenhit', { who: who(x.by), dmg: x.dmg, mult: x.mult, left: x.hp, down: x.hp <= 0 }); // (Entropy Tactics: a number card on a token)
       else if (x.fatigue != null) e('fatigue', { who: who(x.fatigue), n: x.n });
       else if (x.reshuffle != null) e('reshuffle', { who: who(x.reshuffle), n: x.n });
       else if (x.push != null) e('push', { who: who(x.push), tiles: x.tiles, atk: x.atk, def: x.def });

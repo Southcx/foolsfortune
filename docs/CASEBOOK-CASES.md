@@ -5102,4 +5102,17 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   to 29 degrees, bail to 54.
 - **Probed:** desk and the phone's profile: a made tube (2.8 s), twelve pumps, a lip wipeout, five skids, two presses, two clean
   landings (one with a countered pre-wound spin); the barrel shot from inside the tube.
-- **Rule:** NEW:camera-in-the-thing
+- **Rule:** 411
+
+### 2026-11-06 · The Sondelass drawn aboard every crossing (the gate, v419)
+- **Seen:** `npm run perf` against v362's baseline: the crossing 77 calls (was 66), the spectacle up as well. By name against the
+  baseline's commit (`--draws crossing`), 10 more draws of a rest-baked tool (5 standard, 4 shadow depth, 1 basic) and the ship's
+  bunker bottle's 5 (Calissa's look, earned). The rest bake was the Sondelass's, parented to the scene and visible while the Courier was
+  sealed at the helm, drawn in every crossing frame of every build since the Sondelass came to the back.
+- **Cause, as measured:** a worn tool decides its own visibility in its own tick (`!character.hidden`), and the techs' tick is skipped
+  aboard (boot/frame.js: `if (!godOn && !aboard)`). Sealing hides the body (`setHidden(true)`), but no tool ran to read it, so the
+  Sondelass kept the visible it had on the pier.
+- **Fix:** the belt, which ticks every frame, hides every tool's model while the body is hidden (`tools/belt.js` tick); a tool's own
+  tick puts it back when it runs again. Probed: aboard, the Sondelass's group hidden and no rest bake drawn; the crossing 71 calls (the
+  66 and the bunker's 5).
+- **Rule:** 412

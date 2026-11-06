@@ -1151,6 +1151,10 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   must outlast a clock and be steered with the stick is two hands' work on glass, and a tile that hides itself under the finger leaves
   its key down for good.
 
-NEW:camera-in-the-thing. **A camera that must be inside a thing is placed in that thing's own frame.** A composition asked of the
+411. **A camera that must be inside a thing is placed in that thing's own frame.** A composition asked of the
   follow camera (a share of its stand-off, metres of lift) knows nothing of the shape it should sit in; a tube, a cave or a cockpit is a
   shot stood in its own geometry, looking where it opens.
+
+412. **What hides the body hides what it wears, where it runs every frame.** A worn piece that decides
+  its own visibility in its own tick keeps the last answer once that tick stops (aboard, in a cutscene); the hiding is done by what
+  always runs, and the piece's tick only puts it back.

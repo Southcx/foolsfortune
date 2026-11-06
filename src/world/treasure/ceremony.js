@@ -55,7 +55,7 @@ const DUPE_VALUE = ECON.dupe; // (progress/econ/table.js)
 
 /** The roulette's colours, in order, for a sealed chest that will turn out to be tier T (a list of tier indices). */
 export function rouletteSeq(T, rnd = simRand) {
-  const kind = T >= 3 ? 'climb' : rnd() < 0.42 ? 'near' : 'plain';
+  const kind = T >= 3 ? 'climb' : rnd() < ECON.tithe.nearMiss ? 'near' : 'plain'; // (the near miss's share, South 2026-11-06: 0.42 -> 0.15, progress/econ/table.js)
   const peak = kind === 'near' ? Math.min(4, T + 1 + (rnd() < 0.25 ? 1 : 0)) : T;
   const seq = [0]; let cur = 0;
   while (cur < peak) { cur++; seq.push(cur); if (cur < peak && rnd() < 0.34) { cur--; seq.push(cur); } }

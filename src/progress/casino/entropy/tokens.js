@@ -11,14 +11,38 @@
 // the rank alone); two swords of equal strength break each other (both discarded: an equal pair that stops would block the column for
 // good); a token that wins a meeting it walked into goes on into the tile.
 //
+// HEALTH (South, 2026-11-06, evening: "giving the court tokens a health value, such that they can also be targeted by cards, with damage
+// taken being 1x magnitude if of the same or adjacent suit, and 2x magnitude if of the opposite suit"): a token has `hp` of `max`, three a
+// rank (page 3 .. king 12; the Empress's +1 rank, +3). A number card played ON an enemy token hurts it by its value (an ace 1 or 11)
+// instead of adding to a tile, x2 when its suit is the token's CONTRARY (the Golden Dawn's dignities, SPREADS.md 4: Wands against Cups,
+// Swords against Pentacles), x1 for the same suit or an adjacent one. At 0 it is downed to its owner's discard pile (a cup does not go
+// home). Choices South left open: any enemy token anywhere may be hit (a king of wands crosses the board in two turns, out of reach of
+// the tiles beside your ground); a meeting still goes by strength (health is what cards take); strength stays the rank, never the health
+// left.
+//
 // Prior art: Plants vs. Zombies' and Hearthstone Battlegrounds' units marching down a lane, chess's pawns (a column, a far rank reached),
 // Stratego's rank against rank (the higher takes the lower, an equal pair both lost).
 //
-//   advanceTokens(S, p, r, K: { R, lose, hurt, moveBomb })   strengthOf(S, t)   speedOf(S, t, R)
+//   advanceTokens(S, p, r, K: { R, lose, hurt, moveBomb })   strengthOf(S, t)   speedOf(S, t, R)   TOKEN_HP   maxHpOf(rank)
+//   contrary(a, b)   multOf(cardSuit, tokenSuit) -> 1 | 2   hitToken(S, p, t, card, v) -> { dmg, mult, hp, falls }
 // ---------------------------------------------------------------------------------------
 import { CLASSES, HEALTH } from './classes.js';
 
 const SWORDS = 1, PENTACLES = 2, WANDS = 3, CUPS = 0; // (the suits' indices: cards.js SUITS)
+export const TOKEN_HP = 3; // (health a rank: page 3 .. king 12, so a ten of the contrary suit downs a queen or less and a same-suit ten a knight)
+export const maxHpOf = (rank) => TOKEN_HP * rank;
+/** Contrary suits (cups 0 with wands 3, swords 1 with pentacles 2): the index pairs summing to 3. */
+export const contrary = (a, b) => a + b === 3;
+export const multOf = (cardSuit, tokenSuit) => (contrary(cardSuit, tokenSuit) ? 2 : 1);
+/** A number card `card` played as `v` on token `t`: the damage, its multiplier, the health left and whether it falls (pure: the preview's). */
+export function hitOf(t, card, v) { const mult = multOf(card & 3, t.suit), dmg = v * mult, hp = Math.max(0, t.hp - dmg); return { dmg, mult, hp, falls: hp <= 0 }; }
+/** The same hit made on the state by seat `p`: the health taken, the log told, the token downed at 0. */
+export function hitToken(S, p, t, card, v) {
+  const h = hitOf(t, card, v); t.hp = h.hp;
+  S.log.push({ hurt: t.id, owner: t.owner, by: p, dmg: h.dmg, mult: h.mult, hp: h.hp, card });
+  if (h.falls) discard(S, t, 'card');
+  return h;
+}
 /** What a token fights, strikes and mends with: its rank (the Empress's one more), and a Charge's two this turn. */
 export const strengthOf = (S, t) => t.rank + (S.ctx?.boost && t.owner === S.cur ? S.ctx.boost : 0);
 /** How many tiles it advances a turn: its court rank, one more in its class's suit, one more for the Chariot. */
