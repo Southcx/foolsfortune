@@ -176,3 +176,105 @@ own zone." Also: "I don't want you guys to anchor to the current artstyle", so n
    side, so the zones move. This would replace the fixed three ranks a side, so it is a rules change and needs a new balance pass.
 2. **The class pick** in the seat's lobby (all four classes, and Dovina's at random).
 3. **The look's name.** Plain names until settled. Espada proposes a lore name for the room once South calls it final.
+
+## 8. Version 2: the deck-carving tactics game (South, 2026-11-06)
+
+South: "a 'deck-carving' srpg where everyone starts with the same base material (a tarot deck) and its about outmaneuvering your
+opponent to reaching an optimal deck state without accidentally overextending yourself and running out of cards or mismanaging the
+position of the grand bomb." The rules below replace sections 1 and 6 (version 1: poker groups summon, cast and enchant). South's
+rulings of 2026-11-06 are marked (S); the rest are Dovina's defaults, each a number in `ENTROPY_RULES` and each named in 8.9 for
+South to strike.
+
+### 8.1 The board and the decks
+
+- The board is 7 x 7 tiles, and each tile has an **owner** (you, them, or nobody) and a **sum** (0 to 21). At the start, your back rank
+  (row 6) is yours, theirs (row 0) is theirs, and the five rows between are nobody's. The Grand Bomb starts on the middle tile, (3, 3).
+- **Each player has a deck of their own**, the same 56 Minor Arcana (four suits of ace to ten, page, knight, queen, king). Everyone
+  starts from the same base material (S). What you carve away from it is what you become.
+
+### 8.2 A turn
+
+1. **Draw** up to five from your own deck (8.6 when it is empty).
+2. **Play**, as many of these as your hand allows, in any order:
+   - **A number card on a tile** (8.3), its value added to the tile's sum.
+   - **A court card as a token** (8.4) on a tile of yours in your back rank.
+3. **Carve the rest.** Of the cards left in your hand, keep up to two for next turn (the Hermit three), and send each of the others to
+   one of two places, your choice card by card:
+   - **Fed to the Hungry Die:** gone from the game for good. Your deck is thinner and the die grows (d4 at 0 fed, then d6 at 4, d8 at 9,
+     d10 at 15, d12 at 22, d20 at 30), and its bank grows by one.
+   - **Discarded:** onto your discard pile, where a reshuffle (8.6) can bring it back.
+4. **Roll the Hungry Die** and either push the Grand Bomb (version 1's clash: your roll plus 1 for each of your tokens beside it,
+   against their roll plus 1 for each of theirs) or count its counter down by the roll.
+5. **Your tokens advance** (8.4). Then the turn passes.
+
+### 8.3 Twenty-one: flipping a tile (S)
+
+- A number card may go on any tile beside (orthogonally) a tile you own or a tile with one of your tokens on it, or on a tile you own.
+  Its value is its rank: ace 1 or 11, your choice as you play it (blackjack's), 2 to 10 as printed.
+- The sum is shared (S): both players add to the same running total on a tile, so a tile they built up to 19 is yours with a 2.
+- **Exactly 21 flips the tile** to the colour of whoever played the card that made it, and its sum goes back to 0.
+- **Over 21 busts** (S): the sum goes back to 0 and the tile keeps its owner.
+- Played number cards go to your discard pile.
+
+### 8.4 Court cards: tokens that advance (S)
+
+- A court card is played as a token on a back-rank tile of yours with no token on it. Its **rank** is its speed and its strength: page 1,
+  knight 2, queen 3, king 4 (S).
+- At the end of each of your turns, every token of yours **advances** that many tiles straight toward the far edge, along its own
+  column.
+- Its **suit** is what it does (S: "different suits and ranks have different token actions", suit as class identity, MTG's mono-colour):
+  - **Wands (the strike):** on reaching the far edge it deals its rank in damage to their Arcana, then is discarded.
+  - **Pentacles (the claim):** every tile it crosses turns yours (its sum to 0). It stops on their back rank and stays there, holding it,
+    until struck.
+  - **Swords (the fight):** a sword token meeting an enemy token on its way fights it. The higher rank wins, swords winning a tie, and the
+    loser is discarded. On reaching the far edge it pushes the Grand Bomb one tile toward them, then is discarded.
+  - **Cups (the return):** on reaching the far edge it heals your Arcana by its rank and goes back into your deck, shuffled in. Cups is
+    the one suit that refills a carved deck.
+- Two tokens meeting where neither is a sword: the higher rank goes on and the lower is discarded; an equal pair both stop that turn.
+- A token never enters the Grand Bomb's tile. It waits behind it.
+
+### 8.5 The Grand Bomb
+
+- It goes off when its counter reaches 0, which is 30 at the start, down one a round and down by every count. **Whoever owns the tile
+  under it loses** (S: tile ownership replaces the fixed zones). On a tile nobody owns, the higher Arcana health wins, and an equal
+  health is a draw.
+- **Pushed off the board past a back rank:** that back rank's player loses.
+
+### 8.6 Running out: fatigue and the reshuffle (S)
+
+When you must draw and your deck is empty, choose:
+- **Take fatigue** (Hearthstone's): your Arcana loses 1, then 2, then 3 and so on, the count kept for the whole game.
+- **Reshuffle** (only with cards in your discard pile): your discard pile is shuffled into your deck, then you draw. The first reshuffle
+  costs 2 health, the second 4, the third 6, and so on.
+
+Cards fed to the Hungry Die never come back, so carving deep thins your deck toward the suit you want and toward fatigue at once.
+That is the overextension South named.
+
+### 8.7 The classes
+
+The four Arcana stay (the Fool, the Chariot, the Empress, the Hermit) with their passives and actives, and each takes a suit:
+- **the Chariot: Swords.**
+- **the Empress: Pentacles.**
+- **the Hermit: Cups.**
+- **the Fool: none** (the re-roll for 1 is its gift).
+
+A class's suit is its class identity: its court tokens of that suit advance one tile further a turn. Carving a deck toward its suit is
+the mono-colour play. Wands are left for a fifth class.
+
+### 8.8 Winning
+
+1. The Grand Bomb goes off on their tile, or is pushed off past their back rank.
+2. Their Arcana reaches 0, from wands, fatigue or reshuffles.
+3. **Gone in version 2:** the royal straight flush and version 1's poker groups (summons by runs and flushes, casts by sets, court
+   enchantments), since number cards now go on tiles and court cards now make tokens.
+
+### 8.9 Defaults to strike (Dovina's, not South's)
+
+1. Number cards play beside your ground or tokens.
+2. Ace 1 or 11.
+3. Tokens on your back rank only, advancing at your turn's end.
+4. Cups go back into the deck.
+5. Pentacles stay on the far edge.
+6. The bust keeps the owner.
+7. The class suits above.
+8. Two-player only.
