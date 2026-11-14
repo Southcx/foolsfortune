@@ -20,6 +20,7 @@ import { installWorkbenchLoader } from '../debug/workbenchloader.js';
 import { Busk } from '../world/busk.js';
 import { VertexPaint } from '../vfx/vertexpaint.js';
 import { DebugChests } from '../debug/debugchest.js';
+import { WellBoard } from '../world/well/board/boardsession.js';
 import { OVERTURE_TITLE } from '../cine/overture.board.js';
 import { TRACKS as SOUNDTRACKS } from '../music/soundtest.js';
 
@@ -55,6 +56,7 @@ export function bootChatCommands(game) {
 
 export function bootMoreChatCommands(game, made) {
   const { freshBuild, player, techs, windowOpen, god } = made;
+  game.wellBoard = new WellBoard(game); // (/board: the Well's board, a draft in DEBUG; docs/plans/WELL-BOARD.md)
   // the opt-in Movement Arts (the jet arts: courier/moves/jets.js): switched on and off here, kept with the settings
   const OPT_ARTS = ['hover', 'rocket', 'skim'];
   game.save?.section('optarts', { scope: 'settings', version: 1, dump: () => Object.fromEntries(OPT_ARTS.map((a) => [a, !!T.tech[a].enabled])),

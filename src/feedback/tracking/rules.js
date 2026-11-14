@@ -44,6 +44,7 @@ import { chatroomRules } from './chatroom.js';
 import { raceModeRules } from './racemodes.js';
 import { slopeRideRules } from './sloperide.js';
 import { casinoRules } from './casino.js';
+import { wellBoardRules } from './wellboard.js';
 import { duelRules } from './duel.js';
 import { graphicsRules } from './graphics.js';
 import { instrumentRules } from './instruments.js';
@@ -181,6 +182,7 @@ export function areaRules(ctx) {
   raceModeRules(ctx); // (the Raceway's modes, cups, licences, City Trial, wager and the board's rules: SKIFF-RACING.md 12)
   slopeRideRules(ctx); // (the slope ride: the Solar Skiff furled on a downslope, a snowboard: tracking/sloperide.js)
   casinoRules(ctx); // (Raku's bazaar: the chips, the tables, what happens at them: docs/plans/CASINO.md)
+  wellBoardRules(ctx); // (the Well's board, a draft in DEBUG: docs/plans/WELL-BOARD.md)
   duelRules(ctx); // (a puzzle duel with an aberrant: docs/plans/PUZZLE-DUELS.md)
   cardBackRules(ctx); // (a deck's card back chosen: ui/cardbackchoice.js)
   toolSkinRules(ctx); // (a tool's skin worn: vfx/toolskinwear.js)
