@@ -60,7 +60,8 @@ export function renderBoard(B, { im, el }) {
   const S = B.S; if (!S) return;
   const R = B.readout(), V = { floors: S.floors.map((F) => ({ side: F.side.which, spaces: Object.values(F.spaces).map((s) => ({ ...s, cleared: !!S.cleared[s.id], taken: !!S.taken[s.id] })) })), keys: S.floors.map((F) => (F.depth === R.at.depth - 1 ? R.keys : 0)), need: R.need };
   // a short, wide screen (a phone on its side): the ring on the left, the turn on the right, so the decision is never under the fold
-  const wide = typeof window !== 'undefined' && window.innerHeight < 520 && window.innerWidth > window.innerHeight * 1.5;
+  const in3d = !!B.view?.active; // (the board is drawn in 3D beside this page: the page is the turn's words and buttons only)
+  const wide = !in3d && typeof window !== 'undefined' && window.innerHeight < 520 && window.innerWidth > window.innerHeight * 1.5;
   const left = im.appendChild(el('div', '')), right = wide ? el('div', '') : im;
   if (wide) { const row = el('div', ''); row.style.cssText = 'display:flex;gap:12px;align-items:flex-start'; left.style.cssText = 'flex:1 1 52%;min-width:0'; right.style.cssText = 'flex:1 1 48%;min-width:0'; im.appendChild(row); row.appendChild(left); row.appendChild(right); }
   const add = (n) => { right.appendChild(n); return n; }, P = R.pending;
@@ -73,12 +74,13 @@ export function renderBoard(B, { im, el }) {
   const depth = Math.max(0, R.at.depth - 1), pick = P?.kind === 'throw' ? R.dice.find((d) => d.sides === B.hover && !d.spent) : null, rings = {};
   const src = pick ? pick.reach : P?.kind === 'reroll' ? P.reach.filter((f) => f.face === P.face) : P?.kind === 'fork' ? P.moves.map((m) => ({ lands: m.lands })) : [];
   for (const f of src) for (const l of f.lands) rings[l.id] = Math.min(1, (rings[l.id] || 0) + 1 / Math.max(1, src.length));
-  left.innerHTML = drawFloor(V, depth, R.at.id, rings, wide);
+  if (!in3d) left.innerHTML = drawFloor(V, depth, R.at.id, rings, wide);
+  else { const open = V.keys[depth] >= V.need, foe = S.floors[depth].spaces[S.floors[depth].door].kind === 'foe'; block(`<b>FLOOR ${depth + 1}</b> · ${foe ? (open ? 'the FOE is awake' : 'the FOE sleeps') : open ? 'the door is open' : 'the door is shut'} · <b>${Math.min(V.keys[depth], V.need)}</b> of ${V.need} floors cleared`, { 'font-size': '.95em' }); }
 
   // what is: cracks, re-rolls, the haul
   const pips = (n, of, on, off) => [...Array(of)].map((_, i) => `<span style="color:${i < n ? on : off}">●</span>`).join('');
   const haul = R.haul.length ? R.haul.map((h) => `<span title="a material of tier ${h.tier}, from a ${h.why === 'genre' ? 'trial' : h.why}" style="display:inline-block;width:14px;height:14px;margin:0 2px;border-radius:3px;background:${TIER[h.tier]};vertical-align:middle"></span>`).join('') : '<span style="opacity:.6">nothing yet</span>';
-  block(`<b>CRACKS</b> ${pips(R.cracks, R.bears, '#ff6b5e', 'rgba(255,255,255,.2)')} <span style="opacity:.7">(${R.bears} and you fall)</span> &nbsp;·&nbsp; <b>RE-ROLLS</b> ${R.rerolls} &nbsp;·&nbsp; <b>HAUL</b> ${haul}`, { 'font-size': '.95em' });
+  block(`<b>CRACKS</b> ${pips(R.cracks, R.bears, '#ff6b5e', 'rgba(255,255,255,.2)')} <span style="opacity:.7">(${R.bears}: you fall)</span><br><b>RE-ROLLS</b> ${R.rerolls} &nbsp;·&nbsp; <b>HAUL</b> ${haul}`, { 'font-size': '.95em' });
 
   if (B.done) {
     const L = B.last, how = { up: 'Walked up with the haul.', foe: 'The FOE is down. Walked up with the haul.', whistle: 'Out by the Wake Whistle, with three quarters of it.', fall: 'Fell. The haul is lost.' }[L.out];
@@ -87,12 +89,13 @@ export function renderBoard(B, { im, el }) {
     return;
   }
   if (!P) return;
+  if (in3d && B.view.busy) return; // (the turn's beats are playing on the board: the next decision is shown when they are done)
   add(el('div', 'grp', { throw: 'YOUR TURN · PICK A DIE, THEN THROW IT', reroll: "LUCK'S RE-ROLL", fork: 'A FORK · PICK A LINE', fate: 'A HAZARD', floor: `FLOOR ${P.depth} · ${P.floor === 'foe' ? 'THE FOE' : P.floor === 'genre' ? 'A TRIAL' : 'A FIGHT'}` }[P.kind]));
   if (P.kind === 'throw') {
     const tray = add(el('div', '')); tray.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin:4px 0';
     for (const d of R.dice) {
       const b = el('div', 'room', `<b>d${d.sides}</b>`), on = B.hover === d.sides && !d.spent;
-      b.style.cssText = css({ flex: '1 0 64px', 'justify-content': 'center', 'font-size': '1.2em', padding: '12px 6px', opacity: d.spent ? 0.3 : 1, 'border-color': on ? '#ffd36a' : '', background: on ? 'rgba(255,211,106,.18)' : '' });
+      b.style.cssText = css({ flex: in3d ? '1 0 40px' : '1 0 64px', 'justify-content': 'center', 'font-size': '1.2em', padding: '12px 6px', opacity: d.spent ? 0.3 : 1, 'border-color': on ? '#ffd36a' : '', background: on ? 'rgba(255,211,106,.18)' : '' });
       if (!d.spent) { b.onclick = () => { B.hover = d.sides; B.render(); }; b.onmouseenter = () => { if (B.hover !== d.sides) { B.hover = d.sides; B.render(); } }; }
       b.title = d.spent ? 'Spent. It comes back when all six are spent, or at a Rest.' : `Throw the d${d.sides}: move 1 to ${d.sides} spaces.`;
       tray.appendChild(b);

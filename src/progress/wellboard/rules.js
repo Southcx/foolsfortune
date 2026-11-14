@@ -104,6 +104,7 @@ function walk(S) {
     if (!next.length) { M.left = 0; break; }
     if (next.length > 1 && !M.fork) { S.pending.push({ seat: M.seat, kind: 'fork', left: M.left, moves: next.map((to) => ({ id: 'fork', to, lands: landsFrom(S, to, M.left - 1) })) }); return; }
     me.at = M.fork || next[0]; M.fork = null; M.left--; M.moved = true;
+    say(S, { step: M.seat, at: me.at, left: M.left });
     me.deepest = Math.max(me.deepest, spaceOf(S, me.at).depth);
   }
   land(S, M.seat);

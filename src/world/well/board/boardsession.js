@@ -1,6 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE WELL'S BOARD IN PLAY, A DRAFT (docs/plans/WELL-BOARD.md 7; ENDGAME.md 3.1): one run of the board's rules
-// (progress/wellboard/rules.js) with you in the first seat, on a page of the index window (boardpage.js, a placeholder look). DEBUG
+// (progress/wellboard/rules.js) with you in the first seat: the board drawn in 3D in place of the world (vfx/wellboard/boardview.js),
+// its decisions on a page set aside at the right (boardpage.js). DEBUG
 // only for now, opened by /board: the board is a draft South has not ruled on (GAPS G85, G93), so it counts nothing and pays nothing.
 //
 // What is a STAND-IN here, said plainly: a floor (a fight, a trial, the FOE) is not played. The page asks how it went (CLEARED,
@@ -16,7 +17,7 @@
 // Prior art: the bazaar's seat (world/bazaar/session.js: a rules module played on a page, its moments told as events).
 //
 //   new WellBoard(game) -> game.wellBoard   .open({ seed?, endless? })   .take(move)   .floor('clear' | 'true' | 'fail')   .readout()
-//   .close()   .S (the run's state)   .done
+//   .close()   .S (the run's state)   .done   .view (the 3D board; `.view.busy` while a turn's beats play)
 // ---------------------------------------------------------------------------------------
 import { rngOf } from '../../../progress/casino/table.js';
 import { WELL_BOARD, readout, keysAt } from '../../../progress/wellboard/rules.js';
@@ -25,12 +26,14 @@ import { payOf } from '../../../progress/wellboard/pay.js';
 import { wellSeed } from '../../../progress/econ/islands.js';
 import { today } from '../../../core/calendar.js';
 import { renderBoard } from './boardpage.js';
+import { WellBoardView } from '../../../vfx/wellboard/boardview.js';
 
 const PAGE = 'well.board';
 
 export class WellBoard {
   constructor(game) {
     this.game = game; this.S = null; this.done = false; this.seen = 0; this.hover = null;
+    this.view = new WellBoardView(game, this); // (the board in 3D, in place of the world while the page is open: vfx/wellboard/boardview.js; boot/frame.js draws it)
     game.chat?.add('board', { debug: true, help: "the Well's board, a draft (DEBUG): /board (the game day's), /board <seed>, /board endless", run: ([a]) => this.open({ endless: a === 'endless', seed: a && a !== 'endless' ? +a : undefined }) });
   }
   get menu() { return this.game.indexMenu || this.game.course?.menu; }
@@ -42,6 +45,8 @@ export class WellBoard {
     this.S = WELL_BOARD.setup({ seats: 1, r: this.r, opts: { seed: this.seed, endless, rerolls: g.rerolls?.left?.() ?? BOARD.rerolls, whistle: g.box?.count?.('whistle.wake') ? 1 : 0 } });
     this.done = false; this.seen = 0; this.hover = null; this.opened = Object.create(null);
     g.events?.emit('board.open', { seed: this.seed, endless, by: 'courier' });
+    this.render(); // (the page first: the view frames itself beside it)
+    try { this.view.open(); } catch (e) { console.warn('the board\'s view did not open; the page alone is played', e); this.view.active = false; }
     this.render();
   }
   readout() { return this.S ? readout(this.S, 0) : null; }
@@ -52,8 +57,9 @@ export class WellBoard {
     const P = this.pending(); if (!P || this.done) return { ok: false, why: 'nothing is waiting' };
     const move = P.moves.find((x) => x.id === m.id && (m.sides == null || x.sides === m.sides) && (m.to == null || x.to === m.to));
     if (!move) return { ok: false, why: `not a move now: ${P.moves.map((x) => x.id + (x.sides ? ` d${x.sides}` : '')).join(', ')}` };
+    const from = this.S.log.length;
     WELL_BOARD.apply(this.S, m.grade ? { ...move, grade: m.grade } : move, this.r);
-    this.tell();
+    this.tell(); this.view.play(this.S.log.slice(from)); // (the same moments as beats: the die, each step, the landing)
     if (WELL_BOARD.result(this.S) && !this.done) this.finish();
     this.hover = null; this.render();
     return { ok: true };
@@ -78,9 +84,9 @@ export class WellBoard {
     const R = WELL_BOARD.result(this.S).seats[0]; this.done = true; this.last = { ...R, cubes: payOf(R) };
     this.game.events?.emit('board.out', { how: R.out, deepest: R.deepest, haul: R.haul.length, floors: R.floors, cubes: this.last.cubes, by: 'courier' });
   }
-  close() { if (this.menu?.page?.name === PAGE) this.menu.close(); }
+  close() { this.view.close(); if (this.menu?.page?.name === PAGE) this.menu.close(); }
   render() {
     const menu = this.menu; if (!menu?.showPage) return;
-    menu.showPage(PAGE, (im, el) => renderBoard(this, { im, el }), { title: "THE WELL'S BOARD", sub: `a draft · the game day's seed ${this.seed} · nothing here is counted or paid` });
+    menu.showPage(PAGE, (im, el) => renderBoard(this, { im, el }), { title: "THE WELL'S BOARD", sub: 'a draft · nothing is counted or paid', aside: 'right' });
   }
 }

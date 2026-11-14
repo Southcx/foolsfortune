@@ -7,9 +7,9 @@ drafting the Wells' boardgame module ... you're a free hand. The girls can check
 Written by a sixth session working as a free hand, on `claude/brave-faraday-gjppx6`. **A draft: nothing here is ruled.** It closes
 GAPS G85's design and gives G88 (the endless Well) for free; G93 is still South's. Every name is plain until South calls it final.
 
-**Built:** the rules (`src/progress/wellboard/`), a bot, the simulator (`scripts/wellboard.mjs`), a playable page in DEBUG
-(`/board`), the log's rules. **Not built:** a floor's own play (the page asks how it went: a stand-in), the board's look, its sounds,
-pay into the purse, touch beyond the page's own taps.
+**Built:** the rules (`src/progress/wellboard/`), a bot, the simulator (`scripts/wellboard.mjs`), the board in 3D in DEBUG
+(`/board`: section 10), its decisions on a page set aside, the log's rules. **Not built:** a floor's own play (the page asks how
+it went: a stand-in), its sounds, pay into the purse, touch beyond taps on the page and the dice.
 
 ## 1. The game in one paragraph
 
@@ -118,11 +118,13 @@ What it cannot say: whether it is fun. That is South's, in play.
 | the layout and the numbers | `src/progress/wellboard/layout.js` | Dovina's |
 | the rules (the table engine's shape: `setup`, `pending`, `apply`, `result`, `view`) | `src/progress/wellboard/rules.js` | Dovina's |
 | the bot, the pay | `bot.js`, `pay.js` there | Dovina's |
-| the session and its draft page | `src/world/well/board/boardsession.js`, `boardpage.js` | Petra's; the look Calissa's |
+| the session and its page | `src/world/well/board/boardsession.js`, `boardpage.js` | Petra's |
+| the board in 3D | `src/vfx/wellboard/` (`boardview.js`, `boardring.js`, `boardkit.js`) | Calissa's |
 | the log's rules | `src/feedback/tracking/wellboard.js` | Petra's; the words Espada's |
 | the simulator, the shots | `scripts/wellboard.mjs`, `scripts/wellboard-shot.mjs` | Dovina's, Calissa's |
 
-Hub edits: one line in `boot/chatcommands.js` (the session built), two in `feedback/tracking/rules.js`.
+Hub edits: one line in `boot/chatcommands.js` (the session built), two in `feedback/tracking/rules.js`, the draw's line in
+`boot/frame.js`.
 
 **The one seam that matters:** `game.wellBoard.floor('clear' | 'true' | 'fail')`. A floor module is entered when the rules ask for a
 floor (`pending().kind === 'floor'`, with its `floor` kind and `depth`), and calls that when it ends. Strawman's Well's stages
@@ -150,6 +152,35 @@ stand, each die's reach, the decision waiting and its moves by id), and the page
 - **Dovina:** the numbers are in `BOARD` and `PAY`, each with its reason; the simulator is yours to retune. I priced a floor at a
   whole `perFloor`; you know whether a space is worth a Dunemaw floor.
 - **Petra:** the session is small and counts nothing; `floor()` is the seam. Nothing of yours was changed but the two hub lines.
-- **Calissa:** the page is a placeholder and says so. The data a look needs is `readout()` and each space's `x`, `y`, `side`.
+- **Calissa:** section 10 is a first look, yours to keep, change or replace. The data a look needs is `readout()`, each space's
+  `x`, `y`, `side`, and the rules' log (each step of a walk is in it).
 - **Wanda:** no sounds. The events are `board.throw`, `.land`, `.haul`, `.crack`, `.mend`, `.door`, `.out`.
 - **Espada:** every word is plain and a placeholder: the log's lines, the kinds' labels, "the fate die", "keys".
+
+## 10. The look (South, 2026-11-14: "Mario Party and Dokapon Kingdom ... taken to a psychedelic esoteric extreme")
+
+A draft look, `src/vfx/wellboard/`, drawn in a scene of its own in place of the world while the page is open (as the reading
+view's scene is), through the game's glow and grade.
+
+- **The void.** One sky dome. The zenith is an eye (the house's convention for every sky), the horizon a seven-fold kaleidoscope
+  of drifting colour, the nadir the Well: a spiral of the film turning down into a lit throat. It shifts hue a floor.
+- **A floor is a wheel.** An annulus floating over the shaft, its top painted as a zodiac wheel in gold on indigo (twelve houses for
+  twelve spaces, a heptagram on the shaft's lip), its walls in the labradorite's film. The floor below is seen down the shaft.
+- **Pads, one colour a job** (Mario Party's rule): a cream foot, a saturated body, a white icon keylined dark (Dokapon's thick
+  outline). Fight red, Trial violet, Cache gold, Spring teal, Hazard crimson on black, Shift blue, Rest green. A worked pad greys
+  under a check. The short cut is stepping pads across the shaft; the long way floats outside the rim on shards.
+- **The door** is a gold arch whose portal turns in the film once its ring's two floors are cleared; **the FOE's space** wears a
+  spiked eye that opens when it wakes. Over the shaft hangs **the heart**: an armillary round a stellated core, an orb a key.
+- **Your piece is your Pneuka Jar**: the owner's model cloned and fired in your vessel's glazes, hopping pad to pad, squashing as it
+  lands.
+- **Your dice** float along the top as their solids in their suits' inks. A click picks one and its reach rings the pads; a second
+  click throws it. It tumbles out over the Jar, its face is said big over the Jar's head, and counts down a hop.
+- **A turn is played as beats** from the rules' log (the throw, each step, the landing, a piece of haul, a crack, the fate die,
+  the way out); the page waits while they play.
+
+What it costs, said plainly: two shader programs of its own (`wellboard-sky`, `wellboard-toy`), compiled on the first `/board`,
+not at the warm-up; the Jar's materials lit by this scene's two lights are a variant of the finish program. Neither is in the
+perf baseline. One line in `boot/frame.js`'s draw (twice: the frame and the manual draw).
+
+Seen headless at 1280 x 720 and 896 x 414 (`scripts/wellboard-shot.mjs`). What I would change next: the dice tray crowds the far
+pads at the top; the game's log and Lachrimeter are still drawn over the scene; the icons are soft at 480 lines.
