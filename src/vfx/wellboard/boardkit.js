@@ -20,6 +20,7 @@
 //
 //   skyMaterial()   toy({ color, map?, film?, glow?, flat? }) -> material   iconTexture(kind, shift?)   deckTexture(seed)
 //   dieGeometry(sides)   PAD { kind: { color, top } }   DIE_COLOUR   textSprite() -> { sprite, set(text, colour) }   haloTex()
+//   cardSprite() -> { sprite, set(arcana card) }
 //   tick(t)  (walks the shared clock uniform)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -32,6 +33,7 @@ export const PAD = {
   fight: { color: 0xff4a2a, top: 0xff6a3c }, genre: { color: 0x9a3dff, top: 0xb060ff }, cache: { color: 0xf0a800, top: 0xffbe1a },
   spring: { color: 0x10b89a, top: 0x1fd6b4 }, hazard: { color: 0xd0103a, top: 0x1c0812 }, shift: { color: 0x2468f0, top: 0x3a86ff },
   rest: { color: 0x4fb82a, top: 0x6fd23f }, door: { color: 0xe8d2a0, top: 0xfff1cf }, foe: { color: 0x1a0d1f, top: 0x7a0f24 },
+  shop: { color: 0xff3fa4, top: 0xff6cbd }, item: { color: 0xff8a1a, top: 0xffa53f }, arcana: { color: 0x2a1a7a, top: 0x3b2bb0 },
   mouth: { color: 0xe8d2a0, top: 0xfff1cf }, '?': { color: 0x4a3f5a, top: 0x6a5f80 },
 };
 /** The dice's inks (DICE.md 2: d4 Wands, d6 Pentacles, d8 Swords, d10 Cups; the d12 the zodiac's violet, the d20 the Majors' gold). */
@@ -142,6 +144,9 @@ export function iconTexture(kind, shift = 0) {
     const s = Math.sign(shift) || 1; line([[-34 * s, -22], [-8 * s, 0], [-34 * s, 22]]); line([[-4 * s, -22], [22 * s, 0], [-4 * s, 22]]);
     g.font = '900 34px system-ui, sans-serif'; g.textAlign = 'center'; g.lineWidth = 8; g.strokeStyle = key2; g.strokeText(String(Math.abs(shift)), 34 * s, 44); g.fillStyle = '#ffe14a'; g.fillText(String(Math.abs(shift)), 34 * s, 44);
   } else if (kind === 'check') line([[-30, 2], [-8, 26], [32, -24]], 14);
+  else if (kind === 'shop') { line([[-16, -14], [-16, -30], [16, -30], [16, -14]], 7); draw(() => { g.beginPath(); g.moveTo(-28, -14); g.lineTo(28, -14); g.lineTo(36, 38); g.lineTo(-36, 38); g.closePath(); }); draw(() => { g.beginPath(); g.arc(0, 12, 10, 0, 7); }, '#ff3fa4'); } // (a bag, a coin on it)
+  else if (kind === 'item') { draw(() => { g.beginPath(); g.rect(-34, -14, 68, 50); }); draw(() => { g.beginPath(); g.rect(-40, -30, 80, 18); }); draw(() => { g.beginPath(); g.rect(-7, -30, 14, 66); }, '#ff8a1a'); } // (a wrapped box)
+  else if (kind === 'arcana') { draw(() => { g.beginPath(); g.rect(-26, -42, 52, 84); }); draw(() => { g.beginPath(); for (let i = 0; i < 14; i++) { const a = -Math.PI / 2 + (i * Math.PI) / 7, r = i % 2 ? 8 : 20; g[i ? 'lineTo' : 'moveTo'](Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); }, '#ffd36a'); } // (a card, a seven-pointed star on it)
   else { g.font = '900 72px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 10; g.strokeStyle = key2; g.strokeText('?', 0, 4); g.fillStyle = ink; g.fillText('?', 0, 4); }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
   ICONS.set(key, t); return t;
@@ -198,7 +203,9 @@ export function textSprite() {
   let was = null;
   return { sprite, set(text, colour = '#fff') {
     const k = `${text}|${colour}`; if (k === was) return; was = k;
-    g.clearRect(0, 0, 256, 128); g.font = `900 ${String(text).length > 3 ? 64 : 100}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+    g.clearRect(0, 0, 256, 128); let px = String(text).length > 3 ? 64 : 100; g.font = `900 ${px}px system-ui, sans-serif`; const wide = g.measureText(text).width; if (wide > 226) { px = Math.max(22, Math.floor((px * 226) / wide)); g.font = `900 ${px}px system-ui, sans-serif`; }
+    g.lineWidth = Math.max(8, px * 0.22); g.strokeStyle = '#1a0d1f'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round'; g.strokeText(text, 128, 68); g.lineWidth = Math.max(3, px * 0.08); g.strokeStyle = '#fff'; g.strokeText(text, 128, 68); g.fillStyle = colour; g.fillText(text, 128, 68); tex.needsUpdate = true; return;
+    g.font = ''; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
     g.lineWidth = 22; g.strokeStyle = '#1a0d1f'; g.strokeText(text, 128, 68); g.lineWidth = 8; g.strokeStyle = '#fff'; g.strokeText(text, 128, 68); g.fillStyle = colour; g.fillText(text, 128, 68);
     tex.needsUpdate = true;
   } };
@@ -210,3 +217,24 @@ export function haloTex() {
   const c = canvas(64), g = c.getContext('2d'), r = g.createRadialGradient(32, 32, 0, 32, 32, 32); r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.35, 'rgba(255,255,255,0.55)'); r.addColorStop(1, 'rgba(255,255,255,0)');
   g.fillStyle = r; g.fillRect(0, 0, 64, 64); HALO = new THREE.CanvasTexture(c); return HALO;
 }
+
+const TONE = { good: '#10b89a', bad: '#d0103a', odd: '#9a3dff' };
+/** A Major Arcana as the board shows it drawn (items.js ARCANA): a cream card keylined dark, its numeral, a seven-rayed eye on a
+ *  panel in its tone's colour, its label and its one line. One sprite, redrawn a card. */
+export function cardSprite() {
+  const c = document.createElement('canvas'); c.width = 320; c.height = 512; const g = c.getContext('2d'), tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false })); sprite.scale.set(3.4, 5.44, 1); sprite.renderOrder = 21; sprite.visible = false;
+  const fit = (text, px, y, w, colour) => { g.font = `900 ${px}px system-ui, sans-serif`; const m = g.measureText(text).width; if (m > w) g.font = `900 ${Math.floor((px * w) / m)}px system-ui, sans-serif`; g.fillStyle = colour; g.fillText(text, 160, y); };
+  return { sprite, set(card) {
+    g.clearRect(0, 0, 320, 512); g.lineJoin = 'round'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillStyle = '#1a0d1f'; g.beginPath(); g.roundRect(4, 4, 312, 504, 30); g.fill(); g.fillStyle = '#fff1d6'; g.beginPath(); g.roundRect(16, 16, 288, 480, 22); g.fill();
+    g.fillStyle = TONE[card.tone] || TONE.odd; g.beginPath(); g.roundRect(34, 84, 252, 250, 16); g.fill();
+    g.save(); g.translate(160, 209); g.fillStyle = '#ffd36a'; g.beginPath(); for (let i = 0; i < 14; i++) { const a = -Math.PI / 2 + (i * Math.PI) / 7, r = i % 2 ? 46 : 104; g[i ? 'lineTo' : 'moveTo'](Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); g.fill();
+    g.fillStyle = '#fff'; g.beginPath(); g.moveTo(-60, 0); g.quadraticCurveTo(0, -46, 60, 0); g.quadraticCurveTo(0, 46, -60, 0); g.fill(); g.fillStyle = '#1a0d1f'; g.beginPath(); g.arc(0, 0, 20, 0, 7); g.fill(); g.restore();
+    fit(card.numeral, 44, 52, 240, '#1a0d1f'); fit(card.label.toUpperCase(), 34, 372, 262, '#1a0d1f');
+    const words = card.line.split(' '), lines = ['']; g.font = '700 22px system-ui, sans-serif'; for (const w of words) { const t = lines[lines.length - 1] ? `${lines[lines.length - 1]} ${w}` : w; if (g.measureText(t).width > 256) lines.push(w); else lines[lines.length - 1] = t; }
+    g.fillStyle = '#3a2a3f'; lines.slice(0, 3).forEach((l, i) => g.fillText(l, 160, 412 + i * 26));
+    tex.needsUpdate = true;
+  } };
+}
+

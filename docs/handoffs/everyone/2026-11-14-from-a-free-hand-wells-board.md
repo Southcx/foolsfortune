@@ -15,3 +15,21 @@ draft in DEBUG and counts nothing. The plan is `docs/plans/WELL-BOARD.md`; secti
 - **Run:** `npm run check` OK, `npm run build` OK. The stress test, perf and the full gate were not run: nothing here touches the
   core movement, physics, the save or a shared service.
 - **Try:** DEBUG, `/board`. Pick a die (its reach rings the spaces it could land on), throw it. A floor asks how it went: a stand-in.
+
+## 2026-11-15: South's third and fourth asks (the board game's own; the dice do three things)
+
+- **The board game's own** (WELL-BOARD.md 11): three of the siblings as rivals (bots, each a style), a purse, items, a shop, Arcana
+  spaces, duels, snares, a stray a ring, standings with bonus awards. **The dice do three things** (WELL-BOARD.md 12, Dicey
+  Dungeon's): a die is a move, a power's price (Ward, Push, Transmute), or a blow in a battle fought with the dice you kept.
+- **New files:** `src/progress/wellboard/items.js`, `battle.js`. Rewritten: `rules.js`, `bot.js`, `pay.js`, the session, the page,
+  the view. New events: `board.item`, `.power`, `.arcana`, `.battle`, `.duel`, `.warded`. Two more glossary entries.
+- **The HUD steps out while the board is up** (`game.ui.want('wellboard')`), so the log is not seen until it closes; the page says
+  the turn. Petra: say if the log should stay (`{ log: true }` covers the board's bottom left).
+- **Dovina:** section 6 is re-measured; alone it pays 1.16x the aim (`PAY.share` 0.85 is the knob). The battle's numbers
+  (`BATTLE`, `FOES`, `GEAR`) and nine duels a game (`BOARD.duelRest`) are yours to rule.
+- **Calissa:** a rival's Jar wears `lookOf(sibling)`; a battle in 3D is words over the Jar, not a staged fight; the Arcana card is
+  a canvas stand-in (`cardSprite`), not the house deck's.
+- **Espada:** every label and line in `items.js` and `battle.js` is a placeholder; the six slots borrow the tools' names.
+- **Try:** DEBUG, `/board` (three rivals), `/board solo`, `/board endless`. Land on a Fight with the d20 still in hand, then again
+  with it spent.
+

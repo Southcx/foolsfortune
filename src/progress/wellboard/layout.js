@@ -16,6 +16,7 @@
 //
 //   BOARD (the numbers)   KINDS { kind: { label, line, lands } }   layOut(seed, depth, { last }) -> floor { depth, spaces: { id: space }, first, door }
 //   space { id, kind, depth, next: [ids], x, y, side?, shift?, odds? }   MOUTH (the space every seat starts on)   tierAt(depth)
+//   kinds: mouth, fight, genre (a trial), cache, spring, hazard, shift, rest, shop, item, arcana, door, foe
 // ---------------------------------------------------------------------------------------
 import { seeded } from '../../core/rng.js';
 
@@ -30,7 +31,8 @@ import { seeded } from '../../core/rng.js';
  *  `deck`: what a floor's main line holds between its first space and its door (11 spaces), shuffled by the seed.
  *  `save`: a hazard's save on the fate die, a share, falling `saveDeeper` a floor (never under `saveFloor`).
  *  `shift`: how far a shift space moves you, back or on. `side`: the two side lines, a floor has one.
- *  `rerolls`: Luck's re-rolls a run when the runtime gives none (`game.rerolls.left()`, progress/dice.js). */
+ *  `rerolls`: Luck's re-rolls a run when the runtime gives none (`game.rerolls.left()`, progress/dice.js).
+ *  The rest are the board game's own (WELL-BOARD.md 11): what a seat may hold, what a duel, a snare, a stray and an award are worth. */
 export const BOARD = {
   dice: [4, 6, 8, 10, 12, 20],
   fate: 100,
@@ -39,14 +41,20 @@ export const BOARD = {
   floors: 3,
   foeEvery: 3,
   main: 12,
-  deck: { fight: 3, genre: 1, cache: 2, spring: 1, hazard: 2, shift: 1, rest: 1 },
+  deck: { fight: 3, genre: 1, cache: 1, spring: 1, hazard: 1, shift: 1, arcana: 1, item: 1 }, // (and a tenth by the floor: a rest on the odd floors, a shop on the even)
   save: 0.6, saveDeeper: 0.05, saveFloor: 0.3,
   shift: [-3, -2, 2, 3, 4],
   side: {
     short: { from: [1, 3], skips: [4, 5], len: 2, deck: ['hazard', 'fight'] },
-    long: { from: [1, 3], skips: [2, 3], len: 5, deck: ['cache', 'spring', 'cache', 'fight', 'rest'] },
+    long: { from: [1, 3], skips: [2, 3], len: 5, deck: ['cache', 'shop', 'spring', 'fight', 'rest'] },
   },
   rerolls: 1,
+  hold: 3,          // (items a seat may hold: Mario Party's three)
+  duel: 15,         // (cubes a duel's winner takes where the loser holds no haul)
+  duelRest: 2,      // (rounds a seat that has duelled is left alone: a pack on one ring is not one long brawl)
+  snare: 15,        // (cubes a snare takes for its setter)
+  stray: { steps: 4, cubes: 15, from: [4, 9] }, // (a ring's stray: a d4 a round along the main line; what downing it pays; where it starts)
+  award: 15,        // (a bonus award's worth at the standings: Mario Party's bonus stars)
 };
 
 /** The kinds of space: the label and the one line the player reads (CLARITY.md: a genre word, one line of effect), and what landing
@@ -61,6 +69,9 @@ export const KINDS = {
   hazard: { label: 'Hazard', line: 'Throw the fate die. Under its save, take a crack.', lands: 'save' },
   shift: { label: 'Shift', line: 'The Well moves you the spaces it shows.', lands: 'move' },
   rest: { label: 'Rest', line: 'Every spent die comes back.', lands: 'recast' },
+  shop: { label: 'Shop', line: 'Buy one item with the cubes this run has found.', lands: 'shop' },
+  item: { label: 'Item', line: 'A random item. With your hands full, cubes.', lands: 'item' },
+  arcana: { label: 'Arcana', line: 'Draw a Major Arcana. It does what it says, for good or ill.', lands: 'arcana' },
   door: { label: 'Door', line: 'Stops you. Opens down once two floors here are cleared; shut, it sends you round again. The way up.', lands: 'stop' },
   foe: { label: 'FOE', line: 'Stops you. The FOE wakes once two floors here are cleared; asleep, the space sends you round again.', lands: 'floor' },
 };
@@ -80,7 +91,7 @@ const deckOf = (D) => Object.entries(D).flatMap(([k, n]) => Array(n).fill(k));
 export function layOut(seed, depth, { last = false } = {}) {
   const r = seeded((seed ^ Math.imul(depth + 1, 0x9e3779b1)) >>> 0), B = BOARD, n = B.main;
   const id = (i) => `${depth}.${i}`, sid = (j) => `${depth}.s${j}`;
-  const deck = deckOf(B.deck); deck.splice(deck.indexOf('fight'), 1);
+  const deck = deckOf(B.deck); deck.splice(deck.indexOf('fight'), 1); deck.push(depth % 2 ? 'rest' : 'shop');
   let kinds;
   for (let tries = 0; tries < 20; tries++) { // (no two hazards side by side, and no shift beside the door: a floor never reads as a trap)
     kinds = ['fight', ...shuffled(r, deck)];

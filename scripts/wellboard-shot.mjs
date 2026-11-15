@@ -1,11 +1,11 @@
 // ---------------------------------------------------------------------------------------
 // THE WELL'S BOARD, SHOT: the board's draft page (src/world/well/board/) headless, on the desk (1280 x 720) and the phone (896 x 414
 // at 2x, touch), driven through the session's own moves on the view's fixed clock: the first turn with a die picked (its reach ringed), the die in
-// the air, the Jar mid-walk, landed, the second floor, and the run's end. Prints what each shot's decision was and any page error.
+// the air, the Jar mid-walk, landed, a battle, the second floor, and the run's end (three rivals in the other seats). Prints what each shot's decision was and any page error.
 //
 // Prior art: scripts/entropy-shot.mjs (the boot, the manual frame).
 //
-//   node scripts/wellboard-shot.mjs [out dir] [seed] [quick]   (quick: no run to the end, the phone's first four only)
+//   node scripts/wellboard-shot.mjs [out dir] [seed] [quick]   (quick: no run to the end, the phone's first five only)
 // ---------------------------------------------------------------------------------------
 import fs from 'node:fs';
 import os from 'node:os';
@@ -42,10 +42,12 @@ try {
     said[`${Z.id}.throw`] = await step("B.take({ id: 'throw', sides: 8 });", 16); await shot('2-throw');
     said[`${Z.id}.walk`] = await step('', 34); await shot('3-walk');
     said[`${Z.id}.landed`] = await step(''); await shot('4-landed');
+    for (let i = 0; i < 80; i++) { const s = await step(`if (B.done) return 'done'; if (B.pending().kind === 'battle') return 'battle'; ${PLAY}`); said[`${Z.id}.battle`] = s; if (s.kind === 'battle' || s.done) break; }
+    await step('B.die = 0; B.render();'); await shot('5-battle');
     if (quick && Z.id === 'phone') { await ctx.close(); continue; }
-    for (let i = 0; i < 60; i++) { const s = await step(`if (B.done) return 'done'; ${PLAY}`); said[`${Z.id}.last`] = s; if (s.at?.startsWith('1.') || s.done) break; }
-    await step('B.hover = 12; B.render();'); await shot('5-floor2');
-    if (!quick) { for (let i = 0; i < 200; i++) { const s = await step(`if (B.done) return 'done'; ${PLAY}`); said[`${Z.id}.end`] = s; if (s.done) break; } await shot('6-end'); }
+    for (let i = 0; i < 120; i++) { const s = await step(`if (B.done) return 'done'; ${PLAY}`); said[`${Z.id}.last`] = s; if (s.at?.startsWith('1.') || s.done) break; }
+    await step('B.hover = 12; B.render();'); await shot('6-floor2');
+    if (!quick) { for (let i = 0; i < 400; i++) { const s = await step(`if (B.done) return 'done'; ${PLAY}`); said[`${Z.id}.end`] = s; if (s.done) break; } await shot('7-end'); }
     await ctx.close();
   }
 } finally { await browser.close(); await server.close(); }

@@ -10,12 +10,13 @@
 //   THE DOOR     an arch on its pad, its portal dark while shut and turning in the film once the ring's two floors are cleared;
 //                the FOE's space wears an eye instead, shut while it sleeps
 //   THE HEART    over the shaft, an armillary of three gold hoops round a stellated core, and a lit orb a key of the door
+//   THE STRAY    a dark burr with one red eye over the pad the ring's stray stands on; A SNARE: a toothed hoop turning on its pad
 //   THE REACH    a hoop over each pad a picked die could land on, heavier the likelier, the pad lifted
 //
 // Prior art: Mario Party's pads and Dokapon Kingdom's board spaces; an armillary sphere; the zodiac wheel; Super Mario Galaxy's
 // floating platforms (a path that is plainly a toy and plainly in space).
 //
-//   new BoardRing(floor, depth, { need }) -> .group   .at(id) -> Vector3 (world)   .sync(state)   .reach({ id: k })   .update(t, dt)
+//   new BoardRing(floor, depth, { need }) -> .group   .at(id) -> Vector3 (world)   .sync(state, keys)   .reach({ id: k })   .update(t, dt)
 //   ringY(depth)   spot(space) -> { x, y, z } (in the ring's own frame)   RING (the sizes)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -58,7 +59,13 @@ export class BoardRing {
     this.core = new THREE.Mesh(new THREE.IcosahedronGeometry(1.0, 0), toy({ color: 0xffffff, film: 1, flat: true, glow: 0.25 })); H.add(this.core);
     const spike = new THREE.Mesh(new THREE.OctahedronGeometry(1.55, 0), toy({ color: 0xffd36a, film: 0.6, flat: true, alpha: 0.35 })); H.add(spike); this.spike = spike;
     this.keys = [...Array(need)].map((_, i) => { const k = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 12), toy({ color: 0xffd36a, glow: 0 })); H.add(k); return k; });
-    this.sync({ cleared: {}, taken: {} });
+    // the ring's stray: a dark burr with one red eye, hung over the pad it stands on (rules.js: it walks a d4 a round)
+    const T = (this.stray = new THREE.Group()); T.visible = false; G.add(T);
+    T.add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.62, 0), toy({ color: 0x1a0d1f, film: 0.6, flat: true })));
+    for (let i = 0; i < 8; i++) { const a = (i * Math.PI) / 4, c = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.7, 5), toy({ color: 0xd0103a, flat: true, glow: 0.3 })); c.position.set(Math.cos(a) * 0.85, Math.sin(i * 1.7) * 0.3, Math.sin(a) * 0.85); c.rotation.z = -Math.PI / 2 + 0; c.lookAt(c.position.clone().multiplyScalar(2)); c.rotateX(Math.PI / 2); T.add(c); }
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.26, 12, 10), toy({ color: 0xff2a4a, glow: 1.2 })); eye.position.y = 0.45; T.add(eye);
+    this.snares = {}; this.strayAt = null;
+    this.sync({ seats: [{ cleared: {} }], taken: {}, snares: {}, stray: {} }, 0);
   }
 
   addPad(s) {
@@ -66,7 +73,7 @@ export class BoardRing {
     const foot = new THREE.Mesh(footGeo, toy({ color: 0xfff1d6 })); foot.position.y = 0.1; g.add(foot);
     const body = new THREE.Mesh(padGeo, toy({ color: C.color, top: C.top, map: iconTexture(s.kind, s.shift), mapOn: 2, film: s.kind === 'foe' ? 0.5 : 0.08 })); body.position.y = 0.38; g.add(body);
     const hoop = new THREE.Mesh(hoopGeo, toy({ color: 0xc9a7ff, film: 0.7, glow: 0.9 })); hoop.rotation.x = Math.PI / 2; hoop.position.y = 0.9; hoop.visible = false; g.add(hoop);
-    const pad = (this.pads[s.id] = { s, g, body, foot, hoop, y: P.y, lift: 0, k: 0, worked: false });
+    const pad = (this.pads[s.id] = { s, g, body, foot, hoop, kind: s.kind, y: P.y, lift: 0, k: 0, worked: false });
     if (s.side || s.kind === 'mouth') { const stem = new THREE.Mesh(new THREE.ConeGeometry(0.9, 1.6, 7), toy({ color: 0x3a1c6e, film: 0.8, flat: true })); stem.rotation.x = Math.PI; stem.position.y = -0.8; g.add(stem); } // (a floating pad: a shard under it)
     if (s.kind === 'door') {
       const arch = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.2, 10, 28, Math.PI), toy({ color: 0xffd36a, film: 0.3 })); arch.position.y = 0.6; arch.rotation.y = Math.PI / 2; g.add(arch);
@@ -88,17 +95,26 @@ export class BoardRing {
   at(id, out = new THREE.Vector3()) { const p = this.pads[id]; return p ? out.set(p.g.position.x, this.group.position.y + p.y + 0.56, p.g.position.z) : null; }
 
   /** The rules' state worn: a pad worked greyed under a check, the door's portal and the FOE's eye open, the keys lit. */
-  sync(S) {
-    let keys = 0;
+  sync(S, keys = 0) {
+    const cleared = S.seats[0].cleared; // (the pads wear YOUR run: each seat clears its own floors)
     for (const p of Object.values(this.pads)) {
-      const worked = !!(S.cleared[p.s.id] || S.taken[p.s.id]); if (S.cleared[p.s.id] && p.s.kind !== 'foe') keys++;
+      const worked = !!(cleared[p.s.id] || S.taken[p.s.id]);
+      if (p.kind !== p.s.kind) { const C = PAD[p.s.kind] || PAD['?'], u = p.body.material.uniforms; p.kind = p.s.kind; u.uColor.value.setHex(C.color); u.uTop.value.setHex(C.top); p.worked = null; } // (a Transmute: the pad is another kind now)
       if (worked !== p.worked) { p.worked = worked; p.body.material.uniforms.uDim.value = worked ? 0.85 : 0; p.body.material.uniforms.uMap.value = worked ? iconTexture('check') : iconTexture(p.s.kind, p.s.shift); }
     }
     this.open = keys >= this.need;
     this.keys.forEach((k, i) => { k.material.uniforms.uGlow.value = i < keys ? 1.2 : 0; k.material.uniforms.uDim.value = i < keys ? 0 : 0.8; });
     for (const p of Object.values(this.pads)) {
       if (p.portal) { const u = p.portal.material.uniforms; u.uFilm.value = this.open ? 1 : 0; u.uGlow.value = this.open ? 0.8 : 0; u.uColor.value.setHex(this.open ? 0xfff1d6 : 0x120820); }
-      if (p.iris) { const awake = this.open && !S.cleared[p.s.id]; p.iris.material.uniforms.uGlow.value = awake ? 1.4 : 0; p.iris.scale.setScalar(S.cleared[p.s.id] ? 0.3 : awake ? 1 : 0.55); }
+      if (p.iris) { const awake = this.open && !cleared[p.s.id]; p.iris.material.uniforms.uGlow.value = awake ? 1.4 : 0; p.iris.scale.setScalar(cleared[p.s.id] ? 0.3 : awake ? 1 : 0.55); }
+    }
+    // the stray and the snares
+    const at = S.stray[this.depth] || null; if (at && !this.strayAt && this.pads[at]) this.stray.position.copy(this.pads[at].g.position); this.strayAt = at && this.pads[at] ? at : null; this.stray.visible = !!this.strayAt;
+    for (const id of Object.keys(this.snares)) if (S.snares[id] == null) { this.group.remove(this.snares[id]); delete this.snares[id]; }
+    for (const id of Object.keys(S.snares)) if (this.pads[id] && !this.snares[id]) {
+      const g = (this.snares[id] = new THREE.Group()), hoop = new THREE.Mesh(new THREE.TorusGeometry(RING.pad * 0.78, 0.07, 6, 28), toy({ color: 0xd0103a, glow: 0.5 })); hoop.rotation.x = Math.PI / 2; g.add(hoop);
+      for (let i = 0; i < 8; i++) { const a = (i * Math.PI) / 4, t = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.34, 4), toy({ color: 0xfff1d6, flat: true })); t.position.set(Math.cos(a) * RING.pad * 0.78, 0.17, Math.sin(a) * RING.pad * 0.78); g.add(t); }
+      this.group.add(g);
     }
   }
   /** The pads a picked die could land on: { id: 0..1 }. */
@@ -117,6 +133,8 @@ export class BoardRing {
       if (p.k > 0) { const s = 1 + 0.08 * Math.sin(t * 6 + p.g.position.z); p.hoop.scale.set(s, s, 1 + p.k); p.hoop.position.y = 0.95 + 0.12 * Math.sin(t * 3 + p.g.position.x); p.hoop.material.uniforms.uGlow.value = 0.5 + p.k * 1.2; }
       if (p.eye) { p.eye.position.y = 2.3 + Math.sin(t * 1.1) * 0.15; p.eye.rotation.z = Math.sin(t * 0.5) * 0.1; }
     }
+    if (this.strayAt) { const g = this.pads[this.strayAt].g.position, T = this.stray, k = Math.min(1, dt * 5); T.position.x += (g.x - T.position.x) * k; T.position.z += (g.z - T.position.z) * k; T.position.y += (g.y + 2.5 + Math.sin(t * 2.6) * 0.2 - T.position.y) * k; T.rotation.y += dt * 1.4; }
+    for (const [id, g] of Object.entries(this.snares)) { const q = this.pads[id].g.position; g.position.set(q.x, q.y + 0.6, q.z); g.rotation.y -= dt * 0.9; }
   }
   dispose() { this.deck.dispose(); this.group.parent?.remove(this.group); this.group.traverse((o) => { if (o.isMesh) { if (![padGeo, footGeo, hoopGeo, dotGeo].includes(o.geometry)) o.geometry.dispose(); o.material.dispose(); } }); }
 }
