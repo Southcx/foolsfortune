@@ -3,9 +3,10 @@
 // key-pose way, from the clips the suite already has (CLAUDE.md: an existing clip for every movement).
 //   a move     three key poses read off its clip (moves.js POSES): the lead-in, the strike and the follow-through, at the clip's own
 //              moments (tools/melee.js measureSwing: the strike is the stretch round the limb's fastest; the lead-in a beat before it,
-//              the follow-through a beat after). Held on the move's own frames, not the clip's clock: the lead-in through the startup,
-//              the strike snapped to on the first active frame and held through the active ones, the follow-through held through the
-//              recovery, each snapped into by platformfighter.js's SNAP (fillKeys' rule), let go over the last 4. A smash's charge holds
+//              the follow-through a beat after). Played on the move's own frames, not the clip's clock, and never held still: the clip
+//              runs up to its lead-in across the startup, on to the strike over the first active frames, then eases on to the
+//              follow-through across the whole recovery (no shorter than platformfighter.js's SNAP), let go over the last 4 (South,
+//              2026-11-15: the stepped holds read "laggy and choppy"). A smash's charge holds
 //              the lead-in. Gameplay never reads this: the boxes are the move's data (moves.js BOXES). A kit's set with Calissa's key
 //              table ('fighter.brawler', 'fighter.sondelass': courier/anim/keyposes.js keysOf) takes each beat's still from its key
 //              (the clip frame with its `fix` laid over: the Falcon Knee, the Rider Kick, the dropkick as their references hold them)
@@ -40,7 +41,10 @@ const SETS = { unarmed: 'fighter.brawler', sondelass: 'fighter.sondelass', lockh
 const setOf = (kit) => SETS[kit?.tool] || null;
 
 const smooth = (x) => { const t = Math.min(1, Math.max(0, x)); return t * t * (3 - 2 * t); };
-const EASE = { lead: SNAP.lead + 1, strike: SNAP.strike + 1, follow: SNAP.follow + 1, out: 4 }; // (the snaps into each key: platformfighter.js SNAP, KEY-POSES.md 6)
+const EASE = { lead: SNAP.lead + 1, strike: SNAP.strike + 1, follow: SNAP.follow + 1, out: 4 }; // (the shortest a blend into each key may be: platformfighter.js SNAP)
+/** How far into a phase's blend `into` frames are: eased across the phase's whole length (never shorter than `min`), so the body moves
+ *  through it continuously and never snaps to a still and sits (South, 2026-11-15: stepped key poses read "laggy and choppy"). */
+const along = (into, len, min) => smooth((into + 1) / Math.max(min, len));
 
 /** The kit's passive tech on the Courier: its layer of poses, the body's facing held to the fighter's, the feet left to the pose. */
 class FighterPoseTech extends Tech {
@@ -95,14 +99,14 @@ export class CourierPose {
     const A = this.A, B = this.B, T = (this.kt ||= new KeyTrack(C));
     const lead = KK.find((k) => k.pose === 'lead') || KK[0], follow = KK.find((k) => k.pose === 'follow') || KK[KK.length - 1];
     const hits = KK.filter((k) => k !== lead && k !== follow), strike = hits.length ? hits : [follow];
-    if (frame < startup) { T.keyPose(lead, A); return smooth((frame + 1) / EASE.lead); }
+    if (frame < startup) { T.keyPose(lead, A); return along(frame, startup, EASE.lead); } // (the wind-up flows in over the whole startup)
     if (frame <= a1) {
-      let i = 0;
-      if (strike.length > 1) { const per = strike.map((k) => Math.max(1, (k.hold | 0) + (k.snap | 0) || 4)), n = per.reduce((a, b) => a + b, 0); let t = (loops * (a1 - startup + 1) + frame - startup) % n; while (t >= per[i]) t -= per[i++]; }
-      const first = !i && !loops, prev = first ? lead : strike[(i + strike.length - 1) % strike.length], into = frame - startup;
-      T.keyPose(prev, A); C.blend(A, T.keyPose(strike[i], B), first ? smooth((into + 1) / EASE.strike) : 1); return 1;
+      let i = 0, into = frame - startup, len = a1 - startup + 1;
+      if (strike.length > 1) { const per = strike.map((k) => Math.max(1, (k.hold | 0) + (k.snap | 0) || 4)), n = per.reduce((a, b) => a + b, 0); let t = (loops * (a1 - startup + 1) + frame - startup) % n; while (t >= per[i]) t -= per[i++]; into = t; len = per[i]; }
+      const first = !i && !loops, prev = first ? lead : strike[(i + strike.length - 1) % strike.length];
+      T.keyPose(prev, A); C.blend(A, T.keyPose(strike[i], B), along(into, first ? Math.min(len, EASE.strike + 2) : len, EASE.strike)); return 1; // (each strike of a flurry blended over its own beat, never cut)
     }
-    T.keyPose(strike[strike.length - 1], A); C.blend(A, T.keyPose(follow, B), smooth((frame - a1) / EASE.follow));
+    T.keyPose(strike[strike.length - 1], A); C.blend(A, T.keyPose(follow, B), along(frame - a1 - 1, total - a1 - EASE.out, EASE.follow)); // (the follow-through eased across the recovery)
     return 1 - smooth((frame - (total - EASE.out)) / EASE.out);
   }
 
@@ -114,9 +118,9 @@ export class CourierPose {
       if (KK && (!own || KK.some((k) => k.clip === own.clip))) return this.keyed(KK, C, frame, startup, a1, total, F.loops || 0); // (a key table's slot, unless the loadout put another move's clip there)
       const P = F.kit?.poses?.[id] || POSES[id]; if (!P) return 0; // (a tool's own clip for the slot, else the bare set's)
       const K = this.keyTimes(ch, P.clip, P.limb); if (!K) return 0;
-      if (frame < startup) { C.sample(P.clip, K.lead, A, false); return smooth((frame + 1) / EASE.lead); }
-      if (frame <= a1) { C.sample(P.clip, K.lead, A, false); C.blend(A, C.sample(P.clip, K.strike, B, false), smooth((frame - startup + 1) / EASE.strike)); return 1; }
-      C.sample(P.clip, K.strike, A, false); C.blend(A, C.sample(P.clip, K.follow, B, false), smooth((frame - a1) / EASE.follow));
+      if (frame < startup) { C.sample(P.clip, K.lead * along(frame, startup, EASE.lead), A, false); return along(frame, startup, EASE.lead); } // (the clip itself played up to its lead, not its lead held)
+      if (frame <= a1) { const u = along(frame - startup, Math.min(a1 - startup + 1, EASE.strike + 2), EASE.strike); C.sample(P.clip, K.lead + (K.strike - K.lead) * u, A, false); return 1; }
+      { const u = along(frame - a1 - 1, total - a1 - EASE.out, EASE.follow); C.sample(P.clip, K.strike + (K.follow - K.strike) * u, A, false); }
       return 1 - smooth((frame - (total - EASE.out)) / EASE.out);
     };
     if (st === 'attack' && F.m) { const m = moveOf(F.m, F); return seq(F.m, F.mf, m.startup, m.active[1], m.total); }

@@ -81,6 +81,9 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
   the body or the world, the overlay, a sound, and the log when it changes.
 - **Ambition first, cost after** (the owner, 2026-10-15): a look is built to its target and measured at the gate (`npm run perf`); a
   cut comes from a measurement, never before one. Each art pass adds a layer, judged against the style bible, not against what exists.
+- **Desktop only, for the foreseeable future** (South, 2026-11-15: "going forward into the foreseeable future, we will be developing
+  for desktop only"). Build, tune and shoot for the desk (mouse and keyboard); no new touch or phone work, no phone shots. What touch
+  and phone code there is stays as it is until South says otherwise.
 - **The desk's look is never cut for the phone** (the owner, 2026-10-26: "I just don't want to gut a bunch of shaders and start impacting
   the quality of the desktop client"). A fix that is a net good on both (less memory, less garbage, a load in slices) is shared; one that
   lowers a look (a shader made simpler, a texture smaller, a pass dropped) goes behind the phone's tier or `machine.mobile`, the desk's
@@ -127,8 +130,7 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
   and remove the older versions"). A new control, tile, path, constant or look that replaces one removes the old; two of one thing on
   screen (two chat icons) is a bug. Before pushing, ask what this replaces and grep for it.
 - **Look at it as a human, at full resolution** (South, 2026-10-27: "scrutinize the screenshots and ask yourself 'would this make sense
-  to a human?'"). Anything a player will see is checked in a screenshot at the device's full resolution (the phone's: 896 x 414 at 2x,
-  touch) before it is pushed, and read for what a person would see: a body over the board, a stray model, a doubled button. A probe's
+  to a human?'"). Anything a player will see is checked in a screenshot at the desk's full resolution before it is pushed, and read for what a person would see: a body over the board, a stray model, a doubled button. A probe's
   numbers are not a look.
 - Raids belong to the Siege room. Every trial or minigame is begun from something in its own room, never a global key, and its interface
   goes away when you leave. The explored area is the ground explored (the Zone of Influence is a puzzle duel's side of the Line: the owner, 2026-10-20). The testing tools are the stress test (`scripts/stress.mjs`, it fuzzes) and the sweeps

@@ -1,13 +1,15 @@
 // ---------------------------------------------------------------------------------------
-// KEY POSES AND HOLDS, PLAYED (South, 2026-10-31: "Strong key poses and holds are the answer!"; docs/plans/KEY-POSES.md 6, 7): a move
+// KEY POSES AND HOLDS (South, 2026-10-31: "Strong key poses and holds are the answer!"; docs/plans/KEY-POSES.md 6, 7). The world's
+// moveset no longer plays them: stepped, they read "laggy and choppy" (South, 2026-11-15); its strings play their clips, interpolated.
+// What is left: the Arena's slots read each key's still (keyPose) and blend between them (world/strawmanwell/fighter/pose.js), and the
+// contact sheet's key mode (scripts/posesheet.keys.mjs) shoots them. A move
 // written as a list of keys, each a still of an existing clip at a numbered frame, held a counted number of 60 Hz frames of game time and
 // snapped into over a few. `KeyTrack` is a sibling of animator.js's `Track`: it writes a pose a layer blends into `base` at its weight,
 // before applyPose, and everything after (the feet, the hands, the hinges, rom.js last) corrects whatever it wrote. Inside a hold the clip
 // is sampled at the key's integer frame exactly (no lerp: the contact sheet's still is what plays); inside a snap the pose stood before is
 // eased into the key with an ease-out (snap 0: a cut). Its clock is game dt in 60 Hz frames, never display frames, so the hitstop
 // (tools/moveset.js impact slowing game time) holds a key for free. A key with `holdWhile` names a predicate (HOLDS) that stops the
-// clock at the key's end while it says yes: a hold is data, never a flag. A key's `plant` is read by footIK through `plantFeet` (the soles
-// held in the world while a key move owns the legs: character/feet.js), and its `active` is a readout only (gameplay reads the move's own
+// clock at the key's end while it says yes: a hold is data, never a flag. A key's `active` is a readout only (gameplay reads the move's own
 // data). The tables are Calissa's (`courier/anim/keys/<tool>.js`, `KEYS[move]`), registered with `registerKeys`; a table may give a
 // `fill(move, keys)` to take its timing from elsewhere (the fighter's from platformfighter.js MOVES). A move with no keys plays as before.
 //
@@ -16,9 +18,9 @@
 // (godhand/mudras.js MUDRA_FRAMES).
 //
 //   registerKeys(tool, KEYS, fill?)   keysOf(tool, move) -> [key] | null   HOLDS[name] = (ctx) => bool
-//   const k = new KeyTrack(clips)   k.play(keys, from?, ctx?)   k.update(dt)   k.sample(out) -> out | null   k.key  k.plant  k.active
-//   k.done   k.frame (60 Hz frames in)   k.total   plantFeet(ch, plant, w)
-// key: { pose, clip, frame, fix?: { bone: [x, y, z] }, hold, snap, plant?: 'L' | 'R' | 'LR', holdWhile?, active? }
+//   const k = new KeyTrack(clips)   k.play(keys, from?, ctx?)   k.update(dt)   k.sample(out) -> out | null   k.key  k.active
+//   k.done   k.frame (60 Hz frames in)   k.total
+// key: { pose, clip, frame, fix?: { bone: [x, y, z] }, hold, snap, holdWhile?, active? }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -61,7 +63,6 @@ export class KeyTrack {
 
   get playing() { return !!this.keys; }
   get key() { return this.keys?.[this.i] || null; }
-  get plant() { return this.key?.plant || null; }
   get active() { return !!this.key?.active; }
   get frame() { return this.f; }
   get done() { return !!this.keys && this.i >= this.keys.length - 1 && this.f >= this.ks + this.span(this.i) && !this.holding; }
@@ -113,8 +114,3 @@ export class KeyTrack {
   }
 }
 
-/** A key move owning the legs says its planted soles to footIK this frame (`w`: its share of the legs). Read and cleared each frame. */
-export function plantFeet(ch, plant, w = 1) {
-  if (!plant || w <= 0) return;
-  ch.st.keyPlant = { L: plant.includes('L') ? 1 : 0, R: plant.includes('R') ? 1 : 0, w: Math.min(1, w) };
-}
