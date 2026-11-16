@@ -140,6 +140,20 @@ export function withFade(material, key, own = null) {
   return material;
 }
 
+/** A hull of its own colour and thickness (a uniform the caller sets, in the mesh's own space): the duel's god hand cursor's pale rim,
+ *  its thickness held to the screen whatever the hand's scale (godhand/godhand.js). Never in OUTLINES: no tier's reach hides it. */
+export function makeHullMaterial(color, thickness) {
+  const m = new THREE.MeshBasicMaterial({ color, side: THREE.BackSide });
+  m.onBeforeCompile = (shader) => {
+    shader.uniforms.uOutline = thickness;
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nattribute vec3 smoothNormal;\nuniform float uOutline;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\ntransformed += normalize(smoothNormal) * uOutline;');
+  };
+  m.customProgramCacheKey = () => 'outline-own';
+  return m;
+}
+
 /** Pulsing see-through outline used for marked things (own thickness, no depth test). */
 export function makeGlowOutline(color, thickness, xray = false) {
   // rim: a depth-tested glowing hull. xray: the same hull drawn only where it is

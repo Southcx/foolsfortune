@@ -20,7 +20,7 @@
 import * as THREE from 'three';
 import { T, PALETTE, shakeOf } from '../core/config.js';
 import { RAPIER } from '../core/physics.js';
-import { addOutline } from '../render/outline.js';
+import { addOutline, makeHullMaterial } from '../render/outline.js';
 import { sfx } from '../audio/sfx.js';
 import { GodArts, ART_BY_ID } from './arts.js';
 import { Miracles } from './miracles.js';
@@ -48,7 +48,7 @@ const CSS = `
 
 /** The hand as a duel's cursor, in cells: its length, how far its tip sits off the cell's middle toward the lower right, how far out
  *  from the face, its lean off upright (rad), how fast it follows a new cell (1/s). */
-export const CURSOR = { cells: 3, corner: 0.42, out: 0.9, lean: 0.55, follow: 22, bone: 'f_index03R' };
+export const CURSOR = { cells: 3, corner: 0.42, out: 0.9, lean: 0.55, follow: 22, bone: 'f_index03R', rim: 0xfff1c4, rimCell: 0.07 }; // (rim: the cursor's pale hull outside the dark one, its width a share of a cell)
 
 export class GodMode {
   constructor(game, renderer, handGltf, jarGltf) {
@@ -95,10 +95,11 @@ export class GodMode {
     const mat = godHandPainting(); // (the owner's painting: vfx/vessoulpaint.js)
     const meshes = [];
     model.traverse((o) => { if (o.isMesh) meshes.push(o); });
-    for (const o of meshes) { o.material = mat; o.frustumCulled = false; o.castShadow = false; addOutline(o); }
+    const rimW = { value: 0 }, rimMat = makeHullMaterial(CURSOR.rim, rimW), rims = []; // (the duel cursor's pale rim, shown only as the cursor: cursorAt)
+    for (const o of meshes) { o.material = mat; o.frustumCulled = false; o.castShadow = false; addOutline(o); const r = addOutline(o, rimMat); if (r) { r.visible = false; rims.push(r); } }
     const bones = {};
     model.traverse((o) => { if (o.isBone) bones[o.name] = o; });
-    this.hand = { root, model, bones, mat, point: 0, tip: new THREE.Vector3(0, 1.05, 0.02).multiplyScalar(this.handScale) };
+    this.hand = { root, model, bones, mat, rims, rimW, point: 0, tip: new THREE.Vector3(0, 1.05, 0.02).multiplyScalar(this.handScale) };
     // (its own clips on its own mixer own every bone, its spawn and its vanish included; its joint limits after them: godhand/godhandclips.js)
     this.handClips = new GodHandClips(this, gltf);
     root.visible = false;
@@ -178,7 +179,7 @@ export class GodMode {
     this.veil.visible = true; this.veil.refresh();
     g.lachryma.addModifier('god', { regenMult: 1.6, regenDelayMult: 0.5 });
     this.el.root.style.display = 'block';
-    this.hand.root.visible = true;
+    this.hand.root.visible = true; for (const r of this.hand.rims || []) r.visible = false;
     sfx.godIn();
     g.fx.explosion?.(P.pos.clone().setY(P.pos.y + 0.9), 0.7);
     g.events?.emit('god.enter', {});
@@ -599,6 +600,8 @@ export class GodMode {
     const tip = (this.cursorTip = this.cursorTip && H.root.visible ? this.cursorTip.lerp(want, 1 - Math.exp(-CURSOR.follow * dt)) : want.clone());
     H.root.position.copy(tip).addScaledVector(fingers, -H.tip.length() * this.cursorK);
     H.root.visible = true;
+    H.rimW.value = cell ? (CURSOR.rimCell * cell) / (this.handScale * this.cursorK) : 0; // (in the mesh's own space: the hand's scale undone, so the rim stays a share of a cell)
+    for (const r of H.rims) r.visible = !!cell;
     if (cell) { const c = this.handClips; try { c.choose(press ? 'pinch' : 'point', !!press); } catch { /* the clips not ready */ } }
     try { this.handClips.update(dt); } catch { /* the clips not ready: the hand still stands */ }
     H.root.updateMatrixWorld(true);
@@ -606,7 +609,7 @@ export class GodMode {
     const f = cell && (H.indexTip ??= H.root.getObjectByName(CURSOR.bone) || false);
     if (f) { H.root.position.add(_w.copy(tip).sub(f.getWorldPosition(_w2))); H.root.updateMatrixWorld(true); } // (in full: the bone's own depth off its target slid it on screen)
   }
-  hideCursor() { if (!this.controlling && this.hand?.root) { this.hand.root.visible = false; this.hand.root.scale.setScalar(1); this.cursorTip = null; this.cursorK = null; } }
+  hideCursor() { if (!this.controlling && this.hand?.root) { this.hand.root.visible = false; for (const r of this.hand.rims || []) r.visible = false; this.hand.root.scale.setScalar(1); this.cursorTip = null; this.cursorK = null; } }
 
   placeReticle() {
     const K = this.cursor, V = this.jar, A = this.arts;

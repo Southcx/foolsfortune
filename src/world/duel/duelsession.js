@@ -71,7 +71,7 @@ const TOOL_KEYS = { KeyX: 'shoot', KeyQ: 'grab', KeyK: 'drill', KeyG: 'paint', K
 const WALK = { KeyW: 'N', KeyS: 'S', KeyA: 'W', KeyD: 'E' };
 /** In the one-gesture duel (PUZZLE-DUELS.md 22) a tool's key or tile arms its skill: each move's key names the tool that owns it. */
 const MOVE_TOOL = { shoot: 'psygun', grab: 'sondelass', drill: 'dreamvane', paint: 'soulbrush', delay: 'crucibelle', tune: 'crucibelle', hold: 'lockheart', send: 'lockheart', read: 'veritome' };
-const _v = new THREE.Vector3(), _ndc = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0), _box = new THREE.Box3(), _size = new THREE.Vector3();
+const _v = new THREE.Vector3(), _ndc = new THREE.Vector3(), _off = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0), _box = new THREE.Box3(), _size = new THREE.Vector3();
 /** A body's reach on the ground (half its wider side, m), measured from its meshes; `fallback` when it has none. */
 const radiusOf = (o, fallback) => { if (!o) return fallback; _box.setFromObject(o); if (_box.isEmpty()) return fallback; _box.getSize(_size); return THREE.MathUtils.clamp(Math.max(_size.x, _size.z) / 2, 0.25, 1.6); };
 
@@ -179,7 +179,7 @@ export class DuelSession {
 
   /** The cell under the mouse (the view's pick along the camera's ray through it). */
   pointer(input) {
-    const cam = this.game.camera; if (!cam || input.mx < 0) { this.hover = null; return; }
+    const cam = this.game.camera; if (!cam || input.mx < 0) { this.hover = null; this.ray = null; return; }
     _ndc.set((input.mx / innerWidth) * 2 - 1, -(input.my / innerHeight) * 2 + 1, 0.5).unproject(cam);
     const ray = (this.ray ||= new THREE.Ray()); ray.origin.copy(cam.position); ray.direction.copy(_ndc.sub(cam.position).normalize());
     const cell = this.view?.cellAt?.(ray) || null;
@@ -457,9 +457,15 @@ export class DuelSession {
   cursorHand(raw) {
     const g = this.game, H = g.god, s = this.state, hand = s && s.sides[0].form === 'hand' && s.toMove === 0;
     if (!H?.cursorAt) return;
-    const at = hand && !this.flanks && this.hover && this.pointOf(this.hover); // (on a phone no cursor: pick-then-place needs none, and it hid a third of the foe's half)
+    if (!hand || this.flanks || !this.view?.face) return H.hideCursor?.(); // (on a phone no cursor: pick-then-place needs none, and it hid a third of the foe's half)
+    const c = this.hover || { x: 1, y: 0 }, on = this.pointOf(c); if (!on) return H.hideCursor?.();
+    const nb = this.pointOf({ x: c.x + (c.x > 0 ? -1 : 1), y: c.y }), cell = nb ? nb.distanceTo(on) : 0; // (a cell's side in the world as the board stands: the stage's zoom scales it)
+    let at = this.hover ? on : null;
+    if (!at && this.ray) { // (off the board the hand still follows the pointer, over the board's face's plane: South, 2026-11-16, "the godhand disappears when the cursor goes off of the duel board")
+      const n = this.view.face, d = this.ray.direction.dot(n);
+      if (Math.abs(d) > 1e-4) { const t = _off.copy(on).sub(this.ray.origin).dot(n) / d; if (t > 0) at = this.ray.at(t, _off); }
+    }
     if (!at) return H.hideCursor?.();
-    const nb = this.pointOf({ x: this.hover.x + (this.hover.x > 0 ? -1 : 1), y: this.hover.y }), cell = nb ? nb.distanceTo(at) : 0; // (a cell's side in the world as the board stands: the stage's zoom scales it)
     H.cursorAt(at, this.view.face, raw, { press: this.press ? 1 : 0, cell });
   }
   /** A cell's centre on the board's face, in the world (the view's own layout: vfx/duelview/layout.js). */

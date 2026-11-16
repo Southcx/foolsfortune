@@ -5142,3 +5142,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `creatures.add` gives a creature without its own `center` the contract's (its middle, by its height). The boot watch writes
   the time with its note and shows "Last time" only for a note under ten real minutes old that got past its first second.
 - **Rule:** 414
+
+### 2026-11-16 · The duel's god hand cursor vanished off the board and was lost against it (South's v426)
+- **Seen:** in a PvE duel the god hand followed the hovered cell, but went the moment the pointer left the board; on the board its
+  dark outline did not read against the tsuitate's dark panes.
+- **Cause, as measured:** the session's `pointer` sets `hover` to null off the board and `cursorHand` hid the hand for want of a
+  cell. The hand's outline hull is pushed out by a fixed width in the mesh's own space (`T.visual.outline`), and the cursor draws the
+  hand at about 0.45 of its size (3 cells of 0.15 m): the hull shrank with it to under a pixel at 1080p.
+- **Fix:** off the board the pointer's ray is met with the board face's plane and the hand follows that point, at the last cell's
+  size. The cursor wears a second, pale hull outside the dark one, its width set each frame in the mesh's space with the hand's scale
+  undone (0.07 of a cell, about 3 px at 1080p), shown only as the cursor.
+- **Rule:** 415

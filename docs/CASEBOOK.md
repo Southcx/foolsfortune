@@ -1164,5 +1164,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   recomputed from the insertions that precede it, and tested with two insertions, never one.
 
 414. **A registry that hands its members to every reader fills in the contract's methods a joiner lacks.**
+415. **An outline on a thing drawn at another scale sets its width in the world, the scale undone; a width in the mesh's space shrinks with it.**
   A thing joined from outside its own kind's module (a clapperjar gone aberrant, a puzzle's flock) carries only what that module
   gave it; the registry's `add` gives the rest, so no reader has to guard and none throws on the newcomer.
