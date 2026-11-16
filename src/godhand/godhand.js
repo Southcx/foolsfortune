@@ -37,7 +37,7 @@ const UP = new THREE.Vector3(0, 1, 0);
 const DOWN = new THREE.Vector3(0, -1, 0);
 const DEG = Math.PI / 180;
 const CLIP_OFF = 1e5; // (the cutaway, put away: far overhead)
-const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
+const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _w = new THREE.Vector3(), _w2 = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
 const ease = (t) => t * t * (3 - 2 * t);
 const wrapPi = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 
@@ -45,6 +45,10 @@ const CSS = `
 #god { position: fixed; inset: 0; pointer-events: none; display: none; font: 12px/1.4 var(--f-ui); color: #fbe3cf; z-index: 4; }
 #god .hint { position: absolute; left: 50%; bottom: 128px; transform: translateX(-50%); opacity: .75; font-size: 11px; letter-spacing: .05em; background: rgba(28,13,8,.4); padding: 4px 10px; border-radius: 3px; white-space: nowrap; }
 `;
+
+/** The hand as a duel's cursor, in cells: its length, how far its tip sits off the cell's middle toward the lower right, how far out
+ *  from the face, its lean off upright (rad), how fast it follows a new cell (1/s). */
+export const CURSOR = { cells: 3, corner: 0.42, out: 0.9, lean: 0.55, follow: 22, bone: 'f_index03R' };
 
 export class GodMode {
   constructor(game, renderer, handGltf, jarGltf) {
@@ -570,22 +574,39 @@ export class GodMode {
   }
 
   /** The hand as a cursor over a surface, outside its own mode (a puzzle duel's board: world/duel/duelsession.js; the owner, board v11:
-   *  "the hand will function as our cursor"): shown at `at`, its palm to the surface whose front faces `normal`, its fingers up it, a
-   *  little out from it and in toward it as `press` rises; its clips run. hideCursor() puts it away. */
-  cursorAt(at, normal, dt, { press = 0 } = {}) {
+   *  "the hand will function as our cursor"): its palm to the surface whose front faces `normal`, a little out from it.
+   *  With `cell` (a cell's side in m, South 2026-11-16: "dynamically scale the godhand ... to maximize visibility"): the hand drawn
+   *  `CURSOR.cells` cells long, coming in from the cell's lower right at `CURSOR.lean` so the cell and the ones above and left of it stay
+   *  clear, its index finger pointing at the cell's corner; while `press` (a gem held, a drag) it slides in to pinch the cell's middle.
+   *  It follows the cell eased, never snapped. Without `cell`, the old cursor: the fingertip at `at`, fingers straight up. */
+  cursorAt(at, normal, dt, { press = 0, cell = 0 } = {}) {
     const H = this.hand; if (!H?.root) return;
     if (this.controlling) return; // (the hand's own mode has it)
     this.t += dt;
     const z = _v.copy(normal).setY(0).normalize(); // (the model's +Z, its back, toward the viewer: the palm to the board)
-    const fingers = UP.clone().addScaledVector(z, -UP.dot(z)).normalize();
+    const up = UP.clone().addScaledVector(z, -UP.dot(z)).normalize(), right = new THREE.Vector3().crossVectors(up, z).normalize();
+    const lean = cell ? CURSOR.lean : 0, fingers = up.clone().multiplyScalar(Math.cos(lean)).addScaledVector(right, -Math.sin(lean)).normalize();
     const x = new THREE.Vector3().crossVectors(fingers, z).normalize();
     _m.makeBasis(x, fingers, z.clone()); H.root.quaternion.setFromRotationMatrix(_m);
-    const tip = at.clone().addScaledVector(z, 0.3 - 0.2 * press).addScaledVector(UP, Math.sin(this.t * 2.4) * 0.03);
-    H.root.position.copy(tip).addScaledVector(fingers, -H.tip.length());
-    H.root.visible = true; H.root.updateMatrixWorld(true);
+    const k = cell ? (CURSOR.cells * cell) / (H.tip.length() || 1) : 1;
+    this.cursorK = this.cursorK == null || !H.root.visible ? k : this.cursorK + (k - this.cursorK) * (1 - Math.exp(-12 * dt));
+    H.root.scale.setScalar(this.cursorK);
+    const p = (this.cursorP = this.cursorP ?? 0) + ((press ? 1 : 0) - this.cursorP) * (1 - Math.exp(-14 * dt)); this.cursorP = p;
+    const corner = cell ? (1 - p) * CURSOR.corner * cell : 0; // (the corner pointed at; held, the middle)
+    const want = at.clone().addScaledVector(right, corner).addScaledVector(up, -corner + Math.sin(this.t * 2.4) * (cell ? 0.06 * cell : 0.03));
+    const out = (cell ? CURSOR.out * cell : 0.3) * (1 - 0.6 * p), cam = cell && this.game?.camera; // (out from the face along the eye's line, so the fingertip stays over its cell on screen: off the normal it slid a cell with the view's angle)
+    if (cam) want.addScaledVector(_v2.copy(want).sub(cam.position).normalize(), -out / Math.max(0.2, -_v2.dot(z))); else want.addScaledVector(z, out);
+    const tip = (this.cursorTip = this.cursorTip && H.root.visible ? this.cursorTip.lerp(want, 1 - Math.exp(-CURSOR.follow * dt)) : want.clone());
+    H.root.position.copy(tip).addScaledVector(fingers, -H.tip.length() * this.cursorK);
+    H.root.visible = true;
+    if (cell) { const c = this.handClips; try { c.choose(press ? 'pinch' : 'point', !!press); } catch { /* the clips not ready */ } }
     try { this.handClips.update(dt); } catch { /* the clips not ready: the hand still stands */ }
+    H.root.updateMatrixWorld(true);
+    // (steered by the index fingertip itself, in the face's plane: a clip moves the finger, point and pinch alike, a cell or more)
+    const f = cell && (H.indexTip ??= H.root.getObjectByName(CURSOR.bone) || false);
+    if (f) { H.root.position.add(_w.copy(tip).sub(f.getWorldPosition(_w2))); H.root.updateMatrixWorld(true); } // (in full: the bone's own depth off its target slid it on screen)
   }
-  hideCursor() { if (!this.controlling && this.hand?.root) this.hand.root.visible = false; }
+  hideCursor() { if (!this.controlling && this.hand?.root) { this.hand.root.visible = false; this.hand.root.scale.setScalar(1); this.cursorTip = null; this.cursorK = null; } }
 
   placeReticle() {
     const K = this.cursor, V = this.jar, A = this.arts;

@@ -458,7 +458,9 @@ export class DuelSession {
     const g = this.game, H = g.god, s = this.state, hand = s && s.sides[0].form === 'hand' && s.toMove === 0;
     if (!H?.cursorAt) return;
     const at = hand && !this.flanks && this.hover && this.pointOf(this.hover); // (on a phone no cursor: pick-then-place needs none, and it hid a third of the foe's half)
-    if (at) H.cursorAt(at, this.view.face, raw, { press: this.press ? 1 : 0 }); else H.hideCursor?.();
+    if (!at) return H.hideCursor?.();
+    const nb = this.pointOf({ x: this.hover.x + (this.hover.x > 0 ? -1 : 1), y: this.hover.y }), cell = nb ? nb.distanceTo(at) : 0; // (a cell's side in the world as the board stands: the stage's zoom scales it)
+    H.cursorAt(at, this.view.face, raw, { press: this.press ? 1 : 0, cell });
   }
   /** A cell's centre on the board's face, in the world (the view's own layout: vfx/duelview/layout.js). */
   pointOf(cell) {
