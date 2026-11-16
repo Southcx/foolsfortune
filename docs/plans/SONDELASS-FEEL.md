@@ -1,4 +1,4 @@
-# The Sondelass's melee, revamped for feel (a plan; nothing here is built)
+# The Sondelass's melee, revamped for feel (a plan, approved 2026-11-16; steps 0 and 1 in work)
 
 South, 2026-11-16: "drastically improve the feel of combat, making it snappy, responsive, flowing, and visually striking. The single
 most important design aspect is 'elegance'." And 2026-11-15, on the stepped key poses we reverted: holding extreme poses was meant as
@@ -110,7 +110,9 @@ Steps 1 and 2 are what South will feel first; I would stop after 2 for a play be
 - **The other six tools** share the engine. They are not converted by this plan, and are not changed by it (opt-in rows); the same
   pieces will fit them afterwards.
 
-## 6. For South to rule
+## 6. Ruled by South, 2026-11-16 ("I concur with your assessment and recommendations. Execute as outlined!")
+
+All three stand as recommended:
 
 1. **The world's slow on a hit goes from every blow to three rare moments** (3E). This is the largest single change in feel and the
    one closest to what you said; I recommend it.
