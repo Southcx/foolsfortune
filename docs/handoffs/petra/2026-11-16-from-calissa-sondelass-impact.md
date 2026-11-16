@@ -23,3 +23,29 @@ mover's embedding is on main already and is not this change's; it is yours to lo
 
 Also mine, after the builder: while the cutlass's pose is held on a heavy blow or a finisher, its move's clock waits too
 (`moveset.js`, the line that advances `c.t`), so the pose never jumps ahead when the hold lets go.
+
+## Step 2 (the time warp and the cancel frame), what changed in moveset.js
+
+All opt-in by a row's `warp` (and its `cancel`); a row without them plays as before (casebook 210). Only c1 .. c4 have them
+(`sondelass/sondelassloadout.js`). The rules are in a sibling, `tools/movewarp.js`; moveset.js is at 798 lines.
+
+- `c.t` stays CLIP time, so every existing reader (the pose, sweep, parts, legs, the hips' travel, the ribbon, the fade, fpArc, spent,
+  recovering) reads the warped clip time unchanged. A warped move adds `c.mt` (its own time, game s), `c.W` (the warp), `c.t0`, and
+  advances `c.t = c.W.clip(c.mt += dt)` where an unwarped one does `c.t += dt * rate` (the held way's hold stops both alike).
+- Read in move time on a warped move: the launch's length (`carry`: `c.W.total`), the travel's speed (`drive`: `c.W.clip(c.mt + dt)`),
+  `takenAfter`, the charge's hold test (`c.mt` against HOLD), the pose's fade-in.
+- `chainOpen` and `freeCutOpen` on a warped move ask `cancelOpen(c)` (the row's `cancel.hit` once anything was struck, else `.whiff`,
+  never before the strike's end + a frame) in place of `chain[0]` / the row's `time` / the strike's end.
+- A press in a warped move's startup or strike sets `c.queued` (taken at the cancel frame, never lost to BUFFER); a recovery press
+  within `PAID_AHEAD` (0.07 s) of the cancel frame waits too; earlier in the recovery it is the paid cut as before.
+- `cut()` is free from a warped move's cancel frame (the guard, RMB's specials); new `canCancel()`; cutlass.js's guard line also lets a
+  held V take a warped move at its cancel frame.
+- `jumpCancel`: a Space latch at or after the cancel frame lets the move go (a whole-body one's launch ended, the core given the jump
+  through `jumpBuf`). Before it, an upper move's jump is the core's as ever (it always was free; the swing plays on in the air).
+- `trackStartup`: a warped move turns toward the lock's point, else the magnet's pick (`c.aim`), at 12 rad/s until its strike begins;
+  an upper move's horizontal velocity is turned with it (its lunge), a whole-body move's launch `o.yaw` and its travel (`drive` now reads
+  `c.yaw`, which only a warped move ever changes).
+- `sweep()` on a warped move sub-steps the strike's sweep by a 60th of clip time, so a fast clock never jumps a strike's sector; an
+  unwarped row sweeps once a frame as before.
+- movephases.js reads the warp (frames on the warped clock, `cancel` the whiff's, `cancelHit`); the Anim Lab's phase bar draws the on-hit
+  cancel in green.

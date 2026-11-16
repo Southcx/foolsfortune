@@ -338,7 +338,7 @@ export class Cutlass {
   // ---------------------------------------------------------------- the guard
   guardUpdate(dt, inp) {
     const P = this.tool.P, g = this.game;
-    if (inp.wasPressed('KeyV') && this.moves.recovering() && !this.stinging) this.moves.cut(); // (the guard at once from a blow's recovery: the paid cut)
+    if (((inp.wasPressed('KeyV') && this.moves.recovering()) || (inp.isDown('KeyV') && this.moves.canCancel())) && !this.stinging) this.moves.cut(); // (the guard at once from a blow's recovery: the paid cut; held into a warped move's cancel frame, free: tools/movewarp.js)
     const want = inp.isDown('KeyV') && !this.moves.busy && !this.stinging && !this.iai;
     if (want && !this.guardOn) { this.guardOn = true; this.guardT = 0; sfx.guardUp?.(); g.events?.emit('guard.up', {}); }
     else if (!want && this.guardOn) this.guardOn = false;

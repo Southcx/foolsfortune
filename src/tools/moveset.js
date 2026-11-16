@@ -65,7 +65,10 @@
 //             sideways, never back: casebook 208),
 //             legs: false (an upper move standing still keeps the stance's legs, not the clip's: the iaido's cut from the crouch),
 //             gravity, plunge: { hold, speed } (falls from clip time `hold` until the ground, then plays on), ring (m: the landing's
-//             blast radius), cost, trail: [t0, t1], heat, arc ('r2l'|'l2r'|'over'|'raise': first person), kind (for the events) }
+//             blast radius), cost, trail: [t0, t1], heat, arc ('r2l'|'l2r'|'over'|'raise': first person), kind (for the events),
+//             warp: { skip, in, out, back } (THE TIME WARP: the clip's clock bent, fast in and slow out; `c.t` stays clip time, read off
+//             the move's own `c.mt`) and cancel: { hit, whiff } (THE CANCEL FRAME, move s, sooner once it struck; presses in the startup
+//             held for it; the jump, the guard and the next blow free from it; it tracks its target through the startup): movewarp.js }
 //   THE EVENTS  the tool's own swing and hit events (`cut.swing {n, move, by}`, `cut.hit {what, combo, move, by}`); and Dovina's
 //               (feedback/tracking/moves.js): `move.launch { tool, by }` when a launcher lifts something, `move.air { tool, hits, by }`
 //               when an air string ends, `move.special { tool, special, by }` when a special is loosed, `move.cut { tool, move, paid,
@@ -136,6 +139,7 @@ import { MOVES as RULES, unlocked } from '../progress/combat/moves.js';
 import { Afterimages } from '../vfx/afterimage.js';
 import { featTint } from '../vfx/oxidation.js';
 import { moveImpact, heldStrike } from './moveimpact.js';
+import { warpOf, cancelOpen, cancelAt, paidWaits, trackStartup, jumpCancel } from './movewarp.js';
 import { stream } from '../core/rng.js';
 import { T } from '../core/config.js';
 
@@ -148,9 +152,7 @@ const BUFFER = 0.35, PAUSE = [0.25, 0.8], RESET = 0.9, HOLD = 0.3, HANG = 0.12, 
 // (clip s: the sweep strikes this far past each end of the strike, melee.js `pad`; a blow is closed only once its padded end is swept: closed
 // at strike[1], a slip jelly in the pad behind c3, j1, the launcher or a1 was struck the frame after its move.blow said hit: false)
 const STRIKE_PAD = 0.012;
-// a blow taken ends the string run: the pool's shield, the clay's crack, the shatter (courier/vessel/damage.js; the Great Dunemaw's escape
-// hears the same three)
-const HURT_EVENTS = ['vessel.shield', 'vessel.shieldbreak', 'vessel.crack', 'courier.shatter'];
+const HURT_EVENTS = ['vessel.shield', 'vessel.shieldbreak', 'vessel.crack', 'courier.shatter']; // (a blow taken ends the string run: courier/vessel/damage.js; the Great Dunemaw's escape hears the same)
 const AWAY_EVENTS = ['god.enter', 'garden.enter', 'rail.start']; // (the body leaves play: the god hand, the Spirit Garden, a crossing; techs are not ticked there, so the string's window cannot run out on its own)
 // a held charge keeps the string's window still for at most this many real seconds of its hold, then the run ends (Dovina, 2026-10-11:
 // "for up to 2 real seconds held (a full charge is 1.3)"; the engine's is full 1.1 s into its hold: THE RUN'S EDGES, above)
@@ -169,9 +171,8 @@ const HIGH = { apex: 3.92, gravity: 0.7 };
 const RING_UP = 1.5; // (m: a ring strikes what is within this of the ground it is laid on, its lowest point to their feet)
 // (`up`: what was launched is ridden only once seen to rise this far, m; not risen in `still` real s, it cannot be lifted: let go)
 const RIDE = { gap: 1.3, near: 1.4, k: 6, max: 7, reach: 3.5, turn: 3, hold: 2.5, up: 0.1, still: 0.2 };
-const _c1 = new THREE.Color(), _c2 = new THREE.Color();
-const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _e = new THREE.Vector3(), _f = new THREE.Vector3(), _k = new THREE.Vector3();
-const _w = new THREE.Vector3(), _s = new THREE.Vector3();
+const _c1 = new THREE.Color(), _c2 = new THREE.Color(), V = () => new THREE.Vector3();
+const _a = V(), _b = V(), _e = V(), _f = V(), _k = V(), _w = V(), _s = V();
 const roots = new Map();
 
 /** A clip's hip travel from its first frame, per frame (body space: +Z ahead, +X their left): the move's own motion. */
@@ -245,8 +246,7 @@ export class Moveset {
   rule(def) { return (def?.rule && RULES[this.S.rules || this.id]?.[def.rule]) || def?.stats || null; }
   /** Whether a move is open to the Courier (its row's unlock over the ledger; a move with no row always is). */
   open(id) { const d = this.def(id); return !d?.rule || !this.rule(d) || !!this.game.lend?.has('moves') || unlocked(this.S.rules || this.id, d.rule, this.game.ledger); }
-  /** The pause strings: [{ at: the ground move they branch from, to: [moves] }]. */
-  branches() { const p = this.S.strings.pause; return !p ? [] : Array.isArray(p) ? p : [p]; }
+  branches() { const p = this.S.strings.pause; return !p ? [] : Array.isArray(p) ? p : [p]; } // (the pause strings: [{ at: the ground move they branch from, to: [moves] }])
 
   cancel() {
     if (this.cur) this.closeBlow(this.cur); // (cut short: a blow, never a miss)
@@ -300,12 +300,12 @@ export class Moveset {
   }
 
   /** The chain window on move `c` is open: a press now goes on to the next free, never sooner than its row's time (`soon`). */
-  chainOpen(c, soon) { return !!c.def.chain && c.t >= c.def.chain[0] && c.age >= soon && (c.t <= c.def.chain[1] || c.age <= soon + 0.25); }
+  chainOpen(c, soon) { if (c.W) return !!c.def.chain && cancelOpen(c); return !!c.def.chain && c.t >= c.def.chain[0] && c.age >= soon && (c.t <= c.def.chain[1] || c.age <= soon + 0.25); }
   /** The free recovery cut is open on move `c` (a string's last blow, the dash, the charge's release, a plunge landed): its row (`R`)'s
    *  time spent and its strike past, a press now begins a new opener at no cost. */
   freeCutOpen(c, R, soon) {
     const free = c.kind === 'ground' || c.kind === 'pause' || c.kind === 'dash' || c.kind === 'charge' || (c.def.plunge && c.landed), since = c.def.plunge ? (c.age || 0) - (c.landAt ?? c.age ?? 0) : c.age || 0;
-    return !!R && !!free && since >= soon && c.t > (c.def.track?.strike[1] ?? 0);
+    return !!R && !!free && (c.W ? cancelOpen(c) : since >= soon && c.t > (c.def.track?.strike[1] ?? 0));
   }
 
   /** The ground string's place as the next plain LMB takes it (read, never driven): `next` the slot it plays (-1: a pause string's blow,
@@ -333,6 +333,7 @@ export class Moveset {
   takenAfter(c) {
     const R = this.rule(c.def), soon = R?.time ?? 0;
     if (c.kind === 'charge-hold' || c.def.plunge || this.freeCutOpen(c, R, soon) || this.paidCutOpen()) return this.after;
+    if (c.W) { const wait = Math.max(0, cancelAt(c) - c.mt); return c.mt + wait >= c.W.total ? 0 : this.after + wait; } // (a warped move: its cancel frame)
     const rate = c.def.rate || 1, wait = Math.max(0, ((c.def.track?.strike[1] ?? 0) - c.t) / rate, soon - (c.age || 0));
     return !R || c.t + wait * rate >= (c.def.to ?? this.dur(c.def)) ? 0 : this.after + wait;
   }
@@ -348,10 +349,11 @@ export class Moveset {
     return L.available >= L.cost(row.cost, 'cut') + L.cost(also, 'cut') - 1e-6;
   }
 
-  /** The paid cut for a tool's own next move (the stinger, the guard): the move on show paid for and ended. */
+  canCancel() { return !!this.cur && cancelOpen(this.cur); } // (the move on show is a warped one past its cancel frame: movewarp.js)
+  /** The paid cut for a tool's own next move (the stinger, the guard): the move on show paid for and ended (free from a cancel frame). */
   cut(also = 0) {
     const c = this.cur;
-    if (!c || !this.pay(c, also)) return false;
+    if (!c || (!cancelOpen(c) && !this.pay(c, also))) return false; // (from a warped move's cancel frame, free: movewarp.js)
     this.finish();
     return true;
   }
@@ -400,12 +402,13 @@ export class Moveset {
       if (allow && this.buffer > 0) this.opener(inp);
       return;
     }
-    if (inp.wasPressed(B) && this.recovering(c)) c.cutPress = true; // (a press made in the recovery: one buffered from the strike waits for the free ways)
+    if (inp.wasPressed(B)) { if (c.W && (!this.recovering(c) || paidWaits(c))) c.queued = true; else if (this.recovering(c)) c.cutPress = true; } // (a press made in the recovery: one buffered from the strike waits for the free ways; a warped move's in its startup, strike or near its cancel frame is held for it)
     if (!inp.isDown(B)) c.holdB = false;
     // the move plays on
     c.tPrev = c.t;
     if (c.phase === 'fall') { if (P.grounded) this.land(); }
-    else if (!(this.S.impact === 'held' && this.game.character?.st.hold)) c.t += dt * (c.def.rate || 1); // (the held way: the move's clock waits with its held pose, so letting go never jumps: tools/moveimpact.js)
+    else if (!(this.S.impact === 'held' && this.game.character?.st.hold)) { if (c.W) c.t = c.W.clip((c.mt += dt)); else c.t += dt * (c.def.rate || 1); } // (the held way: the move's clock waits with its held pose, so letting go never jumps: tools/moveimpact.js; a warped move's clip time read off its own: movewarp.js)
+    trackStartup(this, c, dt); // (a warped move turns to its target through its startup)
     if (c.kind === 'launcher' && c.high == null && c.t >= (c.def.track?.strike[0] ?? 0)) c.high = !!(c.def.high && c.holdB); // (held to its strike: High Time)
     if (c.kind === 'launcher' && c.high && !this.arc && c.t >= (c.def.track?.strike[1] ?? 0)) this.leap(c); // (from its strike's end: their own arc, before a cut can go on from it)
     const end = c.def.to ?? this.dur(c.def);
@@ -420,7 +423,7 @@ export class Moveset {
         if (full && this.open(full) && this.begin(full, 'special') !== false) return;
         if (st.charge.release) this.begin(st.charge.release, 'charge'); else this.finish(); return;
       }
-    } else if (st.charge && c.kind === 'ground' && this.n === 0 && this.held && c.t >= (st.charge.after ?? HOLD)) { if (inp.isDown(B)) { this.charge = 0; this.begin(st.charge.hold, 'charge-hold'); return; } this.held = false; }
+    } else if (st.charge && c.kind === 'ground' && this.n === 0 && this.held && (c.W ? c.mt : c.t) >= (st.charge.after ?? HOLD)) { if (inp.isDown(B)) { this.charge = 0; this.begin(st.charge.hold, 'charge-hold'); return; } this.held = false; }
     if (!inp.isDown(B)) this.held = false;
     this.sweep();
     const at = c.def.at ?? c.def.track?.strike[0];
@@ -431,10 +434,12 @@ export class Moveset {
     // the next move: a press inside the chain window
     const next = this.nextOf(c), R = this.rule(c.def), soon = R?.time ?? 0;
     c.age = (c.age || 0) + dt;
-    if (next && this.buffer > 0 && this.chainOpen(c, soon)) { this.begin(next.id, next.kind, next.n); return; } // (never sooner than its row's time: the rate the raids are sized to)
+    const want = this.buffer > 0 || !!c.queued; // (a warped move's held press counts as one buffered)
+    if (next && want && this.chainOpen(c, soon)) { this.begin(next.id, next.kind, next.n); return; } // (never sooner than its row's time: the rate the raids are sized to)
     // the recovery cut: a string's last blow (the dash, the charge's release, a plunge landed), its row's time spent and its strike past,
     // is cut short by a press into a new opener (Devil May Cry's cancels: the string runs at its rows' rate, not its clips' length)
-    if (!next && this.buffer > 0 && this.freeCutOpen(c, R, soon)) { this.opener(inp); if (this.cur !== c) return; }
+    if (!next && want && this.freeCutOpen(c, R, soon)) { this.opener(inp); if (this.cur !== c) return; }
+    if (jumpCancel(this, c)) return; // (the jump from a warped move's cancel frame: movewarp.js)
     // the paid cut: a press made in the recovery, before the free ways open, pays and the next move begins at once
     if (c.cutPress && this.buffer > 0 && allow) {
       c.cutPress = false;
@@ -489,7 +494,8 @@ export class Moveset {
     if (prev?.def.body === 'whole' && def.body !== 'whole') { const L = P.techs.get('launch'); if (L?.o?.tag?.startsWith(this.id)) { L.o.onEnd = null; L.o.time = 0; } } // (the whole-body move's launch ends: the core has the step again)
     if (!def.track) { def.track = measureSwing(ch, def.clip, { tip: def.tip ?? this.S.tip ?? 0.9, limb: def.limb ?? this.S.limb ?? 'R' }); if (def.track && def.strike) def.track = { ...def.track, strike: def.strike }; } // (a typed strike window wins: a flourish can be faster than the blow)
     if (join) { (this.from ||= ch.clips.pose()).copy(join); this.fadeT = 0; }
-    const c = (this.cur = { id, def, kind, n, t: def.from || 0, tPrev: def.from || 0, phase: 'play', landed: false, holdB: kind === 'launcher' });
+    const W = warpOf(def, def.track, this.dur(def)), t0 = W ? W.start : def.from || 0; // (the time warp, where the row has one: movewarp.js)
+    const c = (this.cur = { id, def, kind, n, t: t0, tPrev: t0, t0, mt: 0, W, phase: 'play', landed: false, holdB: kind === 'launcher' });
     this.offset = false; this.drop = null;
     if (kind === 'launcher') { this.juggle = null; this.arc = null; c.y0 = P.pos.y; }
     else if (kind !== 'air') this.arc = null; // (only the air string keeps High Time's arc)
@@ -502,6 +508,7 @@ export class Moveset {
     const f = this.aimDir(_f);
     const m = !g.lock?.active && magnet(g, P, f, { range: def.body === 'whole' ? 6 : 4.2, cone: 1.0 });
     if (m) f.set(m.pos.x - P.pos.x, 0, m.pos.z - P.pos.z).normalize();
+    c.aim = m; // (what a warped move tracks through its startup, without the lock)
     c.yaw = P.bodyYaw = Math.atan2(f.x, f.z) - (def.aim || 0); // (`aim`: a blade whose arc passes off to one side turns the body that far off what it goes to)
     if (def.hit) g.classArtsRun?.recordMove?.({ tool: this.id, move: id, at: P.pos.clone(), yaw: c.yaw, reach: (def.reach ?? this.S.reach ?? 0.6) + (def.tip ?? this.S.tip ?? 0.9), power: this.worth(def.hit, c), cause: def.hit.cause || this.S.cause || 'sliced' }); // (Encore's record: a class's art)
     if (def.body === 'whole') this.carry(c, m);
@@ -524,8 +531,8 @@ export class Moveset {
   carry(c, m) {
     const P = this.P, L = P.techs.get('launch'), def = c.def, C = this.game.character.clips;
     if (!L || P.mantle || P.freeze || (P.techs.active && P.techs.active !== L)) { c.def = { ...def, body: 'upper' }; return; } // (never mid-mantle: ending the core's climb there leaves them in the ledge)
-    const R = def.root ? rootOf(C, def.clip) : null, span = ((def.to ?? this.dur(def)) - (def.from || 0)) / (def.rate || 1);
-    const yaw = c.yaw, xyz = def.root === 'xyz';
+    const R = def.root ? rootOf(C, def.clip) : null, span = c.W ? c.W.total : ((def.to ?? this.dur(def)) - (def.from || 0)) / (def.rate || 1);
+    const yaw = c.yaw, xyz = def.root === 'xyz'; // (the launch's facing; the travel reads c.yaw live, a warped move's tracking turns it)
     // never through what it was aimed at (the lock's target, else the magnet's): the travel ahead is cut so the farthest it goes stops a
     // reach short of it, to none when they are there already; the clip's sidestep is dropped (a string of them walked round it and off
     // the magnet's cone); a rise is the move's own (casebook rule 192, 206)
@@ -548,14 +555,14 @@ export class Moveset {
         if (this.cur !== c) return;
         if (c.phase === 'fall') { vel.x *= 0.9; vel.z *= 0.9; vel.y = -(def.plunge.speed || 24); return; }
         if (R) {
-          const t0 = c.t, t1 = c.t + dt * (def.rate || 1);
+          const t0 = c.t, t1 = c.W ? c.W.clip(c.mt + dt) : c.t + dt * (def.rate || 1);
           if (peak) { R.at(t1, _a).sub(R.at(t0, _b)).divideScalar(Math.max(1e-4, dt)); _a.x *= side; _a.z *= scale; }
           else R.at(t1, _a).sub(R.at(t0, _b)).multiplyScalar(scale / Math.max(1e-4, dt));
-          toWorld(_a, yaw, _k);
+          toWorld(_a, c.yaw, _k);
           vel.x = _k.x; vel.z = _k.z; if (xyz && !this.arc) vel.y = _k.y; // (High Time's arc has the rise once it begins)
         }
         const st = def.step; // (the move's own step over the clip's travel: forward cut short as the travel is, back in full)
-        if (st && c.phase !== 'fall' && c.t >= st.at[0] && c.t < st.at[1]) { const v = st.v * (st.v > 0 ? scale : 1); vel.x += Math.sin(yaw) * v; vel.z += Math.cos(yaw) * v; }
+        if (st && c.phase !== 'fall' && c.t >= st.at[0] && c.t < st.at[1]) { const v = st.v * (st.v > 0 ? scale : 1); vel.x += Math.sin(c.yaw) * v; vel.z += Math.cos(c.yaw) * v; }
         const up = this.rise(c, vel), ride = !up && this.riding(c), held = c.kind === 'launcher' && !!this.arc; // (held: over the top, the launcher falls on its own arc till its pose lets go)
         if (tech?.o) { tech.o.gravity = up || held ? this.arc.g : ride ? 0 : c.grav; if (ride || up || held) tech.o.time = Math.max(tech.o.time, tech.t + 0.1); } // (rising, riding or held at the top, the move's launch lasts as long as it does)
         if (ride) this.ride(vel);
@@ -651,7 +658,8 @@ export class Moveset {
     let struck = 0;
     const R = this.rule(def), n = R?.hits || 1;
     if (n > 1 && def.track) { const [a, b] = def.track.strike, k = def.parts ? def.parts.filter((p) => c.t >= p).length - 1 : Math.floor(((c.t - a) / Math.max(1e-3, b - a)) * n); if (k > (c.part ?? 0) && k < n) { c.part = k; this.hit.clear(); } } // (`parts`: where each hit begins, the clip's own stabs)
-    sweepArc(g, P, c.yaw ?? P.bodyYaw, def.track, c.tPrev, c.t, { reach: def.reach ?? this.S.reach ?? 0.6, pad: STRIKE_PAD, seen: this.hit, hit: (kind, ent, at, dir) => { struck++; this.blow(kind, ent, at, dir, def.hit, c); } });
+    const steps = c.W ? Math.max(1, Math.ceil((c.t - c.tPrev) * 60 - 1e-6)) : 1, o = { reach: def.reach ?? this.S.reach ?? 0.6, pad: STRIKE_PAD, seen: this.hit, hit: (kind, ent, at, dir) => { struck++; this.blow(kind, ent, at, dir, def.hit, c); } };
+    for (let i = 0; i < steps; i++) sweepArc(g, P, c.yaw ?? P.bodyYaw, def.track, c.tPrev + ((c.t - c.tPrev) * i) / steps, c.tPrev + ((c.t - c.tPrev) * (i + 1)) / steps, o); // (a warped move's sub-stepped by a 60th of clip time: a fast windup never jumps a strike's sector)
     if (struck) this.impact(def.hit.dmg ?? 1, c, def.hit);
   }
 
@@ -737,7 +745,7 @@ export class Moveset {
     if (c.def.body === 'whole') return null;
     C.sample(c.def.clip, c.t, out, c.kind === 'charge-hold'); this.joined(C, out);
     const end = c.def.to ?? this.dur(c.def), fade = c.def.fade;
-    const w = Math.min(1, (c.t - (c.def.from || 0)) / 0.05 + (this.from && this.fadeT < 1 ? 1 : 0)) * (fade ? 1 - THREE.MathUtils.smoothstep(c.t, end - fade, end) : 1);
+    const w = Math.min(1, (c.W ? c.mt * 1.1 : c.t - (c.def.from || 0)) / 0.05 + (this.from && this.fadeT < 1 ? 1 : 0)) * (fade ? 1 - THREE.MathUtils.smoothstep(c.t, end - fade, end) : 1);
     return { pose: out, w: Math.min(1, w) };
   }
 

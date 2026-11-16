@@ -156,7 +156,8 @@ export class AnimPanel {
     run(0, P.startup, '#6f8aa3'); run(P.startup, P.active, '#ffcf5a'); run(P.startup + P.active, P.recovery, '#c4607a');
     x.fillStyle = '#2a1a20'; for (const h of P.hits) x.fillRect(px(P.k0 + h - 1) - 1, 2, 2, H - 4);
     if (P.cancel != null) { x.fillStyle = '#ffffff'; x.fillRect(px(P.k0 + P.cancel) - 1, 0, 2, H); }
-    t.textContent = `${P.id}: startup ${P.startup}  active ${P.active}  recovery ${P.recovery}  total ${P.total}  cancel ${P.cancel ?? '-'}${P.cancel != null ? ` (${Math.round(P.cancelShare * 100)}%)` : ''}${P.hits.length > 1 ? `  hits on ${P.hits.join(', ')}` : ''}  (60 Hz frames; the take's frame ${P.k0} is its begin)`;
+    if (P.cancelHit != null && P.cancelHit !== P.cancel) { x.fillStyle = '#7fe0a0'; x.fillRect(px(P.k0 + P.cancelHit) - 1, 0, 2, H); } // (a warped move's on-hit cancel, green: tools/movewarp.js)
+    t.textContent = `${P.id}: startup ${P.startup}  active ${P.active}  recovery ${P.recovery}  total ${P.total}  cancel ${P.cancel ?? '-'}${P.cancel != null ? ` (${Math.round(P.cancelShare * 100)}%)` : ''}${P.cancelHit != null ? `  on hit ${P.cancelHit}` : ''}${P.hits.length > 1 ? `  hits on ${P.hits.join(', ')}` : ''}  (60 Hz frames; the take's frame ${P.k0} is its begin)`;
   }
 
   dispose() { this.win.remove(); this.bar.remove(); }

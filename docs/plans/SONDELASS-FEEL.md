@@ -1,4 +1,4 @@
-# The Sondelass's melee, revamped for feel (a plan, approved 2026-11-16; steps 0 and 1 in work)
+# The Sondelass's melee, revamped for feel (a plan, approved 2026-11-16; steps 0, 1 and 2 built)
 
 South, 2026-11-16: "drastically improve the feel of combat, making it snappy, responsive, flowing, and visually striking. The single
 most important design aspect is 'elegance'." And 2026-11-15, on the stepped key poses we reverted: holding extreme poses was meant as
@@ -207,3 +207,51 @@ body, mind, clip and attack with one factor (`lagK`), and its windup clock is he
 body are `vfx/hitflinch.js` (`FLINCH`): shaken along the cut through the hitlag, squashed 12% at the blow, knocked 9 cm back once let go,
 lit in the damage type's colour for 0.14 real s; by weight x0.7 light .. x1.35 finisher. Kept as they were: the stinger's own pulse, the
 parry's, and the first stun's beat (stun.js), which a light cut that stuns still sets off.
+
+## 10. Step 2 as built (Calissa's builder, 2026-11-16)
+
+The time warp (3B) and the cancel frame (3D) on the default string only, opt-in a row (`warp`, `cancel` on c1 .. c4's `play`,
+`sondelass/sondelassloadout.js`; the rules `tools/movewarp.js`; the engine's hooks `tools/moveset.js`). Every other row plays as before:
+`node scripts/sondelassframes.mjs` prints the other 42 rows identical to section 8.
+
+| id | startup | active | recovery | total | cancel (whiff) | on-hit cancel | was: startup, active, recovery, total, cancel |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| c1 | 3 | 8 | 35 | 46 | 24 (52%) | 15 (33%) | 3, 12, 31, 46, 25 |
+| c2 | 4 | 8 | 37 | 49 | 25 (51%) | 16 (33%) | 9, 8, 32, 49, 28 |
+| c3 | 7 | 4 | 38 | 49 | 25 (51%) | 16 (33%) | 22, 4, 31, 57, 30 |
+| c4 | 11 | 4 | 83 | 98 | 36 (37%) | 25 (26%) | 20, 5, 77, 102, 47 |
+
+The rows (clip s for `skip`, rates in clip s a game s, `cancel` in game s from the press):
+
+| id | skip | in | strike rate | out | back | cancel hit / whiff | typed strike |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| c1 | 0.04 | 2.4 | 1.1 | 0.5 | 1.9 | 0.25 / 0.40 | [0.15, 0.29] (the measured one, [0.058, 0.275], began in the backswing) |
+| c2 | 0.03 | 2.2 | 1.1 | 0.5 | 1.9 | 0.27 / 0.42 | measured |
+| c3 | 0.10 | 2.6 | 1.1 | 0.5 | 1.7 | 0.27 / 0.42 | measured |
+| c4 | 0.10 | 1.35 | 1.0 | 0.55 | 1.6 | 0.42 / 0.60 | measured |
+
+- **First active frame, as seen** (the contact sheet, `sf2/string-sheet.png` in the builder's scratchpad): c1's blade crosses the front on
+  frame 5 to 6 (target 6 to 8: met); c2's rising cut on 6 to 7 (met); c3 on 8 to 9, its windup a whole turn of the blade whirled at
+  2.6 times (the edge of the target: entering later than 0.1 s of clip lands mid-spin, the body turned away); c4 on 12 (target 12 to 14:
+  met), but see below.
+- **Press to press, on a slip jelly, pressed every 3 frames:** c1 to c2 16 frames, c2 to c3 17, c3 to c4 17 (the on-hit cancel and the
+  press's grid), c4 to c1 22 (the paid cut: see below). A light cut left alone ends in its old length or less (46, 49, 49 from 57, 98
+  from 102), its follow-through stretched (0.5 at the strike's end, back to 1.9 by the clip's end).
+- **The cancels:** on a hit at a third of the move, on a whiff at half (c4 at a third); never before the strike's end plus a frame. A
+  press in the startup or the strike is held for the cancel frame; the jump, the guard (held V) and the next blow take it free from there;
+  the blink, as before, at any frame. A press in the recovery more than 0.07 s before the cancel frame is the paid cut, as today.
+- **Tracking:** through the startup, 12 rad/s toward the lock or the magnet's pick; the step in turns with it.
+- **The pause strings** open 0.25 to 0.8 real s after a move ends, as before; the moves end at about their old lengths, so their timing
+  reads the same (t1 after c1, j1 after c2).
+- **Dovina's rows**: combo1 .. combo4's `time` set to the on-hit cancels (0.25, 0.27, 0.27, 0.42 from 0.42, 0.46, 0.5, 0.78): the
+  string's power a second is 4.9 from 2.7 until she re-rates it (`docs/handoffs/dovina/2026-11-16-from-calissa-sondelass-times.md`).
+
+Rough, seen in the look and not fixed (one look, no tuning loop):
+- **c4's hit lands with the blade still overhead.** Its measured strike starts at the top of the downswing (clip 0.333, the tip at its
+  highest), so the creature takes the hit, and the finisher's 4-frame pose hold freezes the blade up in the air, before it has visibly
+  come down. A typed strike for c4 nearer [0.36, 0.42] would put the contact and the hold where the blade meets the body (a step 3 or 5
+  fix; it was so before the warp too).
+- **Mashing pays.** Pressed every 3 frames, c4's recovery (its cancel 10 frames past its strike) takes a press as the paid cut, so a
+  mashed string spends Lachryma and skips the finisher's follow-through; it did today as well (c1's recovery paid for 10 frames). A
+  rule that keeps the paid cut for a deliberate press (a fresh press after a release in the recovery) is Petra's and Dovina's call.
+- c3's 2.6x whirl is fast: read it in play; if it reads as a pop, enter at 0.06 and take a frame more.

@@ -2,7 +2,8 @@
 // melee loadout's catalogue, sondelassloadout.js SONDELASS_MOVES), its phases in 60 Hz frames of game time (tools/movephases.js: startup,
 // active, recovery, total, and today's cancel frame), read in the game itself on the dev server so the clips, the swing measure
 // (tools/melee.js) and the rule rows (progress/combat/moves.js) are the engine's own. Printed as a markdown table, the default string
-// (c1 .. c4) first, and written to the path given. It measures only (docs/plans/SONDELASS-FEEL.md 3A, step 0).
+// (c1 .. c4) first, and written to the path given; a warped move (tools/movewarp.js) on its warped clock, with its on-hit cancel beside the
+// whiff's. It measures only (docs/plans/SONDELASS-FEEL.md 3A, step 0; step 2's warp and cancel, section 10).
 //
 //   CHROMIUM=/path/to/chrome node scripts/sondelassframes.mjs [out.md]
 //
@@ -46,10 +47,10 @@ try {
   });
   if (errs.length) console.error('page errors:', errs.slice(0, 5).join(' | '));
   const f = (v) => (v == null ? '-' : v);
-  const head = '| id | label | clip | kind | body | startup | active | recovery | total | cancel | cancel / total | lunge | power | weight |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |';
+  const head = '| id | label | clip | kind | body | startup | active | recovery | total | cancel | cancel / total | on-hit cancel | lunge | power | weight |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |';
   const lines = rows.map((r) => r.own
-    ? `| ${r.id} | ${r.label} | ${r.clip} | ${r.kind} | ${r.body} | - | - | - | - | - | - | - | ${f(r.power)} | - |`
-    : `| ${r.id} | ${r.label} | ${r.clip} | ${r.kind} | ${r.body} | ${r.startup}${r.hits.length > 1 ? ` (hits on ${r.hits.join(', ')})` : ''} | ${r.active} | ${r.recovery} | ${r.total} | ${f(r.cancel)}${r.lateCancel ? ' (end)' : ''} | ${r.cancelShare == null ? '-' : `${Math.round(r.cancelShare * 100)}%`} | ${f(r.lunge)} | ${f(r.power)}${r.hits.length > 1 ? ` x${r.hits.length}` : ''} | ${f(r.weight)} |`);
+    ? `| ${r.id} | ${r.label} | ${r.clip} | ${r.kind} | ${r.body} | - | - | - | - | - | - | - | - | ${f(r.power)} | - |`
+    : `| ${r.id} | ${r.label} | ${r.clip} | ${r.kind} | ${r.body} | ${r.startup}${r.hits.length > 1 ? ` (hits on ${r.hits.join(', ')})` : ''} | ${r.active} | ${r.recovery} | ${r.total} | ${f(r.cancel)}${r.lateCancel ? ' (end)' : ''} | ${r.cancelShare == null ? '-' : `${Math.round(r.cancelShare * 100)}%`} | ${r.cancelHit == null ? '-' : `${r.cancelHit} (${Math.round(r.hitShare * 100)}%)`} | ${f(r.lunge)} | ${f(r.power)}${r.hits.length > 1 ? ` x${r.hits.length}` : ''} | ${f(r.weight)} |`);
   const notes = rows.filter((r) => r.own || r.plunge).map((r) => `- ${r.id}: ${r.own ? r.note : 'a plunge: its fall holds the clip at its hold until the ground, so its frames after the hold are the landing\'s, not the press\'s'}`);
   const md = `${head}\n${lines.join('\n')}\n\n${notes.join('\n')}\n`;
   console.log(md);
