@@ -10,6 +10,8 @@
 //   the marks    a floor grid (10 cm, a metre bolder), the midline (the body's centre plane, faint, turned with the body), the travel,
 //                and the overlays (workbench/animoverlay.js: the bones' axes; the pose audit's, when it is in)
 //   the snapshot the frame on show from the front, the side and above, one PNG
+//   the phases   under a take of a cutlass move, its frame data (tools/movephases.js): startup, active and recovery as three stretches
+//                of the scrub bar and the cancel frame as a tick, in 60 Hz frames (docs/plans/SONDELASS-FEEL.md 3A)
 // Its controls are workbench/animpanel.js; its keys: Space play, the arrows a frame (Shift: ten), Home and End.
 //
 // Prior art: Unreal's Animation Editor and Persona's timeline (the preview scene, play, step, scrub with the frame number, the playback
@@ -18,7 +20,7 @@
 //
 //   animStage(game) -> Object3D (the Workbench's MODELS list: 'anim:lab'), its `userData.lab`: the AnimLab
 //   lab.setTool('sondelass:cutlass')  lab.choose(playId)  lab.play(on)  lab.step(n)  lab.seek(k)  lab.setView('side')  lab.snapshot()
-//   lab.ready (a promise: the rig built)  lab.take  lab.frame
+//   lab.ready (a promise: the rig built)  lab.take  lab.frame  lab.phases ({ k0, id, ...movePhases } | null)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { AnimRig } from './animrig.js';
@@ -26,6 +28,7 @@ import { playsFor } from './animplays.js';
 import { recordTake, applyFrame } from './animtake.js';
 import { ANIM_OVERLAYS, OverlayLayer } from './animoverlay.js';
 import { AnimPanel } from './animpanel.js';
+import { phasesOf } from '../tools/movephases.js';
 
 export const VIEWS = ['front', 'side', 'top', 'three', 'free'];
 const SPEEDS = [0.1, 0.25, 0.5, 1];
@@ -113,11 +116,22 @@ export class AnimLab {
     try { this.take = recordTake(R, play); } catch (e) { console.error(`animlab: ${play.id}: ${e.stack || e}`); this.panel.say(`could not play it: ${e.message}`); return; }
     const T = this.take, ys = Array.from({ length: T.n }, (_, k) => T.hipsAt(k, _v).y);
     this.fit = { y0: Math.min(0, Math.min(...ys) - 1.05) - 0.12, y1: Math.max(2.05, Math.max(...ys) + 1.0) + 0.12 }; // (the views framed to the body over the whole take)
-    this.ghostLine(); this.marks.clear(); this.timelines = null;
+    this.ghostLine(); this.marks.clear(); this.timelines = null; this.phases = this.phasesOfTake();
     this.playT = 0; this.frame = -1; this.state.playing = true;
     this.seek(0);
     this.panel.say(`${play.label}: ${T.n} frames (${(T.n / T.fps).toFixed(2)} s), recorded in ${Math.round(performance.now() - t0)} ms`);
     this.panel.scrub();
+  }
+
+  /** A cutlass move's frame data on the take (tools/movephases.js), from the first frame the move is on show (null: not a cutlass move).
+   *  A string's last blow, the dash and the charge's release go on by the free recovery cut; the rest by their chain windows. */
+  phasesOfTake() {
+    const R = this.R, T = this.take, M = R?.moveset;
+    if (!T || !M || M !== R.tool?.cutlass?.moves) return null; // (the cutlass's own engine, asked of the tool)
+    const k0 = T.info.findIndex((I) => I.what && M.def(I.what)); if (k0 < 0) return null;
+    const id = T.info[k0].what, S = M.S.strings || {}, free = M.string.at(-1) === id || id === S.dash || id === S.charge?.release;
+    const ph = phasesOf(M, id, free ? { way: 'free' } : {});
+    return ph && { k0, id, ...ph };
   }
 
   /** The travel: the hips' path over the take, and its shadow on the floor (in the rig's frame: it slides back under the pinned body). */

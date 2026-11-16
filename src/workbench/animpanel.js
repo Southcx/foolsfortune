@@ -3,7 +3,8 @@
 // buttons, its searchable grouped list): on the right, the tool in the hands and the others worn or not, what plays (searched, grouped:
 // the stances, the tool's moves, the emotes, every clip raw), the views, what is shown (the grid, the midline, the travel, each
 // overlay) and the snapshot; along the bottom, the transport (first, a frame back, play, a frame on, last, loop, the speed) and the scrub
-// bar, its frame number and time, the move's strike drawn under it as a band and where the drive acted as ticks.
+// bar, its frame number and time, the move's strike drawn under it as a band and where the drive acted as ticks; under a cutlass
+// move's take, its phases (startup, active, recovery, the cancel frame: tools/movephases.js) as a bar on the same frames.
 //
 // Prior art: Unreal's Persona (the asset browser beside the viewport, the timeline and its transport under it, the speed menu),
 // Blender's timeline header (the frame counter, the play buttons, the playback range).
@@ -27,6 +28,8 @@ const CSS = `
 #workbench .animbar .scrub { position: relative; height: 24px; margin: 4px 0 2px; }
 #workbench .animbar .scrub canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; }
 #workbench .animbar .scrub input { position: absolute; left: 0; top: 0; width: 100%; height: 100%; margin: 0; background: transparent; }
+#workbench .animbar .ph { position: relative; height: 10px; margin: 0 0 2px; }
+#workbench .animbar .ph canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
 #workbench .animbar .fr { font: 12px var(--f-sys, monospace); display: flex; justify-content: space-between; gap: 8px; }
 `;
 
@@ -60,10 +63,12 @@ export class AnimPanel {
         <button data-a="play" title="play, pause (Space)"></button><button data-a="fwd" title="a frame on (→; Shift: ten)">▶</button><button data-a="last" title="last frame (End)">▶|</button>
         <button data-a="loop"></button><span style="flex:1"></span>${SPEEDS.map((s) => `<button data-s="${s}">${s}x</button>`).join('')}</div>
       <div class="scrub"><canvas></canvas><input type="range" min="0" max="0" step="1" value="0"></div>
+      <div class="ph"><canvas></canvas></div>
+      <div class="fr"><span class="pht"></span></div>
       <div class="fr"><span class="fno"></span><span class="ftime"></span></div>`;
     host.appendChild(w); host.appendChild(b);
     this.listEl = w.querySelector('.list'); this.search = w.querySelector('input[type=search]'); this.toolSel = w.querySelector('select.tool');
-    this.range = b.querySelector('input[type=range]'); this.canvas = b.querySelector('canvas');
+    this.range = b.querySelector('input[type=range]'); this.canvas = b.querySelector('.scrub canvas'); this.phCanvas = b.querySelector('.ph canvas');
     this.search.addEventListener('input', () => this.list());
     this.toolSel.addEventListener('change', () => lab.setTool(this.toolSel.value));
     this.range.addEventListener('input', () => { lab.state.playing = false; lab.seek(+this.range.value); this.transport(); });
@@ -138,6 +143,20 @@ export class AnimPanel {
     x.fillStyle = 'rgba(255,255,255,.8)';
     for (const k of T.marks) x.fillRect(px(k) - 1, 1, 2, 7);
     for (const tl of this.lab.timeline()) for (let k = 0; k < T.n; k++) if (tl[k] > 0.01) { x.fillStyle = `rgba(255,60,48,${0.25 + 0.7 * Math.min(1, tl[k])})`; x.fillRect(px(k) - 1, 9, Math.max(2, px(k + 1) - px(k) + 1), 5); }
+    this.phaseBar(px);
+  }
+
+  /** A cutlass move's phases on the take's frames (the lab's `phases`): startup slate, active gold, recovery rose, the cancel frame a
+   *  white tick, a hit's first active frame a dark notch; its numbers beside, in 60 Hz frames. */
+  phaseBar(px) {
+    const P = this.lab.phases, c = this.phCanvas, W = (c.width = c.clientWidth || 400), H = (c.height = c.clientHeight || 10), x = c.getContext('2d'), t = this.bar.querySelector('.pht');
+    x.clearRect(0, 0, W, H); t.textContent = '';
+    if (!P) return;
+    const run = (a, n, col) => { if (n > 0) { x.fillStyle = col; x.fillRect(px(P.k0 + a), 2, px(P.k0 + a + n) - px(P.k0 + a), H - 4); } };
+    run(0, P.startup, '#6f8aa3'); run(P.startup, P.active, '#ffcf5a'); run(P.startup + P.active, P.recovery, '#c4607a');
+    x.fillStyle = '#2a1a20'; for (const h of P.hits) x.fillRect(px(P.k0 + h - 1) - 1, 2, 2, H - 4);
+    if (P.cancel != null) { x.fillStyle = '#ffffff'; x.fillRect(px(P.k0 + P.cancel) - 1, 0, 2, H); }
+    t.textContent = `${P.id}: startup ${P.startup}  active ${P.active}  recovery ${P.recovery}  total ${P.total}  cancel ${P.cancel ?? '-'}${P.cancel != null ? ` (${Math.round(P.cancelShare * 100)}%)` : ''}${P.hits.length > 1 ? `  hits on ${P.hits.join(', ')}` : ''}  (60 Hz frames; the take's frame ${P.k0} is its begin)`;
   }
 
   dispose() { this.win.remove(); this.bar.remove(); }
