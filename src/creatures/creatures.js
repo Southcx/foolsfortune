@@ -40,6 +40,11 @@
 //   the Courier as it began and ended with them out of it, parried or looking away is READ: `windup.read { kind, how, by }` (a cast's, an `area`, stepped out of or looked away from: `foe.dodge { kind, cast, how, by }`); `read: false`
 //   for one that never counts, Strawman's)
 //   stateOf(c.mind) (mind.js) names a creature's state; c.emo, c.build[type] are its numbers
+//   .hitlag(c, frames, { dir, type, weight, by })   lagK(c) -> 0 | 1   (A STRUCK CREATURE'S HITLAG, Melee's victim hitlag: its own motion held
+//   `frames` 60 Hz frames of game time, from this frame; a kind that honours it says so (`c.lags`: its manager multiplies its sim step,
+//   its clip and its attack's clock by lagK(c)), and only then is its windup's clock held with it (casebook 184: hold both or neither).
+//   Never its collider, never its statuses' timers. `c.hitlag` { f, n, dir, type, weight, seq } is what its look reads: vfx/hitflinch.js
+//   shakes the drawn body along `dir` and flinches it. Emits `creature.hitlag { kind, frames, weight, type, by }`)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { hasTag } from '../core/tags.js';
@@ -67,9 +72,12 @@ const _wd = new THREE.Vector3(), _wp = new THREE.Vector3();
 
 /** How much of a status a creature has right now (0 when none). */
 export const st = (c, name) => { const s = c?.status?.get(name); return s && s.t > 0 ? s.k : 0; };
+/** A creature's sim step this frame: 0 while its hitlag holds it (`hitlag`, below), else 1. */
+export const lagK = (c) => (c?.lagHeld ? 0 : 1);
 
 export class Creatures {
   static n = 0; // (a creature's number for its Figment attack telegraph's id, given the first time it winds up)
+  static lagN = 0; // (a hitlag's number: the look starts a flinch on each new one)
   constructor(game) {
     this.game = game;
     this.list = [];
@@ -188,6 +196,14 @@ export class Creatures {
     return true;
   }
   clearStatus(c, name) { c.status.delete(name); }
+  /** A struck creature's hitlag (above): the longer of what it has and `frames`; a fresh `seq` each blow (the look's cue). */
+  hitlag(c, frames, { dir = null, type = 'impact', weight = 'light', by = 'courier' } = {}) {
+    if (!c || !(frames > 0)) return;
+    const L = (c.hitlag ||= { f: 0, n: 0, dir: new THREE.Vector3(), type, weight, seq: 0 });
+    L.f = Math.max(L.f, frames); L.n = frames; L.type = type; L.weight = weight; L.seq = ++Creatures.lagN;
+    if (dir && dir.lengthSq() > 1e-8) L.dir.copy(dir).normalize(); else L.dir.set(0, 0, 1);
+    this.game.events?.emit('creature.hitlag', { kind: c.kind, frames, weight, type, by });
+  }
   /** A creature's telegraphed blow: what a parry in its window answers (docs/plans/PARRY.md). Cleared when it lands or is cancelled
    *  (`unwind`), or `eta` and a breath after, whichever is first. `at` may be a live vector (a lunge's body). A blow that cannot be
    *  parried (a grab, a ram) passes `parry: false`: telegraphed by its own body, never marked. */
@@ -265,9 +281,10 @@ export class Creatures {
       for (const t in c.build) c.build[t] = Math.max(0, c.build[t] - BUILD.drainPerSec * dt);
     }
     for (const c of this.list) {
+      const L = c.hitlag; c.lagHeld = !!(L && L.f > 0 && c.lags); if (L && (L.f -= dt * 60) <= 0) c.hitlag = null; // (its hitlag: held this frame, its frames run down in game time)
       for (const [k, s] of c.status) { s.t -= dt; if (s.t <= 0) { c.status.delete(k); c.onStatusEnd?.(k); } }
       if (c.tolerance) for (const k in c.tolerance) c.tolerance[k].left -= dt; // (friendly fire's window: the tolerance resets after it)
-      if (c.windup) { const w = c.windup; w.t -= dt; w.mark?.eta(this.shownEta(Math.max(0, w.t - 0.3))); w.drawn?.eta(this.shownEta(Math.max(0, w.t - 0.3))); if (w.t <= 0 || !c.alive) { if (w.t <= 0 && c.alive && w.parry && w.mark) this.missed(c, w); this.unwind(c); } }
+      if (c.windup) { const w = c.windup; if (!c.lagHeld) w.t -= dt; /* (held with its body in its hitlag: casebook 184) */ w.mark?.eta(this.shownEta(Math.max(0, w.t - 0.3))); w.drawn?.eta(this.shownEta(Math.max(0, w.t - 0.3))); if (w.t <= 0 || !c.alive) { if (w.t <= 0 && c.alive && w.parry && w.mark) this.missed(c, w); this.unwind(c); } }
       if (!c.alive) continue;
       if (c.vigil) { const up = !!c.vigil.up; if (up && c.vigilWas === false) this.game.events?.emit('creature.look', { kind: c.kind, at: c.pos.clone(), by: 'creature' }); c.vigilWas = up; } // (its head up from its business: the watch's second avenue, a sound, STEALTH.md 4, GAPS G240)
       // quiet settles its mind back toward its nature, and its agitation rises while it hunts and falls when it does not

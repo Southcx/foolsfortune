@@ -125,7 +125,7 @@ export class Cutlass {
     this.ghosts = new Afterimages(g, { opacity: 0.3, life: 0.4 }); // (the stinger's and the paid cut's: Blink Dash's one afterimage, vfx/afterimage.js)
     this.loadout = g.sondelassLoadout ||= new SondelassLoadout(g); // (the melee loadout chosen in the loadout editor and kept in the save, checked: loadoutchosen.js)
     this.moves = new Moveset(tool, {
-      id: 'cutlass', rules: 'sondelass', moves: MOVES, strings: STRINGS, reach: REACH, pot: DMG, k: 1.4, cause: 'sliced', events: { swing: 'cut.swing', hit: 'cut.hit' },
+      id: 'cutlass', rules: 'sondelass', moves: MOVES, strings: STRINGS, reach: REACH, pot: DMG, k: 1.4, cause: 'sliced', events: { swing: 'cut.swing', hit: 'cut.hit' }, impact: 'held', // (the world runs on: the struck thing's hitlag, tools/moveimpact.js)
       trail: this.trail, segment: (a, b) => this.tool.model.bladeSegment(a, b), ghosts: this.ghosts,
       catalogue: SONDELASS_MOVES, loadout: () => this.loadout?.get() || SONDELASS_LOADOUT, wraps: { stinger: (row, { paid }) => this.stinger(paid) }, // (the loadout chosen, checked against the catalogue and what is open; the default where none is: MELEE-LOADOUT.md phase 3)
       drawn: () => this.tool.drawT > 0.02 && this.tool.form === 'cutlass', onBlinkCancel: () => this.blinkCancel(),

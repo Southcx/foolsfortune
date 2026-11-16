@@ -126,6 +126,7 @@
 //   by no move of its own: the run ends)   M.holding(t) (a tool's own charge held t real s: past HOLD_MAX the run ends)
 //   spec.rules: the tool's key in moves.js (default its id); a move's `rule`: its row (combo1, launcher, air1, plunge, special ...)
 //   spec.sound: the swing's sound (heavy) -> (default sfx.slash; false when the tool sounds its own in onBegin)
+//   spec.impact: 'held' (the world runs on; the struck thing's hitlag, a pose hold on heavy blows, one earned stop) | none (the pulse on every blow)
 // ---------------------------------------------------------------------------------------
 import { STRING_RUN } from './stringrun.js';
 import * as THREE from 'three';
@@ -134,13 +135,11 @@ import { measureSwing, sweep as sweepArc, magnet, targets } from './melee.js';
 import { MOVES as RULES, unlocked } from '../progress/combat/moves.js';
 import { Afterimages } from '../vfx/afterimage.js';
 import { featTint } from '../vfx/oxidation.js';
-import { blowWeight } from '../vfx/blowfeel.js';
+import { moveImpact, heldStrike } from './moveimpact.js';
 import { stream } from '../core/rng.js';
 import { T } from '../core/config.js';
 
-/** The hit-stop's length by the blow's weight class (vfx/blowfeel.js blowWeight; Calissa's ask, 2026-10-25): a light blow stops
- *  shorter, a finisher longest, the stop grown with the blow as Sakurai's (a share of the length the damage gives). */
-export const STOP_BY_WEIGHT = { light: 0.8, heavy: 1.2, launcher: 1.15, finisher: 1.6 };
+export { STOP_BY_WEIGHT } from './moveimpact.js'; // (the pulse's length by weight class, and the held way's table: tools/moveimpact.js)
 const fxRand = stream('tools/moveset.fx'); // (the look's chance: the afterimage's and the ribbon's hue, never the simulation's)
 
 const STATUS_DUR = { stagger: 0.8, airborne: 1.6, trip: 1.0 }; // (how long a move's status holds, real seconds; each creature decides what it means)
@@ -171,7 +170,7 @@ const RING_UP = 1.5; // (m: a ring strikes what is within this of the ground it 
 // (`up`: what was launched is ridden only once seen to rise this far, m; not risen in `still` real s, it cannot be lifted: let go)
 const RIDE = { gap: 1.3, near: 1.4, k: 6, max: 7, reach: 3.5, turn: 3, hold: 2.5, up: 0.1, still: 0.2 };
 const _c1 = new THREE.Color(), _c2 = new THREE.Color();
-const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _e = new THREE.Vector3(), _f = new THREE.Vector3(), _k = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
+const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _e = new THREE.Vector3(), _f = new THREE.Vector3(), _k = new THREE.Vector3();
 const _w = new THREE.Vector3(), _s = new THREE.Vector3();
 const roots = new Map();
 
@@ -406,7 +405,7 @@ export class Moveset {
     // the move plays on
     c.tPrev = c.t;
     if (c.phase === 'fall') { if (P.grounded) this.land(); }
-    else c.t += dt * (c.def.rate || 1);
+    else if (!(this.S.impact === 'held' && this.game.character?.st.hold)) c.t += dt * (c.def.rate || 1); // (the held way: the move's clock waits with its held pose, so letting go never jumps: tools/moveimpact.js)
     if (c.kind === 'launcher' && c.high == null && c.t >= (c.def.track?.strike[0] ?? 0)) c.high = !!(c.def.high && c.holdB); // (held to its strike: High Time)
     if (c.kind === 'launcher' && c.high && !this.arc && c.t >= (c.def.track?.strike[1] ?? 0)) this.leap(c); // (from its strike's end: their own arc, before a cut can go on from it)
     const end = c.def.to ?? this.dur(c.def);
@@ -686,6 +685,7 @@ export class Moveset {
       if (h.guardBreak) ent.breakGuard?.(at, dir, 'courier'); // (a guard break: the guard opened first, so this blow lands through it)
       g.creatures.strike(ent, at, dir, this.worth(h, c), cause, 'courier', null, undefined, 1, { shatter: h.shatter ?? (c?.def ? this.rule(c.def)?.shatter : 0) ?? 0 }); if (h.lift || h.push) ent.knock?.(kv.clone());
       this.struck(ent, c);
+      if (S.impact === 'held') heldStrike(this, ent, dir, h, c); // (the struck thing carries the hit: its hitlag, tools/moveimpact.js)
     }
     if (c && (c.kind === 'air' || c.kind === 'launcher')) { this.airHits++; this.P.vel.y = Math.max(this.P.vel.y, 0.6); } // (a hit in the air holds them up a beat)
     g.events?.emit(S.events.hit, { what: kind === 'creature' ? ent.kind : kind, combo: this.combo, move: c?.id, by: 'courier' });
@@ -718,14 +718,8 @@ export class Moveset {
   /** A launcher's first lift of something: Dovina's count (move.launch opens the air string). */
   lifted(c) { if (c?.kind !== 'launcher' || c.lifted) return; c.lifted = true; this.game.events?.emit('move.launch', { tool: this.S.rules || this.id, by: 'courier' }); }
 
-  /** What a hit does to the world: the sound, the shake, the flash, and the stop. */
-  impact(dmg, c, h) {
-    const g = this.game, P = this.P, k = STOP_BY_WEIGHT[blowWeight(c, h)] ?? 1;
-    sfx.cutHit?.(dmg);
-    P.shake = Math.max(P.shake, 0.12 * dmg);
-    if (this.S.segment) { this.S.segment(_a, _b); g.fx?.slash?.(_a.clone(), _b.clone(), _up); }
-    g.time.pulse('hit', 0.07, k * (0.035 + 0.03 * dmg * (c?.def.stop ?? 1)), { release: 0.12 });
-  }
+  /** What a hit does to the world: the sound, the shake, the flash, and the stop or the held way (`S.impact`: tools/moveimpact.js). */
+  impact(dmg, c, h) { moveImpact(this, dmg, c, h); }
 
   /** The upper-body layer while an upper move (or its recovery) plays: { pose, w } | null. */
   pose(C, out) {

@@ -1,17 +1,18 @@
 // ---------------------------------------------------------------------------------------
 // A BLOW'S FEEL (plain name): what a melee blow that lands looks like by its WEIGHT CLASS (light, heavy, launcher, finisher), laid
 // over the hit creatures.strike already plays (hit.slash.<material>, damage.<type>). Looks only: no timing, no damage, no rule. The
-// combo engine's stop (tools/moveset.js impact: the world held a beat, scaled by the blow's dmg) and its shake are the engine's and
-// stay as they are; this adds, at the contact:
+// combo engine's timing at the contact (the world's pulse, or on the cutlass the struck thing's hitlag and the pose hold:
+// tools/moveimpact.js IMPACT) and its shake are the engine's; this adds, at the contact:
 //   - the spark arc thrown on along the blade's travel, a ring in the damage type's colour (DAMAGE_TINT), more of what the thing is
 //     made of on a finisher or a guard break (clay chips; Strawman's straw): the library's `blow.<weight>[.<material>]` and
 //     `blow.guardbreak[.<material>]` (vfx/library.js), so the look is tuned there
 //   - the swing's ribbon flaring on the frame that connects (vfx.js `sw.flare`: its uniforms, its one program)
-//   - a tiny camera kick along the blade on a heavy, a launcher and a finisher (the recoil spring, `P.punchV`, scaled by the setting
-//     visual.shake: config.js shakeOf; off, none), once a blow's part
-//   - a smear frame on a finisher: the blade's arc drawn solid for two display frames (vfx/smearframe.js)
-//   - the struck body's flinch: a white flash a frame and a half (`model.flinch()`; Strawman's alone today: no other creature has a
-//     hurt flash to ask)
+//   - a tiny camera kick along the blade on every blow, a fraction of a degree on a light one (the recoil spring, `P.punchV`, scaled by
+//     the setting visual.shake: config.js shakeOf; off, none), once a blow's part
+//   - a smear frame on a finisher: the blade's arc drawn solid for two display frames; on a heavy, shorter and narrower (one frame,
+//     the outer half of the blade, a smaller arc: vfx/smearframe.js SMEAR.heavy)
+//   - Strawman's flinch: a white flash a frame and a half (`model.flinch()`; every other creature's flinch is vfx/hitflinch.js, on its
+//     hitlag)
 // Built once: any tool on the combo engine asks `land` from its onHit (the cutlass first); a tool's own blow (the stinger) asks `sting`.
 //
 // Prior art: Street Fighter's hit sparks by strength (light, medium, heavy: a weight a size and a sound), Monster Hunter's hit sparks
@@ -30,11 +31,12 @@ import { T, DEG, shakeOf } from '../core/config.js';
 import { materialOf } from './vfx.js';
 import { DAMAGE_TINT } from './library.js';
 import { typeOf } from '../progress/combat/types.js';
+import { SMEAR } from './smearframe.js';
 
 /** A weight's numbers: `flare` the ribbon's extra share on contact and `flareDur` its real s; `kick` the camera's nudge (degrees at
  *  its peak) along the blade. */
 export const BLOW_WEIGHT = {
-  light: { flare: 0.7, flareDur: 0.08, kick: 0 },
+  light: { flare: 0.7, flareDur: 0.08, kick: 0.15 },
   heavy: { flare: 1.2, flareDur: 0.12, kick: 0.45 },
   launcher: { flare: 1.1, flareDur: 0.12, kick: 0.4 },
   finisher: { flare: 2, flareDur: 0.16, kick: 0.8 },
@@ -68,7 +70,7 @@ export class BlowFeel {
     if (!at || !this.game.vfx) return;
     const w = blowWeight(c, h);
     this.burst(w, kind, ent, at, this.travel(dir, segment), h);
-    if (w === 'finisher') this.smear(at, _d, segment, h);
+    if (w === 'finisher' || w === 'heavy') this.smear(at, _d, segment, h, w === 'heavy' ? SMEAR.heavy : null);
     const W = BLOW_WEIGHT[w];
     swing?.flare?.(W.flare, W.flareDur);
     if (W.kick && (this.kicked !== c || this.kickedPart !== (c?.part ?? 0))) { this.kicked = c; this.kickedPart = c?.part ?? 0; this.kick(_d, W.kick, w === 'launcher'); }
@@ -85,11 +87,11 @@ export class BlowFeel {
 
   /** A finisher's smear frame (vfx/smearframe.js): the blade's two ends now, else from the chest to the contact (a fist, a foot, a
    *  thrust), swept back against its travel. */
-  smear(at, dir, segment, h) {
+  smear(at, dir, segment, h, opts = null) {
     const S = this.game.smears; if (!S) return;
     if (segment) segment(_a, _b);
     else { const P = this.game.player; _a.copy(P?.pos || at); _a.y += 1.2; _b.copy(at); }
-    S.play(_a, _b, _r.copy(dir), DAMAGE_TINT[typeOf(h?.cause || 'sliced')] ?? DAMAGE_TINT.impact);
+    S.play(_a, _b, _r.copy(dir), DAMAGE_TINT[typeOf(h?.cause || 'sliced')] ?? DAMAGE_TINT.impact, opts);
   }
 
   /** The blade's travel at the contact, into _d: the swing's tangent; with none, along the blade. */
@@ -110,7 +112,7 @@ export class BlowFeel {
     ctx.floor = at.y - 1.5;
     g.vfx.play(mat ? `blow.${w}.${mat}` : `blow.${w}`, ctx);
     if (h?.guardBreak) g.vfx.play(mat ? `blow.guardbreak.${mat}` : 'blow.guardbreak', ctx);
-    ent?.model?.flinch?.(); // (the struck body's flash: Strawman's, vfx/strawman.js)
+    ent?.model?.flinch?.(); // (Strawman's flash, vfx/strawman.js; every other creature's flinch: vfx/hitflinch.js)
   }
 
   /** The camera nudged `deg` (at its peak) the way the blade travels, as the view sees it: its sideways part on the yaw, its height on

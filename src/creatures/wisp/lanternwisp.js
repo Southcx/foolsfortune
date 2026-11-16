@@ -17,7 +17,7 @@ import * as THREE from 'three';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { RAPIER, G, groups } from '../../core/physics.js';
 import { tag } from '../../core/tags.js';
-import { st } from '../creatures.js';
+import { st, lagK } from '../creatures.js';
 import { ECON } from '../../progress/econ/table.js';
 import { yieldOf } from '../../progress/combat/emo.js';
 import { Brain, Senses, Memory, Drives, rollTraits } from '../ai/index.js';
@@ -61,7 +61,7 @@ export class LanternWisps {
       type: 'creature', kind: 'wisp', name: 'Lantern Wisp', id: NEXT++, root, model, lantern, mixer, rb, col,
       home: home.clone(), pos: home.clone(), vel: new THREE.Vector3(), want: new THREE.Vector3(), yaw, radius: R, height: H, lift: 0,
       alive: true, hp: WISP.hp, poise: WISP.poise * (traits.bold ?? 1), stunFor: WISP.stunFor, deadT: 0, dying: null, pose: 'idle', face: null,
-      attack: null, traits, rel: new Map(), macro: null, loud: 1.2, playing: null, flash: 0,
+      attack: null, traits, rel: new Map(), macro: null, loud: 1.2, playing: null, flash: 0, lags: true,
       center: (out) => out.copy(c.pos).setY(c.pos.y + WISP.hover + H * 0.5),
       head: () => this.head(c),
       hurt: (p, dir, power, cause, by, from) => this.hurt(c, p, dir, power, cause, by, from),
@@ -206,10 +206,10 @@ export class LanternWisps {
         continue;
       }
       const far = Math.abs(P.pos.x - c.pos.x) > 150 || Math.abs(P.pos.z - c.pos.z) > 150 || Math.abs(P.pos.y - c.pos.y) > 60;
-      if (!far) c.mixer.update(dt); // (a far wisp is not drawn: no pose to run)
+      if (!far) c.mixer.update(dt * lagK(c)); // (a far wisp is not drawn: no pose to run; its clip held in its hitlag, creatures.js)
       if (c.taking || c.stashed) continue;
       if (far) { c.brain.update(dt); continue; }
-      const k = (c.dueling || st(c, 'halt') ? 0 : st(c, 'slow') ? 0.35 : 1) * (1 + 0.5 * st(c, 'haste')), dtk = dt * k;
+      const k = (c.dueling || st(c, 'halt') ? 0 : st(c, 'slow') ? 0.35 : 1) * (1 + 0.5 * st(c, 'haste')) * lagK(c), dtk = dt * k; // (lagK: its hitlag holds body, mind and attack together)
       c.want.set(0, 0, 0); c.face = null;
       if (dtk > 0) { if (c.driven) c.driven(dtk); else c.brain.update(dtk); }
       this.game.dunesAreas?.hold?.(c); // (it waits at its area's edge: world/dunes/areacut.js, A6)
@@ -226,7 +226,7 @@ export class LanternWisps {
       c.root.position.set(c.pos.x, c.pos.y + WISP.hover + bob + c.lift, c.pos.z); c.root.rotation.y = c.yaw;
       c.rb.setNextKinematicTranslation({ x: c.pos.x, y: c.pos.y + WISP.hover + c.lift + WISP.height * 0.5, z: c.pos.z });
       // its pose: a one-shot plays out, then the loop for what it is doing
-      if (c.once > 0) { c.once -= dt; continue; }
+      if (c.once > 0) { c.once -= dt * lagK(c); continue; }
       const sp = Math.hypot(c.vel.x, c.vel.z);
       let clip = POSE_CLIP[c.pose] || 'Idle';
       if (sp > 1.4 && ['drift', 'fight', 'flee'].includes(c.pose)) { const lx = Math.sin(-c.yaw) * c.vel.z + Math.cos(-c.yaw) * c.vel.x, lz = Math.cos(-c.yaw) * c.vel.z - Math.sin(-c.yaw) * c.vel.x; clip = Math.abs(lx) > Math.abs(lz) ? (lx > 0 ? 'Float_Right' : 'Float_Left') : (lz >= 0 ? 'Float_Forward' : 'Float_Backward'); }

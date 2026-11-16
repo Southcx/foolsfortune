@@ -29,7 +29,7 @@ import * as THREE from 'three';
 import { RAPIER, G, groups } from '../../core/physics.js';
 import { addRim } from '../../render/toon.js';
 import { tag } from '../../core/tags.js';
-import { st } from '../creatures.js';
+import { st, lagK } from '../creatures.js';
 import { yieldOf } from '../../progress/combat/emo.js';
 import { sfx } from '../../audio/sfx.js';
 import { PaintPath } from '../../vfx/paintpath.js';
@@ -93,7 +93,7 @@ export class SlipJellies {
       type: 'creature', kind: spirit ? 'spirit' : 'slipjelly', name: spirit ? 'Smoke Spirit' : 'Slip Jelly', id: NEXT++, root, body, mat, deform, rb, col, spirit, ally: !!spirit,
       home: home.clone(), pos: home.clone(), prevPos: home.clone(), vel: new THREE.Vector3(), want: new THREE.Vector3(), vy: 0, yaw, radius: Rk, height: Hk,
       alive: true, hp: JELLY.hp, poise: JELLY.poise * (traits.bold ?? 1), stunFor: JELLY.stunFor, air: false, groundY: null, groundT: 0, trailT: 0,
-      hurtT: 0, flash: 0, deadT: 0, lastHitBy: null, pose: 'idle', face: null, attack: null, traits, rel: new Map(), macro: null, loud: 1,
+      hurtT: 0, flash: 0, deadT: 0, lags: true, lastHitBy: null, pose: 'idle', face: null, attack: null, traits, rel: new Map(), macro: null, loud: 1,
       macros: JELLY_MACROS,
       center: (out) => out.copy(c.pos).setY(c.pos.y + c.height * 0.55),
       head: () => this.head(c),
@@ -315,7 +315,7 @@ export class SlipJellies {
       if (far) { c.brain.update(dt); continue; }
       if (c.groundY == null) { const y = this.ground(c, c.pos.x, c.pos.z); if (y == null) continue; c.groundY = y; c.pos.y = y; c.home.y = y; }
       const halt = st(c, 'halt'), slow = st(c, 'slow');
-      const k = (halt ? 0 : slow ? 0.35 : 1) * (1 + 0.5 * st(c, 'haste')), dtk = dt * k; // (haste: a song's rally, tools/crucibelle/crucibelle.js)
+      const k = (halt ? 0 : slow ? 0.35 : 1) * (1 + 0.5 * st(c, 'haste')) * lagK(c), dtk = dt * k; // (lagK: a struck creature's hitlag holds its body, mind and attack together, creatures.js; haste: a song's rally, tools/crucibelle/crucibelle.js)
       c.prevPos.copy(c.pos);
       c.want.set(0, 0, 0); c.face = null;
       if (dtk > 0) { if (c.driven) c.driven(dtk); else { c.brain.update(dtk); this.attackTick(c, dtk); } } // (`driven`: a body moved by its own pattern, not the jelly's mind: greatjelly.js)

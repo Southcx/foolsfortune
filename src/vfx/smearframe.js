@@ -4,17 +4,20 @@
 // body's chest for a fist or a foot) through the arc it just swept, hot white at its leading edge running into the blow's damage type's
 // colour and gone at the back: the drawn in-between the eye fills a fast swing with. It sits over the frozen hitstop, so the stop holds
 // the smear as a held key holds its drawing. Looks only; nothing else of the blow changes. Real time (a frame is a frame however slow
-// the game runs); never on a light, heavy or launcher blow.
+// the game runs); a heavy blow's shorter and narrower (SMEAR.heavy: one frame, the blade's outer half, a smaller arc; SONDELASS-FEEL.md
+// 3E), never on a light or launcher blow.
 // Prior art: the animator's smear frame (Chuck Jones's The Dover Boys, 1942; Guilty Gear Xrd's hand-drawn smear models on its heavy
 // normals, GDC 2015; Spider-Verse's multiples and smears), Street Fighter III's swing smears on its fierce attacks.
 //
 //   game.smears = new SmearFrames(game)   (boot/creatures.js; joins the looks phase)
-//   game.smears.play(hilt, tip, dir, tint)   (vfx/blowfeel.js on a finisher: the blade's two ends now, its travel, the type's colour)
+//   game.smears.play(hilt, tip, dir, tint, opts?)   (vfx/blowfeel.js on a finisher or a heavy: the blade's two ends now, its travel, the
+//     type's colour; `opts` { arc, life, inner } over SMEAR's, a heavy's SMEAR.heavy)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
 /** The smear's numbers: its arc swept back (rad), how long it shows (real s: about two frames at 60), its fan's steps. */
-export const SMEAR = { arc: 1.1, life: 0.035, steps: 10, pool: 4, core: 0xfff6e0 };
+export const SMEAR = { arc: 1.1, life: 0.035, steps: 10, pool: 4, core: 0xfff6e0, inner: 0,
+  heavy: { arc: 0.65, life: 0.012, inner: 0.45 } }; // (`inner`: the share of the blade from the hilt the fan begins at, 0 the hilt's own 0.25 m)
 
 const _ax = new THREE.Vector3(), _in = new THREE.Vector3(), _v = new THREE.Vector3(), _q = new THREE.Quaternion(), _c = new THREE.Color(), _t = new THREE.Color();
 
@@ -33,23 +36,24 @@ class Smear {
   }
 
   /** The fan from `hilt`: the blade (hilt -> tip) turned back against its travel `dir` by SMEAR.arc, step by step to where it is now. */
-  set(hilt, tip, dir, tint) {
+  set(hilt, tip, dir, tint, o = null) {
+    const arc = o?.arc ?? SMEAR.arc, inK = o?.inner ?? SMEAR.inner;
     const P = this.geo.attributes.position.array, C = this.geo.attributes.color.array, n = SMEAR.steps;
     const blade = _v.subVectors(tip, hilt), len = blade.length() || 1;
     _ax.crossVectors(blade, dir); if (_ax.lengthSq() < 1e-8) _ax.set(0, 1, 0); _ax.normalize();
     _t.set(tint);
     for (let i = 0; i <= n; i++) {
       const u = i / n; // (0 the back of the arc, 1 the blade now)
-      _q.setFromAxisAngle(_ax, -SMEAR.arc * (1 - u));
+      _q.setFromAxisAngle(_ax, -arc * (1 - u));
       const b = _v.subVectors(tip, hilt).applyQuaternion(_q);
-      const inner = _in.copy(hilt).addScaledVector(b, 0.25 / Math.max(1, len)), outer = b.add(hilt);
+      const inner = _in.copy(hilt).addScaledVector(b, Math.max(inK, 0.25 / Math.max(1, len))), outer = b.add(hilt);
       P[i * 6] = inner.x; P[i * 6 + 1] = inner.y; P[i * 6 + 2] = inner.z; P[i * 6 + 3] = outer.x; P[i * 6 + 4] = outer.y; P[i * 6 + 5] = outer.z;
       _c.set(SMEAR.core).lerp(_t, Math.min(1, (1 - u) * 1.6));
       const a = Math.pow(u, 1.4) * 0.9; // (solid at the leading edge, gone at the back)
       const o = i * 8; C[o] = C[o + 4] = _c.r; C[o + 1] = C[o + 5] = _c.g; C[o + 2] = C[o + 6] = _c.b; C[o + 3] = a * 0.5; C[o + 7] = a;
     }
     this.geo.attributes.position.needsUpdate = true; this.geo.attributes.color.needsUpdate = true;
-    this.mesh.visible = true; this.t = SMEAR.life;
+    this.mesh.visible = true; this.t = o?.life ?? SMEAR.life;
   }
 
   update(raw) { if (this.t > 0 && (this.t -= raw) <= 0) this.mesh.visible = false; }
@@ -61,11 +65,11 @@ export class SmearFrames {
     game.systems?.add('looks', this, { clock: 'raw', name: 'smears' });
   }
 
-  play(hilt, tip, dir, tint = 0xffffff) {
+  play(hilt, tip, dir, tint = 0xffffff, opts = null) {
     if (!hilt || !tip || !dir || !this.game.scene) return;
     if (this.list.length < SMEAR.pool) this.list.push(new Smear(this.game.scene));
     const s = this.list[this.i = (this.i + 1) % this.list.length];
-    s.set(hilt, tip, dir, tint);
+    s.set(hilt, tip, dir, tint, opts);
   }
 
   update(raw = 1 / 60) { for (const s of this.list) s.update(raw); }
