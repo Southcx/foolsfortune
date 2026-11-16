@@ -18,7 +18,7 @@
 //                          (the cutlass's RMB stinger, V guard) ask `cut()`. Never inside a strike, never in a plunge's fall; a
 //                          press the pool cannot pay is the free grammar. It leaves an afterimage (vfx/afterimage.js) and the paid
 //                          blow's ribbon wears the oil film (featTint). Not a cancel: opposites cancel.
-//     LMB after a pause    the PAUSE string: pressed 0.25-0.8 s after a move ends, at the move the string branches from
+//     LMB after a pause    the PAUSE string: pressed 0.075-0.8 s after a move ends, at the move the string branches from
 //     hold LMB             CHARGE: held past 0.3 s into the opener, the hold clip loops; released, the charged blow
 //     S + LMB (ground)     the LAUNCHER: it lifts them and what it strikes (`knock` upward: each creature decides what that means).
 //                          Tapped, the hit's lift; held at its strike (a move's `high`), the higher lift, and from the strike's end
@@ -148,7 +148,8 @@ const fxRand = stream('tools/moveset.fx'); // (the look's chance: the afterimage
 
 const STATUS_DUR = { stagger: 0.8, airborne: 1.6, trip: 1.0 }; // (how long a move's status holds, real seconds; each creature decides what it means)
 
-const BUFFER = 0.35, PAUSE = [0.25, 0.8], RESET = 0.9, HOLD = 0.3, HANG = 0.12, DROP = 0.12; // (DROP: real s an upper move's pose eases out when the blink cancels it)
+const BUFFER = 0.35, PAUSE = [0.075, 0.8], // (PAUSE's wait cut by 70% from 0.25: South, 2026-11-16, the branch reached too slowly)
+      RESET = 0.9, HOLD = 0.3, HANG = 0.12, DROP = 0.12; // (DROP: real s an upper move's pose eases out when the blink cancels it)
 // (clip s: the sweep strikes this far past each end of the strike, melee.js `pad`; a blow is closed only once its padded end is swept: closed
 // at strike[1], a slip jelly in the pad behind c3, j1, the launcher or a1 was struck the frame after its move.blow said hit: false)
 const STRIKE_PAD = 0.012;

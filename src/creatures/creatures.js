@@ -90,6 +90,9 @@ export class Creatures {
   /** A creature joins: its statuses, mind and build-up made ready; its full health is what it came with unless it says (`maxHp`: the readouts, progress/familiarity.js). */
   add(c) {
     c.status ||= new Map(); c.mind ??= c.mindRest ?? 0; c.emo ??= 0; c.build ||= {}; if (c.maxHp == null && c.hp > 0) c.maxHp = c.hp;
+    // (the contract's centre for one that joins without its own, a clapperjar gone aberrant or a herd puzzle's: the melee's magnet read
+    // `c.center` on every creature near and threw on theirs, v424: CASEBOOK 414)
+    if (typeof c.center !== 'function') c.center = (out) => out.copy(c.pos).setY(c.pos.y + (c.height || 0.9) * 0.5);
     if (c.grain == null && SPECIES[c.kind]) { c.grain = drawGrain(c.kind, c.seed ?? c.id ?? 1); c.traits ??= traitsOf(c.grain); } // (who it is, drawn about its species by its kind: progress/combat/temperament.js, G292; a mind with traits of its own keeps them)
     this.list.push(c); return c;
   }

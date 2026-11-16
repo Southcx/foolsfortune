@@ -33,16 +33,19 @@
         if (!line) { line = document.createElement('div'); line.style.cssText = 'position:absolute;bottom:18%;left:0;right:0;text-align:center;font:11px ui-monospace,Menlo,monospace;letter-spacing:.12em;opacity:.6'; l.appendChild(line); }
         line.textContent = name + ' · ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s';
       };
-      if (last && last.stage && last.stage !== 'left') {
+      // (a note left at "html" in its first second is a page torn down before its first script ran on (a reload, the host's preview):
+      // no crash; and a note from another session, over ten real minutes old, is not this tab's: v424, both said on a desk as a fault)
+      var fresh = last && last.at && Date.now() - last.at < 600000, crashed = last && last.stage && last.stage !== 'left' && !(last.stage === 'html' && !(last.s > 0));
+      if (fresh && crashed) {
         show('Last time, the game stopped ' + (last.stage === 'playing' ? 'while playing' : last.stage.indexOf('at:') === 0 ? 'at ' + last.stage.slice(3) : 'while starting, at "' + last.stage + '"') + ', '
           + (last.s || 0) + ' s in (' + (last.build || '?') + '). A phone does this when it runs out of memory; closing other apps and tabs may help.');
       }
       W.stage = function (name) {
         W.stages.push([name, Date.now() - t0]); stageLine(name);
-        put({ stage: name === 'ready' || name === 'first frame' ? 'playing' : name, s: Math.round((Date.now() - t0) / 1000), build: W.build || '', ua: navigator.userAgent });
+        put({ stage: name === 'ready' || name === 'first frame' ? 'playing' : name, s: Math.round((Date.now() - t0) / 1000), build: W.build || '', ua: navigator.userAgent, at: Date.now() });
         if (name === 'ready') W.done = true;
       };
-      W.moment = function (name) { put({ stage: 'at:' + name, s: Math.round((Date.now() - t0) / 1000), build: W.build || '', ua: navigator.userAgent }); }; // (after boot: the title, the seal's field, the world's first frame; the note a killed tab leaves)
+      W.moment = function (name) { put({ stage: 'at:' + name, s: Math.round((Date.now() - t0) / 1000), build: W.build || '', ua: navigator.userAgent, at: Date.now() }); }; // (after boot: the title, the seal's field, the world's first frame; the note a killed tab leaves)
       W.show = show; // (the game's own lines in the same box: the GPU's count when the graphics are taken back, render/contextloss.js)
       W.stage('html');
       var said = {};

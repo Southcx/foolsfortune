@@ -5130,3 +5130,15 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   three `#define`-sized lines, a comma list followed by a line, literal comma lists, and an array read only at constants: declarations
   intact, reads rewritten. The program census route with `?constindex=1`: every program compiles.
 - **Rule:** 413
+
+### 2026-11-16 · "n.center is not a function" on the cutlass's opener near a clapperjar, and a stale boot note on the desk (South's v424)
+- **Seen:** on v424 in the workshop, the error box: `n.center is not a function` from the melee's magnet as a cutlass string began;
+  above it, "Last time, the game stopped while starting, at "html", 0 s in (?)", shown on a desk with nothing stopped.
+- **Cause, as measured:** two things joined the creature registry without the contract's `center(out)`: a clapperjar gone aberrant
+  (`creatures/clapperaberrant.js`) and a herd puzzle's clapperjars (`world/mimicry/flock.js`). The melee's targets (tools/melee.js)
+  call `c.center` on every creature near; v424's on-hit cancel turns the opener toward its target through the same magnet, so the
+  throw now came on the first press. The boot note: a page torn down before its first script finished (a reload, the host's preview)
+  leaves its note at "html", 0 s, and the note was kept in localStorage with no time, so any later session read it as a crash.
+- **Fix:** `creatures.add` gives a creature without its own `center` the contract's (its middle, by its height). The boot watch writes
+  the time with its note and shows "Last time" only for a note under ten real minutes old that got past its first second.
+- **Rule:** 414

@@ -1162,3 +1162,7 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 413. **A span kept across an insertion moves by what was inserted before its start, and only that.** A
   running offset applied to every span on each insertion moves the earlier ones too; any span held to skip or protect text is
   recomputed from the insertions that precede it, and tested with two insertions, never one.
+
+414. **A registry that hands its members to every reader fills in the contract's methods a joiner lacks.**
+  A thing joined from outside its own kind's module (a clapperjar gone aberrant, a puzzle's flock) carries only what that module
+  gave it; the registry's `add` gives the rest, so no reader has to guard and none throws on the newcomer.
