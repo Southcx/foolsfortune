@@ -62,6 +62,7 @@ import { DUEL_VIEW, cellLocal } from '../../vfx/duelview/layout.js';
 import { stream } from '../../core/rng.js';
 import { ECON } from '../../progress/econ/table.js';
 import { sfx } from '../../audio/sfx.js';
+import { DuelPowerStrip } from './powerstrip.js';
 const duelRand = stream('world/duel/duelsession'); // (the duel's seed: the session's own draw, the same twice)
 
 export const DUEL_ROOM = { beat: 0.55, beatTouch: 0.35, slop: 8, yieldHold: 1.5, standOff: 5, bodyTap: 70, spent: 0.6, gap: 0.25, back: 0.6, dragTime: 5 }; // (the bot's beat, real s; the yield's hold; the camera off the board's face, m; a tap this near the Courier's body on screen switches the form, px; a spent turn's wait before it ends itself, real s; the PvE duel's drag clock from its first step, real s (Puzzle & Dragons' 4 to 6); in the instance, a body's clearance off the slab's edge and how far it stands behind its face, m)
@@ -78,6 +79,7 @@ export class DuelSession {
   constructor(game) {
     this.game = game; this.active = false; this.state = null; this.foe = null; this.busy = false; this.botT = -1;
     this.press = null; this.path = []; this.yieldT = 0; this.face = 'E'; this.hover = null; this.swipe = null;
+    this.powerStrip = new DuelPowerStrip(game); // (the hand's seven on the desk: which is armed, which ready)
   }
   get view() { return this.game.duelView || null; }
   /** A duel.* event on the bus, `practice` on it in a practice duel (tracking skips those: Strawman never counts). */
@@ -125,7 +127,7 @@ export class DuelSession {
     if (root && (c.rooted || c.practice)) root.position.add(_v.copy(to).sub(c.pos)); // (a fixture does not place its own body: Strawman's group moved with it)
     c.pos.copy(to); c.rb?.setNextKinematicTranslation?.(c.pos);
     if (typeof c.yaw === 'number') { c.yaw = Math.atan2(facing.x, facing.z); c.vel?.set?.(0, 0, 0); if (c.root) c.root.rotation.y = c.yaw; } // (turned to face you)
-    const shards = g.scene.getObjectByName('aberrant-shards'), keep = [this.view?.root, this.view?.dive?.beads, g.god?.jar?.group, root, c.root, shards];
+    const shards = g.scene.getObjectByName('aberrant-shards'), keep = [this.view?.root, this.view?.dive?.beads, g.god?.jar?.group, g.god?.hand?.root, root, c.root, shards]; // (the god hand: the cursor, drawn in the instance, v425: it was hidden with the world)
     g.duelInstance?.open(() => [...keep, ...(this.view?.instanceKeep?.() || [])]);
     this.at = at; this.facing = facing;
     this.view?.open?.({ state: this.state, foe: c, at, facing });
@@ -157,6 +159,7 @@ export class DuelSession {
   // ---------------------------------------------------------------- each frame
   update(raw, input) {
     if (this.active || this.pending) this.pocket(this.foe || this.pendingFoe);
+    this.powerStrip.update();
     if (!this.active) return;
     const s = this.state, g = this.game;
     this.pointer(input);
