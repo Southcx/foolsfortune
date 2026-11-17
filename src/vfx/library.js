@@ -74,14 +74,15 @@ export const LIBRARY = {
     L({ type: 'trail', life: 0.12, span: [0.75, 1], color: 'white', tip: 'white', core: 2, fade: 1 }),
     L({ type: 'sprites', perM: 4, along: 'tip', shape: 'glint', size: [0.07, 0.12], sizeEnd: 0, life: [0.18, 0.3], color: 'tip', twinkle: 30, inherit: 0.12, drag: 4 }),
   ] },
-  // the Sondelass's cutlass: ember to warm white, an afterglow of Lachryma behind, embers off the edge, glints off the point
+  // the Sondelass's cutlass: THE CUTLASS'S TRAIL (vfx/cutlasstrail.js, docs/plans/SONDELASS-FEEL.md 3F): one line, the tip's own arc, drawn
+  // on the strike's frames only (Marth's), in the blow's damage type's colour ('tint', set by the trail a blow) running to a warm white
+  // edge; each ribbon thins to its tail as it ages (`taper`) and fades, never cut; glints off the point and a few embers off the edge.
+  // (It was three ribbons from a fifth of the blade out, a violet afterglow among them: a fan of the whole blade, not a line.)
   'swing.cutlass': { layers: [
-    L({ type: 'trail', life: 0.45, span: [0.2, 1], color: 'lach', tip: 0x8a5cf0, fade: 2.6, core: 0, k: 0.7 }),
-    L({ type: 'trail', life: 0.26, span: [0.15, 1], color: 'tint', tip: 'tip', fade: 2.2, core: 0.6, k: 0.42 }),
-    L({ type: 'trail', life: 0.2, span: [0.9, 1.02], color: 'gold', tip: 'white', core: 3, fade: 1.2 }),
-    L({ type: 'sprites', perM: 6, along: 'tip', shape: 'glint', size: [0.1, 0.18], sizeEnd: 0, life: [0.2, 0.35], color: 'tip', twinkle: 30, inherit: 0.15, drag: 4 }),
-    L({ type: 'sprites', perM: 5, along: 'blade', shape: 'streak', dir: 'sphere', speed: [0.4, 1.2], size: [0.06, 0.1], sizeEnd: 0.01, life: [0.25, 0.5], stretch: 1.2, color: 'tint', colorEnd: 'ember', inherit: 0.25, drag: 3, gravity: 3 }),
-    L({ type: 'sprites', perM: 2, along: 'blade', shape: 'sparkle', speed: [0.1, 0.4], size: [0.08, 0.13], sizeEnd: 0, life: [0.4, 0.7], color: ['lach', 'gold'], twinkle: 12, gravity: -0.6, drag: 2 }),
+    L({ type: 'trail', life: 0.34, max: 96, span: [0.42, 1], color: 'tint', tip: 'tip', fade: 2.1, core: 0.5, k: 0.5, taper: 0.8 }),
+    L({ type: 'trail', life: 0.22, max: 96, span: [0.9, 1.02], color: 'tint', tip: 'white', core: 2.6, fade: 1.3, k: 0.95, taper: 0.55 }),
+    L({ type: 'sprites', perM: 5, along: 'tip', shape: 'glint', size: [0.09, 0.16], sizeEnd: 0, life: [0.2, 0.35], color: 'tip', twinkle: 30, inherit: 0.15, drag: 4 }),
+    L({ type: 'sprites', perM: 2.5, along: 'tip', shape: 'streak', dir: 'sphere', speed: [0.3, 0.9], size: [0.05, 0.08], sizeEnd: 0.01, life: [0.2, 0.4], stretch: 1.2, color: 'tint', colorEnd: 'ember', inherit: 0.25, drag: 3, gravity: 3 }),
   ] },
   // the Dreamvane's pick brought down overhead: a heavy arc of Lachryma, gold at the head, stone chips and glints thrown off it
   'swing.dreamvane': { layers: [

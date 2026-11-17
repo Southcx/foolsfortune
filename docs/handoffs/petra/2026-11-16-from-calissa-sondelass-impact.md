@@ -49,3 +49,20 @@ All opt-in by a row's `warp` (and its `cancel`); a row without them plays as bef
   unwarped row sweeps once a frame as before.
 - movephases.js reads the warp (frames on the warped clock, `cancel` the whiff's, `cancelHit`); the Anim Lab's phase bar draws the on-hit
   cancel in green.
+
+## Step 4 (the line, drawn: the cutlass's trail, the settle, the draw and stow), what changed in your files
+
+Nothing in `tools/moveset.js`. In the Sondelass's own files:
+
+- `sondelass/cutlass.js`: `afterHands` asks the cutlass's trail (`vfx/cutlasstrail.js`, `this.line.step(this.moves, dt)`) in place of
+  `moves.afterHands`, so the cutlass's ribbon is pushed on the strike's frames only (no 0.04 clip s pad), on `c.t`, with a 0.075 game s
+  carry past the strike's end; the engine's `afterHands` is untouched and every other tool still uses it. The Moveset options gain
+  `onBegin` / `onEnd` (the settle's arm and reset) and `cancel()` cuts the settle; `update()` calls `this.settle.update(dt, inp)` first.
+- `sondelass/sondelass.js`: the draw and stow in cutlass form (third person, hands free) run through `sondelass/drawclips.js`, whose
+  clip sets `drawT` while it plays (0 to 1 over clip 0.06 .. 0.42 at 1.5x: about 0.24 s, the old 0.26; 1 to 0 over 0.44 clip s at 1.4x:
+  about 0.31 s, the old 0.34), so the belt, the Psygun's wait and `sondelass.draw` / `sondelass.stow` fall on the clip's frames. `engaged`
+  stays true through the stow clip's tail. Reversed, carried, first person or a blow begun: the clip stops and the shared draw goes on
+  from where `drawT` stands. `hands()` places the tool by the clip (holster, then the hand) and skips `drawHands` while one plays.
+- `src/assets/clips/core.bin` and `social.bin` rebaked (`node scripts/bake_suite.mjs`): Sond_Draw, Sond_Sheathe and Sond_Flourish are now
+  named by code, so they moved into core (+83 KB). If step 3's builder rebakes too, rebake once more on the merged tree; the bake is
+  deterministic.

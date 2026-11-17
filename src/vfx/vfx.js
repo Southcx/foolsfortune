@@ -238,7 +238,7 @@ export class Vfx {
     const sw = { name, ctx: { power: 1, scale: 1, tint: 0xffffff, ...ctx }, trails: [], shed: [], last: null, lastB: null, power: 1, alive: true };
     for (const L of R ? this.layersOf(R.def) : [{ type: 'trail' }]) {
       if (L.type === 'trail') {
-        const t = new Trail(g.scene, { life: L.life ?? 0.3, max: L.max ?? 48, color: color(L.color ?? 'tint', sw.ctx), tip: color(L.tip ?? 'tip', sw.ctx) || 0xffffff, core: L.core ?? 1, fade: L.fade ?? 1.6, k: L.k ?? 1 });
+        const t = new Trail(g.scene, { life: L.life ?? 0.3, max: L.max ?? 48, color: color(L.color ?? 'tint', sw.ctx), tip: color(L.tip ?? 'tip', sw.ctx) || 0xffffff, core: L.core ?? 1, fade: L.fade ?? 1.6, k: L.k ?? 1, taper: L.taper ?? 0 });
         sw.trails.push({ L, t });
       } else if (L.type === 'sprites' && L.perM) sw.shed.push({ L, acc: 0 });
     }

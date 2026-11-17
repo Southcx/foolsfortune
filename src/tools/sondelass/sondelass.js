@@ -42,6 +42,7 @@ import { drawHands } from '../draw.js';
 import { fpToolMatrix } from '../viewmodel.js';
 import { buildLure } from './angling/luremodels.js';
 import { DrawnSlide } from './drawnslide.js';
+import { CutlassDrawClips } from './drawclips.js';
 
 const HOLD = T.weapon.drawGrab;
 /** The hook's aim (hands()): the forearm `fore` degrees below the shaft's line, the hand `reach` m along it from the shoulder and `out` m to
@@ -79,6 +80,7 @@ export class Sondelass extends Tech {
     this.leftW = 0; // the free hand on the reel
     this.ext = 0; this.blade = 0;
     this.cutlass = new Cutlass(this);
+    this.drawClips = new CutlassDrawClips(this); // (the cutlass's draw and stow, through the suite's clips: drawclips.js)
     this.hookshot = new Hookshot(this);
     this.angler = new Angler(this);
     this.toolIn = null;
@@ -86,7 +88,7 @@ export class Sondelass extends Tech {
 
   // ---------------------------------------------------------------- what the rest of the game asks
   get enabled() { return !!T.tech.sondelass?.enabled; }
-  get engaged() { return this.drawT > 0.001; }
+  get engaged() { return this.drawT > 0.001 || !!this.drawClips?.kind; } // (and through the stow's last frames, the hand coming down)
   /** The Psygun is put away (and its inputs ignored) while this is out or coming out. */
   get toolOut() { return this.drawTarget > 0 || this.drawT > 0.02; }
   get held() { return this.drawT >= 1; }
@@ -132,8 +134,9 @@ export class Sondelass extends Tech {
     const P = this.P, g = this.game, inp = P.input, ch = g.character;
     if (!this.socketR && ch) this.computeSocket(ch);
     const wpn = g.weapon;
+    let busy = false;
     if (this.enabled && inp.enabled) {
-      const busy = !!this.mgr.active?.handsBusy || !!this.mgr.get?.('carry')?.item; // (both hands are on what is being carried, too)
+      busy = !!this.mgr.active?.handsBusy || !!this.mgr.get?.('carry')?.item; // (both hands are on what is being carried, too)
       if (busy && this.drawTarget > 0) { this.drawTarget = 0; this.resume = true; } // (both hands taken: it goes away, and comes back)
       else if (!busy && this.resume && !this.mgr.active) { this.resume = false; this.drawTarget = 1; }
       if (this.drawTarget > 0 && this.held) {
@@ -145,8 +148,14 @@ export class Sondelass extends Tech {
     if (this.drawTarget === 0 && this.cutlass.blade?.active) this.cutlass.blade.exit('stow'); // (put away is out of Blade Mode at once: the holster ran on its 5% time, six real seconds, SWEEPS group 4)
     // the Psygun holsters first, then this is drawn (and the reverse)
     const gunAway = g.belt ? g.belt.mayDraw(g.belt.get('sondelass')) : !wpn || wpn.drawT < 0.02; // (the belt: the hands are free of every other tool)
-    const step = dt * (this.game.belt?.hands ?? 1) / (this.drawTarget > this.drawT ? T.weapon.drawTime : T.weapon.holsterTime);
-    if (this.drawTarget > this.drawT && gunAway) this.drawT = Math.min(this.drawTarget, this.drawT + step);
+    const hands = this.game.belt?.hands ?? 1, step = dt * hands / (this.drawTarget > this.drawT ? T.weapon.drawTime : T.weapon.holsterTime);
+    // the cutlass drawn or put away through its own clips (drawclips.js), the clip's clock the belt's; anything else, the shared draw
+    const dc = this.drawClips, clipOk = this.form === 'cutlass' && !P.fp && !busy && this.enabled;
+    if (dc.kind && (!clipOk || (dc.kind === 'draw') !== (this.drawTarget > 0) || (dc.kind === 'draw' && this.cutlass.playing))) dc.stop(); // (reversed, a carry, the first person, a blow begun: the shared draw from here)
+    if (!dc.kind && clipOk && this.drawTarget > this.drawT && this.drawT === 0 && gunAway) dc.start('draw');
+    else if (!dc.kind && clipOk && this.drawTarget < this.drawT && this.drawT >= 1) dc.start('sheathe');
+    if (dc.kind) { const d = dc.update(dt * hands); if (d != null) this.drawT = d; }
+    else if (this.drawTarget > this.drawT && gunAway) this.drawT = Math.min(this.drawTarget, this.drawT + step);
     else if (this.drawTarget < this.drawT) this.drawT = Math.max(this.drawTarget, this.drawT - step);
     if (this.drawTarget === 0 && this.hookshot.att && !this.hookshot.lent) this.hookshot.release('stow'); // (put away with a line out: it comes away; lent as the sub's, it was never drawn)
     if (this.drawTarget === 0 && this.cutlass.moves.cur) this.cutlass.cancel(); // (put away mid-stroke: the stroke ends now, not frozen until the holster)
@@ -159,7 +168,7 @@ export class Sondelass extends Tech {
     // the forms: the sections slide, the blade comes out
     const fd = this.formDef;
     const m = this.model;
-    const eT = this.drawT > 0.02 ? fd.ext : 0, bT = this.drawT > 0.02 ? fd.blade : 0;
+    const eT = this.drawT > 0.02 ? fd.ext : 0, bT = this.drawT > 0.02 && dc.bladeOn() ? fd.blade : 0; // (drawn through its clip: the blade out as the hand brings it round, in before it goes to the back)
     const e0 = this.ext;
     this.ext = THREE.MathUtils.damp(this.ext, eT, 9, dt);
     this.blade = THREE.MathUtils.damp(this.blade, bT, 11, dt);
@@ -171,14 +180,14 @@ export class Sondelass extends Tech {
     else m.setBend(THREE.MathUtils.damp(m.bend, 0, 10, dt));
     // the sub-systems
     if (held && this.form === 'cutlass') this.cutlass.update(dt, inp);
-    else this.cutlass.moves.idle(dt); // (the cutlass not in the hand: its string's window still runs out, tools/moveset.js idle())
+    else { this.cutlass.moves.idle(dt); this.cutlass.settle.cut(); } // (the cutlass not in the hand: its string's window still runs out, tools/moveset.js idle())
     if (held && this.form === 'hook') this.hookshot.update(dt, inp);
     this.hookshot.tickFlight?.(dt);
     if (this.form === 'rod' || this.angler?.lure) this.angler?.update(dt, inp, held && this.form === 'rod');
     // (it is worn: when the body is not drawn, melted into slip, blinked, handed over to the god-hand, neither is the tool)
     const ch2 = this.game.character;
     this.model.group.visible = g.belt?.isWorn('sondelass') !== false && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && (this.drawT > 0.001 || this.stowedVisible()); // (in the box: not on them)
-    this.rest.update(dt, this.drawT === 0, `${Math.round(m.ext * 1e3)}|${Math.round(m.bend * 1e3)}|${Math.round(m.bladeOut * 1e3)}|${m.hookOn}|${Math.round(m.spin * 100)}`);
+    this.rest.update(dt, this.drawT === 0 && !dc.kind, `${Math.round(m.ext * 1e3)}|${Math.round(m.bend * 1e3)}|${Math.round(m.bladeOut * 1e3)}|${m.hookOn}|${Math.round(m.spin * 100)}`);
   }
 
   /** The tool is always on the back unless it is in the hand. */
@@ -193,7 +202,8 @@ export class Sondelass extends Tech {
       this.track.play('torchIdle', 0, 0.01);
       this.P1 = C.pose(); this.P2 = C.pose();
     }
-    const layerW = this.w * smooth(HOLD, 1, this.drawT) * (1 - this.mgr.override); // (a move that poses the whole body, the stinger's lunge, takes the arm too)
+    const dc = this.drawClips.kind && this.form === 'cutlass' ? this.drawClips : null; // (the draw or the stow through its clip: drawclips.js)
+    const layerW = this.w * (dc ? dc.layerW() : smooth(HOLD, 1, this.drawT)) * (1 - this.mgr.override); // (a move that poses the whole body, the stinger's lunge, takes the arm too)
     if (layerW <= 0.001) return;
     const tr = this.track;
     const want = this.form === 'cutlass' ? this.idleClip : this.form === 'rod' ? 'Sond_CastIdle' : C.clips['stance:hookHeld'] ? 'stance:hookHeld' : 'torchIdle'; // (the cutlass en garde: the suite's Sond_Idle turned side-on, courier/anim/stances.js; the rod held out: the suite's own idle; the hook as the UAL torch idle holds it, the hand clear of the running thigh)
@@ -202,6 +212,9 @@ export class Sondelass extends Tech {
     const layer = tr.sample(this.P1);
     if (this.form === 'cutlass') this.drawnRun(ch, layer, dt); // (running, the run's own upper body with the blade held low and back)
     (this.drawnSlide ||= new DrawnSlide()).pose(ch, base, layer, this.form === 'cutlass' && !this.P.fp ? s?.slide || 0 : 0, dt); // (sliding: the slide's own body, the blade trailing: drawnslide.js)
+    if (dc) { const d = dc.pose(C, (this.P5 ||= C.pose())); if (d) C.blend(layer, d.pose, d.w); } // (the draw's clip faded into the stance; the stow's in from it)
+    const sp = this.form === 'cutlass' ? this.cutlass.settle.pose(C, (this.P6 ||= C.pose())) : null; // (the settle, under a blow that cuts it: settle.js)
+    if (sp) C.blend(layer, sp.pose, sp.w);
     // a cutlass stroke, or the cast: a clip played over the ready stance
     const cl = this.cutlass.pose(C, this.P2);
     if (cl) C.blend(layer, cl.pose, cl.w);
@@ -242,7 +255,10 @@ export class Sondelass extends Tech {
     const M = new THREE.Matrix4();
     const hp = new THREE.Vector3(), hq = new THREE.Quaternion();
     // the reach back, the grab and the whip round (tools/draw.js); once it is in the hand, the clip's own hand carries it
-    const phase = drawHands(ch, this.grip, holster, drawT, { hold: HOLD, twist: -T.weapon.drawTwist * 0.5, lean: 8, out: M });
+    const dc = this.drawClips.kind && this.form === 'cutlass' ? this.drawClips : null;
+    let phase = 'clip';
+    if (dc) dc.place(holster, _m2.multiplyMatrices(B.handR.matrixWorld, this.socketR), M); // (the clip's own hand: the tool from the holster to it, or back: drawclips.js)
+    else phase = drawHands(ch, this.grip, holster, drawT, { hold: HOLD, twist: -T.weapon.drawTwist * 0.5, lean: 8, out: M });
     if (phase === 'held') {
       // in the hand: the hook's aim swings the arm; otherwise the clip's own hand carries it
       const aimW = this.hookshot.aimBlend;

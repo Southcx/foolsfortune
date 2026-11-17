@@ -8,7 +8,9 @@
 // age), and Devil May Cry / Metal Gear Rising's brighter, longer trail on the strokes that matter. One class, many colours: the
 // cutlass, the stinger, the grapnel in flight and blade mode's cut all use it.
 //
-//   const t = new Trail(scene, { life: 0.3, color: 0xfff1dc, tip: 0xffd07a, k: 1 })   (k: its strength)
+//   const t = new Trail(scene, { life: 0.3, color: 0xfff1dc, tip: 0xffd07a, k: 1, taper: 0 })   (k: its strength; taper 0..1: how far a
+//       sample's base end is drawn in toward its tip as it ages, so the ribbon thins along its length to its tail: a brush stroke's
+//       tail, the cutlass's trail, vfx/cutlasstrail.js; 0 as it always was)
 //   t.push(base, tip)   every frame it is swinging          t.gap()   the swing ended (the next push starts a new ribbon)
 //   t.update(dt)        every frame
 // ---------------------------------------------------------------------------------------
@@ -24,8 +26,8 @@ const cr = (p0, p1, p2, p3, t, out) => { // Catmull-Rom, centripetal enough at t
 };
 
 export class Trail {
-  constructor(scene, { life = 0.3, max = 40, color = 0xfff1dc, tip = 0xffd07a, core = 1, fade = 1.6, k = 1 } = {}) {
-    this.life = life; this.max = max;
+  constructor(scene, { life = 0.3, max = 40, color = 0xfff1dc, tip = 0xffd07a, core = 1, fade = 1.6, k = 1, taper = 0 } = {}) {
+    this.life = life; this.max = max; this.taper = taper;
     this.s = []; // { a, b, age, brk }
     this.brk = true;
     const nv = max * SUB * 2 + 8;
@@ -73,9 +75,11 @@ export class Trail {
     const runs = [];
     for (const q of S) { if (q.brk || !runs.length) runs.push([]); runs[runs.length - 1].push(q); }
     let v = 0, ix = 0;
-    const tmpA = new THREE.Vector3(), tmpB = new THREE.Vector3();
+    const tmpA = new THREE.Vector3(), tmpB = new THREE.Vector3(), tmpC = new THREE.Vector3();
+    const tp = this.taper;
     const put = (a, b, age) => {
       if (v + 2 > this.pos.length / 3) return false;
+      if (tp > 0) a = tmpC.lerpVectors(a, b, tp * Math.sqrt(age)); // (thinned toward the tail: the base drawn in to the tip with age)
       this.pos[v * 3] = a.x; this.pos[v * 3 + 1] = a.y; this.pos[v * 3 + 2] = a.z; this.uv[v * 2] = 0; this.uv[v * 2 + 1] = 0; this.age[v] = age;
       v++;
       this.pos[v * 3] = b.x; this.pos[v * 3 + 1] = b.y; this.pos[v * 3 + 2] = b.z; this.uv[v * 2] = 0; this.uv[v * 2 + 1] = 1; this.age[v] = age;
