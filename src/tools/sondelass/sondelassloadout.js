@@ -41,21 +41,21 @@ export const SONDELASS_MOVES = {
   c1: { id: 'c1', kind: 'normal', label: 'Slash', line: 'Cuts flat, right to left', lore: null, clip: 'Sond_Combo1', effect: 'stagger', parent: null, earn: null, rule: 'combo1', // (opener: a flat cut, right to left)
     stats: { power: 1.2, time: 0.25, range: 2.3 },
     play: { rate: 1.1, chain: [0.22, 0.75], to: 0.85, fade: 0.3, hit: { power: 1.2, dmg: 1.0 }, lunge: 3.2, arc: 'r2l',
-      strike: [0.15, 0.29], warp: { skip: 0.04, in: 2.4, out: 0.5, back: 1.9 }, cancel: { hit: 0.25, whiff: 0.4 } } }, // (step 2: the measured strike began in the backswing; typed to the cut itself, -90 to 140 degrees)
+      strike: [0.15, 0.29], warp: { skip: 0.04, in: 2.4, out: 0.5, back: 1.9 }, cancel: { hit: 0.25, whiff: 0.4 }, join: {} } }, // (step 2: the measured strike began in the backswing; typed to the cut itself, -90 to 140 degrees)
   c2: { id: 'c2', kind: 'normal', label: 'Rising Slash', line: 'Cuts up, left to right', lore: null, clip: 'Sond_Combo2', effect: 'stagger', parent: null, earn: null, rule: 'combo2', // (link: a rising cut, left to right)
     stats: { power: 1.3, time: 0.27, range: 2.5 },
     play: { rate: 1.1, chain: [0.26, 0.8], to: 0.9, fade: 0.3, hit: { power: 1.3, dmg: 1.1 }, lunge: 3.2, arc: 'l2r',
-      warp: { skip: 0.03, in: 2.2, out: 0.5, back: 1.9 }, cancel: { hit: 0.27, whiff: 0.42 } } },
+      warp: { skip: 0.03, in: 2.2, out: 0.5, back: 1.9 }, cancel: { hit: 0.27, whiff: 0.42 }, join: { at: { c1: 0.12 } } } }, // (step 3: out of the Slash the blade is behind the left shoulder; its windup's end is there, low)
   c3: { id: 'c3', kind: 'normal', label: 'Hop Slash', line: 'Hops in with a fast flat cut', lore: null, clip: 'Sond_Combo3', effect: 'stagger', parent: null, earn: null, rule: 'combo3', // (link: a fast flat cut on a 0.35 m hop)
     stats: { power: 1.4, time: 0.27, range: 2.4 },
     play: { rate: 1.1, chain: [0.42, 0.95], to: 1.05, fade: 0.35, hit: { power: 1.5, dmg: 1.3 }, lunge: 3.6, arc: 'r2l',
-      warp: { skip: 0.1, in: 2.6, out: 0.5, back: 1.7 }, cancel: { hit: 0.27, whiff: 0.42 } } }, // (its windup a whole turn: entered at 0.1, the turn whirled at 2.6x)
+      warp: { skip: 0.1, in: 2.6, out: 0.5, back: 1.7 }, cancel: { hit: 0.27, whiff: 0.42 }, join: { at: { c2: 0.117 } } } }, // (step 3: out of the Rising Slash the blade is overhead on the right: it drops into the turn there. Its windup a whole turn: entered at 0.1, the turn whirled at 2.6x)
   // (c1 .. c4 are warped, step 2 of SONDELASS-FEEL.md: `warp` bends the clip's clock, `cancel` (move s) is when the next may begin, sooner
-// on a hit; their chain windows are read only by an unwarped row. `stats.time` mirrors Dovina's rows, the on-hit cancel: tools/movewarp.js)
+// on a hit; their chain windows are read only by an unwarped row. `stats.time` mirrors Dovina's rows, the on-hit cancel: tools/movewarp.js; `join`, step 3: each entered where the blade is, with drag and overshoot: courier/anim/bladejoin.js)
   c4: { id: 'c4', kind: 'normal', label: 'Leap Strike', line: 'Leaps in and cuts down; knocks back', lore: null, clip: 'Sond_Combo4', effect: 'knock', parent: null, earn: null, rule: 'combo4', // (finisher: the whole body's leap and overhead cut)
     stats: { power: 2.0, time: 0.42, range: 2.9 },
     play: { body: 'whole', root: 'xz', chain: [0.45, 1.3], hit: { power: 2.0, dmg: 1.9, push: 6 }, heat: 1, arc: 'over',
-      warp: { skip: 0.1, in: 1.35, out: 0.55, back: 1.6 }, cancel: { hit: 0.42, whiff: 0.6 } } }, // (no `away`, the carry's travel cut its own)
+      warp: { skip: 0.1, in: 1.35, out: 0.55, back: 1.6 }, cancel: { hit: 0.42, whiff: 0.6 }, join: { at: { c3: 0.167 } } } }, // (step 3: entered at the crouch's bottom, the blade in front, so the leap keeps its spring; no `away`, the carry's travel cut its own)
   // the catalogue's normals (phase 3): UAL's split swings and the suite's fists and feet, each a job of its own. `rec` is an upper
   // move's recovery clip (UAL's swordA and swordB are cut from their recoveries); a fist or a foot is measured on itself (`limb`, `tip`)
   // and reaches a hand's or a foot's width past it (`reach`), not a blade's; a kick or a shove leaves no ribbon

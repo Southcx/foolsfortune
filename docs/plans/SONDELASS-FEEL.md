@@ -1,4 +1,4 @@
-# The Sondelass's melee, revamped for feel (a plan, approved 2026-11-16; steps 0, 1 and 2 built)
+# The Sondelass's melee, revamped for feel (a plan, approved 2026-11-16; steps 0, 1, 2 and 3 built)
 
 South, 2026-11-16: "drastically improve the feel of combat, making it snappy, responsive, flowing, and visually striking. The single
 most important design aspect is 'elegance'." And 2026-11-15, on the stepped key poses we reverted: holding extreme poses was meant as
@@ -255,3 +255,53 @@ Rough, seen in the look and not fixed (one look, no tuning loop):
   mashed string spends Lachryma and skips the finisher's follow-through; it did today as well (c1's recovery paid for 10 frames). A
   rule that keeps the paid cut for a deliberate press (a fresh press after a release in the recovery) is Petra's and Dovina's call.
 - c3's 2.6x whirl is fast: read it in play; if it reads as a pop, enter at 0.06 and take a frame more.
+
+## 11. Step 3 as built (Calissa's builder, 2026-11-17)
+
+The join, drag and overshoot (3C) on the default string only, opt-in a row (`join` on c1 .. c4's `play`, `sondelass/sondelassloadout.js`;
+the module `courier/anim/bladejoin.js`, `JOIN`; the engine's hooks in `tools/moveset.js`, still 799 lines; `warpOf` in `tools/movewarp.js`
+takes an entry `at` in place of `skip`). Every other row and tool plays as before. All of it is laid on the move's pose before the
+skeleton is posed: the hinges, the wrist ease and `rom.js` still come last.
+
+- **The join.** A chained joined move (its row and the one before it both `join`) is entered at the windup frame whose blade arm is
+  nearest the pose on screen: a feature table a clip (60 a clip second: the hand and the tip, 0.9 m along the forearm, in the body's frame
+  with the hips' travel out, and the hand's turn), score = hand gap (m) + half the tip gap + 0.15 a radian of the hand's turn, divided by
+  the fade frames the entry leaves (so a far frame with room to close may win), plus 0.04 a clip second off the row's own `skip`. Searched
+  once a pair and a 2-frame bin of where the move before stood, kept. Never at or past the strike's start, and at least 1 frame of startup
+  left (`lead`). The last pose shown is faded in over `clamp(startup frames - 1, 2, 6)` frames (the engine's `fadeDur`, was 0.1 s).
+  A joined whole-body move (c4) takes it through its launch's `poseFix`, the hips' height faded with the rest (their ground place the
+  launch's), and the tool's layer under it holds the last pose shown, so the launch never blends in over the stance. That also mends c4 to
+  c1 fading in from c3's stale pose (a whole-body move never wrote `last` before).
+- **Drag.** spine001 .. spine004, upper_armL, forearmL and handL each on a spring (6 Hz, damping 0.9: about 3 frames behind), laid over
+  at 0.7 x a bone's share (0.5 .. 1), at most 9 degrees from the clip; the blade's upper arm is turned back by what the spine's lag
+  turned its chain (spine001 .. spine003), so its arc is its clip's and the body arrives after it.
+- **Overshoot.** handR on a looser spring (10 Hz, damping 0.35), at most 6 degrees from its clip: it trails into a cut and carries past
+  where the cut stops, then settles. The springs start from the clip at a string's first move or any move not joined.
+
+**The entries, and why three are typed.** No pair meets cleanly: these clips each start from the same ready pose and end their
+follow-through far round the body (c1 with the blade behind the left shoulder, c2 overhead on the right, c3 behind the left again, c4
+point down in front), so every pair's tip gap is 1 to 2.4 m, and the nearest frame by distance alone sends the blade back the way it
+came. Where the search would retrace, the pair is typed to the windup frame on the same side, so the blade goes on round:
+
+| pair | entered at (clip s) | how | tip gap | fade (frames) | tip's pace through the fade | press to strike (B / before) |
+| --- | --- | --- | --- | --- | --- | --- |
+| c1 > c2 | 0.12 (was 0.03) | typed: the end of c2's windup, low behind the left, where c1 left the blade high behind the left; it drops and rises | 1.82 m | 2 | 55 m/s | 2 / 5 frames |
+| c2 > c3 | 0.117 (was 0.1) | typed: c3's turn on the right, under where c2 left the blade overhead on the right | 1.73 m | 5 | 21 m/s | 7 / 8 |
+| c3 > c4 | 0.167 (was 0.1) | typed: the crouch's bottom, so the leap keeps its spring (the blade still comes forward from behind the left: a retrace) | 2.2 m | 6 | 22 m/s | 8 / 11 |
+| c4 > c1 | 0.033 (was 0.04) | searched: the blade rising from the ground in front into c1's backswing | 1.06 m | 2 | 32 m/s | 4 / 4 |
+
+(The pace is the tip gap over the fade; `JOIN.clean` calls 18 m/s or less clean and none is. On the hit, mashed every 3 frames on a
+calm slip jelly.)
+
+The look (one, `sf3/pairs-sheet.png` in the builder's scratchpad: each pair from the first strike to the second, side and front, the
+tip's path drawn as beads a frame, gold with the join and blue-grey before it): through the join window (the first strike's end to the
+second's start) the tip's path is shorter in every pair (3.2 m from 5.3, 8.0 from 11.0, 6.2 from 8.3, 3.0 from 4.0) and the strikes
+come sooner, but the line is not yet one curve:
+- **The longest single frame's step is still over a metre in every pair** (1.4, 3.4, 1.1, 1.4 m; before: 1.4, 2.2, 1.9, 1.2): the fade
+  closes a 1 to 2 m gap in 2 to 6 frames. c2 > c3's 3.4 m frame is the worst: the fade and c3's 2.6x whirl stacked.
+- **c3 > c4 still retraces** (the leap's windup starts in front); c1 > c2 enters only 2 frames before its strike, so the Rising Slash
+  now lands on frame 3 from the press, quicker than the 6-frame target needs: read it in play.
+- The drag and overshoot are small by design and could not be told apart in a still; they want a clip in play.
+- As ruled (section 6, 3): the clips cannot be joined cleanly as they stand, so this goes to South. The two ways on from here without
+  a new clip: cut each follow-through's cancel earlier (before the blade wraps behind), or let the fade run into the strike's first
+  frames (longer than the startup). Both are a call, not a tune.

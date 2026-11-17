@@ -30,12 +30,13 @@
 // (a retime curve over a clip, Maya's and Blender's time warp: the motion kept, only its clock bent, fast in and slow out as a key
 // animator times a hit's anticipation short and its follow-through long).
 //
-//   warpOf(def, track, dur) -> W | null   W { start, end, total (move s), m0, m1 (the strike's start and end in move s), clip(m), move(t) }
+//   warpOf(def, track, dur, at?) -> W | null   (`at`: begun at that clip s, the join's entry, in place of `skip`)  W { start, end, total (move s), m0, m1 (the strike's start and end in move s), clip(m), move(t) }
 //   cancelAt(c) -> move s | null    cancelOpen(c) -> bool    paidWaits(c) -> bool (a press now should wait for the cancel, not pay)
 //   trackStartup(M, c, dt)    jumpCancel(M, c) -> bool (the jump took the move over, from its cancel frame)
 // A data-and-maths module but for trackStartup and jumpCancel, which are handed the engine (no import of it: moveset.js imports this).
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+export { BladeJoin } from '../courier/anim/bladejoin.js'; // (the join, drag and overshoot: step 3, SONDELASS-FEEL.md 3C; moveset.js takes it from here)
 
 const STEP = 1 / 600; // (clip s: the warp's table, integrated this fine)
 export const WARP_FRAME = 1 / 60; // (the cancel frame never opens before the strike's end plus one 60 Hz frame)
@@ -46,12 +47,14 @@ const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 
 /** Move `def`'s time warp (its `warp` row read against its strike: `def.strike` or the measured `track.strike`; `dur` its clip's length),
  *  cached on the def per strike; null for a row with none. */
-export function warpOf(def, track, dur) {
+export function warpOf(def, track, dur, at = null) {
   const w = def?.warp; if (!w) return null;
   const s = def.strike || track?.strike; if (!s) return null;
-  if (def.warpW?.s === s && def.warpW.dur === dur) return def.warpW;
+  if (at == null && def.warpW?.s === s && def.warpW.dur === dur) return def.warpW;
+  const key = at == null ? null : `${s[0]},${s[1]},${dur},${at}`, J = key && (def.warpJ ||= new Map()); // (entered at the join: courier/anim/bladejoin.js)
+  if (J?.has(key)) return J.get(key);
   const rate = def.rate || 1, from = def.from || 0, end = def.to ?? dur, B = w.blend ?? 0.03;
-  const start = Math.min(end, from + (w.skip || 0)), s0 = Math.min(end, Math.max(start, s[0])), s1 = Math.min(end, Math.max(s0, s[1]));
+  const start = Math.min(end, at ?? from + (w.skip || 0)), s0 = Math.min(end, Math.max(start, s[0])), s1 = Math.min(end, Math.max(s0, s[1]));
   const rin = w.in ?? rate, rout = w.out ?? rate, back = w.back ?? rate;
   const r = (t) => {
     if (t < s0) return rin + (rate - rin) * smooth(s0 - B, s0, t);
@@ -66,7 +69,9 @@ export function warpOf(def, track, dur) {
     let lo = 0, hi = n; while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (M[mid] <= m) lo = mid; else hi = mid; }
     return start + (lo + (m - M[lo]) / (M[lo + 1] - M[lo])) * h;
   };
-  return (def.warpW = { s, dur, start, end, total: M[n], m0: move(s0), m1: move(s1), clip, move });
+  const out = { s, dur, start, end, total: M[n], m0: move(s0), m1: move(s1), clip, move };
+  if (J) { J.set(key, out); return out; }
+  return (def.warpW = out);
 }
 
 /** The cancel frame of move `c` (move s), the on-hit one once it has struck anything; never before its strike's end and a frame. */

@@ -68,7 +68,7 @@
 //             blast radius), cost, trail: [t0, t1], heat, arc ('r2l'|'l2r'|'over'|'raise': first person), kind (for the events),
 //             warp: { skip, in, out, back } (THE TIME WARP: the clip's clock bent, fast in and slow out; `c.t` stays clip time, read off
 //             the move's own `c.mt`) and cancel: { hit, whiff } (THE CANCEL FRAME, move s, sooner once it struck; presses in the startup
-//             held for it; the jump, the guard and the next blow free from it; it tracks its target through the startup): movewarp.js }
+//             held for it; the jump, the guard and the next blow free from it; it tracks its target through the startup): movewarp.js; join: { at } (entered where the blade is, drag, overshoot: courier/anim/bladejoin.js) }
 //   THE EVENTS  the tool's own swing and hit events (`cut.swing {n, move, by}`, `cut.hit {what, combo, move, by}`); and Dovina's
 //               (feedback/tracking/moves.js): `move.launch { tool, by }` when a launcher lifts something, `move.air { tool, hits, by }`
 //               when an air string ends, `move.special { tool, special, by }` when a special is loosed, `move.cut { tool, move, paid,
@@ -139,7 +139,7 @@ import { MOVES as RULES, unlocked } from '../progress/combat/moves.js';
 import { Afterimages } from '../vfx/afterimage.js';
 import { featTint } from '../vfx/oxidation.js';
 import { moveImpact, heldStrike } from './moveimpact.js';
-import { warpOf, cancelOpen, cancelAt, paidWaits, trackStartup, jumpCancel } from './movewarp.js';
+import { warpOf, cancelOpen, cancelAt, paidWaits, trackStartup, jumpCancel, BladeJoin } from './movewarp.js';
 import { stream } from '../core/rng.js';
 import { T } from '../core/config.js';
 
@@ -495,7 +495,7 @@ export class Moveset {
     if (prev?.def.body === 'whole' && def.body !== 'whole') { const L = P.techs.get('launch'); if (L?.o?.tag?.startsWith(this.id)) { L.o.onEnd = null; L.o.time = 0; } } // (the whole-body move's launch ends: the core has the step again)
     if (!def.track) { def.track = measureSwing(ch, def.clip, { tip: def.tip ?? this.S.tip ?? 0.9, limb: def.limb ?? this.S.limb ?? 'R' }); if (def.track && def.strike) def.track = { ...def.track, strike: def.strike }; } // (a typed strike window wins: a flourish can be faster than the blow)
     if (join) { (this.from ||= ch.clips.pose()).copy(join); this.fadeT = 0; }
-    const W = warpOf(def, def.track, this.dur(def)), t0 = W ? W.start : def.from || 0; // (the time warp, where the row has one: movewarp.js)
+    const W = (this.bj ||= new BladeJoin(warpOf)).enter(this, prev, def, id) || warpOf(def, def.track, this.dur(def)), t0 = W ? W.start : def.from || 0; // (the time warp, where the row has one: movewarp.js; a joined row's entered where the blade is: courier/anim/bladejoin.js)
     const c = (this.cur = { id, def, kind, n, t: t0, tPrev: t0, t0, mt: 0, W, phase: 'play', landed: false, holdB: kind === 'launcher' });
     this.offset = false; this.drop = null;
     if (kind === 'launcher') { this.juggle = null; this.arc = null; c.y0 = P.pos.y; }
@@ -551,7 +551,7 @@ export class Moveset {
     L.go(v0, {
       time: def.plunge ? 6 : span + 0.02, gravity: c.grav, drag: 0, tag: c.tag, yaw, face: true,
       until: def.plunge ? 'time' : 'time', endSpeed: def.endSpeed ?? 4,
-      clip: def.clip, clipMap: () => (this.cur === c ? c.t : c.t),
+      clip: def.clip, clipMap: () => (this.cur === c ? c.t : c.t), poseFix: def.join ? (p) => this.bj.whole(this, C, p, c) : undefined, // (a joined row: the join, drag and overshoot)
       drive: (vel, dt, tech) => {
         if (this.cur !== c) return;
         if (c.phase === 'fall') { vel.x *= 0.9; vel.z *= 0.9; vel.y = -(def.plunge.speed || 24); return; }
@@ -743,8 +743,8 @@ export class Moveset {
       C.sample(r.clip, r.t, out, false);
       return { pose: out, w: 1 - THREE.MathUtils.smoothstep(r.t, r.dur - 0.3, r.dur) };
     }
-    if (c.def.body === 'whole') return null;
-    C.sample(c.def.clip, c.t, out, c.kind === 'charge-hold'); this.joined(C, out);
+    if (c.def.body === 'whole') return this.bj?.under(this, out, c) ?? null; // (a joined whole-body move: the last pose shown under its launch)
+    C.sample(c.def.clip, c.t, out, c.kind === 'charge-hold'); this.bj?.shape(this, C, out, c); this.joined(C, out);
     const end = c.def.to ?? this.dur(c.def), fade = c.def.fade;
     const w = Math.min(1, (c.W ? c.mt * 1.1 : c.t - (c.def.from || 0)) / 0.05 + (this.from && this.fadeT < 1 ? 1 : 0)) * (fade ? 1 - THREE.MathUtils.smoothstep(c.t, end - fade, end) : 1);
     return { pose: out, w: Math.min(1, w) };
@@ -753,7 +753,7 @@ export class Moveset {
   /** A chained move begins from what was showing: the last pose held and faded out over 0.1 s (the join's pop smoothed), and the pose kept. */
   joined(C, pose) {
     if (this.from && this.fadeT < 1) {
-      this.fadeT = Math.min(1, this.fadeT + (this.game.rawDt || 1 / 60) / 0.1);
+      this.fadeT = Math.min(1, this.fadeT + (this.game.rawDt || 1 / 60) / (this.fadeDur || 0.1)); // (a joined move's: the frames its startup has)
       const k = this.fadeT * this.fadeT * (3 - 2 * this.fadeT), tmp = (this._jt ||= C.pose());
       tmp.copy(pose); pose.copy(this.from); C.blend(pose, tmp, k);
     }

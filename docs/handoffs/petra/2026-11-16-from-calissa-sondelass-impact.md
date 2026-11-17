@@ -49,3 +49,17 @@ All opt-in by a row's `warp` (and its `cancel`); a row without them plays as bef
   unwarped row sweeps once a frame as before.
 - movephases.js reads the warp (frames on the warped clock, `cancel` the whiff's, `cancelHit`); the Anim Lab's phase bar draws the on-hit
   cancel in green.
+
+## Step 3 (the join, drag and overshoot), what changed in moveset.js
+
+All opt-in by a row's `join` (c1 .. c4 only); the rules are a new module, `courier/anim/bladejoin.js` (re-exported through
+`tools/movewarp.js` so moveset.js's import line only grew a name). moveset.js stays at 799 lines; five lines changed, none added:
+- the import from movewarp.js takes `BladeJoin` too;
+- `begin()`: `W` is `(this.bj ||= new BladeJoin(warpOf)).enter(this, prev, def, id) || warpOf(...)`: a joined chained move's warp begins
+  at the join's entry (`warpOf` takes an optional `at` in place of `skip`, cached apart on `def.warpJ`); `enter` also sets `this.fadeDur`
+  (null for every other move);
+- `joined()`: the fade runs over `this.fadeDur || 0.1` (was 0.1 always);
+- `pose()`: an upper move's sampled pose goes through `this.bj?.shape(...)` (a no-op without `join`) before `joined()`; a whole-body move
+  returns `this.bj?.under(...) ?? null` (the last pose shown, for a joined row only; null as before otherwise);
+- `carry()`: the launch's options get `poseFix` for a joined row (the fade, drag and overshoot on the launch's sampled pose; it also
+  keeps `last`, which a whole-body move never wrote before, so the move after c4 no longer fades in from c3's pose).
