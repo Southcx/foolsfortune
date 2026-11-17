@@ -119,13 +119,18 @@ export const STANCES = {
   // elbow, and the blade laid back along `aim` square to it (the wrist 30 degrees toward the little finger at most, the forearm 78 turned,
   // where the hand turned to point it, with the hand pulled to the hip, folded the wrist 96 to 102 degrees and bent the elbow backward).
   // The blade arm's swing at 0.2 of the run's (0.15 sprinting).
+  // CARRIED ACROSS (South, 2026-11-16: "physically incorrect. The hand holding the sondelass should be across the centerline of the
+  // body, ready to draw a slash from left to right"): the blade hand no longer trails at the right hip but is carried before the belly's
+  // left, the forearm across the body palm-down and the elbow out to their right, the blade laid back, out and down past the left hip
+  // as the iaido's (cutlassIaido below): the cut is drawn from there, left to right. Measured in the jog's frame: its blade hand's mean
+  // (-0.37, 1.02, 0.33), the hips 0.66 m up, the thighs' tops 0.71; the hand set to (0.08, 0.84, 0.30), the sprint's to (0.08, 0.88, 0.34).
   cutlassRun: {
     base: 'jog', exaggerate: [0.2, '^(upper_arm|forearm|hand)R$'],
-    nudge: [['R', [0.063, -0.225, -0.144], [-0.7, 1.15, 0.35]]], aim: [['R', CUTLASS_LINE, [-0.03, -0.22, -0.97]]],
+    nudge: [['R', [0.452, -0.18, -0.028], [-0.6, 1.0, 0.5]]], aim: [['R', CUTLASS_LINE, [0.75, -0.32, -0.58]]],
   },
   cutlassSprint: {
     base: 'sprint', exaggerate: [0.15, '^(upper_arm|forearm|hand)R$'],
-    nudge: [['R', [0.062, -0.239, -0.103], [-0.7, 1.15, 0.35]]], aim: [['R', CUTLASS_LINE, [-0.03, -0.22, -0.97]]],
+    nudge: [['R', [0.415, -0.072, 0.081], [-0.6, 1.05, 0.55]]], aim: [['R', CUTLASS_LINE, [0.75, -0.32, -0.58]]],
   },
   // THE CUTLASS'S DRAWN SLIDE (Calissa's, 2026-10-29; tools/sondelass/drawnslide.js): the drawn run's idiom carried into the core slide.
   // No blade slide in the suite, UAL or CMU (the suite's Trav_SlideKnee is the knee slide of a celebration, arms flung wide; its

@@ -91,7 +91,11 @@ const MOVES = {
   // a running slash (LMB while sprinting), the charged slash (hold LMB), the counter from the guard (the Tidecutter is RMB's: sondelassloadout.js)
   dash: { rule: 'dash', clip: 'Sond_DashSlash', body: 'whole', root: 'xz', hit: { power: 1.9, dmg: 1.8, push: 8 }, heat: 0.8, arc: 'r2l' },
   hold: { clip: 'Sond_ChargeHold' },
-  burst: { rule: 'charge', clip: 'Sond_ChargeRelease', body: 'whole', root: 'xz', hit: { power: 1.6, dmg: 1.6, push: 9 }, heat: 1, arc: 'r2l' },
+  // (the charged slash: the suite's flat cut, Sond_Combo3, the library's most level blade (198 degrees swept at the chest, 1.44 to 1.07 m,
+  //  0.46 m of rise and fall, measured by melee.js measureSwing), entered past its first 0.1 s and its windup's turn quickened as the Hop
+  //  Slash's is (South, 2026-11-16: "janky transitions with the charged slash ... one that strikes horizontally instead of low"). The
+  //  suite's Sond_ChargeRelease began mid-swing on its first frame (its strike 0 to 0.11 s) and rose from the knee, 0.66 m)
+  burst: { rule: 'charge', clip: 'Sond_Combo3', body: 'whole', root: 'xz', rate: 1.1, warp: { skip: 0.1, in: 2.6, out: 0.5, back: 1.7 }, to: 1.05, fade: 0.35, hit: { power: 1.6, dmg: 1.6, push: 9 }, heat: 1, arc: 'r2l' },
   spin: { rule: 'counter', clip: 'Sond_SpinSlash', body: 'whole', hit: { power: 1.4, dmg: 1.2, push: 6 }, heat: 0.6, arc: 'r2l' },
   // crouched, RMB let go before the charge is full: THE IAIDO'S DRAW CUT. The suite's rising cut (c2's clip, low left to high right: the
   // sweep a blade drawn from the left hip makes) from 0.22 s, its strike begun, at 1.4x, begun from the iaido's pose (begin's `join`;

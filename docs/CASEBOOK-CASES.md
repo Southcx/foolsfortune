@@ -5153,3 +5153,16 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   size. The cursor wears a second, pale hull outside the dark one, its width set each frame in the mesh's space with the hand's scale
   undone (0.07 of a cell, about 3 px at 1080p), shown only as the cursor.
 - **Rule:** 415
+
+### 2026-11-17 · The cutlass's drawn run held the blade wrong, and the charged slash popped out of its hold (South's v427)
+- **Seen:** running with the cutlass drawn, the blade hand trailed at the right hip, the blade pointing down and back, with no cut
+  ready; letting go of a charge, the body jumped into a low rising cut.
+- **Cause, as measured:** the drawn run's stance (`stance:cutlassRun`, `cutlassSprint`) nudged the hand to (-0.31, 0.79, 0.18) m in
+  the jog's frame, at the right side, with the blade laid straight back. The charge's release clip, `Sond_ChargeRelease`, has its
+  strike from its first frame (0 to 0.11 s, `measureSwing`), so the 0.1 s blend from the hold jumped into a cut already in flight,
+  and that cut rose from the knee (0.66 m).
+- **Fix:** the drawn run carries the hand to the front of the belly's left (x +0.08, y 0.84 m; sprinting, 8 cm further forward), the
+  forearm across the body, and the blade laid back, out and down past the left hip (0.73, -0.30, -0.61): ready for a cut from left to
+  right. Over each loop the blade's line clears the hip and spine joints by 10.4 cm or more. The charged slash plays `Sond_Combo3`,
+  the library's flattest cut (198 degrees swept at 1.44 to 1.07 m), entered past its first 0.1 s with its windup quickened.
+- **Rule:** 416
