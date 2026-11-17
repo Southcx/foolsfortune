@@ -302,10 +302,10 @@ export class Moveset {
 
   /** The chain window on move `c` is open: a press now goes on to the next free, never sooner than its row's time (`soon`). */
   chainOpen(c, soon) { if (c.W) return !!c.def.chain && cancelOpen(c); return !!c.def.chain && c.t >= c.def.chain[0] && c.age >= soon && (c.t <= c.def.chain[1] || c.age <= soon + 0.25); }
-  /** The free recovery cut is open on move `c` (a string's last blow, the dash, the charge's release, a plunge landed): its row (`R`)'s
-   *  time spent and its strike past, a press now begins a new opener at no cost. */
+  /** The free recovery cut is open on move `c` (a string's last blow, the dash, the charge's release, a plunge landed; any warped move with
+   *  no next, a special too: its cancel frame, movewarp.js): its row (`R`)'s time spent and its strike past, a press begins a new opener free. */
   freeCutOpen(c, R, soon) {
-    const free = c.kind === 'ground' || c.kind === 'pause' || c.kind === 'dash' || c.kind === 'charge' || (c.def.plunge && c.landed), since = c.def.plunge ? (c.age || 0) - (c.landAt ?? c.age ?? 0) : c.age || 0;
+    const free = !!c.W || c.kind === 'ground' || c.kind === 'pause' || c.kind === 'dash' || c.kind === 'charge' || (c.def.plunge && c.landed), since = c.def.plunge ? (c.age || 0) - (c.landAt ?? c.age ?? 0) : c.age || 0;
     return !!R && !!free && (c.W ? cancelOpen(c) : since >= soon && c.t > (c.def.track?.strike[1] ?? 0));
   }
 
@@ -551,7 +551,7 @@ export class Moveset {
     L.go(v0, {
       time: def.plunge ? 6 : span + 0.02, gravity: c.grav, drag: 0, tag: c.tag, yaw, face: true,
       until: def.plunge ? 'time' : 'time', endSpeed: def.endSpeed ?? 4,
-      clip: def.clip, clipMap: () => (this.cur === c ? c.t : c.t), poseFix: def.join ? (p) => this.bj.whole(this, C, p, c) : undefined, // (a joined row: the join, drag and overshoot)
+      clip: def.clip, clipMap: () => (this.cur === c ? c.t : c.t),
       drive: (vel, dt, tech) => {
         if (this.cur !== c) return;
         if (c.phase === 'fall') { vel.x *= 0.9; vel.z *= 0.9; vel.y = -(def.plunge.speed || 24); return; }
@@ -568,7 +568,7 @@ export class Moveset {
         if (tech?.o) { tech.o.gravity = up || held ? this.arc.g : ride ? 0 : c.grav; if (ride || up || held) tech.o.time = Math.max(tech.o.time, tech.t + 0.1); } // (rising, riding or held at the top, the move's launch lasts as long as it does)
         if (ride) this.ride(vel);
       },
-      poseFix: (pose) => { if (R) { R.at(c.t, _a); pose.p[0] -= _a.x; pose.p[2] -= _a.z; if (xyz) pose.p[1] -= _a.y; } this.joined(C, pose); },
+      poseFix: (pose) => { if (R) { R.at(c.t, _a); pose.p[0] -= _a.x; pose.p[2] -= _a.z; if (xyz) pose.p[1] -= _a.y; } if (def.join && this.bj) this.bj.whole(this, C, pose, c); else this.joined(C, pose); }, // (a joined row: the join, drag and overshoot)
       onEnd: () => { shedSpeed(P.vel, def.endSpeed ?? 4); if (this.cur === c && c.phase !== 'fall') c.ended = true; }, // (finished in update() this frame; a blink cutting in cancels it first)
       cuttable: true, // (the blink may take the step at any frame: courier/moves/techs.js; blinkCancel() lets the move go)
     });

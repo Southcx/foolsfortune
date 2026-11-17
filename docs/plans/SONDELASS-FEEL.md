@@ -1,4 +1,4 @@
-# The Sondelass's melee, revamped for feel (a plan, approved 2026-11-16; steps 0 to 4 built)
+# The Sondelass's melee, revamped for feel (a plan, approved 2026-11-16; steps 0 to 5 built)
 
 South, 2026-11-16: "drastically improve the feel of combat, making it snappy, responsive, flowing, and visually striking. The single
 most important design aspect is 'elegance'." And 2026-11-15, on the stepped key poses we reverted: holding extreme poses was meant as
@@ -335,3 +335,125 @@ The look (one headless run, desk resolution, at the Weir against a slip jelly; t
 
 Not verified: the pose audit (no blade-through-body numbers for the flourish or the two clips), first person, running draws and stows,
 the settle cut mid-play by each press kind (only the stow's X cut was seen), and the stress test (Calissa runs it on the merged result).
+
+## 13. Step 5 as built (Calissa's builder, 2026-11-17)
+
+Every other row the cutlass's engine plays is warped as c1 .. c4 are (rows only: `warp`, `cancel`, and `join` on the light ones): the
+catalogue's 15 normals and 12 of its specials (`sondelass/sondelassloadout.js`), and of the cutlass's own table the pause strings, the
+launcher, the two air cuts, the dash and the counter (`sondelass/cutlass.js`). c4's strike is typed nearer where the blade meets the body
+(`strike: [0.41, 0.47]`, clip s; the measured [0.333, 0.408] began with the tip at its highest; section 10's [0.36, 0.42] was tried
+first and the look showed it still striking with the blade up behind the head, see below). Dovina's rows' `time` set to each move's
+on-hit cancel, as step 2 did (her handoff, `docs/handoffs/dovina/2026-11-16-from-calissa-sondelass-times.md`, has the old and new times
+and the power a second; `air2`'s rose 0.38 to 0.41, the soonest its strike's end allows; `pause1` is shared by t1 and j1, so both take
+0.27). Left on their own clocks, by design: the plunge (its fall holds the clip until the ground; its landing is its cancel), the
+charge's hold, the charged slash (warped already, its cancel its strike's end), the iaido's draw cut (begun at its strike), the stinger
+(cutlass.js's own lunge, not the engine's) and the Wave Cut (its 108-frame leap is the move; its ring at 1.86 clip s would be lost to a
+cancel before it).
+
+**One engine line** (`tools/moveset.js` freeCutOpen, still 799 lines): a warped move with no next takes the free recovery cut from its
+cancel frame, whatever its kind. Without it a warped special, or the launcher with the air string locked, held a press made past its
+cancel frame (`queued`) and nothing ever took it, so the paid cut out of a special was lost. Opt-in as before: only a warped row.
+
+`node scripts/sondelassframes.mjs` (now also prints a warped special's cancel), the converted rows (60 Hz frames from the press;
+cancel the whiff's and its share of the move, then the on-hit one):
+
+| id | weight | startup | active | recovery | total | cancel (whiff) | on-hit cancel | was: startup, active, recovery, total, cancel |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| c4 | finisher | 14 | 4 | 78 | 96 | 36 (38%) | 25 (26%) | 11, 4, 83, 98, 36 (strike typed) |
+| quickSlash | light | 5 | 9 | 17 | 31 | 17 (55%) | 15 (48%) | 10, 9, 7, 26, 20 |
+| backhand | light | 6 | 6 | 25 | 37 | 18 (49%) | 15 (41%) | 12, 7, 13, 32, 23 |
+| bodyBlow | light | 3 | 6 | 30 | 39 | 18 (46%) | 12 (31%) | 3, 6, 22, 31, 18 |
+| straightPunch | light | 8 | 9 | 34 | 51 | 25 (49%) | 18 (35%) | 22, 8, 25, 55, 31 |
+| hookPunch | light | 7 | 8 | 30 | 45 | 23 (51%) | 16 (36%) | 16, 9, 22, 47, 26 |
+| lungeSlash | heavy | 12 | 3 | 19 | 34 | 20 (59%) | 17 (50%) | 16, 2, 13, 31, 30 |
+| guardBreak | heavy | 7 | 4 | 44 | 55 | 25 (45%) | 18 (33%) | 7, 4, 35, 46, 25 |
+| pushKick | heavy | 12 | 12 | 29 | 53 | 32 (60%) | 27 (51%) | 22, 12, 23, 57, 36 |
+| lowSweep | heavy | 12 | 10 | 35 | 57 | 31 (54%) | 24 (42%) | 20, 10, 27, 57, 33 |
+| frontKick | heavy | 12 | 9 | 35 | 56 | 31 (55%) | 24 (43%) | 25, 9, 26, 60, 35 |
+| roundKick | heavy | 11 | 12 | 36 | 59 | 32 (54%) | 25 (42%) | 19, 11, 27, 57, 31 |
+| sideKick | heavy | 12 | 9 | 36 | 57 | 30 (53%) | 23 (40%) | 19, 10, 28, 57, 30 |
+| kneeStrike | heavy | 12 | 8 | 30 | 50 | 29 (58%) | 23 (46%) | 22, 8, 23, 53, 31 |
+| lowKick | heavy | 13 | 10 | 30 | 53 | 31 (58%) | 24 (45%) | 28, 10, 22, 60, 38 |
+| heavyChop | finisher | 14 | 5 | 53 | 72 | 36 (50%) | 27 (38%) | 30, 5, 38, 73, 55 |
+| spinSlash | heavy | 10 (hits on 11, 21, 31, 40) | 39 | 41 | 90 | 55 (61%) | 50 (56%) | 10, 39, 21, 70, - |
+| powerSlash | finisher | 0 | 6 | 82 | 88 | 42 (48%) | 33 (38%) | 0, 7, 65, 72, - |
+| risingCut | launcher | 12 | 7 | 42 | 61 | 33 (54%) | 27 (44%) | 14, 7, 33, 54, - |
+| guardCrush | heavy | 11 | 5 | 62 | 78 | 39 (50%) | 30 (38%) | 11, 5, 51, 67, - |
+| backstepSlash | heavy | 22 | 4 | 41 | 67 | 40 (60%) | 33 (49%) | 22, 4, 34, 60, - |
+| flyingKick | finisher | 27 | 13 | 31 | 71 | 54 (76%) | 45 (63%) | 49, 14, 24, 87, - |
+| tornadoKick | finisher | 15 | 14 | 63 | 92 | 45 (49%) | 36 (39%) | 23, 14, 50, 87, - |
+| spinHeelKick | finisher | 26 | 16 | 27 | 69 | 54 (78%) | 45 (65%) | 55, 16, 22, 93, - |
+| risingKick | launcher | 17 | 10 | 31 | 58 | 35 (60%) | 30 (52%) | 32, 10, 24, 66, - |
+| flurry | heavy | 13 (hits on 14, 24, 35) | 30 | 18 | 61 | 49 (80%) | 44 (72%) | 22, 30, 11, 63, - |
+| breakKick | heavy | 13 | 11 | 43 | 67 | 37 (55%) | 30 (45%) | 22, 12, 37, 71, - |
+| t1 | light | 5 | 4 | 38 | 47 | 23 (49%) | 16 (34%) | 9, 4, 31, 44, 24 |
+| t2 | heavy | 8 (hits on 9, 28, 37) | 34 | 65 | 107 | 48 (45%) | 43 (40%) | 8, 34, 52, 94, 54 |
+| j1 | light | 7 | 6 | 32 | 45 | 24 (53%) | 16 (36%) | 20, 6, 26, 52, 29 |
+| j2 | light | 4 | 9 | 55 | 68 | 23 (34%) | 16 (24%) | 4, 9, 44, 57, 36 |
+| j3 | finisher | 14 | 9 | 59 | 82 | 36 (44%) | 27 (33%) | 32, 9, 53, 94, 54 |
+| up | launcher | 10 | 7 | 58 | 75 | 30 (40%) | 23 (31%) | 10, 7, 49, 66, 33 |
+| a1 | light | 2 | 13 | 42 | 57 | 22 (39%) | 17 (30%) | 2, 13, 35, 50, 21 |
+| a2 | heavy | 8 | 15 | 46 | 69 | 30 (43%) | 25 (36%) | 8, 15, 39, 62, 23 |
+| dash | heavy | 12 | 7 | 86 | 105 | 30 (29%) | 22 (21%) | 14, 7, 69, 90, 30 |
+| spin (counter) | heavy | 12 (hits on 13, 24, 35, 46) | 45 | 61 | 118 | 63 (53%) | 58 (49%) | 12, 45, 45, 102, - |
+
+The rows' numbers are in the files beside each row; the rules that set them:
+- **Light normals** (quickSlash, backhand, the hook, the straight; t1, j1): the windup run at 1.6 to 2.5x past a small skip, first active
+  frame 6 to 9. bodyBlow, j2 and the air cuts were already quick (3, 4, 2, 8 frames) and keep their windups at their rate. The straight
+  is the slowest light one (first active 9): its windup is a lunging step, and past 2.4x the step reads as a pop.
+- **Heavies and finishers** (the kicks, the sweep, the lunge, heavyChop, j3, the dash): windups at 1.15 to 2.1x, first active frame 12 to
+  15 (heavyChop's 31 to 15). guardBreak (7) and guardCrush (11) were already in the range and keep theirs.
+- **Specials keep their weight where the windup is the tell** (the plan's own exception), so their startups stay above the normals':
+  the backstep's 22 is its hop back (its tell and its escape: kept at its rate, its step's speed 5 to 4.2 m/s so it still carries
+  1.14 m now the follow-through runs slow); the flying kick's 27 is its two-step run-up (49 before); the spinning heel's 26 its turn
+  (55); the rising kick's 17 its held chamber; the Rising Cut's 12 the uppercut's crouch. powerSlash keeps a startup of 0: its clip
+  begins mid-swing (the charged slash left it for that reason), and it is a full charge let go at once by design.
+- **The follow-through** of every converted row runs at 0.3 to 0.6 just after the strike, back to 0.5 to 1.6 by the clip's end: the
+  blade lingers, so a move left alone runs about as long as before or longer (spinSlash 70 to 90, the dash 90 to 105), while the cancel
+  frame cuts it short when pressed.
+- **The cancel**: on a whiff at 45 to 60% of the move, on a hit 6 to 10 frames sooner, never before the strike's end and a frame. Where
+  the strike itself ends late the cancel cannot be earlier: the flying kick (its strike ends on 40 of 71: whiff 76%, hit 63%), the
+  spinning heel (42 of 69: 78%, 65%), the flurry (its third punch ends on 43 of 61: 80%, 72%) and spinSlash (its fourth cut on 49 of
+  90: 61%, 56%) are the nearest their clips reach; the kicks' two are given a few frames past the strike so the foot is down.
+- **The join** (`join: {}`, searched, none typed) on the light normals, the pause strings' t1, j1, j2, and the launcher and the air
+  cuts: a heavy, a kick, a finisher or a special takes none, since entered mid-windup out of a string its tell would go. A light
+  catalogue normal slotted after c1 .. c4 now enters where the blade is, as the default string does.
+- lungeSlash's step 3.5 to 4.5 m/s, so its 0.78 m forward step stays 0.78 m now its windup runs faster (the step is in move time, the
+  clip's own travel is not).
+
+**The look** (one, `sf5/moves-sheet.png` in the builder's scratchpad: quickSlash, heavyChop, c4, risingCut, tornadoKick, guardCrush and
+the launcher into a1, each begun alone on a calm slip jelly, drawn side-on every second frame, the strike's frames and the hit marked):
+- **The light normal reads quick:** quickSlash's blade is live on frame 6 and lands on 9, low across the front; its follow-through hangs
+  through frames 14 to 30 as meant.
+- **The heavy reads heavy and sooner:** heavyChop's hop and overhead are still there, the chop lands on frame 17 (31 before) with the
+  blade in front of the body; its 2-frame pose hold sits on the chop, not before it.
+- **The launcher and the special:** risingCut lands on 14 with the blade rising in front; tornadoKick's spin is whole, the foot
+  landing on 25; the launcher hits on 13 and a1 follows from its cancel frame on 24, hitting on 26 in the air.
+- **c4 was not fixed by [0.36, 0.42]:** its hit landed on frame 12, the first live frame, and the 4-frame pose hold held the blade
+  straight up behind the head (frames 12 to 14); the blade only crossed the front on 16, about clip 0.43. The row is now typed
+  [0.41, 0.47] from that measure (first active frame 15, the finisher's target's top). **That correction was not looked at** (one look,
+  no rerun): read it in play, and if the blade is past the body when it lands, 0.39 is the next to try.
+- **guardCrush's hit came on frame 11, before its live window as sampled** (14): its sweep's pad (`STRIKE_PAD`) reached the jelly at
+  1.6 m before the measured strike; it read as the thrust's start, not wrong, but its contact is earlier than the table says.
+
+Rough, and not done here:
+- Only the light rows join; the heavies, kicks and specials keep a 0.1 s fade from whatever came before, as before step 3. A heavy in a
+  string still draws its windup from the stance, by design (its tell).
+- **A whole-body joined move gets the join's fade but not its drag and overshoot:** in `carry` (`tools/moveset.js`) the launch's options
+  name `poseFix` twice and the second (the root travel taken out, then the fade) wins, so `BladeJoin.whole` never runs. True of c4 since
+  step 3 and now of the launcher and the air cuts; mending it means folding the root-travel step into `whole`, an engine change left for
+  Petra's gate.
+- **A joined row begun cold no longer shows a stale pose:** `BladeJoin.under` held `M.last` under any joined whole-body move, and
+  `M.last` is never cleared, so the launcher from a stand or a first air cut would have blended in over whatever move was shown last.
+  It now holds it only for the move `enter` joined (`entered`, `courier/anim/bladejoin.js`); c4, always fourth, never met it.
+- **The travel cut ignores the warp:** `carry` predicts a move's own step as `v x span / rate`; lungeSlash's step at 4.5 m/s is
+  predicted 1.0 m against the 0.78 m it now travels, so near a target its lunge stops about 0.2 m short. An engine line, Petra's.
+- **With the plunge locked, a2 has no next:** from its cancel frame a press now takes the free cut into a ground opener in the air (it
+  was the paid cut). An edge, but new.
+- The pause strings, the dash and the counter were converted though the brief named only the catalogue, the air string, the launcher and
+  the specials ("every remaining row"); say so if they should go back.
+- The specials now take a free cut into the string from their cancel frame (the engine line above): each special's recovery is shorter
+  in play by a third to a half, though its Lachryma cost is the same. Dovina's to weigh with the rest.
+- Not looked at: the kicks but the tornado, the fists, the pause strings, the dash, the counter, a2, and every row on a whiff; the joins
+  of the light catalogue normals in a string; the stress test (Calissa's, on the merged result).
+

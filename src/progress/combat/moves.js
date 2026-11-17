@@ -43,15 +43,15 @@ export const MOVES = {
   sondelass: { // (the cutlass form: the rod and the hook do not fight with strings)
     combo1: { power: 1.2, time: 0.25, unlock: always }, combo2: { power: 1.3, time: 0.27, unlock: always },
     combo3: { power: 1.4, time: 0.27, unlock: always }, combo4: { power: 2.0, time: 0.42, unlock: always },  // (Calissa, 2026-11-16: the times are the warped string's on-hit cancels, SONDELASS-FEEL.md 10; was 0.42, 0.46, 0.5, 0.78 for 2.7 power a second, now 4.9: the power is Dovina's to re-rate)
-    pause1: { power: 1.0, time: 0.4, unlock: always }, pause2: { power: 1.0, time: 0.4, unlock: always },
-    pause3: { power: 2.6, time: 0.9, unlock: always, status: 'stagger' },                                    // (the pause string's finisher staggers: j3)
-    thrust2: { power: 0.9, hits: 3, time: 0.9, unlock: always, status: 'stagger' },                         // (t2, Sond_ThrustCombo: the held thrust stabs three times; pause3's 2.6 as three, Calissa 2026-10-10)
+    pause1: { power: 1.0, time: 0.27, unlock: always }, pause2: { power: 1.0, time: 0.26, unlock: always },
+    pause3: { power: 2.6, time: 0.45, unlock: always, status: 'stagger' },                                    // (the pause string's finisher staggers: j3)
+    thrust2: { power: 0.9, hits: 3, time: 0.72, unlock: always, status: 'stagger' },                         // (t2, Sond_ThrustCombo: the held thrust stabs three times; pause3's 2.6 as three, Calissa 2026-10-10)
     charge: { power: 4.0, time: 1.3, shatter: 0.25, unlock: always },                                                        // (a full charge, the psygun's 0.85 s and the swing)
-    launcher: { power: 0.8, time: 0.55, status: 'airborne', ...way([U('cut.hit', 50)], []) },                    // (position, not damage; after 50 cutlass blows)
-    air1: { power: 0.9, time: 0.35, ...way([U('move.launch', 10)], []) }, air2: { power: 1.0, time: 0.38, ...way([U('move.launch', 10)], []) },
+    launcher: { power: 0.8, time: 0.38, status: 'airborne', ...way([U('cut.hit', 50)], []) },                    // (position, not damage; after 50 cutlass blows)
+    air1: { power: 0.9, time: 0.28, ...way([U('move.launch', 10)], []) }, air2: { power: 1.0, time: 0.41, ...way([U('move.launch', 10)], []) },
     plunge: { power: 2.0, time: 0.6, status: 'stagger', ...way([U('move.launch', 10)], []) },                   // (2.9 a second over the air string: short, and earned)
-    dash: { power: 1.6, time: 0.5, unlock: always },
-    counter: { power: 0.8, hits: 4, time: 1.7, unlock: always },                                             // (the spin from the guard, Sond_SpinSlash: four turns of the blade, a read guard's reward; it borrowed combo3's)
+    dash: { power: 1.6, time: 0.36, unlock: always },
+    counter: { power: 0.8, hits: 4, time: 0.96, unlock: always },                                             // (the spin from the guard, Sond_SpinSlash: four turns of the blade, a read guard's reward; it borrowed combo3's)
     stinger: { power: 3.0, time: 0.7, cost: 6, unlock: always },                                             // (RMB tapped: the lunge, as today; paid in Lachryma, so not a free raise)
     iaido: { power: 1.54, time: 0.6, parent: 'stinger', unlock: always },                                     // (the draw cut: crouched, RMB let go before the iaido's 0.5 s; Calissa's measured 1.4 x 1.1 a cut, 0.6 real s at the shortest charge, 2.57 a second, under the string's 2.7; free and known from the start, since it is Blade Mode's door, and Blade Mode came with the tool)
     // THE MELEE LOADOUT'S CATALOGUE (Calissa's phase 3, keyed by SONDELASS_MOVES' ids; MELEE-LOADOUT-EARNING.md section 2, Dovina's):
@@ -59,36 +59,38 @@ export const MOVES = {
     // its parent finishing a string on a creature 5 times, or the feat its effect names. A special: its parent landed 30 times (60 when
     // the parent is itself earned: the counts double along the tree), or its feat once. The numbers are Calissa's measured `stats`
     // (every normal in any slot -2.9..+2.2% of today's string a second; every special -8.5..+6%).
-    quickSlash: { power: 1.0, time: 0.34, parent: 'c1', ...way([H('c1', 60)], [F('c1', 5)]) },
-    bodyBlow: { power: 0.9, time: 0.3, parent: 'c1', ...way([H('c1', 60)], [F('c1', 5)]) },
-    backhand: { power: 1.1, time: 0.38, parent: 'c2', ...way([H('c2', 60)], [F('c2', 5)]) },
-    guardBreak: { power: 1.1, time: 0.42, status: 'stagger', parent: 'c2', ...way([H('c2', 60)], [F('c2', 5), U('sond.effect.guardBreak', 3)]) },
-    lungeSlash: { power: 1.4, time: 0.5, parent: 'c3', ...way([H('c3', 60)], [F('c3', 5)]) },
-    lowSweep: { power: 1.35, time: 0.55, status: 'trip', parent: 'c3', ...way([H('c3', 60)], [F('c3', 5), U('sond.effect.trip', 3)]) },
-    heavyChop: { power: 2.4, time: 0.92, status: 'stagger', parent: 'c4', ...way([H('c4', 60)], [F('c4', 5)]) },
-    pushKick: { power: 1.45, time: 0.6, parent: 'c4', ...way([H('c4', 60), U('kick.hit', 60)], [F('c4', 5), U('sond.effect.knock', 5)]) }, // (a kick: the unarmed kick's blows open it too)
-    spinSlash: { power: 0.85, hits: 4, time: 1.17, cost: 8, parent: 'backhand', ...way([H('backhand', 60)], [B('sond.struck.best', 3)]) }, // (three struck by one blow)
-    powerSlash: { power: 3.0, time: 1.2, cost: 8, parent: 'heavyChop', ...way([H('heavyChop', 60)], [F('heavyChop', 5)]) },
-    risingCut: { power: 2.3, time: 0.9, cost: 6, status: 'airborne', parent: 'quickSlash', ...way([H('quickSlash', 60)], [U('move.launch', 10)]) },
-    guardCrush: { power: 2.8, time: 1.11, cost: 6, shatter: 0.3, status: 'stagger', parent: 'stinger', ...way([U('cut.stinger', 30)], [U('sond.effect.guardBreak', 1)]) },
-    backstepSlash: { power: 2.5, time: 1.0, cost: 5, parent: 'c3', ...way([H('c3', 30)], [U('parry.sondelass', 10)]) }, // (out of reach and back in: ten parries with the Sondelass know when to leave)
+    // (Calissa, 2026-11-17: these rows' times, and the launcher's, air1's and air2's, are now their warped on-hit cancels, SONDELASS-FEEL.md 13;
+    //  the old ones and the power a second each: docs/handoffs/dovina/2026-11-16-from-calissa-sondelass-times.md. The power is Dovina's to re-rate)
+    quickSlash: { power: 1.0, time: 0.24, parent: 'c1', ...way([H('c1', 60)], [F('c1', 5)]) },
+    bodyBlow: { power: 0.9, time: 0.2, parent: 'c1', ...way([H('c1', 60)], [F('c1', 5)]) },
+    backhand: { power: 1.1, time: 0.25, parent: 'c2', ...way([H('c2', 60)], [F('c2', 5)]) },
+    guardBreak: { power: 1.1, time: 0.3, status: 'stagger', parent: 'c2', ...way([H('c2', 60)], [F('c2', 5), U('sond.effect.guardBreak', 3)]) },
+    lungeSlash: { power: 1.4, time: 0.28, parent: 'c3', ...way([H('c3', 60)], [F('c3', 5)]) },
+    lowSweep: { power: 1.35, time: 0.4, status: 'trip', parent: 'c3', ...way([H('c3', 60)], [F('c3', 5), U('sond.effect.trip', 3)]) },
+    heavyChop: { power: 2.4, time: 0.45, status: 'stagger', parent: 'c4', ...way([H('c4', 60)], [F('c4', 5)]) },
+    pushKick: { power: 1.45, time: 0.45, parent: 'c4', ...way([H('c4', 60), U('kick.hit', 60)], [F('c4', 5), U('sond.effect.knock', 5)]) }, // (a kick: the unarmed kick's blows open it too)
+    spinSlash: { power: 0.85, hits: 4, time: 0.84, cost: 8, parent: 'backhand', ...way([H('backhand', 60)], [B('sond.struck.best', 3)]) }, // (three struck by one blow)
+    powerSlash: { power: 3.0, time: 0.55, cost: 8, parent: 'heavyChop', ...way([H('heavyChop', 60)], [F('heavyChop', 5)]) },
+    risingCut: { power: 2.3, time: 0.45, cost: 6, status: 'airborne', parent: 'quickSlash', ...way([H('quickSlash', 60)], [U('move.launch', 10)]) },
+    guardCrush: { power: 2.8, time: 0.5, cost: 6, shatter: 0.3, status: 'stagger', parent: 'stinger', ...way([U('cut.stinger', 30)], [U('sond.effect.guardBreak', 1)]) },
+    backstepSlash: { power: 2.5, time: 0.55, cost: 5, parent: 'c3', ...way([H('c3', 30)], [U('parry.sondelass', 10)]) }, // (out of reach and back in: ten parries with the Sondelass know when to leave)
     // THE CMU PASS (Calissa's, 2026-10-29: 7 normals and 6 specials of kicks and off-hand blows; MELEE-LOADOUT-EARNING.md 2): the same
     // two ways as the rows above, and a third the plan gives every CMU row, the unarmed kick's blows (`kick.hit`: 60 a normal, 150 a
     // special), since feet trained bare carry over to the blade. A special's parent is itself earned, so its count doubles (60).
     // Calissa's measured `stats` (every normal -2.8..-0.6% of the string's 1.945 a second; every special from rest -4.3..+3.8%).
-    frontKick: { power: 1.45, time: 0.58, parent: 'c2', ...way([H('c2', 60), U('kick.hit', 60)], [F('c2', 5)]) },
-    roundKick: { power: 1.35, time: 0.52, parent: 'c1', ...way([H('c1', 60), U('kick.hit', 60)], [F('c1', 5), U('sond.effect.knock', 5)]) },
-    sideKick: { power: 1.3, time: 0.5, parent: 'c4', ...way([H('c4', 60), U('kick.hit', 60)], [F('c4', 5), U('sond.effect.knock', 5)]) },
-    kneeStrike: { power: 1.35, time: 0.52, parent: 'c3', ...way([H('c3', 60), U('kick.hit', 60)], [F('c3', 5)]) },
-    lowKick: { power: 1.6, time: 0.63, status: 'trip', parent: 'c3', ...way([H('c3', 60), U('kick.hit', 60)], [F('c3', 5), U('sond.effect.trip', 3)]) },
-    straightPunch: { power: 1.35, time: 0.52, parent: 'c3', ...way([H('c3', 60), U('kick.hit', 60)], [F('c3', 5)]) },
-    hookPunch: { power: 1.1, time: 0.43, parent: 'c2', ...way([H('c2', 60), U('kick.hit', 60)], [F('c2', 5)]) }, // (never `hook`: the Sondelass's hook is its form)
-    flyingKick: { power: 3.6, time: 1.45, cost: 7, parent: 'pushKick', ...way([H('pushKick', 60), U('kick.hit', 150)], [U('sond.effect.knock', 10)]) },
-    tornadoKick: { power: 3.6, time: 1.45, cost: 8, parent: 'roundKick', ...way([H('roundKick', 60), U('kick.hit', 150)], [B('sond.struck.best', 3)]) }, // (all round: three struck by one blow)
-    spinHeelKick: { power: 3.8, time: 1.55, cost: 7, status: 'stagger', parent: 'sideKick', ...way([H('sideKick', 60), U('kick.hit', 150)], [F('sideKick', 5)]) },
-    risingKick: { power: 2.7, time: 1.1, cost: 6, status: 'airborne', parent: 'frontKick', ...way([H('frontKick', 60), U('kick.hit', 150)], [U('move.launch', 10)]) },
-    flurry: { power: 1.0, hits: 3, time: 1.05, cost: 5, status: 'stagger', parent: 'bodyBlow', ...way([H('bodyBlow', 60), U('kick.hit', 150)], [F('bodyBlow', 5)]) },
-    breakKick: { power: 2.7, time: 1.18, cost: 6, status: 'stagger', parent: 'guardBreak', ...way([H('guardBreak', 60), U('kick.hit', 150)], [U('sond.effect.guardBreak', 3)]) },
+    frontKick: { power: 1.45, time: 0.4, parent: 'c2', ...way([H('c2', 60), U('kick.hit', 60)], [F('c2', 5)]) },
+    roundKick: { power: 1.35, time: 0.42, parent: 'c1', ...way([H('c1', 60), U('kick.hit', 60)], [F('c1', 5), U('sond.effect.knock', 5)]) },
+    sideKick: { power: 1.3, time: 0.38, parent: 'c4', ...way([H('c4', 60), U('kick.hit', 60)], [F('c4', 5), U('sond.effect.knock', 5)]) },
+    kneeStrike: { power: 1.35, time: 0.38, parent: 'c3', ...way([H('c3', 60), U('kick.hit', 60)], [F('c3', 5)]) },
+    lowKick: { power: 1.6, time: 0.4, status: 'trip', parent: 'c3', ...way([H('c3', 60), U('kick.hit', 60)], [F('c3', 5), U('sond.effect.trip', 3)]) },
+    straightPunch: { power: 1.35, time: 0.3, parent: 'c3', ...way([H('c3', 60), U('kick.hit', 60)], [F('c3', 5)]) },
+    hookPunch: { power: 1.1, time: 0.27, parent: 'c2', ...way([H('c2', 60), U('kick.hit', 60)], [F('c2', 5)]) }, // (never `hook`: the Sondelass's hook is its form)
+    flyingKick: { power: 3.6, time: 0.75, cost: 7, parent: 'pushKick', ...way([H('pushKick', 60), U('kick.hit', 150)], [U('sond.effect.knock', 10)]) },
+    tornadoKick: { power: 3.6, time: 0.6, cost: 8, parent: 'roundKick', ...way([H('roundKick', 60), U('kick.hit', 150)], [B('sond.struck.best', 3)]) }, // (all round: three struck by one blow)
+    spinHeelKick: { power: 3.8, time: 0.75, cost: 7, status: 'stagger', parent: 'sideKick', ...way([H('sideKick', 60), U('kick.hit', 150)], [F('sideKick', 5)]) },
+    risingKick: { power: 2.7, time: 0.5, cost: 6, status: 'airborne', parent: 'frontKick', ...way([H('frontKick', 60), U('kick.hit', 150)], [U('move.launch', 10)]) },
+    flurry: { power: 1.0, hits: 3, time: 0.74, cost: 5, status: 'stagger', parent: 'bodyBlow', ...way([H('bodyBlow', 60), U('kick.hit', 150)], [F('bodyBlow', 5)]) },
+    breakKick: { power: 2.7, time: 0.5, cost: 6, status: 'stagger', parent: 'guardBreak', ...way([H('guardBreak', 60), U('kick.hit', 150)], [U('sond.effect.guardBreak', 3)]) },
     special: { id: 'tidecutter', power: 7, time: 2.63, cost: 12, shatter: 0.35, ...way([U('cut.hit', 500)], [B('sond.struck.best', 5)]) }, // (a line of slip: the Sondelass mastered; its clip's 2.63 real s, the strike at 1.80)
     // Wave Cut's feat way: five struck by one blow (ledger record sond.struck.best, tracking/moves.js, already counted). A line of slip is
     // for a crowd, so its skill way is to catch one; the spin slash and the tornado kick ask three of the same record, and this, the dearest special, asks five.

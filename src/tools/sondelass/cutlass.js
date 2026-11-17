@@ -64,16 +64,20 @@ const fxRand = stream('tools/sondelass/cutlass.fx'); // (the look's chance: the 
 // (The string's normals, c1 .. c4, and the specials RMB holds are the melee loadout's: sondelassloadout.js, its catalogue played by the
 // engine. What follows is the fixed grammar.)
 const MOVES = {
+  // (step 5 of SONDELASS-FEEL.md, section 13: the pause strings, the launcher, the air cuts, the dash and the counter are warped as the
+  //  string is (tools/movewarp.js `warp`, `cancel`: the windup quickened where it was slow, the follow-through slowed, the cancel frame
+  //  theirs and sooner on a hit); the light ones joined (`join`). Kept on their own clocks: the plunge (its fall holds the clip until the
+  //  ground), the charge's hold, the iaido's draw cut (begun at its strike) and the charged slash (warped already, opening at its strike's end))
   // the pause strings: after the first stroke, a thrust and its follow; after the second, the three wide arcs (the JRPG string)
-  t1: { rule: 'pause1', clip: 'Sond_Thrust', rate: 1.1, chain: [0.2, 0.7], to: 0.8, fade: 0.3, hit: { power: 1.5, dmg: 1.3, push: 4 }, lunge: 4, arc: 'raise' },
+  t1: { rule: 'pause1', clip: 'Sond_Thrust', rate: 1.1, chain: [0.2, 0.7], to: 0.8, fade: 0.3, hit: { power: 1.5, dmg: 1.3, push: 4 }, lunge: 4, arc: 'raise', warp: { skip: 0.03, in: 1.6, out: 0.5, back: 1.6 }, cancel: { hit: 0.27, whiff: 0.38 }, join: {} },
   // (t2 holds the thrust out 0.13-0.70 and stabs three times, its speed's peaks at 0.21, 0.53, 0.66: a typed strike, a hit at each;
   // its push 7 to 2, or the first stab threw what it struck out of the other two's reach; its row's stagger holds it. The blade is held
   // 40-90 degrees to their left all the while, never across the front, so it never struck what was straight ahead: aimed at 55)
-  t2: { rule: 'thrust2', clip: 'Sond_ThrustCombo', body: 'whole', root: 'xz', strike: [0.13, 0.7], parts: [0.13, 0.45, 0.6], aim: 0.95, hit: { power: 1.8, dmg: 1.6, push: 2 }, heat: 0.7, arc: 'raise' },
+  t2: { rule: 'thrust2', clip: 'Sond_ThrustCombo', body: 'whole', root: 'xz', strike: [0.13, 0.7], parts: [0.13, 0.45, 0.6], aim: 0.95, hit: { power: 1.8, dmg: 1.6, push: 2 }, heat: 0.7, arc: 'raise', warp: { out: 0.5, back: 1.3 }, cancel: { hit: 0.72, whiff: 0.8 } },
   // (j1 and j2 chain once their arcs finish, 0.51 and 0.64: a quick press no longer cuts the arc short)
-  j1: { rule: 'pause1', clip: 'Sond_JrpgCombo1', rate: 1.1, chain: [0.53, 0.85], to: 0.95, fade: 0.3, hit: { power: 1.3, dmg: 1.2 }, lunge: 2.6, arc: 'r2l' },
-  j2: { rule: 'pause2', clip: 'Sond_JrpgCombo2', rate: 1.1, chain: [0.66, 0.95], to: 1.05, fade: 0.3, hit: { power: 1.4, dmg: 1.3 }, lunge: 2.6, arc: 'l2r' },
-  j3: { rule: 'pause3', clip: 'Sond_JrpgCombo3', body: 'whole', hit: { power: 2.2, dmg: 2.0, push: 7, lift: 3 }, heat: 1, arc: 'over' },
+  j1: { rule: 'pause1', clip: 'Sond_JrpgCombo1', rate: 1.1, chain: [0.53, 0.85], to: 0.95, fade: 0.3, hit: { power: 1.3, dmg: 1.2 }, lunge: 2.6, arc: 'r2l', warp: { skip: 0.1, in: 2.5, out: 0.5, back: 1.6 }, cancel: { hit: 0.27, whiff: 0.4 }, join: {} },
+  j2: { rule: 'pause2', clip: 'Sond_JrpgCombo2', rate: 1.1, chain: [0.66, 0.95], to: 1.05, fade: 0.3, hit: { power: 1.4, dmg: 1.3 }, lunge: 2.6, arc: 'l2r', warp: { out: 0.5, back: 1.6 }, cancel: { hit: 0.26, whiff: 0.38 }, join: {} },
+  j3: { rule: 'pause3', clip: 'Sond_JrpgCombo3', body: 'whole', hit: { power: 2.2, dmg: 2.0, push: 7, lift: 3 }, heat: 1, arc: 'over', warp: { skip: 0.1, in: 1.9, out: 0.55, back: 1.5 }, cancel: { hit: 0.45, whiff: 0.6 } },
   // S + LMB: the launcher lifts them (its own 0.92 m) and what it strikes. Tapped, lift 5.5 (an apex of 1.55 m about as a1 cuts, the
   // Courier on the clip's own rise); held to its strike (High Time, tools/moveset.js), they rise on an arc of their own to the owner's
   // "about 2.2x their own height", 2.2 x 1.78 m = 3.92 m to the feet, whatever was struck (2026-10-11: riding what it launched, the rise
@@ -84,21 +88,21 @@ const MOVES = {
   // nearest wall), the Courier's own hang x0.3 (6.3 m/s², was 0.12) where nothing is ridden; and the plunge, its wind-up at 1.25x to
   // 0.26 clip s (the chop's end, was 0.32 at 1x) and its fall 30 m/s (was 26), whose landing ring strikes only what is near the ground,
   // its lift gone (what it threw overhead flew 9 m). The owner (2026-10-11): "a little too floaty"; measured: docs/plans/SONDELASS-STRINGS.md
-  up: { rule: 'launcher', clip: 'Sond_Launcher', body: 'whole', root: 'xyz', chain: [0.3, 1.08], hit: { power: 1.4, dmg: 1.1, lift: 5.5, push: 1 }, high: { lift: 9.2 }, arc: 'over' },
-  a1: { rule: 'air1', clip: 'Sond_AirCombo1', body: 'whole', gravity: 0.3, chain: [0.22, 0.8], hit: { power: 1.2, dmg: 1.0, lift: 1.2, push: 0.5 }, arc: 'r2l' },
+  up: { rule: 'launcher', clip: 'Sond_Launcher', body: 'whole', root: 'xyz', chain: [0.3, 1.08], hit: { power: 1.4, dmg: 1.1, lift: 5.5, push: 1 }, high: { lift: 9.2 }, arc: 'over', warp: { out: 0.55, back: 1.3 }, cancel: { hit: 0.38, whiff: 0.5 }, join: {} },
+  a1: { rule: 'air1', clip: 'Sond_AirCombo1', body: 'whole', gravity: 0.3, chain: [0.22, 0.8], hit: { power: 1.2, dmg: 1.0, lift: 1.2, push: 0.5 }, arc: 'r2l', warp: { out: 0.55, back: 1.3 }, cancel: { hit: 0.28, whiff: 0.36 }, join: {} },
   // (a2's somersault turns the blade in an upright circle 37-49 degrees to their left, never across the front: aim turns them that far
   // off the target, so the circle's front passes through it; measured from the clip, melee.js)
-  a2: { rule: 'air2', clip: 'Sond_AirCombo2', body: 'whole', gravity: 0.3, chain: [0.36, 1.0], aim: 0.73, hit: { power: 1.3, dmg: 1.1, lift: 1.2, push: 0.5 }, arc: 'l2r', heat: 0.5 },
+  a2: { rule: 'air2', clip: 'Sond_AirCombo2', body: 'whole', gravity: 0.3, chain: [0.36, 1.0], aim: 0.73, hit: { power: 1.3, dmg: 1.1, lift: 1.2, push: 0.5 }, arc: 'l2r', heat: 0.5, warp: { out: 0.55, back: 1.3 }, cancel: { hit: 0.41, whiff: 0.5 }, join: {} },
   a3: { rule: 'plunge', clip: 'Sond_AirPlunge', body: 'whole', rate: 1.25, plunge: { hold: 0.26, speed: 30 }, ring: 2.6, hit: { power: 2.2, dmg: 2.0, push: 2, lift: 0 }, ringHit: { power: 2.2, dmg: 2.0, push: 7, lift: 0 }, heat: 1, arc: 'over' }, // (its chop keeps what it cut near, to fall beside them; the ring's push clears the ground)
   // a running slash (LMB while sprinting), the charged slash (hold LMB), the counter from the guard (the Tidecutter is RMB's: sondelassloadout.js)
-  dash: { rule: 'dash', clip: 'Sond_DashSlash', body: 'whole', root: 'xz', hit: { power: 1.9, dmg: 1.8, push: 8 }, heat: 0.8, arc: 'r2l' },
+  dash: { rule: 'dash', clip: 'Sond_DashSlash', body: 'whole', root: 'xz', hit: { power: 1.9, dmg: 1.8, push: 8 }, heat: 0.8, arc: 'r2l', warp: { in: 1.15, out: 0.5, back: 1.3 }, cancel: { hit: 0.36, whiff: 0.5 } },
   hold: { clip: 'Sond_ChargeHold' },
   // (the charged slash: the suite's flat cut, Sond_Combo3, the library's most level blade (198 degrees swept at the chest, 1.44 to 1.07 m,
   //  0.46 m of rise and fall, measured by melee.js measureSwing), entered past its first 0.1 s and its windup's turn quickened as the Hop
   //  Slash's is (South, 2026-11-16: "janky transitions with the charged slash ... one that strikes horizontally instead of low"). The
   //  suite's Sond_ChargeRelease began mid-swing on its first frame (its strike 0 to 0.11 s) and rose from the knee, 0.66 m)
   burst: { rule: 'charge', clip: 'Sond_Combo3', body: 'whole', root: 'xz', rate: 1.1, warp: { skip: 0.1, in: 2.6, out: 0.5, back: 1.7 }, to: 1.05, fade: 0.35, hit: { power: 1.6, dmg: 1.6, push: 9 }, heat: 1, arc: 'r2l' },
-  spin: { rule: 'counter', clip: 'Sond_SpinSlash', body: 'whole', hit: { power: 1.4, dmg: 1.2, push: 6 }, heat: 0.6, arc: 'r2l' },
+  spin: { rule: 'counter', clip: 'Sond_SpinSlash', body: 'whole', hit: { power: 1.4, dmg: 1.2, push: 6 }, heat: 0.6, arc: 'r2l', warp: { out: 0.5, back: 1.1 }, cancel: { hit: 0.96, whiff: 1.05 } },
   // crouched, RMB let go before the charge is full: THE IAIDO'S DRAW CUT. The suite's rising cut (c2's clip, low left to high right: the
   // sweep a blade drawn from the left hip makes) from 0.22 s, its strike begun, at 1.4x, begun from the iaido's pose (begin's `join`;
   // from 0.1, the join swept the blade 7 cm through the crouched left thigh, from 0.18 1.5 cm: the pose audit, 2026-10-11). No row of its own yet (progress/combat/moves.js is Dovina's): k x 1.1 = 1.54 a hit,
