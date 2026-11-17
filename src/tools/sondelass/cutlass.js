@@ -48,6 +48,8 @@ import * as THREE from 'three';
 import { sfx } from '../../audio/sfx.js';
 import { BLADE_LEN } from './model.js';
 import { Trail } from '../../vfx/trail.js';
+import { CutlassTrail } from '../../vfx/cutlasstrail.js';
+import { CutlassSettle } from './settle.js';
 import { BladeMode } from './blade.js';
 import { deflect, guard, PRESS } from '../../courier/parry.js';
 import { Moveset, rootOf, shedSpeed } from '../moveset.js';
@@ -134,9 +136,12 @@ export class Cutlass {
       catalogue: SONDELASS_MOVES, loadout: () => this.loadout?.get() || SONDELASS_LOADOUT, wraps: { stinger: (row, { paid }) => this.stinger(paid) }, // (the loadout chosen, checked against the catalogue and what is open; the default where none is: MELEE-LOADOUT.md phase 3)
       drawn: () => this.tool.drawT > 0.02 && this.tool.form === 'cutlass', onBlinkCancel: () => this.blinkCancel(),
       onHit: (kind, ent, at, dir, h, c) => g.blowFeel?.land('cutlass', kind, ent, at, dir, h, c, this.feel), // (a blow's weight, looks only: vfx/blowfeel.js)
+      onBegin: () => this.settle?.reset(), onEnd: (c) => this.settle?.arm(c), // (the settle at a string's end: settle.js)
     });
     this.feel = { swing: this.trail, segment: (a, b) => this.tool.model.bladeSegment(a, b) };
+    this.line = new CutlassTrail(this.trail, this.feel.segment); // (the cutlass's trail: vfx/cutlasstrail.js)
     this.blade = new BladeMode(this);
+    this.settle = new CutlassSettle(this); // (left alone at a string's end, the flourish back to the stance: settle.js)
     this.rmb = null; // an RMB press waiting for the free way: { want: 'tap' | 'forward' | 'back' | 'iaido', t }
     this.iai = null; this.iaiW = 0; // the iaido's charge ({ t: real s held, full }), and its pose's weight
     this.stinging = false; this.stCool = 0; this.stHit = new Set(); this.stPrev = new THREE.Vector3(); this.stDir = new THREE.Vector3(0, 0, 1); this.ghostT = 0;
@@ -153,7 +158,7 @@ export class Cutlass {
 
   cancel() {
     this.moves.closeBlow(this.stBlow); // (the stinger's blow before the stow ends the run: tools/moveset.js)
-    this.moves.cancel(); this.rmb = null; this.iai = null; this.iaiW = 0; this.guardOn = false; this.ghosts.clear();
+    this.moves.cancel(); this.settle.cut(); this.rmb = null; this.iai = null; this.iaiW = 0; this.guardOn = false; this.ghosts.clear();
     this.blade.exit('stow');
     this.game.lock?.release('stow');
     this.trail.gap();
@@ -178,6 +183,7 @@ export class Cutlass {
   // ---------------------------------------------------------------- strokes: the moveset reads LMB (and R); the cutlass keeps RMB and V
   update(dt, inp) {
     const P = this.tool.P, g = this.game, raw = g.rawDt || dt;
+    this.settle.update(dt, inp); // (first, so a press cuts it on its own frame)
     this.stCool -= dt; this.parryT += dt;
     this.iaiW = this.iai ? Math.min(1, this.iaiW + raw / IAIDO.in) : Math.max(0, this.iaiW - raw / IAIDO.out);
     // E in blade mode: the world comes back up for the blink at once (at a twentieth of its speed its fixed step, and so the blink, waits
@@ -362,13 +368,11 @@ export class Cutlass {
   // ---------------------------------------------------------------- what is drawn
   /** After the tool has been placed for the frame: the blade's ribbon, and the afterimages' fade. */
   afterHands(dt) {
-    const m = this.tool.model, c = this.moves.cur;
+    const m = this.tool.model;
     if (this.stinging && m.bladeOut > 0.5) { m.bladeSegment(_a, _b); this.trail.push(_a, _b); this.trail.update(dt); }
-    else if (m.bladeOut > 0.5) this.moves.afterHands(dt);
+    else if (m.bladeOut > 0.5) this.line.step(this.moves, dt); // (the blows' line: the tip's arc on the strike's frames, vfx/cutlasstrail.js)
     else { this.trail.gap(); this.trail.update(dt); }
-    const hot = c && (c.def.heat || 0) > 0.6;
-    if (!c?.paid || this.stinging) this.trail.setColors(this.stinging ? 0xffe0b0 : hot ? 0xff7a4a : 0xffb27a, this.stinging ? 0xffffff : 0xfff1dc); // (a paid blow's: the engine's, the film)
-    if (this.stinging) this.trail.power = 1.5; // (the finishers and the stinger shed more)
+    if (this.stinging) { this.trail.setColors(0xffe0b0, 0xffffff); this.trail.power = 1.5; this.line.tint = null; } // (the stinger's own; the blows' colours are the line's)
     this.ghosts.update(dt);
   }
 

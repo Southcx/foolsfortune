@@ -1,4 +1,4 @@
-# The Sondelass's melee, revamped for feel (a plan, approved 2026-11-16; steps 0, 1, 2 and 3 built)
+# The Sondelass's melee, revamped for feel (a plan, approved 2026-11-16; steps 0 to 4 built)
 
 South, 2026-11-16: "drastically improve the feel of combat, making it snappy, responsive, flowing, and visually striking. The single
 most important design aspect is 'elegance'." And 2026-11-15, on the stepped key poses we reverted: holding extreme poses was meant as
@@ -305,3 +305,33 @@ come sooner, but the line is not yet one curve:
 - As ruled (section 6, 3): the clips cannot be joined cleanly as they stand, so this goes to South. The two ways on from here without
   a new clip: cut each follow-through's cancel earlier (before the blade wraps behind), or let the fade run into the strike's first
   frames (longer than the startup). Both are a call, not a tune.
+## 12. Step 4 as built (Calissa's builder, 2026-11-17)
+
+The line, drawn (3F). Nothing in `tools/moveset.js` changed; the other six tools' ribbons are the engine's, as they were.
+
+| Piece | Where | What it does |
+| --- | --- | --- |
+| The cutlass's trail | `vfx/cutlasstrail.js` (`CutlassTrail`, `CUTLASS_TRAIL`), asked from `cutlass.js` afterHands; its look `swing.cutlass` (library.js); `taper` on `vfx/trail.js` | pushed only from the strike's start to its end (no pad), on `c.t` (the warped clock); 0.075 game s more past the strike's end, its head drawn in to a point (92% of the blade), and that carry waits while the pose is held; two ribbons (a body from 42% of the blade out, an edge from 90%) each thinning to its tail with age (taper 0.8, 0.55) and fading; the blow's damage type's colour (impact's bone, `DAMAGE_TINT`) to a warm white edge; a paid blow keeps the film. The violet afterglow ribbon and the sparkles are gone; max 96 samples, so 144 Hz never cuts a tail |
+| The cutlass's settle | `tools/sondelass/settle.js` (`CutlassSettle`, `SETTLE`) | Sond_Flourish at 1.3x (1.5 real s), in over 0.24 clip s, out into the stance over its last 0.3; starts when the finisher (`c.last`) ends on its own, or when the string's window lapses (RESET 0.9 s after a blow); only standing, still, on the ground, third person, nothing pressed; any press, a move key, motion or the air cuts it, its last pose let go over 0.05 real s, under a blow that begins |
+| The cutlass's draw and stow | `tools/sondelass/drawclips.js` (`CutlassDrawClips`, `DRAW_CLIPS`), wired in `sondelass.js` | Sond_Draw from 0.06 at 1.5x: the tool held in the holster until clip 0.24, eased into the hand by 0.33 (the hand within 0.13 m of the holster there, measured), the blade out from 0.31, the clip crossfaded into stance:cutlass over 0.47 .. 0.66; drawT 0 to 1 over 0.06 .. 0.42 (0.24 real s; the old draw 0.26). Sond_Sheathe at 1.4x: the blade in from 0.16, the tool eased into the holster over 0.34 .. 0.45, drawT 1 to 0 by 0.44 (the stow event and sound on the seat), the layer let go over 0.6 .. 0.8. Upper body only; reversed, carrying, first person or a blow begun: the shared draw goes on from drawT |
+
+Events for the ear: `cutlass.draw { beat: 'grab' }`, `cutlass.sheathe { beat: 'seat' }`, `cutlass.settle { beat: 'begin' | 'flick' | 'cut' }`.
+The three clips are now named by code, so `node scripts/bake_suite.mjs` moved them from social.bin into core.bin (+83 KB at boot).
+
+The look (one headless run, desk resolution, at the Weir against a slip jelly; the builder's scratchpad `sf4/`):
+- **The trail** reads as one arc a blow, tapered to its tail: c1's flat cut, c2's rising arc over the head, c4's overhead line. Drawn
+  only while LIVE, and the carry past the strike's end shows as a short pointed head. **Rough:** impact's bone white is additive on pale
+  sand and pale sky, so in the Dunes at noon it is faint; it reads well only against the dark of the body. Whether the damage type should
+  be a tint over a darker core (a blade's line that reads on white) is a look call, not made here.
+- **The draw** reads: the hand goes to the small of the back, the haft comes round over the right shoulder and down into the en garde,
+  the blade sliding out as it comes; no pop where it leaves the holster (from the front three-quarter).
+- **The settle** played after c3 (the string's window lapsed): 0.9 s of plain stance first (the lapse), then the flourish: the blade
+  turned down past the leg, held up and back behind the shoulder, then flicked out level at 1.73. **Rough:** the wait for the lapse reads
+  as a pause before a fidget, not as the end of the string; and through 1.0 to 1.7 clip s the blade points behind the Courier. Starting it
+  from the last blow's end (not the lapse) would read as part of the line, but would show and be cut in every deliberate pause of a pause
+  string; it was left on the lapse.
+- **The stow:** the blade drawn in by the time the hand turns, the seat on its frame (the events say so), the hand down after. **Not
+  seen:** the camera meant to be behind them stood in front, so the tool going into the holster at the small of the back was not looked at.
+
+Not verified: the pose audit (no blade-through-body numbers for the flourish or the two clips), first person, running draws and stows,
+the settle cut mid-play by each press kind (only the stow's X cut was seen), and the stress test (Calissa runs it on the merged result).
