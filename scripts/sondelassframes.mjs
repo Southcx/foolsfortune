@@ -3,7 +3,7 @@
 // active, recovery, total, and today's cancel frame), read in the game itself on the dev server so the clips, the swing measure
 // (tools/melee.js) and the rule rows (progress/combat/moves.js) are the engine's own. Printed as a markdown table, the default string
 // (c1 .. c4) first, and written to the path given; a warped move (tools/movewarp.js) on its warped clock, with its on-hit cancel beside the
-// whiff's. It measures only (docs/plans/SONDELASS-FEEL.md 3A, step 0; step 2's warp and cancel, section 10).
+// whiff's. It measures only (docs/plans/SONDELASS-FEEL.md 3A, step 0; step 2's warp and cancel, section 10; step 5's, section 13).
 //
 //   CHROMIUM=/path/to/chrome node scripts/sondelassframes.mjs [out.md]
 //
@@ -40,7 +40,7 @@ try {
       const row = SONDELASS_MOVES[id], def = M.def(id), kind = row ? (row.kind === 'special' ? 'special' : 'ground') : KIND[id];
       const base = { id, label: row?.label || LABEL[id] || id, clip: row?.clip || def?.clip || '', kind };
       if (!def) { const st = row?.sting; return { ...base, body: 'whole', own: true, note: st ? `played by cutlass.js: a ${Math.round(st.dash * 60)}-frame lunge at ${st.speed} m/s` : 'not on the engine', power: row?.stats?.power }; }
-      const ph = phasesOf(M, id, FREE.has(id) ? { way: 'free' } : {}), R = M.rule(def);
+      const ph = phasesOf(M, id, FREE.has(id) || (def.warp && !def.chain) ? { way: 'free' } : {}), R = M.rule(def); // (a warped special: its cancel frame takes the free recovery cut, moveset.js freeCutOpen)
       const c = { def, kind, last: kind === 'ground' && id === last };
       return { ...base, body: def.body === 'whole' ? 'whole' : 'upper', ...ph, lunge: def.lunge ?? null, power: R?.power ?? def.hit?.power ?? null, weight: def.hit ? blowWeight(c, def.hit) : null, plunge: !!def.plunge, rule: def.rule || null };
     });

@@ -101,7 +101,7 @@ export class BladeJoin {
   /** Where a chained move enters (its warp begun there), or null: no join (the row asks for none, nothing came before, or a whole-body
    *  move's launch would not take it). Sets the engine's fade to the frames the startup has. */
   enter(M, prev, def, id = def.id) {
-    M.fadeDur = null; this.pending = null;
+    M.fadeDur = null; this.pending = null; this.entered = null; // (`entered`: the def this begin joined, else none: under() holds the last pose only for it)
     if (!def.join || !def.warp || !prev || !prev.def.join || !M.from) return null;
     const ch = M.game.character, dur = M.dur(def), W0 = this.warpOf(def, def.track, dur); if (!W0) return null;
     const key = `${prev.id}>${id}@${Math.round((prev.t * FPS) / JOIN.bin)}`;
@@ -119,7 +119,7 @@ export class BladeJoin {
     }
     const W = this.warpOf(def, def.track, dur, J.at); if (!W) return null;
     const frames = Math.max(JOIN.minFade, Math.min(JOIN.maxFade, Math.floor(W.m0 * FPS) - 1));
-    J.frames = frames; J.pace = +(J.tip / (frames / FPS)).toFixed(1); J.clean = J.pace <= JOIN.clean; M.fadeDur = frames / FPS; this.pending = def;
+    J.frames = frames; J.pace = +(J.tip / (frames / FPS)).toFixed(1); J.clean = J.pace <= JOIN.clean; M.fadeDur = frames / FPS; this.pending = def; this.entered = def;
     return W;
   }
 
@@ -160,7 +160,7 @@ export class BladeJoin {
 
   /** The tool's layer under a joined whole-body move: the last pose shown, so the launch blends in over the cut before, not the stance. */
   under(M, out, c) {
-    if (!c.def.join || !M.last) return null;
+    if (!c.def.join || !M.last || this.entered !== c.def) return null; // (a joined row begun cold, the launcher from a stand: no stale pose under it)
     out.copy(M.last); return { pose: out, w: 1 };
   }
 

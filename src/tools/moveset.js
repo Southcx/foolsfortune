@@ -302,10 +302,10 @@ export class Moveset {
 
   /** The chain window on move `c` is open: a press now goes on to the next free, never sooner than its row's time (`soon`). */
   chainOpen(c, soon) { if (c.W) return !!c.def.chain && cancelOpen(c); return !!c.def.chain && c.t >= c.def.chain[0] && c.age >= soon && (c.t <= c.def.chain[1] || c.age <= soon + 0.25); }
-  /** The free recovery cut is open on move `c` (a string's last blow, the dash, the charge's release, a plunge landed): its row (`R`)'s
-   *  time spent and its strike past, a press now begins a new opener at no cost. */
+  /** The free recovery cut is open on move `c` (a string's last blow, the dash, the charge's release, a plunge landed; any warped move with
+   *  no next, a special too: its cancel frame, movewarp.js): its row (`R`)'s time spent and its strike past, a press begins a new opener free. */
   freeCutOpen(c, R, soon) {
-    const free = c.kind === 'ground' || c.kind === 'pause' || c.kind === 'dash' || c.kind === 'charge' || (c.def.plunge && c.landed), since = c.def.plunge ? (c.age || 0) - (c.landAt ?? c.age ?? 0) : c.age || 0;
+    const free = !!c.W || c.kind === 'ground' || c.kind === 'pause' || c.kind === 'dash' || c.kind === 'charge' || (c.def.plunge && c.landed), since = c.def.plunge ? (c.age || 0) - (c.landAt ?? c.age ?? 0) : c.age || 0;
     return !!R && !!free && (c.W ? cancelOpen(c) : since >= soon && c.t > (c.def.track?.strike[1] ?? 0));
   }
 
