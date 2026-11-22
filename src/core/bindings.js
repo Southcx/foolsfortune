@@ -219,6 +219,11 @@ export const ACTIONS = [
   { id: 'crN3',     keys: ['Digit3'],                   touch: 'cr.n3',      ctx: 'tool.crucibelle', how: 'tap' },
   { id: 'crN4',     keys: ['Digit4'],                   touch: 'cr.n4',      ctx: 'tool.crucibelle', how: 'tap' },
   { id: 'crN5',     keys: ['Digit5'],                   touch: 'cr.n5',      ctx: 'tool.crucibelle', how: 'tap' },
+  { id: 'crN6',     keys: ['Digit6'],                   ctx: 'tool.crucibelle', how: 'tap' },  // (the upper register: the five an octave up, South 2026-11-22; the desk only)
+  { id: 'crN7',     keys: ['Digit7'],                   ctx: 'tool.crucibelle', how: 'tap' },
+  { id: 'crN8',     keys: ['Digit8'],                   ctx: 'tool.crucibelle', how: 'tap' },
+  { id: 'crN9',     keys: ['Digit9'],                   ctx: 'tool.crucibelle', how: 'tap' },
+  { id: 'crN10',    keys: ['Digit0'],                   ctx: 'tool.crucibelle', how: 'tap' },
   { id: 'lhHoover', mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'tool.lockheart', how: 'hold' }, // (held: hoover; tapped: the flail)
   { id: 'lhOpen',   mouse: 'Mouse2',      pad: 'LT',    touch: 'aim',        ctx: 'tool.lockheart', how: 'hold' }, // (OPEN; the wheel of odds turned by a finger round it: the driver's)
 ];

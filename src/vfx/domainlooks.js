@@ -6,7 +6,8 @@
 //                                 spot), and held while the Spirit Garden, a puzzle duel, the shatter or a seam has the screen
 //   domain.milestone { domain, level, rows, by }   a ten that holds something (Dovina's, progress/psyche.js): a bigger beat in the
 //                                 level-up's place (that domain's queued level-up taken up into it): the level-up played twice,
-//                                 swelling (MILESTONE); the summit's (99) a third time, bigger
+//                                 swelling (MILESTONE); the summit's (99) a third time, bigger. Below the 70th both are the spark of
+//                                 insight instead (SPARK, vfx/library/domainsparks.js; South, 2026-11-22), the full one kept for 70 and over
 //   god.<power> { repeat }        a god power's act (godhand/powers.js says it from its domain's handler): its domain's `.cast` or `.hit`
 //                                 where the act begins or lands (POWER_LOOK: the drag's two ends, the press, the jar for Read), scaled
 //                                 to the power's reach (progress/godpowers.js rampOf) and clamped to the god hand's view. It plays
@@ -36,6 +37,11 @@ export const DOMAIN_LOOKS = {
 /** A milestone's beat: [moment, scale, delay real s], the level-up swelling in two, the summit's (99) a third over them (FFXII's licence
  *  learned, a bell rung twice). Only the level-up's own effect: the domain's cast and landing are sized for the god hand's high view and
  *  bury the Courier under the shoulder camera (measured 2026-11-01: Manifestation's cast at 1.1 filled the frame). */
+/** The level-up by its level (South, 2026-11-22: "early levels should be like sparks of insight flashing, high levels are the current
+ *  bombastic aura pulse"): below `full` the spark of insight (vfx/library/domainsparks.js), grown from `scale[0]` at level 1 to `scale[1]`
+ *  at `full`, and from `hit` up the domain's own small landing laid under it at the feet, so its grammar shows; at `full` and over, the
+ *  whole `domain.<id>.level`. A milestone below `full` is the spark twice, swelling, with the landing; at `full` and over, MILESTONE. */
+export const SPARK = { full: 70, hit: 30, brow: 1.72, scale: [0.85, 1.6], hitScale: [0.5, 0.9] };
 export const MILESTONE = { beats: [['level', 1, 0], ['level', 1.25, 0.45]], summit: ['level', 1.45, 0.9] };
 
 const R = (id, key, k = 1) => (g) => (rampOf(id, key, g) ?? 1) * k;
@@ -68,13 +74,13 @@ export class DomainLooks {
     this.game = game;
     this.queue = []; this.wait = 0; this.later = []; this.stroke = null;
     const E = game.events;
-    E?.on?.('domain.level', (e) => { if (e.by === 'courier' && e.domain) this.levelUp(e.domain); });
+    E?.on?.('domain.level', (e) => { if (e.by === 'courier' && e.domain) this.levelUp(e.domain, e.level); });
     E?.on?.('domain.milestone', (e) => { if (e.by === 'courier' && e.domain) this.milestone(e.domain, e.level); });
     for (const id of POWER_EVENTS) E?.on?.(`god.${id}`, (e) => this.power(id, e));
   }
 
   /** A domain's level-up said: queued (one a domain: a second of the same before its turn is the same beat). */
-  levelUp(domain) { if (!this.queue.some((q) => q.domain === domain)) this.queue.push({ domain }); }
+  levelUp(domain, level = 1) { const q = this.queue.find((x) => x.domain === domain); if (q) q.level = Math.max(q.level || 0, level); else this.queue.push({ domain, level }); }
   /** A milestone said: the domain's queued level-up made its milestone, or a new one queued. */
   milestone(domain, level = 0) {
     const q = this.queue.find((x) => x.domain === domain);
@@ -106,6 +112,16 @@ export class DomainLooks {
     }
   }
 
+  /** The small level-up below the 70th: the spark at the brow, the domain's landing under it from the 30th; a milestone the spark twice. */
+  spark(domain, level, follow, milestone) {
+    const u = THREE.MathUtils.clamp((level - 1) / (SPARK.full - 1), 0, 1), s = THREE.MathUtils.lerp(SPARK.scale[0], SPARK.scale[1], u);
+    const y = this.game.god?.active ? 0.7 : SPARK.brow, brow = (h) => { if (this.vessoulAt(_p)) h.pos.copy(_p).setY(_p.y + y); return true; }, at = _p.clone().setY(_p.y + y); // (the Jar's mouth while the god hand is up)
+    this.play(`domain.${domain}.spark`, { pos: at.clone(), scale: s, follow: brow });
+    if (milestone) this.later.push({ t: 0.3, name: `domain.${domain}.spark`, ctx: { pos: at.clone(), scale: s * 1.3, follow: brow }, k: 1 });
+    if (level >= SPARK.hit || milestone) this.play(`domain.${domain}.hit`, { pos: _p.clone(), scale: THREE.MathUtils.lerp(SPARK.hitScale[0], SPARK.hitScale[1], u) * (milestone ? 1.3 : 1), dir: UP.clone(), follow });
+    this.wait = DOMAIN_LOOKS.gap * (milestone ? 1 : 0.6);
+  }
+
   play(name, ctx, k = 1) { const h = this.game.vfx?.play(name, ctx); if (h) h.k = k; return h; }
 
   update(dt) {
@@ -116,6 +132,7 @@ export class DomainLooks {
     if ((this.wait -= dt) > 0 || !this.queue.length || this.busy() || !this.vessoulAt(_p)) return;
     const { domain, milestone, level } = this.queue.shift();
     const follow = (h) => { if (this.vessoulAt(_p)) h.pos.copy(_p); return true; }; // (it goes with them as they move)
+    if (level < SPARK.full) { this.spark(domain, level, follow, milestone); return; }
     if (!milestone) { this.wait = DOMAIN_LOOKS.gap; this.play(`domain.${domain}.level`, { pos: _p.clone(), follow }); return; }
     const beats = level >= 99 ? [...MILESTONE.beats, MILESTONE.summit] : MILESTONE.beats;
     for (const [m, scale, delay] of beats) {

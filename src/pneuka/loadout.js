@@ -77,7 +77,7 @@ export class Loadout {
     const card = (id) => ({ id, ...CARD[id] });
     const state = {
       main: { ...card(main), fittings: this.fittings(main), ...(main === 'psygun' ? { chambers: this.chambers() } : {}) },
-      sub: { ...card(sub), verb: `${G[sub].verb}: ${G[sub].does}`, passive: G[sub].passive || 'none', fittings: this.fittings(sub) },
+      sub: sub ? { ...card(sub), verb: `${G[sub].verb}: ${G[sub].does}`, passive: G[sub].passive || 'none', fittings: this.fittings(sub) } : null, // (a main worn alone: no sub)
       pair: this.pairCard(main, sub),
       shelf: TOOL_IDS.filter((id) => !this.worn(id)).map((id) => ({ ...card(id), verb: G[id].verb, passive: G[id].passive || 'none',
         note: this.fittings(id).map((f) => f.label).join(' · ') || undefined })),
@@ -87,8 +87,8 @@ export class Loadout {
     if (preview && !this.worn(preview)) {
       const next = this.pairCard(main, preview);
       state.preview = { id: preview, as: 'sub', pair: next, rows: [
-        { what: 'R', from: G[sub].verb, to: G[preview].verb },
-        { what: 'Passive', from: G[sub].passive || 'none', to: G[preview].passive || 'none' },
+        { what: 'R', from: sub ? G[sub].verb : 'none', to: G[preview].verb },
+        { what: 'Passive', from: sub ? G[sub].passive || 'none' : 'none', to: G[preview].passive || 'none' },
         { what: 'Pair', from: state.pair?.name, to: next?.name },
       ] };
     }

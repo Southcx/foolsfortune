@@ -88,6 +88,8 @@ const CSS = `
   grid-template-columns:52px 1fr;gap:8px;align-items:center}
 .rt-subwrap .face .nm{grid-column:1/-1;font:700 11px/1 Georgia,serif;letter-spacing:.14em;text-transform:uppercase}
 .rt-subwrap .face .gl{font-size:10.5px;line-height:1.35}
+.rt-subwrap.none .body{background:none;border:2px dashed rgba(231,196,106,.45);box-sizing:border-box}
+.rt-subwrap.none .face{color:#e9d6bc;opacity:.75;display:flex;align-items:center;justify-content:center;text-align:center;font:700 10px/1.5 Georgia,serif;letter-spacing:.18em}
 .rt-arcana{left:350px;top:16px;width:170px;height:270px;background:linear-gradient(180deg,#1d1424,#120c18);color:#efe6d2;
   box-shadow:0 0 0 2px #2a140c,0 0 0 4px #ffd36a,0 0 30px rgba(255,211,106,.22),0 14px 24px rgba(0,0,0,.6)}
 .rt-arcana .face{display:block;width:96px;height:156px;margin:4px auto 6px;image-rendering:pixelated;border-radius:3px;box-shadow:0 0 0 1px rgba(255,211,106,.4)}
@@ -180,7 +182,7 @@ export class ReadingTable {
     const pos = (text, l, t) => { const p = make('span', 'rt-pos', text); p.style.left = `${l}px`; p.style.top = `${t}px`; return p; };
     el.append(pos('MAIN', 58, 128), pos('SUB, CROSSED', 300, 414), pos('THE PAIR', 398, 294));
     if (state.main) el.append(this.mainCard(state.main));
-    if (state.sub) el.append(this.subCard(state.sub));
+    el.append(state.sub ? this.subCard(state.sub) : this.noSub()); // (a main worn alone: the sub's place left open, a drop still taken there)
     if (state.pair) el.append(this.pairCard(state.pair));
     el.append(this.hand(state.shelf || [], state.preview?.id));
     if (state.preview) el.append(this.preview(state.preview));
@@ -210,6 +212,13 @@ export class ReadingTable {
     }
     c.append(this.fittings(m.fittings));
     return c;
+  }
+
+  /** The sub's place with nothing in it: an outline to drop a card on. */
+  noSub() {
+    const w = make('div', 'rt-subwrap none'); w.dataset.as = 'sub'; this.dropTarget(w, 'sub');
+    const face = make('div', 'face'); face.innerHTML = 'NO SUB<br>R lends nothing'; w.append(make('div', 'body'), face);
+    return w;
   }
 
   subCard(s) {

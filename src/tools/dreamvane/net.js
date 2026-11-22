@@ -23,7 +23,8 @@ import * as THREE from 'three';
 import { HOOK } from './model.js';
 import { sfx } from '../../audio/sfx.js';
 
-export const NET = { hoop: 0.26, round: 16, rows: 6, row: 0.085, swing: 0.42, catchAt: [0.28, 0.82], reach: 1.25, aware: 0.5, cool: 0.2, dodge: 5, key: 'KeyQ' };
+export const NET = { hoop: 0.26, big: 2, // (big: the hoop and its bag drawn at twice the dreamcatcher's diameter while the net is out, South 2026-11-22: the look only, the catch's reach is `reach`)
+   round: 16, rows: 6, row: 0.085, swing: 0.42, catchAt: [0.28, 0.82], reach: 1.25, aware: 0.5, cool: 0.2, dodge: 5, key: 'KeyQ' };
 const N = NET.round, R = NET.rows, TAU = Math.PI * 2;
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _f = new THREE.Vector3(), _l = new THREE.Vector3(), _u = new THREE.Vector3(0, 1, 0);
 const _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _m = new THREE.Matrix4(), _t = new THREE.Matrix4();
@@ -94,7 +95,8 @@ export class DreamNet {
     this.cool -= dt; this.uni.uTime.value += dt; this.flash = Math.max(0, this.flash - dt * 2.5); this.uni.uFlash.value = this.flash;
     const shown = this.w > 0.03;
     this.hoop.visible = shown; this.bag.visible = this.thread.visible = shown; T.model.catcher.visible = !shown;
-    this.hoop.scale.setScalar(0.3 + 0.7 * this.w); this.uni.uA.value = this.w;
+    const sc = (0.3 + 0.7 * this.w) * (1 + (NET.big - 1) * this.w); this.hoop.scale.setScalar(sc); this.uni.uA.value = this.w;
+    this.hoop.position.x = 1.0 + NET.hoop * Math.max(0, sc - 1); // (grown out from the crook, its near rim kept where the dreamcatcher's is)
     if (!shown) { this.set = false; return; }
     if (this.swinging) {
       this.swingT += dt; const k = this.swingT / NET.swing;

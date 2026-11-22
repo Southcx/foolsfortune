@@ -30,6 +30,7 @@ import { ANGLING_EFFECTS } from './anglingeffects.js'; // (the catch leaving the
 import { BLOW_FEEL_EFFECTS } from './blowfeeleffects.js'; // (a melee blow's weight, and Strawman's straw: vfx/blowfeel.js plays them)
 import { FLOURISH_EFFECTS } from './flourisheffects.js'; // (the Courier's flourishes: a step's, a dash's, the shatter's, the aura's, the arrival's: vfx/flourishes.js)
 import { KIT_DEMO_EFFECTS } from './library/kitdemo.js'; // (the shape layer's demonstrations, primary, secondary and tertiary: vfx/shapes/, scripts/vfxgallery.mjs)
+import { DOMAIN_SPARK_EFFECTS } from './library/domainsparks.js'; // (a domain's small level-up, the spark of insight below its 70th: vfx/domainlooks.js)
 import { DOMAIN_EFFECTS } from './library/domains.js'; // (the seven domains' grammars: domain.<id>.cast, .hold, .hit, .level; vfx/domainlooks.js plays them)
 import { HIT_EFFECTS } from './library/hits.js'; // (every blow's look by what struck and what was struck: vfx.hit plays them)
 import { DAMAGE_EFFECTS } from './library/damage.js'; // (a blow's damage type laid over its hit: vfx.hit's `type`)
@@ -450,6 +451,7 @@ export const LIBRARY = {
   ...FLOURISH_EFFECTS,
   ...KIT_DEMO_EFFECTS,
   ...DOMAIN_EFFECTS,
+  ...DOMAIN_SPARK_EFFECTS,
   ...HIT_EFFECTS,
   ...DAMAGE_EFFECTS,
   ...GENERIC_EFFECTS,

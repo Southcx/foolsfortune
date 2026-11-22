@@ -75,6 +75,7 @@ export class ToolBelt {
     const why = quiet ? null : this.mayEquip(id);
     if (why) { this.game.log?.say('warn', why, { key: 'belt.swap', throttle: 2 }); return false; }
     const other = as === 'main' ? 'sub' : 'main', was = this[as];
+    if (this[other] === id && !was) { this.game.log?.say('warn', 'A main tool is always worn.', { key: 'belt.swap', throttle: 2 }); return false; } // (the main made the sub with no sub: the hands would be empty)
     if (this[other] === id) this[other] = was; // (the two change places)
     this[as] = id;
     const off = was && !this.isWorn(was) ? was : null;
@@ -82,6 +83,18 @@ export class ToolBelt {
     if (off) { const t = this.get(off); if (t?.model) t.model.visible = false; }
     this.save();
     if (!quiet) this.game.events?.emit('tool.equip', { tool: id, as, off, pair: this.pair?.n ?? null, by: 'courier' });
+    return true;
+  }
+
+  /** Take the sub off, back to the shelf: a main worn alone (South, 2026-11-22). R lends nothing then; the pair is none. */
+  unequipSub() {
+    if (!this.sub) return true;
+    const why = this.mayEquip(this.sub);
+    if (why) { this.game.log?.say('warn', why, { key: 'belt.swap', throttle: 2 }); return false; }
+    const off = this.sub, t = this.get(off); this.sub = null;
+    if (t) { t.stow?.(); if (t.model) t.model.visible = false; }
+    this.save();
+    this.game.events?.emit('tool.equip', { tool: null, as: 'sub', off, pair: null, by: 'courier' });
     return true;
   }
 

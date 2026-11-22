@@ -51,8 +51,8 @@ export const STORAGE_SHUT = 'Your storage opens at a Shrine.';
 export const STORAGE = 56;
 /** The belt's two, as the kit keeps them: two of the seven, never one twice; anything else is a new save's pair. */
 function wearPair(belt, d) {
-  const ok = d && TOOL_IDS.includes(d.main) && TOOL_IDS.includes(d.sub) && d.main !== d.sub;
-  belt.main = ok ? d.main : START.main; belt.sub = ok ? d.sub : START.sub;
+  const ok = d && TOOL_IDS.includes(d.main) && (d.sub == null || (TOOL_IDS.includes(d.sub) && d.main !== d.sub)); // (a main worn alone is kept: South, 2026-11-22)
+  belt.main = ok ? d.main : START.main; belt.sub = ok ? d.sub ?? null : START.sub;
 }
 
 export class PneukaBox {
