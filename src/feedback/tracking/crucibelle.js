@@ -14,7 +14,7 @@ export function crucibelleRules({ on, L, log }) {
   on('crucibelle.fever', () => { L.inc('bell.fever'); log.say('song', 'Crucibelle fever!', { key: 'fever', throttle: 6 }); });
   on('crucibelle.toll', (e) => { L.inc('bell.toll'); if (e.onBeat) L.inc('bell.toll.onbeat'); });
   // the combat recital (tools/crucibelle/recital.js; the words placeholders, Espada's to rule)
-  on('crucibelle.recital', (e) => { if (e.by !== 'courier' || !e.on) return; L.inc('bell.recital'); log.say('info', 'Combat recital: the bell plugged in as the amp. LMB strums, 1 to 5 the strings, Q unplugs.', { key: 'recital', throttle: 60 }); });
+  on('crucibelle.recital', (e) => { if (e.by !== 'courier' || !e.on) return; L.inc('bell.recital'); log.say('info', 'Combat recital: the bell plugged in as the amp. LMB strums (held, it feeds back), 1 to 0 the strings, Q unplugs.', { key: 'recital', throttle: 60 }); });
   on('crucibelle.strum', (e) => { if (e.by !== 'courier') return; L.inc('bell.strum'); if (e.onBeat) L.inc('bell.strum.onbeat'); if (e.hits) L.inc('bell.strum.hit', e.hits); if (e.chain) L.hi('bell.strum.chain', e.chain); if (e.windmill) L.inc('bell.windmill'); });
   on('crucibelle.lick', (e) => { if (e.by !== 'courier') return; L.inc('bell.lick'); if (e.hit) L.inc('bell.lick.hit'); });
   on('crucibelle.feedback', (e) => { if (e.by === 'courier' && e.on) L.inc('bell.feedback'); });

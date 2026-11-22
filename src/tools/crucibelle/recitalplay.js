@@ -67,7 +67,7 @@ export class RecitalPlay {
     const c = this.target(); if (!c) return null;
     const R = RECITAL_PLAY.lick, high = octave > 0, from = this.r.mouth(new THREE.Vector3());
     const dir = this.aimAt(c, _a).sub(from).normalize();
-    const b = { pos: from, vel: dir.multiplyScalar(high ? R.speedHigh : R.speed), c, degree: d, octave, color: DEGREE_COLOR[d - 1], t: 0, high, done: false };
+    const b = { pos: from, vel: dir.clone().multiplyScalar(high ? R.speedHigh : R.speed), c, degree: d, octave, color: DEGREE_COLOR[d - 1], t: 0, high, done: false };
     this.bolts.push(b);
     return b;
   }
@@ -154,5 +154,5 @@ export class RecitalPlay {
   }
 
   /** The recital ended: the bolts dropped, the feedback stopped, the moments let go. */
-  end() { this.bolts.length = 0; this.feedback(false); this.held = false; this.chain = 0; this.rockT = 0; this.windT = 0; }
+  end() { for (const b of this.bolts) b.done = true; this.bolts.length = 0; this.feedback(false); this.held = false; this.chain = 0; this.rockT = 0; this.windT = 0; }
 }
