@@ -32,7 +32,7 @@ const HALF = 0.23; // (half the outer's height: its point is this far below the 
 /** The five blades in one mesh, in the outer prism's frame with its point at the origin: each spike runs from a gap past the point to
  *  its tip along the line its side edge makes through the point (so it reads as the edge run on), at a unit radius one unit down. */
 function bladeGeometry() {
-  const pos = [], idx = [], A = 0.42, W = 0.06;
+  const pos = [], idx = [], A = 0.42, W = 0.13; // (W 0.13: at 0.06 the blades could not be made out at 7 m, the first shot)
   for (let j = 0; j < 5; j++) {
     const th = (j / 5) * Math.PI * 2, d = new THREE.Vector3(-Math.sin(th), -1, -Math.cos(th)); // (through the point from the top's vertex j)
     const t = new THREE.Vector3(Math.cos(th), 0, -Math.sin(th)), n = new THREE.Vector3().crossVectors(d, t).normalize(), b = d.clone().multiplyScalar(A), o = pos.length / 3;

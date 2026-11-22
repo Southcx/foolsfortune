@@ -70,7 +70,7 @@ export class TargetMarks {
       this.lt.copy(_p).addScaledVector(THREE.Object3D.DEFAULT_UP, r * 0.9 + C.lift + 0.23 * size);
       if (fresh) { this.lock.close = 0; if (one && this.usable.k > 0) { this.lock.copyPose(this.usable); this.usable.cut(); } } // (the hand-over: one mark)
       this.lock.target(this.lt);
-      this.lock.style({ size, gold: 1, spin: C.spin, pulse: one ? 1 : 0, dim: 1, bob: C.bob, blade: { r: Math.max(r, size * 0.22), l: r * 0.9 + C.lift + r * 0.45, k: 1 } });
+      this.lock.style({ size, gold: 1, spin: C.spin, pulse: one ? 1 : 0, dim: 1, bob: C.bob, blade: { r: Math.max(r, size * 0.32), l: r * 0.9 + C.lift + r * 0.45, k: 1 } });
       if (one && !this.merged && this.usable.k > 0) this.usable.cut();
       this.merged = one;
     } else {
