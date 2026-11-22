@@ -21,10 +21,10 @@ import { DEGREE_COLOR } from '../tools/crucibelle/songs.js';
 /** The lights' numbers: their height over the Courier (m), the side and back offsets of each fixture, the pool's radius, how far they
  *  swing off between beats, their brightness (at rest, the beat's swell, the rockstar's), and how fast the tint follows a note (1/s). */
 export const RECITAL_LOOK = {
-  height: 5.2, fixtures: [[-2.6, -1.6], [2.6, -1.6], [0, 3.2]], pool: 0.95, swing: 1.1,
+  height: 3.6, fixtures: [[-2.6, -1.6], [2.6, -1.6], [0, 3.2]], pool: 0.95, swing: 1.1,
   opacity: { rest: 0.15, beat: 0.07, rock: 0.2 }, poolK: 0.5, tintRate: 5, smokeEvery: 0.28,
 };
-const RL = RECITAL_LOOK;
+const RL = RECITAL_LOOK, _hsl = { h: 0, s: 0, l: 0 }; // (height 3.6: under a low room's beams, the workshop's)
 const DOWN = new THREE.Vector3(0, -1, 0), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _f = new THREE.Vector3(), _l = new THREE.Vector3(), _q = new THREE.Quaternion();
 
 export class RecitalLooks {
@@ -34,7 +34,7 @@ export class RecitalLooks {
     this.root = new THREE.Group(); this.root.visible = false; game.scene?.add(this.root);
     const geo = new THREE.ConeGeometry(1, 1, 24, 1, true); geo.translate(0, -0.5, 0);
     this.lights = RL.fixtures.map((fx, i) => {
-      const mat = beamMaterial({ color: 0xffffff, opacity: 0, foot: 1.1, edge: 1.5, white: 0.2, flip: true, additive: true });
+      const mat = beamMaterial({ color: 0xffffff, opacity: 0, foot: 1.1, edge: 1.5, white: 0, flip: true, additive: true });
       const cone = new THREE.Mesh(geo, mat); cone.frustumCulled = false; cone.renderOrder = 6; this.root.add(cone);
       const pool = new THREE.Mesh(new THREE.CircleGeometry(1, 24), new THREE.MeshBasicMaterial({ map: game.fx?.haloTexture ?? null, color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0, toneMapped: false }));
       pool.rotation.x = -Math.PI / 2; pool.renderOrder = 3; this.root.add(pool);
@@ -82,7 +82,7 @@ export class RecitalLooks {
       L.aim.copy(chest).addScaledVector(_l, Math.cos(a) * off).addScaledVector(_f, Math.sin(a) * off); L.aim.y = floor;
       _a.subVectors(L.aim, L.fix); const len = _a.length(); _a.multiplyScalar(1 / len);
       L.cone.position.copy(L.fix); L.cone.quaternion.setFromUnitVectors(DOWN, _a); L.cone.scale.set(RL.pool, len, RL.pool);
-      if (this.rock > 0.01) L.col.setHSL((this.t * 0.35 + L.ph / (Math.PI * 2)) % 1, 0.75, 0.62).lerp(this.tint, 1 - this.rock); else L.col.copy(this.tint);
+      if (this.rock > 0.01) L.col.setHSL((this.t * 0.35 + L.ph / (Math.PI * 2)) % 1, 0.75, 0.62).lerp(this.tint, 1 - this.rock); else { L.col.copy(this.tint); L.col.getHSL(_hsl); L.col.setHSL(_hsl.h, Math.min(1, _hsl.s * 1.4 + 0.15), Math.min(_hsl.l, 0.55)); } // (saturated: a stage gel, never near white)
       const op = w * (RL.opacity.rest + RL.opacity.beat * beat + RL.opacity.rock * this.rock);
       L.mat.uniforms.uColor.value.copy(L.col); L.mat.uniforms.uOpacity.value = op;
       L.pool.position.copy(L.aim); L.pool.scale.setScalar(RL.pool * 1.1); L.pool.material.color.copy(L.col); L.pool.material.opacity = op * RL.poolK * 2;
