@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-11-22). 722 effects in 52 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-11-22). 728 effects in 52 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -487,7 +487,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `hit` | one-shot | sprites:core, shape:disc, sprites:streak, sprites:soft | what every blow shows, whatever struck what: the 0.1 s white core, a star of rays, sparks thrown along the blow, motes left hanging | audio/crossing.js, audio/cues.js, audio/godpowers.js +43 |
+| `hit` | one-shot | sprites:core, shape:disc, sprites:streak, sprites:soft | what every blow shows, whatever struck what: the 0.1 s white core, a star of rays, sparks thrown along the blow, motes left hanging | audio/crossing.js, audio/cues.js, audio/godpowers.js +44 |
 | `hit.blunt` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff | a blunt blow: a ring of rays knocked out flat, and dust lifting off | vfx/blowfeeleffects.js, world/strawmanwell/fighter/kit.js |
 | `hit.blunt.clay` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff, sprites:chip | extends `hit.blunt`. what clay gives up: chips of it, falling, and a puff of its dust | vfx/vfx.js |
 | `hit.blunt.clay.kill` | one-shot | sprites:core, shape:ring×2, sprites:streak, sprites:soft, sprites:puff, sprites:chip, sprites:star4 | extends `hit.blunt.clay`. a kill: what it was made of bursts in a pop of its colour (a second shape), and a few stars of it go up (a finishing beat on top of its own death) | vfx/mechs/partsbody.js |
@@ -765,6 +765,18 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `city.fire.ignite` | one-shot | shape:sphere, sprites:tongue, sprites:star4, sprites:cloud |  | vfx/mechs/fire/index.js |
 | `city.glass.burst` | one-shot | sprites:star4, sprites:facet, sprites:glint, shape:hoop |  | vfx/mechs/fire/index.js |
 
+### cut (7)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `cut` | one-shot | shape:disc, sprites:streak, sprites:glint | a cut through the air (the cutlass meeting something, the blade mode's planes, the god hand's slash): a seam of light along the stroke, a hot star at its middle, glints thrown off it ('from' -> 'to' in the context: spawn 'line') | cine/overture.board.js, cine/sequence.js, music/lockheart.js +18 |
+| `cut.spin.charge` | held | sprites:glint, sprites:soft |  | tools/sondelass/spinattack.js |
+| `cut.spin.full` | one-shot | sprites:star4, shape:ring |  | feedback/tracking/sondelass.js, tools/sondelass/spinattack.js |
+| `cut.spin.ring` | one-shot | shape:ring×5, shape:sphere, sprites:chip, light, shake |  | tools/sondelass/spinattack.js |
+| `cut.wave.end` | one-shot | shape:wave, sprites:soft |  | tools/sondelass/slashwave.js |
+| `cut.wave.fly` | held | shape:wave×3, sprites:streak |  | tools/sondelass/slashwave.js |
+| `cut.wave.hit` | one-shot | shape:crescent, shape:sphere, sprites:chip |  | tools/sondelass/slashwave.js |
+
 ### garden (7)
 
 | effect | kind | layers | what | asked by |
@@ -834,7 +846,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `swing` | one-shot | trail×2, sprites:glint | what a thing leaves in the air as it sweeps: ribbons between its two ends (a wide one, a hot core near the tip), and motes shed along the way, so many per metre the tip travels (vfx.js `swing`). 'tint' is the swing's colour, 'tip' its ho... | audio/dunemaw.js, coop/personas.js, feedback/tracking/dunemaw.js +22 |
+| `swing` | one-shot | trail×2, sprites:glint | what a thing leaves in the air as it sweeps: ribbons between its two ends (a wide one, a hot core near the tip), and motes shed along the way, so many per metre the tip travels (vfx.js `swing`). 'tint' is the swing's colour, 'tip' its ho... | audio/dunemaw.js, coop/personas.js, feedback/tracking/dunemaw.js +23 |
 | `swing.brush` | one-shot | trail×2, sprites:soft | the Soul Brush's club: a warm wet arc of slip, a pale edge, droplets flung off the bristles | tools/soulbrush/club.js, vfx/vfx.js |
 | `swing.cutlass` | one-shot | trail×2, sprites:glint, sprites:streak | the Sondelass's cutlass: THE CUTLASS'S TRAIL (vfx/cutlasstrail.js, docs/plans/SONDELASS-FEEL.md 3F): one line, the tip's own arc, drawn on the strike's frames only (Marth's), in the blow's damage type's colour ('tint', set by the trail a... | tools/sondelass/cutlass.js, vfx/cutlasstrail.js, vfx/vfx.js |
 | `swing.dreamvane` | one-shot | trail×2, sprites:glint, sprites:chip | the Dreamvane's pick brought down overhead: a heavy arc of Lachryma, gold at the head, stone chips and glints thrown off it | tools/dreamvane/dreamvane.js |
@@ -950,12 +962,6 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
 | `crystal.strike` | one-shot | shape:disc, sprites:facet, sprites:glint | a crystal formation struck with the pick: a hard glint, faceted shards of solid Lachryma knocked off, oxide-bright, glints after | feedback/tracking/dreamvane.js, progress/aptitude.js, progress/classarts.js +4 |
-
-### cut (1)
-
-| effect | kind | layers | what | asked by |
-|---|---|---|---|---|
-| `cut` | one-shot | shape:disc, sprites:streak, sprites:glint | a cut through the air (the cutlass meeting something, the blade mode's planes, the god hand's slash): a seam of light along the stroke, a hot star at its middle, glints thrown off it ('from' -> 'to' in the context: spawn 'line') | cine/overture.board.js, cine/sequence.js, music/lockheart.js +16 |
 
 ### dunemaw (1)
 

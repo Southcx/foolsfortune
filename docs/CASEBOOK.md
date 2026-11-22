@@ -1171,3 +1171,4 @@ NEW:rope-fold-on-chord. **A sag cap measured off the chord misses a chain folded
 NEW:mode-hides-its-verbs-marks. **A mode that takes a button from a verb also hides that verb's marks: when a mode is added, grep for every mark that reads the tool.**
   A thing joined from outside its own kind's module (a clapperjar gone aberrant, a puzzle's flock) carries only what that module
   gave it; the registry's `add` gives the rest, so no reader has to guard and none throws on the newcomer.
+NEW:hold-reads-before-the-strike. **A press that may become a hold is read before anything it starts can land: a move begun on the press waits short of its first active frame while the button is down, and its sound and event wait with it.**

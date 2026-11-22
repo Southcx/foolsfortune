@@ -22,6 +22,9 @@ export function sondelassRules({ on, L, log, where }) {
   });
   on('cut.swing', (e) => { L.inc('cut.swing'); if (e.n >= 2) { L.inc('cut.combo'); log.say('battle', 'Three-hit string finished.', { key: 'combo', throttle: 1.5 }); } });
   on('cut.stinger', (e) => { L.inc('cut.stinger'); L.inc('cut.swing'); if (e.locked) L.inc('cut.stinger.locked'); first('cut.stinger', 'Logged: your first Stinger.'); log.say('battle', 'Stinger driven.', { key: 'sting', throttle: 1.5 }); });
+  // the charged slash's wave and the spin attack (tools/sondelass/slashwave.js, spinattack.js; words placeholders, Espada's to write)
+  on('cut.wave', (e) => { if (e.beat === 'launch') { L.inc('cut.wave'); first('cut.wave', 'Logged: your first slash wave.'); } if (e.beat === 'end' && e.struck) { L.inc('cut.wave.struck', e.struck); L.hi('cut.wave.best', e.struck); log.say('battle', e.struck > 1 ? `Your slash wave cuts ${e.struck} things.` : 'Your slash wave cuts home.', { key: 'cwave', throttle: 1.5 }); } });
+  on('cut.spin', (e) => { if (e.beat !== 'release') return; L.inc('cut.spin'); if (e.k >= 1) L.inc('cut.spin.full'); first('cut.spin', 'Logged: your first spin attack.'); log.say('battle', 'Spin attack.', { key: 'cspin', throttle: 1.5 }); });
   on('blade.enter', () => { L.inc('blade.enter'); first('blade', 'Logged: your first time in Blade Mode.'); log.say('battle', 'Blade Mode. Time slows.', { key: 'blade', throttle: 4 }); });
   on('blade.cut', (e) => { L.inc('blade.cut'); if (e.pieces) L.inc('blade.pieces', e.pieces); });
   on('blade.zandatsu', () => { L.inc('blade.zandatsu'); first('zandatsu', 'Logged: your first zandatsu.'); log.say('battle', 'Zandatsu! Clapperjar cut apart. Its core is yours.', { key: 'zan', throttle: 2 }); });
