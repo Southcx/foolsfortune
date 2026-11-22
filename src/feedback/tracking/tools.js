@@ -11,6 +11,7 @@ export function toolRules({ on, L, log }) {
   // the tools: the main and the sub (tools/belt.js equip; the pair's card, progress/toolpairs.js)
   const TOOLNAME = (t) => ({ psygun: 'Psygun', sondelass: 'Sondelass', soulbrush: 'Soul Brush', veritome: 'Veritome', dreamvane: 'Dreamvane', crucibelle: 'Crucibelle', lockheart: 'Lockheart' }[t] || t);
   on('tool.equip', (e) => {
+    if (!e.tool) { L.inc('tool.unequip.sub'); log.say('info', `${TOOLNAME(e.off)} taken off. No sub worn.`, { key: 'tequip', throttle: 0.2 }); return; } // (the sub taken off: belt.unequipSub, a main worn alone)
     L.inc('tool.equip'); L.inc(`tool.equip.${e.tool}`); L.inc(`tool.equip.${e.as}.${e.tool}`);
     const P = PAIRS.find((p) => p.n === e.pair);
     log.say('info', `${TOOLNAME(e.tool)} swapped to ${e.as === 'sub' ? 'Sub' : 'Main'}.${e.off ? ` ${TOOLNAME(e.off)} put back on the shelf.` : ''}${P ? ` Pair: ${P.label}.` : ''}`, { key: 'tequip', throttle: 0.2 });
