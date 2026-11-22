@@ -51,6 +51,7 @@ import { PANIC_EFFECTS } from './library/panic.js'; // (a creature struck by a t
 import { SLAB_EFFECTS } from './library/slabs.js'; // (carving a slab: each verb's moment, the fossil lifting and the spirit waking: vfx/garden/slablook.js plays them)
 import { MECH_SPECIAL_EFFECTS } from './library/mechs.js'; // (a mech part's special at the frame's scale: vfx/mechs/speciallooks.js plays them)
 import { CITY_FIRE_EFFECTS } from './library/cityfire.js'; // (the toy city's fire's moments at the street's scale: vfx/mechs/fire/ plays them)
+import { CUTLASS_CHARGE_EFFECTS } from './library/cutlasscharges.js'; // (the charged slash's wave and the spin attack: tools/sondelass/slashwave.js, spinattack.js)
 import { RECITAL_EFFECTS } from './library/recital.js'; // (the combat recital's stage: a note's ring, a lick's bolt, the strum, the windmill, the feedback, the rockstar moment: vfx/recitallooks.js plays them)
 const L = (o) => o; // (a layer: only for readability)
 const GLAZES = [0x2f6db5, 0x4f9a7a, 0xe0b030, 0xc84a3a, 0xf3efe6, 0x6a4a9a, 0x2a8ab0]; // (the glazes' own colours: the Hailstorm's shards)
@@ -432,6 +433,7 @@ export const LIBRARY = {
   ] },
   // (batches 2 to 4, each family's effects in its own module: vfx/shelllooks/<family>.js)
   ...SHELL_EFFECTS,
+  ...CUTLASS_CHARGE_EFFECTS,
   ...RACEWAY_EFFECTS,
   ...RACEWAY_CAVERN_EFFECTS,
   ...RACEWAY_PARK_EFFECTS,

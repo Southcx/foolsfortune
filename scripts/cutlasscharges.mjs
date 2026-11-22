@@ -6,8 +6,9 @@
 //   hold8     LMB down 8 frames          -> [c1], live one frame after the release
 //   hold40    LMB down 40 frames         -> [burst] only, nothing live before the release
 //   unlocked  W + LMB tapped, no lock    -> the string as it was
-//   rmbTap / rmbHold40                   -> the stinger on release / the spin's charge and its turn
+//   rmbTap / rmbHold70                   -> the stinger on release / the spin's charge and its turn
 //   lockW / lockD                        -> with the lock on a slip jelly: W + LMB, D + LMB (the lock's directions)
+//   waveJelly / spinJelly                -> the charged slash's wave at a slip jelly 4 m off; the spin's ring at one 2.6 m off
 //
 //   CHROMIUM=/path/to/chrome node scripts/cutlasscharges.mjs [only,ids]      (prints JSON)
 //
@@ -47,7 +48,8 @@ try {
     if (!g.belt.isMain('sondelass')) { g.belt.equip('sondelass', 'main', { quiet: true }); for (let i = 0; i < 4; i++) tick(); }
     press('KeyX'); for (let i = 0; i < 150 && S.drawT < 0.999; i++) tick();
     for (let i = 0; i < 40; i++) tick();
-    const swings = [], specials = [], spins = [], waves = [];
+    const swings = [], specials = [], spins = [], waves = [], hits = [];
+    g.events.on('cut.hit', (e) => hits.push(`${e.what}:${e.move ?? e.combo}@${F}`));
     g.events.on('cut.swing', (e) => swings.push({ move: e.move, f: F }));
     g.events.on('cut.stinger', () => specials.push({ move: 'stinger', f: F }));
     g.events.on('move.special', (e) => specials.push({ move: e.special, f: F }));
@@ -57,7 +59,7 @@ try {
     /** One trace: `plan(f)` called each frame before the tick (press and free there), `n` frames; what began, when each went live. */
     const trace = (id, n, plan, setup) => {
       reset(); g.lachryma.value = g.lachryma.max ?? 100; setup?.();
-      swings.length = 0; specials.length = 0; spins.length = 0; waves.length = 0;
+      swings.length = 0; hits.length = 0; specials.length = 0; spins.length = 0; waves.length = 0;
       const live = []; let was = null;
       for (F = 0; F < n; F++) {
         plan(F); tick();
@@ -67,7 +69,7 @@ try {
         was = on ? key : (c ? was : null);
       }
       const dbg = { drawT: +S.drawT.toFixed(2), form: S.form, inHand: g.belt.inHand?.id, en: I.enabled, techs: g.techs.active?.id, pos: P.pos.toArray().map((v) => +v.toFixed(1)), grounded: P.grounded };
-      return { id, dbg, swings: swings.map((s) => `${s.move}@${s.f}`), live: live.map((l) => `${l.move}@${l.f}`), specials: specials.map((s) => `${s.move}@${s.f}`), spins: spins.map((s) => `${s.beat}${s.k != null ? `(${s.k})` : ''}@${s.f}`), waves: waves.map((s) => `${s.beat}${s.k != null ? `(${s.k})` : ''}@${s.f}`), stinging: cut.stinging };
+      return { id, hits: [...hits], swings: swings.map((s) => `${s.move}@${s.f}`), live: live.map((l) => `${l.move}@${l.f}`), specials: specials.map((s) => `${s.move}@${s.f}`), spins: spins.map((s) => `${s.beat}${s.k != null ? `(${s.k})` : ''}@${s.f}`), waves: waves.map((s) => `${s.beat}${s.k != null ? `(${s.k})` : ''}@${s.f}`), stinging: cut.stinging };
     };
     const lmb = (down) => (f) => { if (f === 0) hold('Mouse0'); if (f === down) free('Mouse0'); };
     const rmb = (down) => (f) => { if (f === 0) hold('Mouse2'); if (f === down) free('Mouse2'); };
@@ -84,12 +86,14 @@ try {
     if (want('hold40')) T.push(trace('hold40', 120, lmb(40)));
     if (want('unlocked')) T.push(trace('unlocked', 70, (f) => { if (f === 0) hold('KeyW', 'Mouse0'); if (f === 3) free('Mouse0'); if (f === 30) free('KeyW'); }));
     if (want('rmbTap')) T.push(trace('rmbTap', 70, rmb(4)));
-    if (want('rmbHold40')) T.push(trace('rmbHold40', 160, rmb(70)));
-    if (want('lockW') || want('lockD')) {
+    if (want('rmbHold70')) T.push(trace('rmbHold70', 160, rmb(70)));
+    if (want('lockW') || want('lockD') || want('waveJelly') || want('spinJelly')) {
       g.places.travel?.('weir'); for (let i = 0; i < 400 && g.seam?.busy; i++) tick(); for (let i = 0; i < 60; i++) tick();
       const ok = lockOn();
       T.push({ id: 'lock', ok, target: g.lock.target?.ref?.kind });
       if (ok && want('lockW')) T.push(trace('lockW', 70, (f) => { if (f === 0) hold('KeyW', 'Mouse0'); if (f === 3) free('Mouse0'); if (f === 20) free('KeyW'); }, lockOn));
+      if (ok && want('waveJelly')) T.push(trace('waveJelly', 130, lmb(40), lockOn));
+      if (ok && want('spinJelly')) T.push(trace('spinJelly', 170, rmb(70), () => { lockOn(); const j = g.lock.target.ref; g.places.stand(j.pos.clone().add(new THREE.Vector3(0, 0, 2.6)), Math.PI); for (let i = 0; i < 10; i++) tick(); }));
       if (ok && want('lockD')) T.push(trace('lockD', 70, (f) => { if (f === 0) hold('KeyD', 'Mouse0'); if (f === 3) free('Mouse0'); if (f === 20) free('KeyD'); }, lockOn));
     }
     return T;

@@ -475,3 +475,46 @@ frame 4, the hold beginning at 18 (c1's `charge.after`, 0.3 s on its warped cloc
 The cost, South's call: a click held past c1's startup (3 frames) now strikes on its release, and the swing's sound and `cut.swing` come
 on the release, not the press. Only an upper-body warped opener is gated: a whole-body one (heavyChop, a kick in slot 1) has its launch's
 own clock and plays as before.
+
+### 14.2 The charged slash's wave (`tools/sondelass/slashwave.js`, the burst row's `wave`)
+The Wave Cut (the Tidecutter) is a ring at the body, not a travelling cut, so the wave is a small runner of its own. On the burst's strike
+(the engine's `onAt`), a crescent leaves the chest along the facing (toward the lock's target when locked). Each frame it sweeps a band
+until its reach is spent or a ray along its line meets the static world. Its numbers, each [no charge, full]:
+
+| speed | reach | width | height | power a hit | dmg | push |
+| --- | --- | --- | --- | --- | --- | --- |
+| 16 to 26 m/s | 6 to 14 m | 1.8 to 3.4 m | 1.4 to 2 m | 0.8 to 2.2 | 0.6 to 1.4 | 2 to 6 |
+
+Its hits go through the engine's `blow()` (every kind, `cut.hit` with `move: 'burst.wave'`) with a light blow's feel. It skips what the
+blade struck on that swing, and anything inside the blade's 2.4 m while the burst's strike is live, which the blade keeps. Measured: a
+40-frame hold (charge 0.41) launched the wave on frame 48 (the burst's first live frame), and it struck a slip jelly 4 m off on frame 58.
+
+### 14.3 The spin attack (`tools/sondelass/spinattack.js`, the `whirl` row)
+- **The press.** RMB's free, standing press of the tap's slot waits; nothing begins on it. Let go inside 0.2 real s, it is the tap's
+  special as before. The Stinger now fires on the release: on frame 4 of a 4-frame tap, where it was frame 0.
+- **The charge.** Held past 0.2 real s: the LMB charge's hold clip (Sond_ChargeHold, the blade drawn back) and a glint at the tip,
+  full at 1 real s.
+- **The turn.** Let go: `whirl`, the suite's Sond_SpinSlash at 1.3x on its warped clock. Its spine turns 0 to 720 degrees over its
+  1.7 s (measured: two whole turns, ending as it began), so no turn was authored. It plays as the engine's charge kind (power 2.4, from
+  half to all with the charge). At clip 0.36 a ring cuts all round at the hips, 2.6 to 4.2 m by the charge (`moveset.ring`), drawn by
+  `cut.spin.ring`.
+- **Measured:** held 70 frames, the charge began on frame 12 and was let go at 0.97; the whirl went live on 76, and its ring struck a
+  slip jelly 2.6 m off on frame 84.
+- Open from the start; its ways are Dovina's (her handoff). The paid cut, the forward and back slots and the crouched iaido are as
+  they were.
+
+### 14.4 The lock's directions (`tools/sondelass/lockdirections.js`)
+Read only while `game.lock.active`. Unlocked, nothing is read: W with a 3-frame LMB tap unlocked traced `[c1]`, live on frame 4, as
+before. The keys held as LMB lands are read against the target (a push within 60 degrees of it is toward or away, else round):
+
+| way held | LMB | RMB |
+| --- | --- | --- |
+| toward | the Stinger (refused when cooling or the pool is short: the string as before) | the forward slot |
+| away | the engine's own S + LMB launcher, untouched | the back slot |
+| round | `sideR` (D: the Slash) or `sideL` (A: the Rising Slash), stepped 5.5 m/s along the circle about the target | the tap's slot |
+| none | the string | the tap's slot (and the spin attack's hold) |
+
+A press is taken from the free way only: nothing playing, or a warped move past its cancel frame. Measured on a locked slip jelly 4 m
+off: W + LMB drove the Stinger, which struck it on frame 2; D + LMB played `sideR`, live on frame 3. W + LMB is the Stinger as DMC's
+lock + forward + attack is, at the Stinger's 6 Lachryma, so W held on the approach no longer plays c1 there. That is South's to judge in
+play.
