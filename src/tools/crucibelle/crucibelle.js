@@ -146,7 +146,7 @@ export class Crucibelle extends HeldTool {
     if (this.mgr.get?.('rhythm')?.bell === this) return; // (at a busker's mat the rhythm mode has the keys and the body)
     if (inp.wasPressed(RECITAL.key)) this.recital.toggle();
     for (let k = 1; k <= 10; k++) if (inp.wasPressed(`Digit${k % 10}`)) this.note(((k - 1) % 5) + 1, inp.isDown('Mouse2'), k > 5 ? 1 : 0); // (1 to 5 the lower register, 6 to 0 the upper: South, 2026-11-22)
-    if (this.recital.on) { if (inp.wasPressed('Mouse0')) this.recital.strum(); return; } // (the recital: LMB strums, the toll string rests)
+    if (this.recital.on) { if (inp.wasPressed('Mouse0')) this.recital.strum(); this.recital.hold(inp.isDown('Mouse0'), dt); return; } // (the recital: LMB strums, held it feeds back; the toll string rests)
     if (inp.wasPressed('Mouse0')) this.pressAt = this.now(); // (the beat is judged at the press, though a buffered toll rings later)
     // in the air the engine plays no string (no air string is given), so the press rings one toll at once, as the toll always did
     const air = !this.P.grounded;
@@ -158,7 +158,7 @@ export class Crucibelle extends HeldTool {
     const g = this.game, G = this.grid(), t = this.now();
     const off = this.offBeat(t, G), on = off < WINDOW;
     const sc = this.scaleNow(), up = (high ? 12 : 0) + 12 * reg, midi = G.root + sc[d - 1] + up; // (reg: the upper register, keys 6 to 0; RMB held, an octave more)
-    if (this.recital.on) { this.guitarVoice(midi, on ? 0.7 : 0.55); this.recital.note(d, up / 12); } else this.voice(midi, on ? 0.7 : 0.55);
+    if (this.recital.on) { this.guitarVoice(midi, on ? 0.7 : 0.55); this.recital.note(d, up / 12, on); } else this.voice(midi, on ? 0.7 : 0.55);
     this.beatHit(on, t, G);
     this.notes++;
     this.model.lightVent(d - 1, 1);
@@ -189,7 +189,7 @@ export class Crucibelle extends HeldTool {
   beatHit(on, t, G) {
     this.fever = THREE.MathUtils.clamp(this.fever + (on ? 0.1 : -0.18), 0, 1);
     if (on) this.onBeat++;
-    if (on && this.fever >= 1 && !this.feverHot) { this.feverHot = true; this.game.events?.emit('crucibelle.fever', { by: 'courier' }); if (!this.moves.busy) this.gesture('Bell_FeverPeak', { fadeOut: 0.25 }); this.peak(); }
+    if (on && this.fever >= 1 && !this.feverHot) { this.feverHot = true; this.game.events?.emit('crucibelle.fever', { by: 'courier' }); if (this.recital.on) this.recital.rockstar(); else if (!this.moves.busy) this.gesture('Bell_FeverPeak', { fadeOut: 0.25 }); this.peak(); } // (plugged in, the peak is the rockstar moment: tools/crucibelle/recitalplay.js)
     if (this.fever < 0.6) this.feverHot = false;
   }
 
@@ -339,6 +339,7 @@ export class Crucibelle extends HeldTool {
     if (this.idleClip === 'Bell_Idle') this.wrist(C, layer);
     C.blend(base, layer, layerW, ch.MASK_UPPER, 0);
     standLegs(ch, P, base, layer, layerW * Math.max(sw, m?.w ?? 0), this.legSt, dt);
+    this.recital.animate(ch, base, dt); // (the concert body's knees: tools/crucibelle/recitalbody.js)
   }
   /** The bell hand's wrist turned out (WRIST), on a pose of the suite's Bell_* clips (the busking body asks for it too). */
   wrist(C, pose) {

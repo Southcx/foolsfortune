@@ -15,7 +15,10 @@ export function crucibelleRules({ on, L, log }) {
   on('crucibelle.toll', (e) => { L.inc('bell.toll'); if (e.onBeat) L.inc('bell.toll.onbeat'); });
   // the combat recital (tools/crucibelle/recital.js; the words placeholders, Espada's to rule)
   on('crucibelle.recital', (e) => { if (e.by !== 'courier' || !e.on) return; L.inc('bell.recital'); log.say('info', 'Combat recital: the bell plugged in as the amp. LMB strums, 1 to 5 the strings, Q unplugs.', { key: 'recital', throttle: 60 }); });
-  on('crucibelle.strum', (e) => { if (e.by !== 'courier') return; L.inc('bell.strum'); if (e.onBeat) L.inc('bell.strum.onbeat'); if (e.hits) L.inc('bell.strum.hit', e.hits); });
+  on('crucibelle.strum', (e) => { if (e.by !== 'courier') return; L.inc('bell.strum'); if (e.onBeat) L.inc('bell.strum.onbeat'); if (e.hits) L.inc('bell.strum.hit', e.hits); if (e.chain) L.hi('bell.strum.chain', e.chain); if (e.windmill) L.inc('bell.windmill'); });
+  on('crucibelle.lick', (e) => { if (e.by !== 'courier') return; L.inc('bell.lick'); if (e.hit) L.inc('bell.lick.hit'); });
+  on('crucibelle.feedback', (e) => { if (e.by === 'courier' && e.on) L.inc('bell.feedback'); });
+  on('crucibelle.rockstar', (e) => { if (e.by !== 'courier') return; L.inc('bell.rockstar'); log.say('song', 'Rockstar!', { key: 'rockstar', throttle: 6 }); });
   on('song.play', (e) => {
     L.inc('song.play'); L.inc(`song.${e.song}`); if (e.fever >= 1) L.inc('song.fever'); L.hi('song.power', Math.round(e.power * 100));
     const S = { reveal: (n) => (n ? `Revealed: ${plural(n, 'hidden thing')}.` : 'Nothing hidden nearby.'), mirage: () => 'Smoke Courier raised where you stood.', rally: (n) => (n ? `${n === 1 ? 'Ally' : `${n} allies`} rallied.` : 'Pool refills faster.'), lull: (n) => (n ? `${plural(n, 'thing')} fall${n === 1 ? 's' : ''} asleep.` : 'Nothing nearby to put to sleep.'), summon: (n) => (n > 1 ? `${n} smoke spirits summoned from the bell.` : 'Smoke spirit summoned from the bell.') };
