@@ -112,7 +112,7 @@ const MOVES = {
   // between c3's 1.4 and c4's 2.0; about 0.6 real s a cut with the shortest charge, 2.5 power a second, the string's 2.7 or under
   iai: { clip: 'Sond_Combo2', from: 0.22, rate: 1.4, to: 0.9, fade: 0.3, hit: { power: 1.1, dmg: 1.4, push: 3 }, lunge: 4.5, heat: 0.7, arc: 'l2r', legs: false }, // (the crouch's legs kept: the clip's stood them up mid-cut)
 };
-const STRINGS = { pause: [{ at: 0, to: ['t1', 't2'] }, { at: 1, to: ['j1', 'j2', 'j3'] }], launcher: 'up', air: ['a1', 'a2', 'a3'], dash: 'dash', charge: { hold: 'hold', release: 'burst' } }; // (the Tidecutter is one of RMB's specials, the loadout's: R is the sub's verb, PNEUKA-BOX.md 5)
+const STRINGS = { pause: [{ at: 0, to: ['t1', 't2'] }, { at: 1, to: ['j1', 'j2', 'j3'] }], launcher: 'up', air: ['a1', 'a2', 'a3'], dash: 'dash', charge: { hold: 'hold', release: 'burst', gate: 0.2 } }; // (the Tidecutter is one of RMB's specials, the loadout's: R is the sub's verb, PNEUKA-BOX.md 5)
 const REACH = BLADE_LEN * 0.55 + 0.35; // (beyond the measured tip of a hand-held thing: the cutlass's blade, and some forgiveness)
 const STING = SONDELASS_MOVES.stinger.sting; // (the stinger's numbers are its catalogue row's)
 // THE IAIDO: `charge` real s held to blade mode (the owner's "charge-up", about half a second); the pose eased in over `in` and out over

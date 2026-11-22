@@ -19,7 +19,8 @@
 //                          press the pool cannot pay is the free grammar. It leaves an afterimage (vfx/afterimage.js) and the paid
 //                          blow's ribbon wears the oil film (featTint). Not a cancel: opposites cancel.
 //     LMB after a pause    the PAUSE string: pressed 0.075-0.8 s after a move ends, at the move the string branches from
-//     hold LMB             CHARGE: held past 0.3 s into the opener, the hold clip loops; released, the charged blow
+//     hold LMB             CHARGE: held past 0.3 s into the opener, the hold clip loops; released, the charged blow (a string with
+//                          `charge.gate`: the opener waits short of its strike while held, and hands over unswung: tools/chargegate.js)
 //     S + LMB (ground)     the LAUNCHER: it lifts them and what it strikes (`knock` upward: each creature decides what that means).
 //                          Tapped, the hit's lift; held at its strike (a move's `high`), the higher lift, and from the strike's end
 //                          they rise on an ARC OF THEIR OWN (Devil May Cry's High Time; HIGH: the feet to 3.92 m, 2.2 x their height,
@@ -111,7 +112,7 @@
 //                                 catalogue, loadout, wraps: { [id]: (row, { paid }) -> bool } (a slotted special the tool plays itself),
 //                                 drawn() (the tool is the one in the hand: the blink cancel listens only then), onBlinkCancel(c) (the blink
 //                                 cancel heard: the tool lets its own moves go) })
-//   strings.charge: { hold, release?, full?, after? } (no release: letting go ends the hold; `full`: the special let go from a full charge,
+//   strings.charge: { hold, release?, full?, after?, gate? } (no release: letting go ends the hold; `full`: the special let go from a full charge,
 //                   if open and paid, else the release; `after`: how long the opener is held first)
 //   M.update(dt, inp, { allow })   M.pose(C, out) -> { pose, w } (an upper-body move, over the stance)   M.afterHands(dt)   M.cancel()
 //   M.begin(id, kind, n, join) (`join`: a pose the move begins from, faded out over 0.1 s, as a chained move's)   M.blinkCancel()
@@ -140,6 +141,7 @@ import { Afterimages } from '../vfx/afterimage.js';
 import { featTint } from '../vfx/oxidation.js';
 import { moveImpact, heldStrike } from './moveimpact.js';
 import { warpOf, cancelOpen, cancelAt, paidWaits, trackStartup, jumpCancel, BladeJoin } from './movewarp.js';
+import { gated, chargeGate, announce } from './chargegate.js';
 import { stream } from '../core/rng.js';
 import { T } from '../core/config.js';
 
@@ -424,7 +426,7 @@ export class Moveset {
         if (full && this.open(full) && this.begin(full, 'special') !== false) return;
         if (st.charge.release) this.begin(st.charge.release, 'charge'); else this.finish(); return;
       }
-    } else if (st.charge && c.kind === 'ground' && this.n === 0 && this.held && (c.W ? c.mt : c.t) >= (st.charge.after ?? HOLD)) { if (inp.isDown(B)) { this.charge = 0; this.begin(st.charge.hold, 'charge-hold'); return; } this.held = false; }
+    } else if (c.gate ? chargeGate(this, c, inp.isDown(B)) : st.charge && c.kind === 'ground' && this.n === 0 && this.held && (c.W ? c.mt : c.t) >= (st.charge.after ?? HOLD)) { if (inp.isDown(B)) { this.charge = 0; this.begin(st.charge.hold, 'charge-hold'); return; } this.held = false; }
     if (!inp.isDown(B)) this.held = false;
     this.sweep();
     const at = c.def.at ?? c.def.track?.strike[0];
@@ -466,8 +468,8 @@ export class Moveset {
     if (br) { this.branch = br; return this.begin(br.to[0], 'pause', 0); }
     if (this.str === 'pause' && this.n >= 0 && this.after <= RESET && this.branch && this.n + 1 < this.branch.to.length) return this.begin(this.branch.to[this.n + 1], 'pause', this.n + 1);
     const n = this.str === 'ground' && this.n >= 0 && this.after <= RESET ? (this.n + 1) % g.length : 0;
-    this.held = true;
-    return this.begin(g[n], 'ground', n);
+    this.held = true; this.gating = inp.isDown(this.S.button || 'Mouse0'); // (held as it begins: the charge's gate, tools/chargegate.js)
+    const ok = this.begin(g[n], 'ground', n); this.gating = false; return ok;
   }
 
   /** What follows move `c` on a press inside its window: { id, kind, n } | null. */
@@ -513,15 +515,7 @@ export class Moveset {
     c.yaw = P.bodyYaw = Math.atan2(f.x, f.z) - (def.aim || 0); // (`aim`: a blade whose arc passes off to one side turns the body that far off what it goes to)
     if (def.hit) g.classArtsRun?.recordMove?.({ tool: this.id, move: id, at: P.pos.clone(), yaw: c.yaw, reach: (def.reach ?? this.S.reach ?? 0.6) + (def.tip ?? this.S.tip ?? 0.9), power: this.worth(def.hit, c), cause: def.hit.cause || this.S.cause || 'sliced' }); // (Encore's record: a class's art)
     if (def.body === 'whole') this.carry(c, m);
-    else if (def.lunge) {
-      let lunge = def.lunge * (P.grounded ? 1 : 0.5);
-      if (m) lunge = Math.min(lunge, Math.max(0, m.dist - m.r - 1.0) * 3.2);
-      if (g.lock?.active) { g.lock.point(_e); lunge = Math.min(lunge, Math.max(0, _e.distanceTo(P.pos) - 1.3) * 3.2); }
-      P.impulse(_b.copy(f).setY(0).normalize().multiplyScalar(lunge), this.S.cause === 'bashed' ? 'brush' : 'cut');
-      if (!P.grounded && kind === 'air') P.vel.y = Math.max(P.vel.y, 1);
-    }
-    if (this.S.sound) this.S.sound(def.heat > 0.5); else if (this.S.sound !== false) sfx.slash?.(def.heat > 0.5); // (the tool's own swing, else the cutlass's slash, called on sfx; false: the tool sounds its own)
-    if (kind !== 'charge-hold') g.events?.emit(this.S.events.swing, { n, move: id, by: 'courier' }); // (a hold is not a swing: its release is)
+    if (!(c.gate = gated(this, kind, n, def, W, this.gating))) announce(this, c, f, m, def.body !== 'whole'); // (the step in, the sound, the swing event; a gated opener's when let go: tools/chargegate.js)
     if (kind === 'special') g.events?.emit('move.special', { tool: this.S.rules || this.id, special: R?.id || id, by: 'courier' });
     c.lifted = false;
     this.S.onBegin?.(c);

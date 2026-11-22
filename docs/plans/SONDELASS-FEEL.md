@@ -457,3 +457,21 @@ Rough, and not done here:
 - Not looked at: the kicks but the tornado, the fists, the pause strings, the dash, the counter, a2, and every row on a whiff; the joins
   of the light catalogue normals in a string; the stress test (Calissa's, on the merged result).
 
+
+## 14. The charges (Calissa's builder, 2026-11-22: South's asks)
+
+### 14.1 The charge's gate (the bug: "holding LMB always causes a single slash attack to trigger before the charging animation starts")
+Measured (`scripts/cutlasscharges.mjs`, 60 Hz, frames after the press): before, a 40-frame hold swung `[c1@0, burst@40]`, c1 live on
+frame 4, the hold beginning at 18 (c1's `charge.after`, 0.3 s on its warped clock, past its strike). Now (`tools/chargegate.js`,
+`charge.gate: 0.2` on the cutlass's STRINGS; the Dreamvane's pick has none and plays as before):
+
+| trace | swings before | live before | swings now | live now |
+| --- | --- | --- | --- | --- |
+| tap, 4 frames | c1@0 | c1@4 | c1@4 | c1@4 (the same frame) |
+| hold 8, let go | c1@0 | c1@4 | c1@8 | c1@8 (the release) |
+| hold 40, let go | c1@0, burst@40 | c1@4, burst@48 | burst@40 | burst@48 |
+| 3-frame tap with W, unlocked | c1@0 | c1@4 | c1@3 | c1@4 |
+
+The cost, South's call: a click held past c1's startup (3 frames) now strikes on its release, and the swing's sound and `cut.swing` come
+on the release, not the press. Only an upper-body warped opener is gated: a whole-body one (heavyChop, a kick in slot 1) has its launch's
+own clock and plays as before.

@@ -5196,3 +5196,19 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   takes LMB from the toll string, but the mark was never told about it.
 - **Fix:** the reach also stands down while `crucibelle.recital.on`.
 - **Rule:** NEW:mode-hides-its-verbs-marks
+
+### 2026-11-22 · Holding LMB with the cutlass swung a slash before the charge (South's report)
+- **Seen:** "holding LMB always causes a single slash attack to trigger before the charging animation starts."
+- **Cause, as measured** (`scripts/cutlasscharges.mjs`, 60 Hz, clock and seed pinned): the press begins the string's opener, c1, at
+  once, and the engine handed it over to the charge's hold only once c1 had run `charge.after` (0.3 s, 18 frames) on its warped clock.
+  c1's strike goes live on frame 4 after the press (its startup 3 frames, section 10), so a hold of 40 frames swung `[c1@0, burst@40]`
+  and c1 went live on frame 4, 14 frames before the hold could begin. Lowering `after` below the startup would have made a tap a
+  charge of nothing.
+- **Fix:** the charge's gate (`tools/chargegate.js`, opt-in `strings.charge.gate`, the cutlass's 0.2 real s). The opener still begins
+  on the press, but while LMB is down its clock waits a quarter of a frame short of its strike. Let go, it plays on and strikes on the
+  next frame. Held 0.2 s, it hands over to the hold unswung (its tally dropped, so no `move.blow`). Its sound, its `cut.swing` and its
+  step in come when it is let go, never on the press. Measured: a 4-frame tap swings `[c1]`, live on frame 4 as before; a 40-frame hold
+  swings `[burst]` only, live on frame 48 as before, nothing live before the release; an 8-frame hold swings `[c1]`, live on frame 8
+  (the release) where it was frame 4. The cost: a click held past c1's startup now strikes on its release. The Dreamvane's pick has no
+  gate and plays as before.
+- **Rule:** NEW:hold-reads-before-the-strike
