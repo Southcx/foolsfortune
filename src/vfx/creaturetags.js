@@ -41,6 +41,7 @@
 //
 //   game.creatureTags = new CreatureTags(game)   (added to game.overlayScene; it updates itself there)   .shown -> [creature]
 // ---------------------------------------------------------------------------------------
+import { lockReads } from './lockreads.js';
 import * as THREE from 'three';
 import { readTag, plateOf } from '../tools/veritome/creaturetag.js';
 import { EMO } from '../progress/combat/emo.js';
@@ -356,7 +357,7 @@ export class CreatureTags {
   /** Who wears a tag now (the settings and the rule in the header): the one locked on; any a flare revealed (as at the lock-on); with the lens up, the others in its aperture. */
   choose() {
     const g = this.game, mode = TUNE.visual?.creatureTags ?? 'scan', out = []; if (mode === 'off') return out;
-    const lockRef = g.lock?.target?.ref; if (this.ok(lockRef)) out.push(lockRef);
+    const lockRef = g.lock?.target?.ref; if (this.ok(lockRef) && (this.scanning || lockReads(g))) out.push(lockRef); // (the lock's tag by the tool in hand: vfx/lockreads.js; the Sondelass and bare hands none)
     for (const c of g.weapon?.play?.revealed?.keys?.() || []) if (out.length < MAX && c !== lockRef && c.revealed && this.ok(c)) out.push(c); // (a flare's finds wear their tag as at the lock-on: OVERLAY.md 19)
     if (mode !== 'scan' || !this.scanning || !g.camera) return out;
     const eye = g.camera.getWorldPosition(this.v), B = this.bounds, cx = (B.x0 + B.x1) / 2, cy = (B.y0 + B.y1) / 2, near = [], tmp = {}, p = new THREE.Vector3();
@@ -493,6 +494,7 @@ export class CreatureTags {
       if (!T.want && T.vis <= 0) { T.panel.owner = null; this.tags.delete(c); continue; }
       if (!T.tag || !this.anchor(T)) continue;
       const lk = c === g.lock?.target?.ref; if (lk !== T.locked) { T.locked = lk; T.dirty = true; } // (the locked one's plate edged gold)
+      const rd = lk && !scan ? lockReads(g) : 'all', rk = Array.isArray(rd) ? rd.join() : String(rd); if (rk !== T.readKey) { T.readKey = rk; T.reads = rd; T.dirty = true; } // (what the lock reads by the tool in hand)
       const b = T.b; T.own = lay.rect(b.x0 - 3, b.y0 - 3, b.x1 + 3, b.y1 + 3); live.push(T);
     }
     for (const T of live) {
@@ -579,6 +581,7 @@ export class CreatureTags {
   rows(T) {
     const out = [];
     for (const L of T.tag.lines) {
+      if (Array.isArray(T.reads) && !T.reads.includes(L.key)) continue; // (a line this tool's lock does not read: vfx/lockreads.js)
       if (L.key === 'grain' && L.read === 'plain') { const it = L.value.items; for (let i = 0; i < it.length; i += GRAIN_ROW) out.push({ key: 'grain', h: ROW, line: L, part: i / GRAIN_ROW, items: it.slice(i, i + GRAIN_ROW) }); continue; }
       if (L.key === 'statuses' && L.read === 'plain' && T.motes.length) { for (const s of T.motes.slice(0, 2)) out.push({ key: 'statuses', h: ROW, line: L, s }); continue; }
       out.push({ key: L.key, h: L.key === 'name' ? NAME_H : L.key === 'functions' ? FN_H : L.read === 'plain' ? ROW : HID_H, line: L });
