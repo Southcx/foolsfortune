@@ -42,6 +42,7 @@ import { Track } from '../../courier/anim/animator.js';
 import { VaneMoves, VANE_MOVES, VANE_STRINGS } from './pick.js';
 import { Crossfade, standLegs, legsW, liftAbove, floorUnder, closeHand, carryInto } from '../toolbody.js';
 import { handFromTool } from '../grip.js';
+import { DreamNet, NET } from './net.js';
 
 // the vane's own clips (clip seconds): the survey's heel meets the ground at `strike`; the fork leaves the heel at `release`, and is
 // caught at `at`; `busy` and `end` are real seconds from the press (the throw lets go of the hands before its pose has faded)
@@ -102,12 +103,13 @@ export class Dreamvane extends HeldTool {
     this.mgr.game.events?.on('move.parry', (e) => { if (e.tool === 'dreamvane' && e.by === 'courier') this.counterT = COUNTER; });
     this.fork = { state: 'heel', mesh: null, pos: new THREE.Vector3(), vel: new THREE.Vector3(), t: 0, ring: 0, ent: null, off: new THREE.Vector3(), beat: 0 };
     this.needle = { yaw: 0, pitch: 0 };
+    this.net = new DreamNet(this); // (the net mode, Q: tools/dreamvane/net.js)
   }
   get throwing() { return this.throwT >= 0 && this.throwT < THROW.busy; }
   get busy() { return this.moves.busy || this.throwing || this.surveyT >= 0; }
   get slow() { return this.toolOut && (this.dowsing || this.moves.busy) ? 0.7 : 1; }
 
-  onStow() { this.dowsing = false; this.cutMove(); this.throwT = -1; this.surveyT = -1; this.catchT = -1; this.rmbT = -1; if (this.fork.state !== 'heel') this.home(); }
+  onStow() { this.net?.end(); this.dowsing = false; this.cutMove(); this.throwT = -1; this.surveyT = -1; this.catchT = -1; this.rmbT = -1; if (this.fork.state !== 'heel') this.home(); }
   /** The move stops where it is, a whole-body one's Launch with it (the engine's cancel alone leaves the Launch running out its time,
    *  the pose frozen: put away mid-vault, they slid on in it for a second). */
   cutMove() { if (this.moves.cur) this.moves.finish(); this.moves.cancel(); }
@@ -115,6 +117,8 @@ export class Dreamvane extends HeldTool {
   // ---------------------------------------------------------------- input, while it is in the hands
   use(dt, raw, inp) {
     const g = this.game, M = this.moves, free = !this.throwing && this.surveyT < 0;
+    if (inp.wasPressed(NET.key) && free && !M.busy) { inp.spend?.(NET.key); this.net.toggle(); }
+    if (this.net.on) { if (inp.wasPressed('Mouse0')) { inp.spend?.('Mouse0'); this.net.swing(); } return; } // (the net: LMB swings it, the pick's blows and the fork wait)
     if (this.counterT > 0 && free && !M.busy && inp.wasPressed('Mouse0')) { this.counterT = 0; M.begin('spin', 'counter'); }
     M.update(dt, inp, { allow: free && this.P.techs.active?.id !== 'swim' });
     if (inp.wasPressed('Mouse1') && free && !M.busy) this.startSurvey();
@@ -138,6 +142,7 @@ export class Dreamvane extends HeldTool {
     this.dowseT = this.dowseW > 0.01 ? this.dowseT + dt : 0;
     this.forkTick(dt);
     this.dowseTick(raw);
+    this.net.update(dt);
   }
 
   // ---------------------------------------------------------------- the survey (MMB): Mind Mapping's pulse, the Dreamvane's now
@@ -386,6 +391,7 @@ export class Dreamvane extends HeldTool {
   get playKey() { return this.moves.cur || (this.throwT >= 0 ? 'throw' : this.surveyT >= 0 ? 'survey' : this.catchT >= 0 ? 'catch' : this.dowseW > 0.5 ? 'dowse' : null); }
 
   twirl(ch, M) {
+    this.net?.bend(ch, M); // (the net's swing: the staff turned about the hand)
     const dt = this.dt || 1 / 60, Pa = this.game.parries, on = !!Pa?.spinning && Pa.tool === 'dreamvane', S = (this.tw ||= { a: 0, w: 0 }), TAU = Math.PI * 2;
     if (on) S.w = Math.min(1, S.w + dt / TWIRL.ease);
     if (S.w <= 0) return;

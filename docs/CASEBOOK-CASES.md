@@ -5166,3 +5166,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   right. Over each loop the blade's line clears the hip and spine joints by 10.4 cm or more. The charged slash plays `Sond_Combo3`,
   the library's flattest cut (198 degrees swept at 1.44 to 1.07 m), entered past its first 0.1 s with its windup quickened.
 - **Rule:** 416
+
+### 2026-11-22 · The combat recital's amp cable hung 3 m out past the amp (headless look, before it shipped)
+- **Seen:** the Lachryma cable from the mandolin-guitar's jack to the floating bell ran on past the bell and out of the frame.
+- **Cause, as measured:** the rope's knots lay in a fold along the straight line from the jack to the bell, up to 4.05 m above the
+  Courier's feet with the bell at 1.72 m. The rope's sag cap (`vfx/rope.js`, rule 287) measures each knot's distance off that line,
+  so it saw no sag in a fold lying along the line. At damp 0.985, six passes over 26 knots could not pull the fold back in.
+- **Fix:** the recital's cable runs at damp 0.9 with 24 passes and 0.35 m of slack. It is seeded only once the guitar has been placed
+  on the chest. Measured after 90 frames, the chain lies between the jack (0.81 m) and the bell (1.72 m), its lowest knot at 0.71 m.
+- **Rule:** NEW:rope-fold-on-chord
+

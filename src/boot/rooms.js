@@ -29,6 +29,7 @@ import { SandboxLook } from '../vfx/sandbox/look.js';
 import { PanicMarks } from '../vfx/panic.js';
 import { DomainArtMarks } from '../vfx/domainartmarks.js';
 import { StealthMarks } from '../vfx/stealthmarks.js';
+import { AwareLamps } from '../vfx/awarelamps.js';
 import { Geysers } from '../world/dunes/geysers.js';
 import { Raceway } from '../world/raceway/raceway.js';
 import { OpenSea } from '../world/opensea/opensea.js';
@@ -89,8 +90,8 @@ export function bootRooms(game, made) {
     game.systems.add('world', game.wellTargets, { name: 'wellTargets', after: 'strawmanWell' });
     game.systems.add('world', game.wellLook, { clock: 'raw', name: 'wellLook', after: 'wellTargets' });
     game.systems.add('world', game.impacts, { name: 'impacts', after: ['sandbox', 'strawmanWell'] });
-    game.mimicryLooks = new MimicryLooks(game); game.sandboxLook = new SandboxLook(game); game.panicMarks = new PanicMarks(game); game.domainArtMarks = new DomainArtMarks(game); game.stealthMarks = new StealthMarks(game); // (the puzzle stones, the ghost and a step's mark; the Sandbox dressed; panic over a creature a thrown thing struck: vfx/mimicry/, vfx/sandbox/, vfx/panic.js)
-    for (const name of ['mimicryLooks', 'sandboxLook', 'panicMarks', 'domainArtMarks', 'stealthMarks']) game.systems.add('fx', game[name], { clock: 'raw', name }); // (the `fx` phase: core/systems.js)
+    game.mimicryLooks = new MimicryLooks(game); game.sandboxLook = new SandboxLook(game); game.panicMarks = new PanicMarks(game); game.domainArtMarks = new DomainArtMarks(game); game.stealthMarks = new StealthMarks(game); game.awareLamps = new AwareLamps(game); // (the puzzle stones, the ghost and a step's mark; the Sandbox dressed; panic over a creature a thrown thing struck: vfx/mimicry/, vfx/sandbox/, vfx/panic.js)
+    for (const name of ['mimicryLooks', 'sandboxLook', 'panicMarks', 'domainArtMarks', 'stealthMarks', 'awareLamps']) game.systems.add('fx', game[name], { clock: 'raw', name }); // (the `fx` phase: core/systems.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
     game.systems.add('world', game.geysers, { name: 'geysers' });
     game.makeSeaSerpent = (o) => new SeaSerpentBody(game, o); // (the sea serpent's body for its mind to drive: vfx/opensea/seaserpentbody.js, drive/update/hit/down)

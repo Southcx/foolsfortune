@@ -27,6 +27,7 @@ import { zoneOf as zoneAt } from '../../render/zonemap.js';
 import { shaftMesh, wallAt, CLIFF, FLOOR } from './shaft.js';
 import { BlueHoleLook } from '../../vfx/bluehole/look.js';
 import { DUNE, WELL } from '../dunes/dunes.js';
+import { cityPlan, CITY } from './city.js';
 
 /** Where it stands (empty space north-east, at the rooms' height: nothing else is drawn from it), and its pieces (local metres, the
  *  water's surface y 0; south is +z). */
@@ -39,6 +40,13 @@ export const BLUE_POOL = {
   id: 'bluehole', name: 'THE BLUE HOLE', x0: BLUE_HOLE.x - 7, x1: BLUE_HOLE.x + 7, z0: BLUE_HOLE.z - 7.5, z1: BLUE_HOLE.z + 6.2,
   surface: BLUE_HOLE.y, bottom: BLUE_HOLE.y - 12, maxDepth: 12, depthAt: () => 12,
   species: ['regret', 'thread', 'gall', 'wonder', 'hunger', 'dread', 'hush'], cap: 9,
+};
+/** The sunken city's streets as a pool of the Weir's too: its surface a virtual one 38 m down, so its fish keep to the streets (angling/fish.js
+ *  swims each in a depth band under its pool's surface); out of the rod's reach, for the harpoon (tools/sondelass/harpoon.js). */
+export const CITY_POOL = {
+  id: 'bluehole.city', name: 'THE SUNKEN CITY', x0: BLUE_HOLE.x - 15, x1: BLUE_HOLE.x + 15, z0: BLUE_HOLE.z - 15, z1: BLUE_HOLE.z + 15,
+  surface: BLUE_HOLE.y - 38, bottom: BLUE_HOLE.y + CITY.y, maxDepth: -CITY.y - 38, depthAt: () => -CITY.y - 38.5,
+  species: ['thread', 'wonder', 'hunger', 'dread', 'hush', 'gall', 'regret'], cap: 12, noRod: true, // (never the rod's: angling/weir.js poolAt skips it)
 };
 /** The air under the water: [depth m, fog colour, density], eased between (abyssal-garden's absorption: cyan into deep blue). */
 export const DEEP_AIR = [[0, 0x1a7aa8, 0.065], [12, 0x115084, 0.07], [30, 0x0a2e62, 0.07], [62, 0x040a22, 0.085]];
@@ -78,7 +86,13 @@ export class BlueHole {
     });
     this.vol = { surface: B.y, bottom: B.y - FLOOR, kind: 'water', x0: B.x - 26, x1: B.x + 26, z0: B.z - 26, z1: B.z + 26 };
     const W = g.weir;
-    if (W && !W.pools.some((p) => p.id === BLUE_POOL.id)) { this.pool = { ...BLUE_POOL, fish: [] }; W.pools.push(this.pool); }
+    if (W && !W.pools.some((p) => p.id === BLUE_POOL.id)) { this.pool = { ...BLUE_POOL, fish: [] }; this.cityPool = { ...CITY_POOL, fish: [] }; W.pools.push(this.pool, this.cityPool); }
+    // the sunken city: its plaza, walls, columns and temple collided (world/bluehole/city.js; drawn by vfx/bluehole/city.js)
+    const C = cityPlan(), Y = B.y;
+    add(RAPIER.ColliderDesc.cylinder(0.5, CITY.plaza).setTranslation(B.x, Y + CITY.y - 0.5, B.z));
+    for (const w of C.walls) add(RAPIER.ColliderDesc.cuboid(w.w / 2, w.h / 2, w.d / 2).setTranslation(B.x + w.x, Y + w.y + w.h / 2, B.z + w.z));
+    for (const c of C.columns) add(RAPIER.ColliderDesc.cylinder(c.h / 2, 0.36).setTranslation(B.x + c.x, Y + CITY.y + c.h / 2, B.z + c.z));
+    for (const t of C.temple) add(RAPIER.ColliderDesc.cuboid(t.w / 2, t.h / 2, t.d / 2).setTranslation(B.x + t.x, Y + t.y + t.h / 2, B.z + t.z));
     // the look (Calissa's to take on: vfx/bluehole/)
     this.look = new BlueHoleLook(g, room, S, { dock: D, door: B.door });
     g.lights?.adoptIn?.(room);
@@ -90,7 +104,7 @@ export class BlueHole {
     if (!this.built) return;
     const g = this.game, phys = g.physics, W = g.weir;
     this.unprobe?.(); this.unprobe = null;
-    if (W && this.pool) { for (const f of [...this.pool.fish]) W.remove(f); W.pools = W.pools.filter((p) => p !== this.pool); this.pool = null; }
+    if (W && this.pool) { for (const P of [this.pool, this.cityPool]) for (const f of [...(P?.fish || [])]) W.remove(f); W.pools = W.pools.filter((p) => p !== this.pool && p !== this.cityPool); this.pool = this.cityPool = null; }
     this.look?.dispose(); this.look = null;
     if (this.room) g.scene.remove(this.room);
     for (const c of this.colliders || []) phys?.world?.removeCollider(c, false);

@@ -24,6 +24,8 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { wallAt, radiusAt, fbm, CLIFF, FLOOR } from '../../world/bluehole/shaft.js';
+import { cityPlan, CITY } from '../../world/bluehole/city.js';
+import { CityLook } from './city.js';
 
 /** The look's numbers: how many of each thing, and its glow. */
 export const BLUE_LOOK = { kelp: 900, roots: 220, corals: 70, sponges: 46, motes: 1400, schools: [[-8, 40, 0xbff4ff], [-26, 56, 0xffd36a], [-46, 40, 0xff7ad9]], wallGlow: 0.9, absorb: [0.058, 0.0235, 0.0195] }; // (absorb: per metre under the water, red, green, blue: abyssal-garden's SIG)
@@ -34,7 +36,7 @@ const HSV = /* glsl */`vec3 hsv(float h, float s, float v) { vec3 k = clamp(abs(
 
 /** A standard material whose vertices carry a glow (aGlow) and a hue (aHue): the glow drifts in hue with height and time and pulses
  *  slowly, added to the emissive light (fog and the lamps as any standard surface). */
-function glowMaterial(uTime, { rough = 0.85, glow = 1, metal = 0 } = {}) {
+export function glowMaterial(uTime, { rough = 0.85, glow = 1, metal = 0 } = {}) {
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: rough, metalness: metal });
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uTime = uTime;
@@ -52,7 +54,7 @@ function glowMaterial(uTime, { rough = 0.85, glow = 1, metal = 0 } = {}) {
 }
 
 /** Colour, glow and hue attributes on a geometry from a function of the vertex (x, y, z) -> [r, g, b, glow, hue]. */
-function paint(geo, fn) {
+export function paint(geo, fn) {
   const p = geo.attributes.position, n = p.count, col = new Float32Array(n * 3), gl = new Float32Array(n), hu = new Float32Array(n);
   for (let i = 0; i < n; i++) { const o = fn(p.getX(i), p.getY(i), p.getZ(i), i); col[i * 3] = o[0]; col[i * 3 + 1] = o[1]; col[i * 3 + 2] = o[2]; gl[i] = o[3]; hu[i] = o[4]; }
   geo.setAttribute('color', new THREE.BufferAttribute(col, 3)); geo.setAttribute('aGlow', new THREE.BufferAttribute(gl, 1)); geo.setAttribute('aHue', new THREE.BufferAttribute(hu, 1));
@@ -74,6 +76,7 @@ export class BlueHoleLook {
     this.motes(keep);
     this.schools(keep);
     this.dock(dock, door, keep);
+    this.city = new CityLook(group, this.uTime, keep); // (the sunken city on the bell's floor: vfx/bluehole/city.js)
     // the sky over the cenote: the game's own painted dome (vfx/sky.js), the dunes' sun on it, following the camera
     if (game.sky?.domeMaterial) {
       this.domeMat = keep(game.sky.domeMaterial(game.dunes?.sunDir?.clone?.() ?? new THREE.Vector3(0.18, 0.96, 0.22)));
@@ -134,22 +137,22 @@ export class BlueHoleLook {
       }
     };
     for (let i = 0; i < BLUE_LOOK.corals; i++) {
-      const th = rnd() * Math.PI * 2, y = -2 - rnd() * (FLOOR - 6), r = wallAt(th, y) - 0.15;
+      const th = rnd() * Math.PI * 2, y = -2 - rnd() * (-CITY.y - 4), r = wallAt(th, y) - 0.15; // (above the sunken city's plaza: below it is sealed)
       const a = new THREE.Vector3(Math.cos(th) * r, y, Math.sin(th) * r), inward = new THREE.Vector3(-Math.cos(th), 0.9, -Math.sin(th)).normalize();
       grow(a, inward, 0.5 + rnd() * 0.7, 0.09 + rnd() * 0.08, 3 + Math.floor(rnd() * 2), PAL[i % PAL.length], rnd() < 0.4);
     }
     // the sponges: lumped, ribbed vases (meshLathe's way) on the shelves and the floor
     for (let i = 0; i < BLUE_LOOK.sponges; i++) {
-      const floor = i < 16, th = rnd() * Math.PI * 2;
-      const y = floor ? -FLOOR + 3 + rnd() * 4 : [-12, -14, -48, -52, -55][i % 5] + rnd() * 2;
-      const rr = floor ? rnd() * Math.max(0.5, radiusAt(y) - 2) : wallAt(th, y) - 0.8;
+      const floor = i < 16, th = rnd() * Math.PI * 2, st = cityPlan().streets[i % cityPlan().streets.length];
+      const y = floor ? CITY.y + 0.1 : [-12, -14, -20, -38, -42][i % 5] + rnd() * 2;
+      const rr = floor ? 0 : wallAt(th, y) - 0.8;
       const h = 0.5 + rnd() * 0.9, w = 0.18 + rnd() * 0.25, pts = [];
       for (let k = 0; k <= 8; k++) { const t = k / 8; pts.push(new THREE.Vector2(w * (0.6 + 0.6 * Math.sin(t * 2.4) + 0.25 * t), t * h)); }
       const L = new THREE.LatheGeometry(pts, 12), hue = 0.05 + rnd() * 0.9;
       const P = L.attributes.position;
       for (let k = 0; k < P.count; k++) { const x = P.getX(k), yy = P.getY(k), z = P.getZ(k), a = Math.atan2(z, x), s = 1 + 0.18 * Math.sin(a * 7) + 0.25 * fbm(x * 3, yy * 3, z * 3, 2); P.setXYZ(k, x * s, yy, z * s); }
       L.computeVertexNormals();
-      L.translate(Math.cos(th) * rr, y - 0.1, Math.sin(th) * rr);
+      if (floor) L.translate(st.x + (rnd() - 0.5) * 2, y, st.z + (rnd() - 0.5) * 2); else L.translate(Math.cos(th) * rr, y - 0.1, Math.sin(th) * rr);
       paint(L, (x, yy) => { const c = new THREE.Color().setHSL(hue, 0.65, 0.4); const t = (yy - y) / h; return [c.r, c.g, c.b, 0.2 + 0.9 * Math.max(0, t - 0.7) * 3, hue]; });
       geos.push(L.toNonIndexed()); L.dispose();
     }
@@ -169,12 +172,13 @@ export class BlueHoleLook {
     let k = 0;
     const plant = (x, y, z, h, w, hue) => { root.set([x, y, z], k * 3); shape.set([h, w, rnd() * 6.283, hue], k * 4); k++; };
     // shelves (where the wall slopes inward going down: an upward face), the bell's floor slope and the bowl
-    const shelves = [[-6, -17], [-43, -57], [-57, -FLOOR + 1]];
+    const shelves = [[-6, -17], [-38, -46], null]; // (the throat's shelf, the bell's above the city, the city's streets: world/bluehole/city.js)
     for (let i = 0; i < BLUE_LOOK.kelp; i++) {
-      const [y0, y1] = shelves[i % 3 === 0 ? 0 : i % 3 === 1 ? 1 : 2], y = y0 + (y1 - y0) * rnd(), th = rnd() * Math.PI * 2;
-      const r = Math.max(0, wallAt(th, y) - 0.25 - (i % 3 === 2 ? rnd() * radiusAt(y) : rnd() * 0.6));
       const hue = [0.13, 0.33, 0.5, 0.88][Math.floor(rnd() * 4)] + (rnd() - 0.5) * 0.08; // (gold, green, cyan, magenta: abyssal-garden's four)
-      plant(Math.cos(th) * r, y, Math.sin(th) * r, 3 + rnd() * (y < -40 ? 9 : 6), 0.35 + rnd() * 0.5, hue);
+      if (i % 3 === 2) { const S = cityPlan().streets, st = S[Math.floor(rnd() * S.length)], c = CITY.cell * 0.32; plant(st.x + (rnd() - 0.5) * 2 * c, CITY.y, st.z + (rnd() - 0.5) * 2 * c, 2.5 + rnd() * 7, 0.35 + rnd() * 0.45, hue); continue; }
+      const [y0, y1] = shelves[i % 3], y = y0 + (y1 - y0) * rnd(), th = rnd() * Math.PI * 2;
+      const r = Math.max(0, wallAt(th, y) - 0.25 - rnd() * 0.6);
+      plant(Math.cos(th) * r, y, Math.sin(th) * r, 3 + rnd() * (y < -30 ? 8 : 6), 0.35 + rnd() * 0.5, hue);
     }
     for (let i = 0; i < BLUE_LOOK.roots; i++) { const th = rnd() * Math.PI * 2, y = CLIFF - 0.2, r = wallAt(th, y) - 0.1; plant(Math.cos(th) * r, y, Math.sin(th) * r, -(2 + rnd() * 6), 0.05 + rnd() * 0.05, 0.08 + rnd() * 0.05); }
     base.setAttribute('aRoot', new THREE.InstancedBufferAttribute(root, 3)); base.setAttribute('aShape', new THREE.InstancedBufferAttribute(shape, 4));
@@ -300,7 +304,7 @@ export class BlueHoleLook {
     pane.position.set(door.x, D.top + 1.6, door.z + 0.05); this.group.add(pane);
     const lamp = (c, i, r, x, y, z) => { const L = new THREE.PointLight(c, i, r, 1.3); L.position.set(x, y, z); this.group.add(L); return L; };
     lamp(0xffc58a, 14, 26, 0, D.top + 2.6, D.z0 + 0.8); // (the dock's lantern)
-    this.deepLamps = [lamp(0x40e0ff, 30, 50, 0, -30, 0), lamp(0xc46aff, 30, 40, 0, -FLOOR + 6, 0)];
+    this.deepLamps = [lamp(0x40e0ff, 30, 50, 0, -30, 0), lamp(0xc46aff, 30, 40, 7, CITY.y + 6, -7)]; // (the violet one over the sunken city: world/bluehole/city.js)
   }
 
   update(dt, depth) {
@@ -321,6 +325,7 @@ export class BlueHoleLook {
       });
       F.M.instanceMatrix.needsUpdate = true;
     }
+    this.city?.update(t);
     this.deepLamps?.forEach((L, i) => { L.intensity = (depth > 2 ? 30 : 8) * (0.85 + 0.15 * Math.sin(t * (0.6 + i * 0.3))); });
   }
 

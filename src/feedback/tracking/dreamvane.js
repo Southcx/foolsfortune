@@ -28,6 +28,16 @@ export function dreamvaneRules({ on, L, log }) {
     log.say('find', `Crystal ${e.sweet ? 'opened on its note' : 'broken open'}${e.ringing ? ' while ringing' : ''}. Inside: ${plural(e.worth, 'cube')}${e.shard ? ' and a crystal shard' : ''}${e.key ? `, and ${an(ITEM(e.key))}` : ''}.`, {});
   });
   on('fork.throw', () => L.inc('fork.throw'));
+  // the net (tools/dreamvane/net.js): a catch, and one that saw you coming (the words placeholders, Espada's to rule)
+  const FIG = { slipjelly: 'slip jelly', wisp: 'Lantern Wisp', clapper: 'clapperjar', sentinel: 'sentinel' };
+  on('dreamvane.netswing', () => L.inc('dreamvane.net.swing'));
+  on('dreamvane.capture', (e) => {
+    if (e.by !== 'courier') return;
+    L.inc('dreamvane.capture'); L.inc(`dreamvane.capture.${e.kind}`); if (!e.stunned) L.inc('dreamvane.capture.unaware');
+    log.say('find', `Netted ${an(FIG[e.kind] || e.kind)}${e.stunned ? '' : ' that never saw you'}. It goes into your Pneuka Jar.`, { key: 'dvnet', throttle: 1 });
+    first('dreamvane.capture', 'Logged: first Figment netted. The net takes a Figment that does not know you are there, or one stunned. One that sees you dodges.');
+  });
+  on('dreamvane.dodge', (e) => { if (e.by !== 'courier') return; L.inc('dreamvane.dodge'); log.say('info', 'It saw you coming and dodges the net.', { key: 'dvdodge', throttle: 6 }); });
   on('fork.stick', (e) => { L.inc('fork.stick'); L.inc(`fork.stick.${e.what}`); if (e.what === 'creature') log.say('battle', 'Tuning fork stuck in the creature. It rings.', { key: 'fstick', throttle: 2 }); });
   on('fork.drain', () => L.inc('fork.drain'));
   on('fork.catch', () => L.inc('fork.catch'));

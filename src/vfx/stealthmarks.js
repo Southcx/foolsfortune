@@ -28,7 +28,7 @@ import { stepNoise } from '../progress/stealth.js';
 export const VIGIL_TELL = {
   jelly: { up: { sq: 0.12, back: 0.08, scan: 0.42, scanHz: 0.55 }, down: { sq: -0.1, fwd: 0.1, nib: 0.05, nibHz: 3.2 }, ease: 5, calm: ['idle', 'walk', 'eat', 'rest', 'soak'] },
   wisp: { up: { lift: 0.12, tip: -0.1, flare: 0.35, scan: 0.5, scanHz: 0.45 }, down: { sink: 0.06, bow: 0.14, dim: 0.85 }, ease: 4, calm: ['idle', 'drift', 'rest'] },
-  step: { minK: 0.25, maxK: 0.9, fullAt: 5 },
+  step: { minK: 0.08, maxK: 0.3, fullAt: 8, from: 1.2 }, // (South, 2026-11-22: toned down while crouched; a crouched step under `from` m draws nothing)
 };
 const J = VIGIL_TELL.jelly;
 
@@ -53,8 +53,8 @@ export class StealthMarks {
     const posture = S?.posture?.() || P.posture || (P.crouching ? 'crouch' : 'stand');
     if (posture === 'stand') return;
     const r = stepNoise({ surface: e.surface, speed: S?.speed?.() ?? e.speed ?? 0, posture, ...(S?.sky?.() || {}) });
-    if (!(r > 0.3)) return;
-    const W = VIGIL_TELL.step, h = g.vfx.play('stealth.step', { pos: P.pos, scale: r });
+    const W = VIGIL_TELL.step; if (!(r > (posture === 'stand' ? 0.3 : W.from))) return;
+    const h = g.vfx.play('stealth.step', { pos: P.pos, scale: r });
     if (h) h.k = W.minK + (W.maxK - W.minK) * Math.min(1, r / W.fullAt);
   }
 

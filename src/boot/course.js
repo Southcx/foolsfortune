@@ -14,6 +14,7 @@ import { Course } from '../world/basement/course.js';
 import { Circuits } from '../world/basement/circuits.js';
 import { Tracking } from '../feedback/tracking.js';
 import { Achievements } from '../progress/achievements.js';
+import { Harpoon } from '../tools/sondelass/harpoon.js';
 import { Weir } from '../tools/sondelass/angling/weir.js';
 import { stockTreasury } from '../world/treasury.js';
 import { GateRing } from '../vfx/gatering.js';
@@ -48,6 +49,7 @@ export function bootCourse(game, made) {
   // what is counted and what is said about it, then the achievements over the counts
   mark('circuits+carto');
   game.weir = new Weir(game); // (the Sondelass's own room: the tide and the shoals)
+  game.harpoon = new Harpoon(game); game.systems?.add('sim', game.harpoon, { name: 'harpoon' }); // (the hook form under water: tools/sondelass/harpoon.js)
   stockTreasury(game, treasuryAt); // (a chest of each tier on the Treasury's plinths, and the Tithe's console: in Raku's bazaar since 2026-10-15)
   {
     // a common chest in the hub, off to one side of where you arrive, on whatever floor is there; a rare one on a dune, half in the sand

@@ -468,7 +468,7 @@ export class LachrimeterTube {
     const level = Math.min((avail + reserved) / full, cap), charge = Math.min(level, (reserved + shownHeld) / full);
     this.lvl = this.lvl < 0 ? level : this.lvl + (level - this.lvl) * Math.min(1, dt * 12);
     this.ch += (charge - this.ch) * Math.min(1, dt * 12);
-    const brimming = !!g.courierMind?.brimming;
+    const brimming = false; // (South, 2026-11-22: no look for overflow's change of mental state; the log still says it. Was `g.courierMind.brimming`)
     this.brim += ((brimming ? 0.9 : 0) - this.brim) * Math.min(1, dt * (brimming ? 6 : 2));
     if (this.heard !== pool) { this.heard = pool; pool.on?.('gain', () => { this.flare = 1; }); } // (Lachryma came in: the meniscus flares)
     this.flare = Math.max(0, this.flare - dt * 3);

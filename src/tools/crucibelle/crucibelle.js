@@ -31,6 +31,7 @@
 // bard (inspire courage, fascinate, summon), Brütal Legend (a guitar that summons and rallies: a rockstar's army), the handbell choir's
 // swing (the forehand ring, the backhand, the bell brought down), and the pentatonic scale, on which nothing is wrong.
 // ---------------------------------------------------------------------------------------
+import { Recital, RECITAL } from './recital.js';
 import * as THREE from 'three';
 import { HeldTool } from '../heldtool.js';
 import { Moveset } from '../moveset.js';
@@ -77,6 +78,7 @@ export class Crucibelle extends HeldTool {
     });
     this.model = new CrucibelleModel();
     this.mount();
+    this.recital = new Recital(this); // (the combat recital: Q, the mandolin-guitar and the bell as its amp, tools/crucibelle/recital.js)
     this.mgr.game.crucibelle = this;
     this.fever = 0; this.history = []; this.lastNote = -99; this.ownT0 = 0; this.swing = 0; this.swingV = 0; this.pressAt = -99;
     this.notes = 0; this.onBeat = 0; this.legSt = {};
@@ -91,7 +93,7 @@ export class Crucibelle extends HeldTool {
   get busking() { const R = this.mgr.get?.('rhythm'); return R?.posed === this ? R.w : 0; }
 
   onDraw() { this.ownT0 = this.now(); }
-  onStow() { this.history = []; this.moves.cancel(); this.gestures?.stop(0.1); }
+  onStow() { this.history = []; this.moves.cancel(); this.gestures?.stop(0.1); this.recital?.end(); }
 
   // ---------------------------------------------------------------- the clock and the voice
   now() { return sfx.ok?.() ? sfx.ctx.currentTime : performance.now() / 1000; }
@@ -131,10 +133,20 @@ export class Crucibelle extends HeldTool {
     } catch { /* a voice that failed is silent */ }
   }
 
+  /** The recital's voice: the guitar (music/band.js), whatever is fitted to the bell. */
+  guitarVoice(midi, v = 0.6, dur = 0.7) {
+    const B = this.band(); if (!B) return;
+    try { B.guitar(sfx.ctx.currentTime + 0.005, dur * 1.4, midi - 12, v * 0.8, { vib: 0.04 }); } catch { /* a voice that failed is silent */ }
+  }
+  /** After the hands are placed: the recital's guitar and hands (tools/heldtool.js calls it). */
+  placed() { this.recital?.placed(); }
+
   // ---------------------------------------------------------------- input, while it is in the hands
   use(dt, raw, inp) {
     if (this.mgr.get?.('rhythm')?.bell === this) return; // (at a busker's mat the rhythm mode has the keys and the body)
+    if (inp.wasPressed(RECITAL.key)) this.recital.toggle();
     for (let d = 1; d <= 5; d++) if (inp.wasPressed(`Digit${d}`)) this.note(d, inp.isDown('Mouse2'));
+    if (this.recital.on) { if (inp.wasPressed('Mouse0')) this.recital.strum(); return; } // (the recital: LMB strums, the toll string rests)
     if (inp.wasPressed('Mouse0')) this.pressAt = this.now(); // (the beat is judged at the press, though a buffered toll rings later)
     // in the air the engine plays no string (no air string is given), so the press rings one toll at once, as the toll always did
     const air = !this.P.grounded;
@@ -145,12 +157,13 @@ export class Crucibelle extends HeldTool {
   note(d, high = false) {
     const g = this.game, G = this.grid(), t = this.now();
     const off = this.offBeat(t, G), on = off < WINDOW;
-    const sc = this.scaleNow(); this.voice(G.root + sc[d - 1] + (high ? 12 : 0), on ? 0.7 : 0.55);
+    const sc = this.scaleNow(), midi = G.root + sc[d - 1] + (high ? 12 : 0);
+    if (this.recital.on) { this.guitarVoice(midi, on ? 0.7 : 0.55); this.recital.note(d); } else this.voice(midi, on ? 0.7 : 0.55);
     this.beatHit(on, t, G);
     this.notes++;
     this.model.lightVent(d - 1, 1);
-    if (!this.moves.busy) this.gesture(high ? 'Bell_NoteHigh' : `Bell_Note${d}`, { from: 0.05, fadeOut: 0.12 }); // (a toll swinging owns the arm)
-    const mouth = this.model.mouthWorld(_a).clone();
+    if (!this.moves.busy && !this.recital.on) this.gesture(high ? 'Bell_NoteHigh' : `Bell_Note${d}`, { from: 0.05, fadeOut: 0.12 }); // (a toll swinging owns the arm)
+    const mouth = (this.recital.on ? this.recital.mouth(_a) : this.model.mouthWorld(_a)).clone();
     g.glyphs?.pop('note', mouth.clone().setY(mouth.y + 0.25), { color: DEGREE_COLOR[d - 1], size: 0.28 + 0.12 * this.fever, life: 0.8 });
     this.puff(mouth, DEGREE_COLOR[d - 1], 4 + Math.round(6 * this.fever));
     // the motif: the notes in order (a long pause starts it again)
@@ -292,6 +305,7 @@ export class Crucibelle extends HeldTool {
     { const G = this.grid(); this.model.setBeat((this.now() - G.t0) / (G.spb / 2)); } // (the metronome on the bell: tools/crucibelle/model.js)
     this.model.update(raw);
     this.model.setFever(this.fever);
+    this.recital.update(raw);
     if (this.drawT > 0.5 && (this.smokeT = (this.smokeT || 0) - dt) <= 0) {
       this.smokeT = 0.5 / (1 + 6 * this.fever);
       this.puff(this.model.mouthWorld(_a).clone(), this.fever > 0.6 ? 0xb49be6 : 0x8a8090, 1);

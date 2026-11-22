@@ -547,7 +547,8 @@ export class CreatureTags {
     const lead = Math.min(1, T.vis * 2.2);
     // the bracket (the mock's, with both eyes inside it): four corners, ink under the VFD line
     const Lx = Math.max(4, (b.x1 - b.x0) * 0.24), Ly = Math.max(3, (b.y1 - b.y0) * 0.3);
-    for (const pass of [0, 1]) {
+    const locked = T.c && T.c === this.game.lock?.target?.ref; // (South, 2026-11-22: the locked creature's eye bracket fought the lock-on reticle's brackets round its body; the reticle's are kept)
+    if (!locked) for (const pass of [0, 1]) {
       S.col = pass ? C_VFD : C_INK; const w = pass ? 1.3 : 3.1;
       for (let q = 0; q < 4; q++) { const sx = q === 0 || q === 3 ? 1 : -1, sy = q < 2 ? 1 : -1, cx = sx > 0 ? b.x0 : b.x1, cy = sy > 0 ? b.y0 : b.y1; S.seg(cx + sx * Lx * lead, cy, cx, cy, w); S.seg(cx, cy, cx, cy + sy * Ly * lead, w); }
     }

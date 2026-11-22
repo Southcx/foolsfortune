@@ -1166,5 +1166,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 414. **A registry that hands its members to every reader fills in the contract's methods a joiner lacks.**
 415. **An outline on a thing drawn at another scale sets its width in the world, the scale undone; a width in the mesh's space shrinks with it.**
 416. **A clip a held pose lets go into starts before its strike; one whose strike begins on its first frame pops whatever blends into it.**
+NEW:rope-fold-on-chord. **A sag cap measured off the chord misses a chain folded along it; a short rope between two moving ends is damped hard and given passes enough to cross it.**
   A thing joined from outside its own kind's module (a clapperjar gone aberrant, a puzzle's flock) carries only what that module
   gave it; the registry's `add` gives the rest, so no reader has to guard and none throws on the newcomer.
