@@ -110,6 +110,7 @@ const CSS = `
 .rt-t .art{height:62px;margin:5px 0;border-radius:4px;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,#fff6e4,#cdb58e)}
 .rt-t .gl{font-size:9.5px;line-height:1.3}
 .rt-t.lift{box-shadow:0 0 0 2px #2a140c,0 0 0 3px #ffd36a,0 14px 22px rgba(0,0,0,.55);z-index:3}
+.rt-t.lift::after{content:'';position:absolute;left:0;right:0;top:100%;height:40px}
 .rt.locked .rt-t{cursor:not-allowed;filter:saturate(.6) brightness(.9)}
 .rt.locked .rt-main,.rt.locked .rt-subwrap{filter:saturate(.75)}
 .rt-drop{outline:2px dashed #ffd36a;outline-offset:6px}
@@ -242,11 +243,11 @@ export class ReadingTable {
       c.append(make('div', 'nm', t.name), art, make('div', 'gl', `R · ${t.verb}`));
       if (t.note) c.append(make('div', 'gl', t.note));
       c.draggable = !this.state?.locked;
-      c.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') this.emit('hover', { id: t.id }); });
-      c.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') this.emit('hover', null); });
+      c.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse' && !this.dragging) this.emit('hover', { id: t.id }); });
+      c.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse' && !this.dragging && !e.buttons) this.emit('hover', null); }); // (never a redraw under a press or a drag: it would take the card from under it)
       c.addEventListener('pointerdown', (e) => this.fingerDown(e, t.id));
       c.addEventListener('click', (e) => { if (this.touched()) return; this.emit('pick', { id: t.id, button: e.button, shift: e.shiftKey }); });
-      c.addEventListener('dragstart', (e) => { e.dataTransfer?.setData('text/plain', t.id); this.dragging = t.id; });
+      c.addEventListener('dragstart', (e) => { e.dataTransfer?.setData('text/plain', t.id); if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'; this.dragging = t.id; });
       c.addEventListener('dragend', () => { this.dragging = null; for (const d of this.el.querySelectorAll('.rt-drop')) d.classList.remove('rt-drop'); });
       h.append(c);
     });

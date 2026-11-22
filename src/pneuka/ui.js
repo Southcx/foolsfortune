@@ -25,6 +25,7 @@ import { RT_CLASSES } from '../ui/readingtable.js';
 import { Loadout } from './loadout.js';
 import { Reading } from './reading.js';
 import { Underside, UNDERSIDE_CSS } from './underside.js';
+import { EquipList, EQUIP_LIST_CSS } from './equiplist.js';
 import { SUITS } from '../progress/spreads.js';
 import { ASPECTS } from '../tools/sondelass/angling/species.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
@@ -101,7 +102,8 @@ export class PneukaUI {
     this.loadout = new Loadout(game, () => this.render());
     this.reading = new Reading(game); // (the window's hand on the laid spread, game.laidSpread: SPREADS.md)
     this.underside = new Underside(game, this.reading, () => this.render());
-    const st = document.createElement('style'); st.textContent = CSS + UNDERSIDE_CSS; document.head.appendChild(st);
+    this.equip = new EquipList(game, this.loadout); // (the tools as a list, PSO's: a swap in two clicks or two keys, pneuka/equiplist.js)
+    const st = document.createElement('style'); st.textContent = CSS + UNDERSIDE_CSS + EQUIP_LIST_CSS; document.head.appendChild(st);
     this.root = el('div'); this.root.id = 'pneuka';
     this.root.addEventListener('mousedown', (e) => e.stopPropagation());
     this.root.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -113,6 +115,7 @@ export class PneukaUI {
     addEventListener('keydown', (e) => { // (Esc closes it, and only it: the pause menu does not open under it, as the Codex's: GARDEN-SWEEP #9)
       if (!this.open || e.repeat || /^(TEXTAREA|INPUT)$/.test(e.target?.tagName)) return;
       if (e.code === 'KeyF') { e.preventDefault(); e.stopImmediatePropagation(); this.flip(); return; } // (F turns the Box over: Petra's key, SPREADS.md 5.1)
+      if (!this.reading.flipped && this.equip.key(e)) { e.preventDefault(); e.stopImmediatePropagation(); return; } // (the equip list's keys: ↑ ↓ Enter, M, S, Backspace)
       if (e.code === 'KeyH' && this.underside.slim) { e.preventDefault(); e.stopImmediatePropagation(); this.root.classList.toggle('bare'); return; } // (H hides the window over the reading view for a clean shot, the owner's glamour shots; the arrows still turn the camera)
       if (e.code !== 'Escape') return;
       e.preventDefault(); e.stopImmediatePropagation(); this.close();
@@ -192,11 +195,12 @@ export class PneukaUI {
     const cols = el('div', 'cols'), reading = el('div', 'reading'), side = el('div', 'side');
     this.loadout.mount(reading);
     reading.appendChild(this.equipPane());
+    if (this.loadout.ready) { side.appendChild(this.equip.el); this.equip.draw(); }
     side.appendChild(this.invPane());
     side.appendChild(this.storagePane());
     cols.appendChild(reading); cols.appendChild(side);
     px.appendChild(cols);
-    px.appendChild(el('footer', '', 'F turns the Box over (the spread) · X draws and stows the main · R: the sub · a tool below: click for the sub, shift for the main, or drag it onto a place · in the pocket: left click the first action, right click all of them, drag to swap · F picks up what lies on the ground'));
+    px.appendChild(el('footer', '', 'F turns the Box over (the spread) · X draws and stows the main · R: the sub · EQUIP: click a tool, or ↑ ↓ Enter, M, S · a card below: click for the sub, shift for the main, or drag it onto a place · in the pocket: left click the first action, right click all of them, drag to swap · F picks up what lies on the ground'));
     this.root.appendChild(px);
     this.loadout.draw(); // (the reading draws once it is in the page)
     this.fit();

@@ -42,7 +42,7 @@ export class Loadout {
     if (!this.ready) return false;
     if (!this.wired) {
       this.wired = true;
-      this.T.on('hover', (e) => { this.hover = e?.id && !this.worn(e.id) ? e.id : null; this.draw(); });
+      this.T.on('hover', (e) => { const h = e?.id && !this.worn(e.id) ? e.id : null; if (h === this.hover) return; this.hover = h; this.draw(); }); // (only a change redraws: the table rebuilds its cards, and a redraw on every move under the mouse ate the click and the drag, South's report 2026-11-22)
       this.T.on('pick', (e) => { if (e?.id && !this.worn(e.id)) this.swap(e.id, e.shift || e.button === 2 ? 'main' : 'sub'); });
       this.T.on('drop', (e) => { if (e?.id && (e.as === 'main' || e.as === 'sub')) this.swap(e.id, e.as); });
     }

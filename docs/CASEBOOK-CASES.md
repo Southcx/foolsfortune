@@ -5176,3 +5176,16 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   on the chest. Measured after 90 frames, the chain lies between the jack (0.81 m) and the bell (1.72 m), its lowest knot at 0.71 m.
 - **Rule:** NEW:rope-fold-on-chord
 
+### 2026-11-22 · No tool could be swapped in the Pneuka Box (South's report)
+- **Seen:** clicking or dragging a tool's card in the Pneuka Box's reading table swapped nothing.
+- **Cause, as measured:** two causes. First, every hover over a card in the hand redrew the whole table (`readingtable.draw` replaces
+  every card), and it did so even when the hovered card had not changed. The card under the pointer was replaced on each move, so a
+  press and its release fell on two different elements and a drag lost its source. Second, the hovered card lifts 34 px. That moved
+  it out from under the pointer, so it dropped back and lifted again under the cursor. Headless, Playwright's hover on a hand card
+  timed out at 5 s, and no click swapped a tool.
+- **Fix:** the loadout redraws only when the hovered card changes. No hover is sent while a button is held or a drag is under way. A
+  lifted card keeps a 40 px hit pad over the place it left. The PSO-style equip list was added as a second way to swap, by click or by
+  keys. Measured with the real mouse at 1600 x 900: a click made a card the sub, a drag made one the main, the list's EQUIP AS MAIN
+  made one the main, and ↑ then S made one the sub.
+- **Rule:** NEW:no-redraw-under-pointer
+
