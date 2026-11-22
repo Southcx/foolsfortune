@@ -487,7 +487,7 @@ until its reach is spent or a ray along its line meets the static world. Its num
 
 Its hits go through the engine's `blow()` (every kind, `cut.hit` with `move: 'burst.wave'`) with a light blow's feel. It skips what the
 blade struck on that swing, and anything inside the blade's 2.4 m while the burst's strike is live, which the blade keeps. Measured: a
-40-frame hold (charge 0.41) launched the wave on frame 48 (the burst's first live frame), and it struck a slip jelly 4 m off on frame 58.
+40-frame hold (charge 0.41) launched the wave on frame 48 (the burst's first live frame), and it struck a slip jelly 4 m off on frame 58 (57 once its held layers faded in at once, `in`).
 
 ### 14.3 The spin attack (`tools/sondelass/spinattack.js`, the `whirl` row)
 - **The press.** RMB's free, standing press of the tap's slot waits; nothing begins on it. Let go inside 0.2 real s, it is the tap's
@@ -499,7 +499,8 @@ blade struck on that swing, and anything inside the blade's 2.4 m while the burs
   half to all with the charge). At clip 0.36 a ring cuts all round at the hips, 2.6 to 4.2 m by the charge (`moveset.ring`), drawn by
   `cut.spin.ring`.
 - **Measured:** held 70 frames, the charge began on frame 12 and was let go at 0.97; the whirl went live on 76, and its ring struck a
-  slip jelly 2.6 m off on frame 84.
+  slip jelly 2.6 m off on frame 84. Its frames (`node scripts/sondelassframes.mjs`): startup 7, active 34, recovery 54, total 95, cancel 60 (54 on a hit); the side cuts
+  print as c1 and c2 do (3 / 8 / 35 and 4 / 8 / 37), and every older row as section 13 has it.
 - Open from the start; its ways are Dovina's (her handoff). The paid cut, the forward and back slots and the crouched iaido are as
   they were.
 
@@ -515,6 +516,6 @@ before. The keys held as LMB lands are read against the target (a push within 60
 | none | the string | the tap's slot (and the spin attack's hold) |
 
 A press is taken from the free way only: nothing playing, or a warped move past its cancel frame. Measured on a locked slip jelly 4 m
-off: W + LMB drove the Stinger, which struck it on frame 2; D + LMB played `sideR`, live on frame 3. W + LMB is the Stinger as DMC's
+off: W + LMB drove the Stinger, which struck it on frame 2; D + LMB played `sideR`, live on frame 3, struck it on frame 5, and stepped the Courier 1.66 m to the target's right (D's side). W + LMB is the Stinger as DMC's
 lock + forward + attack is, at the Stinger's 6 Lachryma, so W held on the approach no longer plays c1 there. That is South's to judge in
 play.

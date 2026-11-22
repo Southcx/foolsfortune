@@ -3,7 +3,7 @@
 // pinned: casebook 3) through LMB's press, its hold and its release, and RMB's, printing for each trace the moves begun (`cut.swing`),
 // the frame each move's strike went live, and what the run ended in. It measures only (docs/plans/SONDELASS-FEEL.md 14):
 //   tap4      LMB down 4 frames          -> [c1], live on the frame it was before the charge's gate (released after the gate: on release)
-//   hold8     LMB down 8 frames          -> [c1], live one frame after the release
+//   hold8     LMB down 8 frames          -> [c1], live on the release's frame
 //   hold40    LMB down 40 frames         -> [burst] only, nothing live before the release
 //   unlocked  W + LMB tapped, no lock    -> the string as it was
 //   rmbTap / rmbHold70                   -> the stinger on release / the spin's charge and its turn
@@ -60,7 +60,7 @@ try {
     const trace = (id, n, plan, setup) => {
       reset(); g.lachryma.value = g.lachryma.max ?? 100; setup?.();
       swings.length = 0; hits.length = 0; specials.length = 0; spins.length = 0; waves.length = 0;
-      const live = []; let was = null;
+      const live = []; let was = null; const p0 = P.pos.clone(), t0 = g.lock?.active ? g.lock.point(new THREE.Vector3()) : null;
       for (F = 0; F < n; F++) {
         plan(F); tick();
         const c = M.cur, tr = c?.def.track, on = !!(c && tr && c.t >= tr.strike[0] && c.tPrev < tr.strike[1] && c.kind !== 'charge-hold');
@@ -68,8 +68,8 @@ try {
         if (on && was !== key) live.push({ move: c.id, kind: c.kind, f: F });
         was = on ? key : (c ? was : null);
       }
-      const dbg = { drawT: +S.drawT.toFixed(2), form: S.form, inHand: g.belt.inHand?.id, en: I.enabled, techs: g.techs.active?.id, pos: P.pos.toArray().map((v) => +v.toFixed(1)), grounded: P.grounded };
-      return { id, hits: [...hits], swings: swings.map((s) => `${s.move}@${s.f}`), live: live.map((l) => `${l.move}@${l.f}`), specials: specials.map((s) => `${s.move}@${s.f}`), spins: spins.map((s) => `${s.beat}${s.k != null ? `(${s.k})` : ''}@${s.f}`), waves: waves.map((s) => `${s.beat}${s.k != null ? `(${s.k})` : ''}@${s.f}`), stinging: cut.stinging };
+      let side = null; if (t0) { const tx = t0.x - p0.x, tz = t0.z - p0.z, d = Math.hypot(tx, tz); side = +(((P.pos.x - p0.x) * -tz + (P.pos.z - p0.z) * tx) / d).toFixed(2); } // (m moved to the target's right as faced: + is D's side)
+      return { id, side, hits: [...hits], swings: swings.map((s) => `${s.move}@${s.f}`), live: live.map((l) => `${l.move}@${l.f}`), specials: specials.map((s) => `${s.move}@${s.f}`), spins: spins.map((s) => `${s.beat}${s.k != null ? `(${s.k})` : ''}@${s.f}`), waves: waves.map((s) => `${s.beat}${s.k != null ? `(${s.k})` : ''}@${s.f}`), stinging: cut.stinging };
     };
     const lmb = (down) => (f) => { if (f === 0) hold('Mouse0'); if (f === down) free('Mouse0'); };
     const rmb = (down) => (f) => { if (f === 0) hold('Mouse2'); if (f === down) free('Mouse2'); };

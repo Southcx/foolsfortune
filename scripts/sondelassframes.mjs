@@ -31,8 +31,8 @@ try {
     const { SONDELASS_MOVES, SONDELASS_LOADOUT } = await import('/src/tools/sondelass/sondelassloadout.js');
     const M = g.techs.get('sondelass').cutlass.moves, C = g.character.clips.clips;
     for (let i = 0; i < 60 && !C.Sond_Combo1; i++) await new Promise((r) => setTimeout(r, 500)); // (the suite's clips: loaded with the pack)
-    const S = M.S.strings, LABEL = { t1: 'Thrust (after 1)', t2: 'Thrust Combo (after 1)', j1: 'Wide Arc 1 (after 2)', j2: 'Wide Arc 2 (after 2)', j3: 'Wide Arc 3 (after 2)', up: 'Launcher', a1: 'Air Cut 1', a2: 'Air Cut 2', a3: 'Plunge', dash: 'Dash Slash', hold: 'Charge (held)', burst: 'Charged Slash', spin: 'Counter', iai: 'Draw Cut' };
-    const KIND = { t1: 'pause', t2: 'pause', j1: 'pause', j2: 'pause', j3: 'pause', up: 'launcher', a1: 'air', a2: 'air', a3: 'air', dash: 'dash', hold: 'charge-hold', burst: 'charge', spin: 'counter', iai: 'iaido' };
+    const S = M.S.strings, LABEL = { t1: 'Thrust (after 1)', t2: 'Thrust Combo (after 1)', j1: 'Wide Arc 1 (after 2)', j2: 'Wide Arc 2 (after 2)', j3: 'Wide Arc 3 (after 2)', up: 'Launcher', a1: 'Air Cut 1', a2: 'Air Cut 2', a3: 'Plunge', dash: 'Dash Slash', hold: 'Charge (held)', burst: 'Charged Slash', spin: 'Counter', iai: 'Draw Cut', whirl: 'Spin Attack', sideR: 'Side Cut (D, on the lock)', sideL: 'Side Cut (A, on the lock)' };
+    const KIND = { t1: 'pause', t2: 'pause', j1: 'pause', j2: 'pause', j3: 'pause', up: 'launcher', a1: 'air', a2: 'air', a3: 'air', dash: 'dash', hold: 'charge-hold', burst: 'charge', spin: 'counter', iai: 'iaido', whirl: 'charge', sideR: 'lock', sideL: 'lock' };
     const string = SONDELASS_LOADOUT.string, last = string[string.length - 1];
     const FREE = new Set([last, 't2', 'j3', S.dash, S.charge.release]); // (no next: the free recovery cut, moveset.js freeCutOpen)
     const ids = [...string, ...Object.keys(SONDELASS_MOVES).filter((id) => !string.includes(id)), ...Object.keys(M.S.moves)];

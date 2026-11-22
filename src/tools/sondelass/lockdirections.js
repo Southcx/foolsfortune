@@ -15,6 +15,8 @@
 //                  away the back slot, round it or none the tap's (and so the spin attack's hold, spinattack.js)
 //   A press is taken from the free way only (nothing playing, or a warped move past its cancel frame); in a strike it is the string's.
 //
+// Read beside the Arena's tool movekit (progress/fightertoolkits.js TOOL_KITS, kitFor): its forward and back are the side-on stage's
+// screen sides and its Sondelass slots the hook's, so none of it is taken here; the lock's ways are the target's.
 // Prior art: Devil May Cry 3 and 5's lock-on commands (lock + forward + attack the Stinger, lock + back + attack High Time), Zelda:
 // Ocarina of Time's Z-targeted side jumps and jump slash (the direction read against the target), Kingdom Hearts' lock-on finishers.
 //

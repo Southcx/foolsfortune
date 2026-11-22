@@ -7,6 +7,6 @@ All three are placeholders now, and each is yours (docs/plans/SONDELASS-FEEL.md 
   on stone). Stand-ins: `sfx.slash(true)` at the launch, `sfx.cutHit` on a hit.
 - **The spin attack's charge** (`cut.spin { beat: 'charge' }`, then `{ beat: 'full' }` at 1 real s): a rising ring as the blade fills,
   and a chime at full. Stand-in: `sfx.guardUp` at the charge, nothing at full.
-- **Its release** (`cut.spin { beat: 'release', k }`, the whirl's ring 0.28 real s later): a two-turn whirl and the ring's burst, bigger
+- **Its release** (`cut.spin { beat: 'release', k }`, the whirl's ring 0.23 real s later, the whirl 1.6 real s whole): a two-turn whirl and the ring's burst, bigger
   with `k`. Stand-in: the engine's slash and the ring's own shake.
 - One note: the swing's sound of a held LMB click now plays on its release (the charge's gate), not on the press.

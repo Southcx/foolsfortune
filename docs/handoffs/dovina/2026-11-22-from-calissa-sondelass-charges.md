@@ -4,7 +4,7 @@ South's asks of 2026-11-22, built (docs/plans/SONDELASS-FEEL.md 14). What is you
 
 1. **The spin attack** (the row `whirl` in tools/sondelass/cutlass.js MOVES, played by tools/sondelass/spinattack.js) is open from the
    start and has no row of yours. Its numbers now: power 2.4 a hit (its `stats`), from half to all with the charge (1 real s to full),
-   the ring 2.6 to 4.2 m, and the blade's own sweep through two turns; about 1.3 real s whole. Proposed:
+   the ring 2.6 to 4.2 m, and the blade's own sweep through two turns; 95 frames (1.6 real s) whole, its ring 0.23 real s after the release (`node scripts/sondelassframes.mjs`). Proposed:
    - a row `spin` in progress/combat/moves.js (`whirl`'s `rule`): power 2.4, cost 0, time 1.0;
    - its two ways. **Count:** 40 charged slashes let go (`cut.wave`, a new ledger count). **Feat:** one spin attack that strikes 3
      creatures. The ledger has `cut.spin` and `cut.spin.full`; a `cut.spin.struck` best would need a line in

@@ -3,7 +3,8 @@
 // shape grammar (docs/plans/art/VFX-LIBRARY.md 2: a primary that reads in silhouette, a secondary that supports it, a tertiary that
 // lingers), built from the class arts' kit (classarts/kit.js), on the tint ramp so each wears the blow's damage type's colour as the
 // cutlass's trail does (vfx/cutlasstrail.js DAMAGE_TINT, passed as `tint` by tools/sondelass/slashwave.js and spinattack.js). Inked under
-// where it must read on the noon sand (casebook 352: additive bone white is lost on pale ground).
+// where it must read on the noon sand (casebook 352: additive bone white is lost on pale ground). The held ones fade in at once (`in`:
+// the kit's held default, 3, left the wave, alive half a second, still fading in when it struck).
 //   cut.wave.fly    held, following the wave: a crescent of streaks standing on the ground along its heading, a hot thinner edge over its
 //                   front, motes shed behind it; `scale` its width over 1.73 (the wave form's 120 degrees at radius 1)
 //   cut.wave.hit    at each thing it cuts: a small crescent, a core, chips
@@ -23,12 +24,12 @@ const T = 'tint', { knight: KNIGHT, king: KING, page: PAGE } = RANK;
 export const CUTLASS_CHARGE_EFFECTS = {
   'cut.wave.fly': { layers: [
     // PRIMARY: the crescent stood on the ground, streaks racing along it, inked under so it holds on pale sand
-    ...inked(own(T, KNIGHT, { hold: true, form: 'wave', face: 'heading', main: 'streaks', tile: [5, 1], scroll: [2.2, 0], mask: 'noise', maskK: 0.5, maskTile: [3, 1], maskScroll: [0.6, 0],
+    ...inked(own(T, KNIGHT, { hold: true, in: 40, form: 'wave', face: 'heading', main: 'streaks', tile: [5, 1], scroll: [2.2, 0], mask: 'noise', maskK: 0.5, maskTile: [3, 1], maskScroll: [0.6, 0],
       scale: 1, stretch: [1, 1.1, 1], offset: [0, 0.15, 0], edgeV: [0.12, 0.45], core: 0.7, coreAt: 0.6, back: 0.7, erode: 0.08 }), 0.5),
     // PRIMARY (its edge): a thinner, hotter crescent just ahead, low
-    own(T, KNIGHT, { hold: true, form: 'wave', face: 'heading', main: 'streaks', tile: [8, 1], scroll: [3, 0], scale: 1.08, stretch: [1, 0.55, 1], offset: [0, 0.35, 0], edgeV: [0.3, 0.3], core: 1, coreAt: 0.5, glow: 2.6, back: 0.6, erode: 0.05 }),
+    own(T, KNIGHT, { hold: true, in: 40, form: 'wave', face: 'heading', main: 'streaks', tile: [8, 1], scroll: [3, 0], scale: 1.08, stretch: [1, 0.55, 1], offset: [0, 0.35, 0], edgeV: [0.3, 0.3], core: 1, coreAt: 0.5, glow: 2.6, back: 0.6, erode: 0.05 }),
     // SECONDARY: motes shed behind it, in the blow's colour to white
-    sprites(KNIGHT, { rate: 60, dur: Infinity, shape: 'streak', spawn: 'disc', r: 0.6, offset: [0, 0.7, 0], dir: 'up', speed: [0.4, 1.2], size: [0.12, 0.22], sizeEnd: 0, life: [0.25, 0.45], color: 'tint', colorEnd: 'white' }),
+    sprites(KNIGHT, { rate: 60, dur: Infinity, in: 40, shape: 'streak', spawn: 'disc', r: 0.6, offset: [0, 0.7, 0], dir: 'up', speed: [0.4, 1.2], size: [0.12, 0.22], sizeEnd: 0, life: [0.25, 0.45], color: 'tint', colorEnd: 'white' }),
   ] },
   'cut.wave.hit': { layers: [
     own(T, KNIGHT, { form: 'crescent', face: 'dir', main: 'streaks', tile: [3, 1], scroll: [0, 2], scale: [[0, 0.5], [1, 1.2]], offset: [0, 0, 0], dur: 0.28, glow: 2.4, back: 0.6 }),
@@ -41,9 +42,9 @@ export const CUTLASS_CHARGE_EFFECTS = {
   ] },
   'cut.spin.charge': { layers: [
     // PRIMARY: a glint at the tip, swelling with the charge (the handle's k)
-    sprites(KNIGHT, { rate: 30, dur: Infinity, shape: 'glint', spawn: 'point', speed: 0, size: [0.25, 0.4], sizeEnd: 0.1, life: [0.12, 0.2], color: 'white', colorEnd: 'tint' }),
+    sprites(KNIGHT, { rate: 30, dur: Infinity, in: 20, shape: 'glint', spawn: 'point', speed: 0, size: [0.25, 0.4], sizeEnd: 0.1, life: [0.12, 0.2], color: 'white', colorEnd: 'tint' }),
     // SECONDARY: motes drawn in to the blade
-    sprites(KNIGHT, { rate: 24, dur: Infinity, shape: 'soft', spawn: 'sphere', r: 0.7, dir: 'in', speed: [1.2, 2.2], size: [0.08, 0.14], sizeEnd: 0, life: [0.3, 0.45], color: 'tint', colorEnd: 'white' }),
+    sprites(KNIGHT, { rate: 24, dur: Infinity, in: 20, shape: 'soft', spawn: 'sphere', r: 0.7, dir: 'in', speed: [1.2, 2.2], size: [0.08, 0.14], sizeEnd: 0, life: [0.3, 0.45], color: 'tint', colorEnd: 'white' }),
   ] },
   'cut.spin.full': { layers: [
     sprites(KING, { count: 2, shape: 'star4', speed: 0, size: [0.7, 0.9], sizeEnd: 0, life: 0.3, color: 'white', colorEnd: 'tint' }),
