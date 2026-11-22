@@ -310,7 +310,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   on the point the grapnel would bite: the throw's own probe (`Hookshot.probe()`: the eye's ray along the aim, 40 m). An **anchor** is
   the ring alone; a **catch** (under 60 kg, a clapperjar, a light creature: it comes to them) adds four brackets that close on it once.
   Faint when the pool cannot pay the throw. A fixed size in the scene's 480 lines; no words. It replaced the chevron there (the chevron
-  is what F would do). *Not:* the chevron, the lock-on reticle, the Grapple's mount preview.
+  is what F would do). *Not:* the target mark (the chevron, the lock), the Grapple's mount preview.
 - **a guard break** (`hit.guardBreak` on a move's hit, `tools/moveset.js`; God Hand's guard break, Soulcalibur's Guard Crush): the thing
   struck is asked `breakGuard(point, dir, by)` before the blow lands, so that blow goes through. Strawman on guard throws its sleeves wide
   and keeps them open 1.0 s of the sim clock (its windups' clock: real seconds less any hit-stop) (`GUARD_OPEN`, `world/throwingroom/room.js`; its look `S.open(t)`, `vfx/strawman.js`); nothing else guards
@@ -395,7 +395,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   Courier's chest while mopping or a jet runs; the screen's middle in first person), the **meniscus** where it stands, quarter
   **notches**, the red cross when it runs dry; it lingers 0.8 real s after the load stops, and goes at once when the brush is stowed or
   another tool is asked for (a jet aside). **The mop head's load**: the tuft darkens in eight steps as the bottle fills, drips from the
-  sixth (`vfx/brushload.js`). *Not:* the lock-on reticle (on foot or the rail's), the Lachryma ring (`vfx/hudring.js`), a world mark's
+  sixth (`vfx/brushload.js`). *Not:* the target mark (on foot), the rail's lock-on, the Lachryma ring (`vfx/hudring.js`), a world mark's
   glyph.
 - **stance** (`src/courier/anim/stances.js`): a held pose baked from clips (a tool's idle); `bakeClip` is its bake without the skeleton
   (an overlay, an exaggeration, `closeLoop`: a loop's popping end dropped and the loop closed, Unity's Loop Pose), shared with the baked
@@ -918,7 +918,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   line** (thin and pale, harmless) then **hot** (white-gold over a dark rim); the figurehead's lamp (with iron **shutters**) and the
   Drowned Light's. *Not:* a room (the log's word), a PointLight (lent by `render/lightbudget.js`).
 - **the lock-on** (RMB held on the rail): the reticle paints up to eight targets; release fires a **lance** at each, together a
-  **volley** (RayStorm). *Not:* the lock-on reticle on foot (the same word, the same idea: a target held).
+  **volley** (RayStorm). *Not:* the target mark's lock on foot (the same idea: a target held).
 - **Margarite's dock** (`world/emocean/margarite.js`, zone `margarite`): the King's island's quay and pier on the crude, its lamp
   tower, the Pearl Shrine, the Purser and Letty Marque; the **posted board** beside the Purser is the price (F at it: the Purser's
   counter). *Not:* Margarite (the island, of which the dock is all that is built).
@@ -940,7 +940,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   lifted over the drawn crude and depth-tested (the jetty, the hull and the Courier hide it; the sand above the waterline covers it). The
   pier's page pauses the game, so the loop ticks the mooring under it (the preview fades in and moves while a mount is chosen), the page is
   **set aside** from the hull, and a page shut puts the preview back to the mount taken aboard (the pointer sends no leave).
-  *Not:* the card's demo loop (CLARITY.md section 6, a loop beside a card), the lock-on reticle, a lane mark.
+  *Not:* the card's demo loop (CLARITY.md section 6, a loop beside a card), the target mark, a lane mark.
 - **mount** (`MOUNTS`, `progress/rail/mounts.js`): a worn tool carried on the ship, as many as its hull's slots chosen at the pier (`slotsOf`: sloop 2, frigate 3, destroyer 2, tanker and galleon 1; the owner, 2026-10-08) (the wake brush, the toll, the
   gulp, the plate, the hook, the vane); the psygun is always the gun. *Not:* a ship part (the ships have none).
 - **par**, **rank**, **medal**, **the tally** (`progress/rail/score.js`): par is an expert's median score for a set piece (measured,
@@ -1366,7 +1366,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   what it is drawn against (the sky's state in memory, `sky.toneAt` under `clouds.over`; under a roof the room's background): pale light
   with a dark **keyline** on a dark ground, dark ink with a pale keyline on a bright one (R11, casebook rule 105). *Not:* the Mind's ink
   (`labInk`, a surface's near-black), though it is drawn in it.
-- **world mark**: a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox
+- **world mark**: a mark that sits on a thing and carries no words: a glyph pop, the target mark (the interact chevron, the lock), the letterbox
   bars, the fish portrait, a Figment attack telegraph and its glyphs (`game.figmentTelegraphs`). A wall hides a creature's marks (its
   glyph pops, its aura, its temper) as it hides the creature, and its own
   body never does (a glyph pop is drawn a metre or more nearer each camera, shrunk to the same size: `vfx/glyphs.js`). **throughWalls**

@@ -18,7 +18,7 @@
 //
 //   LAB_GLSL                          the shader chunk: labradorite(ph), labSoft(ph), labInk(ph, sheen), labPhase(worldPos, viewDir)
 //   mindTime                          the shared drift uniform; mindTick() once a frame (idempotent: anyone may call it)
-//   mindLineMaterial({ opacity, depthTest, bright })    for LineSegments / Line
+//   mindLineMaterial({ opacity, depthTest, bright })    for LineSegments / Line   (both: uniforms.uGold 0..1 turns a mark the lock's gold)
 //   mindFillMaterial({ opacity, depthTest, ink })       for the body of a mark (normal blending: ink with schiller at the rim)
 //   SLIP_SCHILLER (one uniform every slip body shares: its strength)   SLIP_SCHILLER_GLSL (slipSchiller(p, n, viewDir, wet): include after
 //     LAB_GLSL; the faint flash of the Lachryma in slip under its clay, at a grazing look, strongest where it runs wet: the owner,
@@ -75,23 +75,25 @@ void main() {
   gl_Position = projectionMatrix * viewMatrix * w;
 }`;
 const MIND_F = /* glsl */`
-uniform float uOpacity, uInk, uBright, uLine;
+uniform float uOpacity, uInk, uBright, uLine, uGold;
 varying vec3 vW; varying vec3 vView; varying vec3 vN;
 ${LAB_GLSL}
+// the lock's gold (0xffd76a, courier/lockon.js): a Mind mark turned gold by uGold, 0 by default (the target mark's lock, vfx/targetmark.js)
+vec3 labGold(vec3 c) { float l = dot(c, vec3(0.3, 0.59, 0.11)); return mix(c, LAB_INK + labLin(vec3(1.0, 0.843, 0.416)) * l * 1.7, uGold); } // (the ink kept, its schiller turned gold)
 void main() {
-  if (uLine > 0.5) { gl_FragColor = vec4(labSoft(labPhase(vW, vView)) * uBright, uOpacity); return; }
+  if (uLine > 0.5) { vec3 l = labSoft(labPhase(vW, vView)); gl_FragColor = vec4(mix(l, mix(labLin(vec3(1.0, 0.843, 0.416)), l, 0.12), uGold) * uBright, uOpacity); return; }
   vec3 n = normalize(vN) * (gl_FrontFacing ? 1.0 : -1.0);
   float ndv = abs(dot(n, normalize(vView)));
   float rim = pow(1.0 - ndv, 1.6);
   float ph = labPhase(vW, vView) + 0.25 * dot(n, vec3(0.3, 0.8, 0.5));
   vec3 c = mix(labSoft(ph), labInk(ph, 0.12 + 0.7 * rim), uInk);
-  gl_FragColor = vec4(c, uOpacity * mix(0.55 + 0.45 * rim, 0.75 + 0.25 * rim, uInk));
+  gl_FragColor = vec4(labGold(c), uOpacity * mix(0.55 + 0.45 * rim, 0.75 + 0.25 * rim, uInk));
 }`;
 
 /** Lines of the Mind (wireframes, edges): additive, softly rainbow. */
 export function mindLineMaterial({ opacity = 1, depthTest = false, bright = 1 } = {}) {
   return new THREE.ShaderMaterial({
-    uniforms: { uOpacity: { value: opacity }, uBright: { value: bright }, uInk: { value: 0 }, uLine: { value: 1 }, uMindT: mindTime },
+    uniforms: { uOpacity: { value: opacity }, uBright: { value: bright }, uInk: { value: 0 }, uLine: { value: 1 }, uGold: { value: 0 }, uMindT: mindTime },
     vertexShader: MIND_V, fragmentShader: MIND_F,
     transparent: true, forceSinglePass: true, depthWrite: false, depthTest, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false,
   });
@@ -100,7 +102,7 @@ export function mindLineMaterial({ opacity = 1, depthTest = false, bright = 1 } 
 /** The body of a Mind mark: ink with the schiller at the turn of it (normal blending), or with ink 0 a glassy glow. */
 export function mindFillMaterial({ opacity = 0.5, depthTest = false, ink = 1 } = {}) {
   return new THREE.ShaderMaterial({
-    uniforms: { uOpacity: { value: opacity }, uInk: { value: ink }, uBright: { value: 1 }, uLine: { value: 0 }, uMindT: mindTime },
+    uniforms: { uOpacity: { value: opacity }, uInk: { value: ink }, uBright: { value: 1 }, uLine: { value: 0 }, uGold: { value: 0 }, uMindT: mindTime },
     vertexShader: MIND_V, fragmentShader: MIND_F,
     transparent: true, depthWrite: false, depthTest, side: THREE.DoubleSide, fog: false,
   });

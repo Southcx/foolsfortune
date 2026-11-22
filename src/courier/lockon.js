@@ -1,5 +1,6 @@
 // ---------------------------------------------------------------------------------------
-// LOCK-ON: Z-targeting, for a mouse. One thing is held in the sights: a marker (brackets that close on it) sits on it, the camera
+// LOCK-ON: Z-targeting, for a mouse. One thing is held in the sights: the target mark sits on it (vfx/targetmark.js: the chevron's
+// prism in gold over it, its blades closing on it; drawn there from `target`, `shownOf` and `radiusOf`, never here), the camera
 // swings to keep it in the middle of the screen, the body squares up to it, and every stroke and lunge goes toward it. The movement
 // keys stay the camera's, so with the camera holding the target they are strafing around it: the circle-strafe that Zelda's Z-target
 // is remembered for. The mouse is quieter while locked (a fifth of its usual sway); a hard flick of it, or the wheel, moves the lock
@@ -24,12 +25,11 @@
 // the crosshair and the shots went right of it (the owner's phone, v297).
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { Reticle } from '../tools/sondelass/angling/reticle.js';
 import { GROUPS } from '../core/physics.js';
 import { sfx } from '../audio/sfx.js';
 import { T } from '../core/config.js';
 
-const RANGE = 18, KEEP = 26, GOLD = 0xffd76a;
+const RANGE = 18, KEEP = 26; // (the lock's gold, 0xffd76a, is the target mark's: vfx/labradorite.js uGold)
 /** every: real s between the touch lock's looks for a foe; hold: real s it waits after the lock was let go by hand. */
 /** quiet: real s after a finger last turned the view before it may take one; away: px (of the view's turn, input.dx) a drag on a held
  *  lock runs up, fading at `fade` a real s, to let it go. */
@@ -41,7 +41,7 @@ export class LockOn {
   constructor(game) {
     this.game = game;
     this.target = null;
-    this.reticle = new Reticle(game.scene, { mind: true }); // (the Mind's: black labradorite, docs/ART.md precept 3)
+    this.taken = 0; // (a count of locks taken: the target mark closes its blades afresh on each, the same thing again included)
     this.flickCool = 0; this.blocked = 0; this.losT = 0; this.t = 0; this.autoWait = 0; this.dragged = 0; // (dragged: the touch's look away, run up)
     this.assist = true;
     this.extra = new Set(); // (lock targets added by their owners: `add`)
@@ -57,7 +57,7 @@ export class LockOn {
     return out.set(b.x, b.y + (t.ref.P?.height ?? 0.5) * 0.45, b.z);
   }
   point(out) { return this.target ? this.pointOf(this.target, out) : null; }
-  /** Where the target is DRAWN this frame (between physics steps, as its model is): what the reticle and the camera follow, so
+  /** Where the target is DRAWN this frame (between physics steps, as its model is): what the target mark and the camera follow, so
    *  neither steps at the physics rate against a smoothly drawn jar. */
   shownOf(t, out) {
     const a = this.game.alpha ?? 1;
@@ -67,6 +67,8 @@ export class LockOn {
     if (m) { m.updateMatrixWorld(); out.setFromMatrixPosition(m.matrixWorld); return out.setY(out.y + (t.ref.P?.height ?? 0.5) * 0.45); }
     return this.pointOf(t, out);
   }
+  /** How wide a thing is drawn (m): what the target mark's blades close to. */
+  radiusOf(t) { return t.type === 'clapper' ? 0.6 : t.type === 'creature' ? Math.max(0.6, (t.ref.radius ?? 0.5) * 1.6) : Math.max(0.5, (t.ref.P?.rMax ?? 0.3) * 2.2); }
   /** A thing to lock to (a creature's contract: pos, center or lockPoint, radius, height, alive), added by its owner. */
   add(ref) { this.extra.add(ref); return ref; }
   remove(ref) { this.extra.delete(ref); if (this.target?.ref === ref) this.release('gone'); }
@@ -136,7 +138,7 @@ export class LockOn {
 
   set(t, auto = false) {
     this.target = t; this.blocked = 0; this.losT = 0;
-    this.reticle.flash = 1;
+    this.taken++;
     sfx.lockOn?.(1);
     this.game.events?.emit('lock.on', { type: t.type, ...(t.ref.training && { training: true }), ...(auto && { auto: true }) }); // (a training body's lock is never counted, nor the touch lock's own)
   }
@@ -186,22 +188,22 @@ export class LockOn {
     const g = this.game, P = g.player, inp = P.input;
     this.t += dt;
     this.flickCool -= dt;
-    if (g.duel?.active || g.duel?.pending) { if (this.target) this.release('duel'); this.reticle.hide(); this.reticle.update(dt, g.camera); P.lookScale.lock = 1; return; } // (a puzzle duel is its own instance: nothing held into it, nothing taken in it; South, 2026-10-29)
+    if (g.duel?.active || g.duel?.pending) { if (this.target) this.release('duel'); P.lookScale.lock = 1; return; } // (a puzzle duel is its own instance: nothing held into it, nothing taken in it; South, 2026-10-29)
     const t = this.target;
     const touch = g.input?.device === 'touch', turned = touch ? Math.hypot(inp.dx || 0, inp.dy || 0) : 0; // (a finger turning the view: aiming by hand)
     if (!t) {
-      this.reticle.hide(); this.reticle.update(dt, g.camera); P.lookScale.lock = 1; this.dragged = 0;
+      P.lookScale.lock = 1; this.dragged = 0;
       if (turned > 0) this.autoWait = Math.max(this.autoWait, LOCK_AUTO.quiet); // (never taken out from under an aim)
       this.autoLock(dt); return;
     }
-    if (touch) { this.dragged = this.dragged * Math.exp(-dt * LOCK_AUTO.fade) + turned; if (this.dragged > LOCK_AUTO.away) { this.dragged = 0; this.release(); this.reticle.update(dt, g.camera); return; } } // (looked away: let go)
-    if (!this.alive(t)) { this.release('gone'); this.reticle.update(dt, g.camera); return; }
+    if (touch) { this.dragged = this.dragged * Math.exp(-dt * LOCK_AUTO.fade) + turned; if (this.dragged > LOCK_AUTO.away) { this.dragged = 0; this.release(); return; } } // (looked away: let go)
+    if (!this.alive(t)) { this.release('gone'); return; }
     this.pointOf(t, _a);
     const dist = _a.distanceTo(P.pos);
-    if (dist > KEEP || g.god?.controlling) { this.release('far'); this.reticle.update(dt, g.camera); return; }
+    if (dist > KEEP || g.god?.controlling) { this.release('far'); return; }
     // a wall in the way for a moment is nothing; for more than one, the lock lets go
     this.losT -= dt;
-    if (this.losT <= 0) { this.losT = 0.15; this.blocked = this.clear(_a, t.ref) ? 0 : this.blocked + 0.15; if (this.blocked > 1.2) { this.release('lost'); this.reticle.update(dt, g.camera); return; } }
+    if (this.losT <= 0) { this.losT = 0.15; this.blocked = this.clear(_a, t.ref) ? 0 : this.blocked + 0.15; if (this.blocked > 1.2) { this.release('lost'); return; } }
     // the camera does the work: it keeps the target in the middle, a little from above; the mouse is quiet
     this.shownOf(t, _a);
     if (this.assist) {
@@ -224,8 +226,5 @@ export class LockOn {
     // a hard flick moves the lock
     if (!touch && this.flickCool <= 0 && Math.abs(inp.dx) > 90 && P.lookScale.blade !== 0) { this.flickCool = 0.45; this.cycle(inp.dx > 0 ? 1 : -1); }
     if (inp.wheel && this.flickCool <= 0) { this.flickCool = 0.3; this.cycle(inp.wheel > 0 ? 1 : -1); }
-    const r = t.type === 'clapper' ? 0.6 : t.type === 'creature' ? Math.max(0.6, (t.ref.radius ?? 0.5) * 1.6) : Math.max(0.5, (t.ref.P?.rMax ?? 0.3) * 2.2);
-    this.reticle.set({ pos: _a, size: r, color: GOLD, icon: 'none', lock: 1, stam: 0 });
-    this.reticle.update(dt, g.camera);
   }
 }

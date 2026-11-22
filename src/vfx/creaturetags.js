@@ -1,8 +1,10 @@
 // ---------------------------------------------------------------------------------------
-// CREATURE TAGS: a creature's tag as THE SCAN (docs/plans/OVERLAY.md 10.5f: the owner's pick, direction C of board v8). One bracket
-// framing the creature's eyes, a dashed leader line, a small CRT lozenge (a hex-cornered screen) holding the creature as a pixel sprite,
-// its readout beside it as bare lines (no plate, no barcode, no id), the sigil-eye as the lens on the lozenge's side, and the status
-// motes orbiting its head. Familiarity shows twice: in the lines (Dovina's one reader, tools/veritome/creaturetag.js, OVERLAY.md 17) and
+// CREATURE TAGS: a creature's tag as THE SCAN (docs/plans/OVERLAY.md 10.5f: the owner's pick, direction C of board v8), hung from its
+// target mark (vfx/targetmark.js: the lock's gold prism, or a small dim one while only read) on a thread of the labradorite, tied at the
+// prism's top (South, 2026-11-22: the lock, the tags and the chevron one family; the eye bracket and the dashed leader it replaced). A
+// small lozenge (a hex-cornered screen) holding the creature as a pixel sprite, its readout beside it on a plate of black labradorite
+// edged in the schiller (the lock's gold for the locked one), the sigil-eye as the lens on the lozenge's side, the status motes
+// orbiting its head. Familiarity shows twice: in the lines (Dovina's one reader, tools/veritome/creaturetag.js, OVERLAY.md 17) and
 // in the sprite's sharpness (its pixel grid a step finer a level, 11 x 9 at UNKNOWN to 44 x 36 at UNDERSTOOD; never the picture).
 //
 // The sprite's picture (plateOf, OVERLAY.md 17): the Compendium's best plate of the kind, cut out by the creature's box in it (a plate
@@ -22,11 +24,11 @@
 // aperture (viewfinder.js) within the capture's reach, at most MAX, nearest the aperture's centre first. Nothing else ever wears one.
 // The settings: `visual.creatureTags` 'scan' (the lens and the lock-on) | 'lockon' (the lock-on only) | 'off'; `visual.creatureTagsMinimal`
 // true keeps the lozenge, its sprite, the name and the health line (Dovina's reads kept: a scrambled line stays scrambled). Each is
-// anchored to its eyes projected each frame; tags are kept off each other, off every tagged creature's bracket and leader, the screen's
+// tied to its mark's top projected each frame (its eyes until the mark is drawn); tags are kept off each other, off every tagged creature's mark and thread, the screen's
 // edges (with the lens up, the aperture's), the Sight's corner and the Lachrimeter.
 //
 // Cost: nothing at boot (no mesh, no canvas, no program until the first tag is wanted). Then one mesh, one material, one program and one
-// draw call for every tag together: the brackets, leaders and motes as quads in a dynamic buffer, each tag's plate a quad on one atlas
+// draw call for every tag together: the threads and motes as quads in a dynamic buffer, each tag's plate a quad on one atlas
 // canvas (a white strip at its foot for the strokes), a tag's region redrawn and uploaded only when its lines change, its scramble
 // churns or a decrypt plays. A kind's silhouette is rendered once at 128 x 128 and read back; a plate is decoded once a thumb. Hidden
 // with the HUD (but kept through the lens's own want: hideui.js), on the title, in the god hand, on the rail's crossing and in a cinematic.
@@ -53,17 +55,17 @@ import { TagLayout } from './taglayout.js';
 
 const MAX = 3, REACH = 18, POLL = 0.25, CHURN = 0.25, DECRYPT = 0.6, T_IN = 0.25, T_OUT = 0.17; // (REACH: the lens's capture, veritome.js CAPTURE.range)
 const MINIMAL = new Set(['name', 'health']); // (visual.creatureTagsMinimal: the lines kept)
-const W = 228, M = 18, SW = 58, SH = 50, GX = 68, HMAX = 168, RISE = 30;
+const W = 228, M = 18, SW = 58, SH = 50, GX = 68, HMAX = 168;
 // the readout's grid, in dots: a label column, values right-aligned at the row's end, rows at least 1.5x the cap height apart
 const LBL = 41, GAP = 5, ROW = 17, NAME_H = 20, HID_H = 20, FN_H = 24; // (41: AGITATION at the label's 11 px, measured 37.9 px in Jersey 15)
 const PX = { label: 11, word: 12, num: 14, small: 11, name: 14 };
 const HAND_S = 0.8, HAND_FN = 0.95; // (the running hand's scale: a letter about 10 dots tall, 15 px at 720 lines)
 // the sprite: a base of 44 x 36 cells, shown on a grid a step finer a familiarity level, over the same area of the screen
 const BW = 44, BH = 36, AW = 50.6, AH = 41.4, GRIDS = [[11, 9], [15, 12], [22, 18], [29, 24], [44, 36]];
-const INK = '#0d0a12', LIGHT = '#e6deff', VFD = '#7dffd2', VFD_GLOW = 'rgba(60,255,190,.85)', MAG = '#ff2a9a', CYAN = '#22e6ff';
+const INK = '#0d0a12', LIGHT = '#e6deff', VFD = '#a9c8ff', VFD_GLOW = 'rgba(96,140,255,.85)', MAG = '#ff2a9a', CYAN = '#22e6ff', GOLD = '#ffd76a'; // (the counts in the schiller's pale blue, the prism's: was the CRT's green)
 const FILM_HI = ['#8a5cff', '#3fc4f0', '#f6cd5a', '#ff5aa8'], FILM_LIT = ['#b49cff', '#7fe3ff', '#ffd56b', '#ff86c8'];
-const PAL = { lab: '#8fd8b0', dim: '#8fd8b0', val: VFD, glow: VFD_GLOW, word: '#e2fff0', wordGlow: 'rgba(60,255,190,.35)' };
-const TONES = ['#0b3d2a', '#2a9e6e', '#7dffd2', '#e9fff7'], SHADOW = '#020a06';
+const PAL = { lab: '#a99ccc', dim: '#a99ccc', val: VFD, glow: VFD_GLOW, word: '#ece8ff', wordGlow: 'rgba(110,130,255,.35)' };
+const TONES = ['#101845', '#2c50b8', '#74b4f4', '#e8f2ff'], SHADOW = '#03050d';
 const COUNT = `'Jersey 15', ${FONT.sys}`; // (the count face, src/ui/theme.js)
 const LABEL = { habit: 'NOW', health: 'HP', emo: 'AGITATION', statuses: 'STATUS', weak: 'WEAK', grain: 'NATURE' };
 // the statuses' motes: doubt and charm are the mock's; the others are placeholders (a colour and a 7 x 7 glyph each) until the auras' table
@@ -84,7 +86,9 @@ const hexA = (h, a) => { const n = parseInt(h.slice(1), 16); return `rgba(${n >>
 function schill(g, x0, x1) { const gr = g.createLinearGradient(x0, 0, x1, 0), n = FILM_LIT.length * 2; for (let i = 0; i <= n; i++) gr.addColorStop(i / n, FILM_LIT[i % 4]); return gr; }
 function film(g, x0, y0, x1, y1) { const gr = g.createLinearGradient(x0, y0, x1, y1); FILM_HI.forEach((c, i) => gr.addColorStop(i / 3, c)); return gr; }
 const _c = new THREE.Color(); const lin = (hex, a) => { _c.set(hex); return [_c.r, _c.g, _c.b, a]; };
-const C_INK = lin(INK, 0.85), C_VFD = lin(VFD, 1), C_WHITE = [1, 1, 1, 1], C_TRAIL = {};
+const C_INK = lin(INK, 0.85), C_GOLD = lin(GOLD, 1), C_WHITE = [1, 1, 1, 1], C_TRAIL = {};
+// the thread's schiller, walked along it and drifting at a constant rate (the prism's edges' colours, vfx/labradorite.js)
+const RAMP = Array.from({ length: 24 }, (_, i) => { const a = new THREE.Color(FILM_LIT[Math.floor(i / 6)]), b = new THREE.Color(FILM_LIT[(Math.floor(i / 6) + 1) % 4]); a.lerp(b, (i % 6) / 6); return [a.r, a.g, a.b, 1]; });
 const windowColour = () => (THEMES[theme.id] || THEMES.kiln).mid;
 const lum = (d, k) => Math.sqrt((0.3 * d[k] + 0.59 * d[k + 1] + 0.11 * d[k + 2]) / 255);
 
@@ -132,13 +136,13 @@ function gridOf(base, gw, gh) {
   return out;
 }
 
-/** Every tag in one mesh: the quads of every bracket, leader and mote (vertex colours over the atlas's white strip), then each shown
+/** Every tag in one mesh: the quads of every thread and mote (vertex colours over the atlas's white strip), then each shown
  *  tag's plate as a quad on its region of the atlas canvas. One dynamic buffer, one material, one program, one draw call. Coordinates
  *  in dots for the strokes (written as CSS px), CSS px for the plates. */
 class Sheet {
   constructor(cap = 12000) {
     this.cap = cap; const n = cap + 6 * MAX; this.p = new Float32Array(n * 3); this.c = new Float32Array(n * 4); this.u = new Float32Array(n * 2);
-    this.n = 0; this.s = 1; this.col = C_VFD; this.plates = []; this.k = 0; this.pw = 1; this.ph = 1; this.wv = 0.5;
+    this.n = 0; this.s = 1; this.col = C_INK; this.plates = []; this.k = 0; this.pw = 1; this.ph = 1; this.wv = 0.5;
     const g = this.geo = new THREE.BufferGeometry();
     this.pa = new THREE.BufferAttribute(this.p, 3).setUsage(THREE.DynamicDrawUsage); this.ca = new THREE.BufferAttribute(this.c, 4).setUsage(THREE.DynamicDrawUsage); this.ua = new THREE.BufferAttribute(this.u, 2).setUsage(THREE.DynamicDrawUsage);
     g.setAttribute('position', this.pa); g.setAttribute('color', this.ca); g.setAttribute('uv', this.ua); g.setDrawRange(0, 0);
@@ -161,7 +165,7 @@ class Sheet {
   v(x, y) { const s = this.s; this.w(Math.round(x * s), Math.round(y * s), 0.5, this.wv, this.col); }
   quad(ax, ay, bx, by, cx, cy, dx, dy) { if (this.n + 6 > this.cap) return; this.v(ax, ay); this.v(bx, by); this.v(cx, cy); this.v(ax, ay); this.v(cx, cy); this.v(dx, dy); }
   rect(x, y, w, h) { this.quad(x, y, x + w, y, x + w, y + h, x, y + h); }
-  seg(ax, ay, bx, by, w) { // (a square-capped stroke: its ends pushed out half a width, so a bracket's corner closes)
+  seg(ax, ay, bx, by, w) { // (a square-capped stroke: its ends pushed out half a width, so a corner closes)
     const dx = bx - ax, dy = by - ay, L = Math.hypot(dx, dy) || 1, ux = dx / L * w / 2, uy = dy / L * w / 2;
     this.quad(ax - ux - uy, ay - uy + ux, bx + ux - uy, by + uy + ux, bx + ux + uy, by + uy - ux, ax - ux + uy, ay - uy - ux);
   }
@@ -308,7 +312,7 @@ export class CreatureTags {
   constructor(game) {
     this.game = game; this.tags = new Map(); this.sprites = new Map(); this.plates = new Map(); this.shown = []; this.sheet = null; this.panels = [];
     this.pollT = 0; this.churnT = 0; this.t = 0; this.k = 0; this.dot = 1; this.themeId = null;
-    this.v = new THREE.Vector3(); this.v2 = new THREE.Vector3(); this.right = new THREE.Vector3(); this.PTS = new Float32Array(16);
+    this.v = new THREE.Vector3(); this.v2 = new THREE.Vector3(); this.v3 = new THREE.Vector3(); this.right = new THREE.Vector3(); this.PTS = new Float32Array(16);
     this.lay = new TagLayout(40); // (what a tag must keep off this frame: vfx/taglayout.js, shared with the things' tags)
     const S = game.overlayScene; if (!S || typeof document === 'undefined') return;
     this.root = new THREE.Group(); this.root.name = 'creaturetags'; this.root.userData.overlayHidden = true;
@@ -480,14 +484,15 @@ export class CreatureTags {
     this.sheet.size(this.k);
     // the churn: a scrambled line swaps a word a quarter of a real second (never a strobe: the ghosts move with it)
     const churn = (this.churnT -= dt) <= 0; if (churn) this.churnT = CHURN;
-    // retire; then every bracket first, so no tag is laid over another creature's bracket; then the tags in turn, each adding its leader
+    // retire; then every mark first, so no tag is laid over another creature's mark; then the tags in turn, each adding its thread
     this.sheet.begin(this.dot); const lay = this.lay; lay.begin();
     if (!scan) { lay.rect(this.Wd - 182, 0, this.Wd, 178); lay.rect(this.Wd - 118, 250, this.Wd, 480); } // (the Sight, the Lachrimeter: stepped out under the lens)
     this.shown.length = 0; const live = [];
     for (const [c, T] of this.tags) {
       T.vis = T.want ? Math.min(1, T.vis + dt / T_IN) : Math.max(0, T.vis - dt / T_OUT);
       if (!T.want && T.vis <= 0) { T.panel.owner = null; this.tags.delete(c); continue; }
-      if (!T.tag || !this.bracket(T)) continue;
+      if (!T.tag || !this.anchor(T)) continue;
+      const lk = c === g.lock?.target?.ref; if (lk !== T.locked) { T.locked = lk; T.dirty = true; } // (the locked one's plate edged gold)
       const b = T.b; T.own = lay.rect(b.x0 - 3, b.y0 - 3, b.x1 + 3, b.y1 + 3); live.push(T);
     }
     for (const T of live) {
@@ -501,36 +506,40 @@ export class CreatureTags {
     this.root.userData.overlayHidden = this.tags.size === 0;
   }
 
-  /** Its bracket in dots, round its eyes projected; false when off screen. */
-  bracket(T) {
-    const c = T.c, e = (T.pe ||= {}); this.eye(c, T, this.v);
+  /** Where it is tied, in dots: the top of its target mark (vfx/targetmark.js; over its eyes until the mark is drawn) and the mark's
+   *  box, kept clear; its eyes (the motes' orbit). False when off screen. */
+  anchor(T) {
+    const c = T.c, e = (T.pe ||= {}), a = (T.pa ||= {}), q = (T.pq ||= {}), bb = (T.b ||= {}); this.eye(c, T, this.v);
     if (!this.project(this.v, e)) return false;
-    const cam = this.game.camera; this.right.setFromMatrixColumn(cam.matrixWorld, 0);
+    this.right.setFromMatrixColumn(this.game.camera.matrixWorld, 0);
     const r = (T.pr ||= {}); this.project(this.v2.copy(this.v).addScaledVector(this.right, (c.radius || 0.4) * 0.45), r);
-    const sp = Math.max(3, Math.min(42, Math.abs(r.x - e.x) || 6)), pad = Math.max(5, Math.min(12, sp * 0.5)), vy = pad * 1.1 + sp * 0.12;
-    const bb = (T.b ||= {}); bb.x0 = e.x - sp - pad; bb.x1 = e.x + sp + pad; bb.y0 = e.y - vy; bb.y1 = e.y + vy; bb.ex = e.x; bb.ey = e.y; bb.sp = sp;
+    const sp = bb.sp = Math.max(3, Math.min(42, Math.abs(r.x - e.x) || 6)); bb.hx = e.x; bb.hy = e.y - sp * 0.7 - 6;
+    const m = this.game.targetMarks?.markOf(c);
+    if (m && this.project(m.top(this.v3), a) && this.project(this.v3.copy(m.group.position).addScaledVector(m.up, -0.23 * m.group.scale.y), q)) {
+      const hw = Math.max(5, Math.abs(q.y - a.y) * 0.62); bb.ex = a.x; bb.ey = a.y; bb.x0 = a.x - hw; bb.x1 = a.x + hw; bb.y0 = a.y - 3; bb.y1 = Math.max(a.y, q.y) + 2;
+    } else { bb.ex = e.x; bb.ey = e.y - sp - 10; bb.x0 = e.x - 6; bb.x1 = e.x + 6; bb.y0 = bb.ey - 3; bb.y1 = e.y; }
+    bb.body = sp / 0.45; // (its body's half-width on the view, about)
     return true;
   }
-  /** Its leader for a tag at (x, y): from the bracket's corner nearest the lozenge, a diagonal, then straight to the lozenge. */
-  leader(T, x, y, P) {
-    const b = T.b, ax = x + 29, below = y + SH / 2 > b.ey, fx = ax < b.ex ? b.x0 : b.x1, fy = below ? b.y1 : b.y0;
-    const end = below ? y - 3 : y + SH + 3, room = Math.abs(end - fy), rise = Math.min(RISE, Math.max(0, room - 4));
-    P[0] = fx; P[1] = fy; P[2] = ax; P[3] = below ? fy + rise : fy - rise; P[4] = ax; P[5] = end; return P;
+  /** Its thread for a tag at (x, y): up from the mark's top, across, and down to where the tag hangs from it (the lens's top on the
+   *  lozenge's side when the tag is right of the mark, else the readout's top right corner). */
+  thread(T, x, y, P) {
+    const b = T.b, right = x - 3 > b.ex, ax = right ? x - 3 : x + W - 10, ay = right ? y + SH / 2 - 13 : y, ky = Math.min(b.ey - 10, ay - 8);
+    P[0] = b.ex; P[1] = b.ey; P[2] = b.ex; P[3] = ky; P[4] = ax; P[5] = ky; P[6] = ax; P[7] = ay; return P;
   }
-  /** Lay its tag out in dots, above its bracket, kept off the obstacles (tags, brackets, leaders laid so far, the instruments, the edges). */
+  /** Lay its tag out in dots, hung beside its mark, kept off the obstacles (tags, marks, threads laid so far, the instruments, the edges). */
   place(T, dt) {
-    const h = Math.max(SH + 4, T.h), b = T.b, Q = this.PTS, lay = this.lay;
+    const h = Math.max(SH + 4, T.h), b = T.b, Q = this.PTS, lay = this.lay, side = Math.max(24, b.body + 18);
     const Bd = this.bounds, clamp = (x, y) => [Math.max(Bd.x0 + 20, Math.min(Bd.x1 - W - 6, x)), Math.max(Bd.y0 + 6, Math.min(Bd.y1 - h - 6, y))];
-    const hit = (x, y) => { // (the tag's box, and its leader's straight run, which must not cross another's things; it may touch its own bracket)
+    const hit = (x, y) => { // (the tag's box, and its thread's run across, which must not cross another's things; it may touch its own mark)
       const R = lay.over(x - 16, y, x + W, y + h); if (R) return R;
-      this.leader(T, x, y, Q); return lay.over(Q[2] - 1.5, Math.min(Q[3], Q[5]), Q[2] + 1.5, Math.max(Q[3], Q[5]), T.own);
+      this.thread(T, x, y, Q); return lay.over(Math.min(Q[2], Q[4]), Q[3] - 1.5, Math.max(Q[2], Q[4]), Q[3] + 1.5, T.own);
     };
-    const [tx, ty] = lay.solve(b.ex - 74, b.y0 - RISE - SH - 64, W, h, { clamp, hit, padL: 16, extra: [[b.x1 + 24, b.ey - h / 2], [b.x0 - W - 8, b.ey - h / 2]] });
+    const [tx, ty] = lay.solve(b.ex + side, b.ey - 4, W, h, { clamp, hit, padL: 16, extra: [[b.ex - side - W, b.ey - 4], [b.ex - 40, b.y0 - h - 24]] });
     if (!T.placed) { T.x = tx; T.y = ty; T.placed = true; } else { const a = 1 - Math.exp(-14 * dt); T.x += (tx - T.x) * a; T.y += (ty - T.y) * a; }
-    // what it now takes up: its box, and its leader (the straight run, and the diagonal in three steps)
-    const x = Math.round(T.x), y = Math.round(T.y); lay.rect(x - 16, y, x + W, y + h); this.leader(T, x, y, Q);
-    lay.rect(Q[2] - 2, Math.min(Q[3], Q[5]), Q[2] + 2, Math.max(Q[3], Q[5]));
-    for (let i = 1; i <= 3; i++) { const u = i / 4, px = Q[0] + (Q[2] - Q[0]) * u, py = Q[1] + (Q[3] - Q[1]) * u; lay.rect(px - 3, py - 3, px + 3, py + 3); }
+    // what it now takes up: its box, and its thread's three runs
+    const x = Math.round(T.x), y = Math.round(T.y); lay.rect(x - 16, y, x + W, y + h); this.thread(T, x, y, Q);
+    for (let i = 0; i < 3; i++) lay.rect(Math.min(Q[i * 2], Q[i * 2 + 2]) - 2, Math.min(Q[i * 2 + 1], Q[i * 2 + 3]) - 2, Math.max(Q[i * 2], Q[i * 2 + 2]) + 2, Math.max(Q[i * 2 + 1], Q[i * 2 + 3]) + 2);
     return true;
   }
 
@@ -541,21 +550,20 @@ export class CreatureTags {
     if (T.vis > 0.35) this.sheet.plate(P.i, Math.round((x - M) * d), Math.round((y - M) * d), w, hh * sy);
   }
 
-  /** The bracket at its eyes, the leader to the lozenge, and its status motes: quads in the shared buffer. */
+  /** Its thread from the mark (ink under the schiller walked along it, or the lock's gold) and its status motes: quads in the shared buffer. */
   marks(T) {
-    const S = this.sheet, b = T.b, x = Math.round(T.x), y = Math.round(T.y), P = this.PTS;
-    const lead = Math.min(1, T.vis * 2.2);
-    // the bracket (the mock's, with both eyes inside it): four corners, ink under the VFD line
-    const Lx = Math.max(4, (b.x1 - b.x0) * 0.24), Ly = Math.max(3, (b.y1 - b.y0) * 0.3);
-    const locked = T.c && T.c === this.game.lock?.target?.ref; // (South, 2026-11-22: the locked creature's eye bracket fought the lock-on reticle's brackets round its body; the reticle's are kept)
-    if (!locked) for (const pass of [0, 1]) {
-      S.col = pass ? C_VFD : C_INK; const w = pass ? 1.3 : 3.1;
-      for (let q = 0; q < 4; q++) { const sx = q === 0 || q === 3 ? 1 : -1, sy = q < 2 ? 1 : -1, cx = sx > 0 ? b.x0 : b.x1, cy = sy > 0 ? b.y0 : b.y1; S.seg(cx + sx * Lx * lead, cy, cx, cy, w); S.seg(cx, cy, cx, cy + sy * Ly * lead, w); }
+    const S = this.sheet, b = T.b, x = Math.round(T.x), y = Math.round(T.y), P = this.PTS, lead = Math.min(1, T.vis * 2.2);
+    this.thread(T, x, y, P); S.col = C_INK; S.path(P, 4, 2.8, false, lead);
+    let total = 0; for (let i = 1; i < 4; i++) total += Math.hypot(P[i * 2] - P[i * 2 - 2], P[i * 2 + 1] - P[i * 2 - 1]);
+    for (let i = 1, at = 0, left = total * lead; i < 4 && left > 0; i++) { // (in 6-dot pieces, each its step of the ramp, the ramp drifting at a constant rate)
+      const ax = P[i * 2 - 2], ay = P[i * 2 - 1], L = Math.hypot(P[i * 2] - ax, P[i * 2 + 1] - ay); if (L < 1e-3) continue;
+      const ux = (P[i * 2] - ax) / L, uy = (P[i * 2 + 1] - ay) / L, len = Math.min(L, left); left -= len;
+      for (let s0 = 0; s0 < len; s0 += 6) { const s1 = Math.min(len, s0 + 6); S.col = T.locked ? C_GOLD : RAMP[Math.floor((at + s0) / 7 + this.t * 3) % RAMP.length]; S.seg(ax + ux * s0, ay + uy * s0, ax + ux * s1, ay + uy * s1, 1.1); }
+      at += len;
     }
-    this.leader(T, x, y, P); S.col = C_INK; S.path(P, 3, 3, true, lead); S.col = C_VFD; S.path(P, 3, 1.2, true, lead);
     // the status motes, orbiting the head, a trail behind each, a ring of its build-up from STUDIED
     if (!T.motes.length || T.vis < 1) return;
-    const hx = b.ex, hy = b.y0 - 6, rx = Math.max(18, b.sp * 2.4 + 10), ry = rx * 0.24, ph = this.t * 0.9;
+    const hx = b.hx, hy = b.hy, rx = Math.max(18, b.sp * 2.4 + 10), ry = rx * 0.24, ph = this.t * 0.9;
     T.motes.forEach(([id, v], i) => {
       const an = ph + i / T.motes.length * Math.PI * 2, mx = hx + Math.cos(an) * rx, my = hy + Math.sin(an) * ry, col = ST[id] || LIGHT;
       for (let t = 1; t <= 3; t++) { const a2 = an - t * 0.11; S.col = C_TRAIL[id + t] ||= lin(col, 0.5 - t * 0.13); S.rect(hx + Math.cos(a2) * rx - 1, hy + Math.sin(a2) * ry - 1, 2, 2); }
@@ -583,14 +591,16 @@ export class CreatureTags {
     const P = T.panel, k = P.k, ab = T.aberrant, tgt = ab ? P.tear() : P.cv, g = tgt.getContext('2d');
     g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, tgt.width, tgt.height); g.setTransform(k, 0, 0, k, M * k, M * k); KK = k;
     const rows = T.rows, fam = Math.max(0, Math.min(4, T.tag.level | 0)), h = T.h, spr = this.spriteOf(T), lit = spr.mode !== 'plate';
-    { // the readout's scrim: a dark screen-glass behind the lines, so they read over bright sand and sky (no plate: it fades out at its far edge)
-      const sg = g.createLinearGradient(GX - 8, 0, W, 0); sg.addColorStop(0, 'rgba(4,8,6,.5)'); sg.addColorStop(0.75, 'rgba(4,8,6,.38)'); sg.addColorStop(1, 'rgba(4,8,6,0)');
-      g.fillStyle = sg; g.fillRect(GX - 8, 0, W - GX + 8, h); g.fillStyle = 'rgba(0,0,0,.18)'; for (let yy = 1; yy < h; yy += 2) g.fillRect(GX - 8, yy, W - GX + 8, 0.7);
+    { // the readout's plate: black labradorite (the prism's ink), hex-cornered, its edge the schiller, or the lock's gold on the locked one
+      const x0 = GX - 8, x1 = W, cc = 5, plate = () => { g.beginPath(); g.moveTo(x0 + cc, 0); g.lineTo(x1 - cc, 0); g.lineTo(x1, cc); g.lineTo(x1, h - cc); g.lineTo(x1 - cc, h); g.lineTo(x0 + cc, h); g.lineTo(x0, h - cc); g.lineTo(x0, cc); g.closePath(); };
+      plate(); g.fillStyle = 'rgba(13,11,19,.8)'; g.fill(); g.fillStyle = 'rgba(0,0,0,.18)'; for (let yy = 1; yy < h; yy += 2) g.fillRect(x0, yy, x1 - x0, 0.7);
+      plate(); g.strokeStyle = '#05030a'; g.lineWidth = 2.4; g.stroke(); plate(); g.save(); g.shadowColor = T.locked ? 'rgba(255,215,106,.8)' : VFD_GLOW; g.shadowBlur = 3 * k;
+      g.strokeStyle = T.locked ? GOLD : schill(g, x0, x1); g.lineWidth = 0.9; g.stroke(); g.restore();
     }
     const ch = 12, loz = () => { g.beginPath(); g.moveTo(ch, 0); g.lineTo(SW - ch, 0); g.lineTo(SW, SH / 2); g.lineTo(SW - ch, SH); g.lineTo(ch, SH); g.lineTo(0, SH / 2); g.closePath(); };
     // the bezel and the glass (lit behind a shadow; dark behind a plate's picture)
     loz(); g.strokeStyle = '#05030a'; g.lineWidth = 6; g.stroke(); loz(); g.strokeStyle = film(g, 0, 0, SW, SH); g.lineWidth = 1; g.stroke();
-    loz(); const gl = g.createRadialGradient(SW / 2, SH / 2, 4, SW / 2, SH / 2, SW * 0.62); gl.addColorStop(0, lit ? '#1a7a55' : '#0b2a1d'); gl.addColorStop(1, '#020a06'); g.fillStyle = gl; g.fill();
+    loz(); const gl = g.createRadialGradient(SW / 2, SH / 2, 4, SW / 2, SH / 2, SW * 0.62); gl.addColorStop(0, lit ? '#22409a' : '#0c1534'); gl.addColorStop(1, '#03050d'); // (the schiller's deep blue: the prism's glass) g.fillStyle = gl; g.fill();
     g.save(); loz(); g.clip();
     // the sprite: its picture on a grid a step finer a familiarity level
     const [gw, gh] = GRIDS[fam], cw = AW / gw, chh = AH / gh, sx0 = (SW - AW) / 2, sy0 = (SH - AH) / 2 + 1, grid = gridOf(spr.base, gw, gh), gap = Math.min(0.35, cw * 0.15);

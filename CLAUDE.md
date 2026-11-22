@@ -90,7 +90,7 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
   look as it was.
 - **Raku's tables** (the owner, 2026-10-15) were the overlay's first case: the rules, the how-tos, rolling numbers and slot reels at a
   seat (`docs/plans/CASINO-CLARITY.md`). What happens there still goes to the log too.
-- **World marks carry no words**: glyph pops (`vfx/glyphs.js`), the interact chevron, the lock-on reticle, the letterbox, the
+- **World marks carry no words**: glyph pops (`vfx/glyphs.js`), the target mark (the interact chevron, the lock: `vfx/targetmark.js`), the letterbox, the
   portrait. They sit on the thing and are diegetic where they can be; a word beside one is the overlay's tag.
 - **The dialogue box is the folk's one window of words**, opened by the player (F at one of the folk); every line also goes to the
   log. The folk show feeling with bodies, particles and glyphs. Their lines are data (`src/npc/talks.js`).

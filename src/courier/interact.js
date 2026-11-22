@@ -1,13 +1,13 @@
 // ---------------------------------------------------------------------------------------
 // INTERACT: what the Courier could use right now. Anything that can be acted on with F (lifting a pot, taking hold of a crate, the
 // index console, a chest) registers a source here: a function that says which one thing it would act on, if any, from where they are.
-// The nearest of them gets the chevron (vfx/chevron.js). Nothing here acts: the modules act, on their own keys; this only points.
+// The nearest of them gets the chevron: the target mark's usable state (vfx/targetmark.js, which reads `cur` and draws it after the
+// camera). Nothing here acts: the modules act, on their own keys; this only points.
 //
 //   game.interact.add('carry', () => ({ pos: Vector3 (the marker's place), d: distance, up?: Vector3 (where up is not the world's) }) | null)
-//   .cur (the one with the chevron)   .offers (every source's one thing, this sweep)   .pin(ref, secs) (that one wins while it is offered:
+//   .cur (the one with the chevron)   .chevron (the prism drawing it: the lock's while it is also locked)   .offers (every source's one thing, this sweep)   .pin(ref, secs) (that one wins while it is offered:
 //   an agent naming what it means, docs/plans/COOP.md; nearest-wins chose a pot over the folk beside it)
 // ---------------------------------------------------------------------------------------
-import { Chevron } from '../vfx/chevron.js';
 
 
 const RIDDEN = new Set(['solar']); // (offers made to a Courier on the Solar Skiff)
@@ -16,13 +16,15 @@ export class Interact {
   constructor(game) {
     this.game = game;
     this.sources = [];
-    this.chevron = new Chevron(game.scene);
     this.cur = null;
     this.throttle = 0;
     this.lost = 0;
     this.offers = [];
     this.pinned = null; // { ref, t }
   }
+
+  /** The prism showing what F would use now (vfx/targetmark.js; a source's `up` stands it along a planetoid's: GARDEN-SWEEP #4). */
+  get chevron() { return this.game.targetMarks?.usableMark; }
 
   add(id, fn) { this.sources.push({ id, fn }); }
   pin(ref, secs = 0.5) { this.pinned = { ref, t: secs }; this.throttle = 0; }
@@ -55,8 +57,6 @@ export class Interact {
       if (!best && this.cur && !hidden && !g.techs?.active && !g.techs?.get('carry')?.item && (this.lost += 0.08) < 0.24) best = this.cur;
       else if (best) this.lost = 0;
       this.cur = best;
-      this.chevron.target(best ? best.pos : null, best?.up); // (a source may give its up: the garden's planetoids, GARDEN-SWEEP #4)
     }
-    this.chevron.update(dt); // (it turns and bobs along the offer's up itself: vfx/chevron.js)
   }
 }

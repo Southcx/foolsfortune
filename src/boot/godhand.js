@@ -16,6 +16,7 @@ import { Creations } from '../godhand/creations.js';
 import { IslandMatter } from '../godhand/islandmatter.js';
 import { Interact } from '../courier/interact.js';
 import { LockOn } from '../courier/lockon.js';
+import { TargetMarks } from '../vfx/targetmark.js';
 import { GardenMood } from '../vfx/garden/gardenmood.js';
 import { GuestJars } from '../vfx/garden/guestjars.js';
 import { LaunchLotuses } from '../vfx/garden/launchlotus.js';
@@ -78,6 +79,7 @@ export function bootGodHand(game, made) {
   game.cursorFree = cursorFree; // (a finger is the cursor there: core/touchdriver.js)
   input.wantLock = () => !cursorFree() && !modalOpen() && !game.kilnUI?.open && !game.dialogue?.open && !game.pneukaUI?.open && !game.shopUI?.open && !game.qais?.open; // (a refused lock is retried only if the game still wants one: core/input.js)
   game.lock = new LockOn(game); // (Z-targeting: the camera and the blade hold one thing)
+  game.targetMarks = new TargetMarks(game); game.systems.add('marks', game.targetMarks, { clock: 'raw', name: 'targetMarks' }); // (the one mark: the chevron, the lock, a tag's anchor; drawn after the camera, vfx/targetmark.js)
   // what the chevron points at: anything F would act on from here
   game.interact = new Interact(game);
   game.cradles = new Cradles(game); // (the Pneuka Jar as a seal: F at a cradle seals you in, world/cradles.js, docs/plans/HANKO.md)
