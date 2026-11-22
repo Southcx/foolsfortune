@@ -24,7 +24,7 @@
 // instanced draw, on the sea's program (compiled at boot with the crossing's parked marks: casebook rule 124).
 //
 // Shown only while the belt has the bell in the hands (`game.belt.inHand`), faded in as it comes out and out at once on a stow or a
-// swap, nothing left drawn; never in the rhythm mode or at a busker's mat, nor under the god hand, a cinematic or in the Spirit Garden.
+// swap, nothing left drawn; never in the rhythm mode or at a busker's mat, nor under the god hand, a cinematic or in the Spirit Garden; nor in the combat recital, where LMB strums and no toll rings.
 //
 // Prior art: Crypt of the NecroDancer's beat bar (the beat travels to the mark you act on), Hi-Fi Rush (the world pulses on the beat, and
 // a blow on the beat lands harder, as a toll does here), Into the Breach and XCOM's blast ring (an action's area drawn on the ground
@@ -86,7 +86,7 @@ export class TollReach {
   update(raw = 1 / 60) {
     const g = this.game, P = g.player, b = g.crucibelle, held = g.belt?.inHand;
     const want = !!b && !!P && held?.id === 'crucibelle' && held.wants && held.drawT > 0.5
-      && !g.god?.active && !g.rhythm?.active && !(b.busking > 0.01) && !g.realm?.active && !document.body.classList.contains('cine');
+      && !g.god?.active && !g.rhythm?.active && !(b.busking > 0.01) && !b.recital?.on && !g.realm?.active && !document.body.classList.contains('cine');
     this.alpha += ((want ? 1 : 0) - this.alpha) * (1 - Math.exp(-(want ? 9 : 16) * raw));
     const B = this.buf; B.count = 0;
     if (!want && this.alpha < 0.02) { this.alpha = 0; this.yaw = null; B.flush(); this.mesh.visible = false; Object.assign(this.view, { shown: false, struck: 0, lines: 0, alpha: 0 }); return; }

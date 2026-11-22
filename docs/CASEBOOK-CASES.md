@@ -5189,3 +5189,10 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   made one the main, and ↑ then S made one the sub.
 - **Rule:** NEW:no-redraw-under-pointer
 
+### 2026-11-22 · The toll's reach drawn under the combat recital (headless look, before it shipped)
+- **Seen:** in the headless shot of the combat recital at 1920 x 1080, the toll's reach (its violet cone and ring on the ground) was drawn
+  round the Courier's feet while LMB strummed the guitar: the ground showed one move's reach and the button did another.
+- **Cause, as measured:** `vfx/tollreach.js` showed the reach whenever the Crucibelle was in hand and drawn (drawT > 0.5). The recital
+  takes LMB from the toll string, but the mark was never told about it.
+- **Fix:** the reach also stands down while `crucibelle.recital.on`.
+- **Rule:** NEW:mode-hides-its-verbs-marks

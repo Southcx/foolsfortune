@@ -1168,5 +1168,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 416. **A clip a held pose lets go into starts before its strike; one whose strike begins on its first frame pops whatever blends into it.**
 NEW:no-redraw-under-pointer. **A hover never rebuilds the element under the pointer, and a lifted thing keeps its old place as hit area; else press and release land on two elements.**
 NEW:rope-fold-on-chord. **A sag cap measured off the chord misses a chain folded along it; a short rope between two moving ends is damped hard and given passes enough to cross it.**
+NEW:mode-hides-its-verbs-marks. **A mode that takes a button from a verb also hides that verb's marks: when a mode is added, grep for every mark that reads the tool.**
   A thing joined from outside its own kind's module (a clapperjar gone aberrant, a puzzle's flock) carries only what that module
   gave it; the registry's `add` gives the rest, so no reader has to guard and none throws on the newcomer.
