@@ -57,6 +57,7 @@ import { Afterimages } from '../../vfx/afterimage.js';
 import { SONDELASS_MOVES, SONDELASS_LOADOUT } from './sondelassloadout.js';
 import { SondelassLoadout } from './loadoutchosen.js';
 import { stream } from '../../core/rng.js';
+const STAB_GHOST = 0.05; // (real s between the multi-stab's afterimages)
 const fxRand = stream('tools/sondelass/cutlass.fx'); // (the look's chance: the afterimages' hue)
 
 // The strikes are the Courier's own suite (melee.glb's Sond_*), played by the shared combo engine (tools/moveset.js): the moves below
@@ -95,7 +96,9 @@ const MOVES = {
   a2: { rule: 'air2', clip: 'Sond_AirCombo2', body: 'whole', gravity: 0.3, chain: [0.36, 1.0], aim: 0.73, hit: { power: 1.3, dmg: 1.1, lift: 1.2, push: 0.5 }, arc: 'l2r', heat: 0.5, warp: { out: 0.55, back: 1.3 }, cancel: { hit: 0.41, whiff: 0.5 }, join: {} },
   a3: { rule: 'plunge', clip: 'Sond_AirPlunge', body: 'whole', rate: 1.25, plunge: { hold: 0.26, speed: 30 }, ring: 2.6, hit: { power: 2.2, dmg: 2.0, push: 2, lift: 0 }, ringHit: { power: 2.2, dmg: 2.0, push: 7, lift: 0 }, heat: 1, arc: 'over' }, // (its chop keeps what it cut near, to fall beside them; the ring's push clears the ground)
   // a running slash (LMB while sprinting), the charged slash (hold LMB), the counter from the guard (the Tidecutter is RMB's: sondelassloadout.js)
-  dash: { rule: 'dash', clip: 'Sond_DashSlash', body: 'whole', root: 'xz', hit: { power: 1.9, dmg: 1.8, push: 8 }, heat: 0.8, arc: 'r2l', warp: { in: 1.15, out: 0.5, back: 1.3 }, cancel: { hit: 0.36, whiff: 0.5 } },
+  // (the running slash plays the string's second cut, the rising swallow cut from low left to high right (tsubame gaeshi's turn),
+  //  South 2026-11-22; its strike measured at 0.17 to 0.31 clip s, 195 degrees swept, 0.3 to 2.5 m)
+  dash: { rule: 'dash', clip: 'Sond_Combo2', body: 'whole', root: 'xz', hit: { power: 1.9, dmg: 1.8, push: 8 }, heat: 0.8, arc: 'l2r', warp: { in: 1.15, out: 0.5, back: 1.3 }, cancel: { hit: 0.36, whiff: 0.5 } },
   hold: { clip: 'Sond_ChargeHold' },
   // (the charged slash: the suite's flat cut, Sond_Combo3, the library's most level blade (198 degrees swept at the chest, 1.44 to 1.07 m,
   //  0.46 m of rise and fall, measured by melee.js measureSwing), entered past its first 0.1 s and its windup's turn quickened as the Hop
@@ -377,6 +380,10 @@ export class Cutlass {
     else if (m.bladeOut > 0.5) this.line.step(this.moves, dt); // (the blows' line: the tip's arc on the strike's frames, vfx/cutlasstrail.js)
     else { this.trail.gap(); this.trail.update(dt); }
     if (this.stinging) { this.trail.setColors(0xffe0b0, 0xffffff); this.trail.power = 1.5; this.line.tint = null; } // (the stinger's own; the blows' colours are the line's)
+    // (the multi-stab's afterimages, South 2026-11-22: t2's body left behind every STAB_GHOST real s through its stabs, 0.13 to 0.70 clip s)
+    const c = this.moves.cur;
+    if (c?.id === 't2' && c.t >= 0.13 && c.t <= 0.7) { this.stabGhostT = (this.stabGhostT ?? 0) - dt; if (this.stabGhostT <= 0) { this.stabGhostT = STAB_GHOST; this.afterimage(); } }
+    else this.stabGhostT = 0;
     this.ghosts.update(dt);
   }
 

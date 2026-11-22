@@ -323,7 +323,7 @@ export function bootFrame(game, made) {
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     game.graphics.shadowsWanted = under < 1; renderer.shadowMap.autoUpdate = under < 1 && (T.visual.shadowEvery | 0) <= 1; // (every frame, or on the graphics tier's own turns: render/graphics.js beforeDraw)
     game.bazaar?.light(); // (the bazaar's own air under its dome: world/bazaar/bazaar.js)
-    game.sandbox?.light(); game.hangar?.light(); game.strawmanWell?.light(); game.touchstone?.light(); game.entropyRoom?.light(); // (the Touchstone's dark: world/touchstone/touchstone.js)
+    game.sandbox?.light(); game.hangar?.light(); game.strawmanWell?.light(); game.touchstone?.light(); game.entropyRoom?.light(); game.blueHole?.light(); // (the Touchstone's dark: world/touchstone/touchstone.js)
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)
     diag.begin('fx'); fx.update(dt, camera); game.systems.run('fx', dt, game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)

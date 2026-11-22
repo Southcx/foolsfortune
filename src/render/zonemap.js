@@ -6,7 +6,7 @@
 // Prior art: the console's room table (a stage's areas as bounds in a list, looked up by the player's position: Ocarina of Time's
 // scene/room split, Kingdom Hearts' worlds), kept as data apart from the code that loads or draws them.
 //
-//   zoneOf(pos) -> 'throwingRoom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | 'emocean' | 'garden' | 'margarite' | 'raceway' | 'bazaar' | 'entropy' | null      wholeOf(pos) -> the zone, or its whole
+//   zoneOf(pos) -> 'throwingRoom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | 'emocean' | 'garden' | 'margarite' | 'raceway' | 'bazaar' | 'entropy' | 'bluehole' | null      wholeOf(pos) -> the zone, or its whole
 //   ZONE_TESTS [{ id, test(pos), partOf? }]   ZONE_SOUND[id] -> { floor, acoustic, wet? }   inDunes(pos)   nearShore(pos)
 // ---------------------------------------------------------------------------------------
 
@@ -54,6 +54,8 @@ export const ZONE_TESTS = [
   { id: 'touchstone', test: (p) => Math.abs(p.x - 3000) < 150 && p.z > -3150 && p.z < -2850 && p.y > 150 && p.y < 450 }, // (Petra's place, 2026-10-29)
   // the Entropy room (world/entropy/entropyroom.js ENTROPY_ROOM: x -1500, y 200, z -3000): Entropy Tactics' oasis in the void (South, 2026-11-06)
   { id: 'entropy', test: (p) => Math.abs(p.x + 1500) < 150 && p.z > -3150 && p.z < -2850 && p.y > 100 && p.y < 450 },
+  // the blue hole (world/bluehole/bluehole.js BLUE_HOLE: x 1500, y 200, z 3000): the cenote and the shaft under the Weir's Well (South, 2026-11-22)
+  { id: 'bluehole', test: (p) => Math.abs(p.x - 1500) < 120 && Math.abs(p.z - 3000) < 120 && p.y > 108 && p.y < 280 }, // (bluehole.js inBlueHole, the same box)
   { id: 'bazaar', test: (p) => Math.abs(p.x) < 200 && p.z > -3200 && p.z < -2800 && p.y > 150 && p.y < 450 }, // (Petra's place, 2026-10-15)
   // the open sea (world/opensea/seaprops.js SEA: x 9800 at the Emocean's height): the Emocean off the lanes, 3.6 by 2.8 km, under the dunes' sky (Dovina's room)
   { id: 'opensea', test: (p) => p.x > 7900 && p.x < 11700 && p.z > -1600 && p.z < 1600 && p.y > -480 && p.y < -300 },
@@ -75,6 +77,9 @@ export const ZONE_FAR = { provingground: 600 };
 export const ZONE_LIGHT = {
   // the yard at dusk (Calissa's, 2026-11-03; vfx/mechs/hangardress/yard.js's dome): a low amber sun from the west where the dome's sun
   // sits, a violet fill off the upper sky, a dark ground under the hills; bg and fog as the hangar's own air for the yard (world/hangar/hangar.js AIR, which sets them after)
+  // the blue hole at noon (Petra's placeholder, 2026-11-22; Calissa's to grade): a high sun straight down the cenote, so the shelves are lit
+  // and the overhangs are not (no shadow reaches a room this far out: the sun's angle is the shading), a clear tropical sky's fill
+  bluehole: { bg: 0x8fc6d8, fog: 0x9cc8c0, hemiSky: 0xbfe6ff, hemiGnd: 0x4a3c30, sunC: 0xfff0d6, hemiI: 1.0, ambI: 0.22, sunI: 2.2, sunDir: [0.18, 0.96, 0.22] },
   provingground: { bg: 0x9a8a78, fog: 0x9a8a78, hemiSky: 0x6a5c9c, hemiGnd: 0x2a1e26, sunC: 0xffa452, hemiI: 1.15, ambI: 0.18, sunI: 2.3, sunDir: [-0.92, 0.2, 0.33] },
 };
 export const ROOFED = new Set(['touchstone', 'entropy', 'bazaar', 'sandbox', 'strawmanwell', 'hangar']); // (the bazaar's dome too: Calissa, 2026-10-30, "the sun through a dome is a leak, not a look")
@@ -99,6 +104,7 @@ export const ZONE_SOUND = {
   strawmanwell: { floor: 'wood', acoustic: 'hall' }, // (a toy theatre's boards: Strawman's Well)
   hangar: { floor: 'metal', acoustic: 'hall' }, //      (the mechs' tall hall: world/hangar/)
   provingground: { floor: 'clay', acoustic: 'open' }, // (the yard at the mech's scale beside it)
+  bluehole: { floor: 'stone', acoustic: 'cave' }, //  (a cenote's stone and the shaft under it: Wanda's to make wet)
   bazaar: { floor: 'stone', acoustic: 'hall' }, //      (the mosaic under the dome)
   opensea: { floor: 'sand', acoustic: 'sea' }, //       (an islet's top: the helm takes no steps)
   margarite: { floor: 'stone', acoustic: 'sea' }, //    (the quay)

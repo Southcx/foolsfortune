@@ -29,6 +29,7 @@ import { BazaarHall } from '../vfx/bazaarhall.js';
 import { TouchstoneLook } from '../vfx/touchstonelook.js';
 import { Touchstone } from '../world/touchstone/touchstone.js';
 import { EntropyRoom } from '../world/entropy/entropyroom.js';
+import { BlueHole } from '../world/bluehole/bluehole.js';
 import { EntropyLook } from '../vfx/entropy/index.js';
 import { BazaarTable } from '../vfx/bazaartable.js';
 import { Chips } from '../progress/casino/chips.js';
@@ -87,10 +88,11 @@ export async function bootWorld(game, made) {
   game.chips = new Chips(game); game.bazaar = new Bazaar(game); game.bazaarTable = new BazaarTable(game); // (Raku's bazaar, the casino: its hall with the level's static geometry, its chips; world/bazaar/, docs/plans/CASINO.md)
   const treasuryAt = { x: BAZAAR.treasury.x, y: BAZAAR.y, z: BAZAAR.treasury.z, yaw: BAZAAR.treasury.yaw }; buildTreasury(level, treasuryAt); // (the Treasury in its slot on the bazaar's north side: world/treasury.js)
   game.entropyRoom = new EntropyRoom(game); // (Entropy Tactics' own zone, out of Raku's bazaar since 2026-11-06: world/entropy/)
+  game.blueHole = new BlueHole(game); // (the blue hole under the Weir's Well, its own zone: world/bluehole/)
   game.entropyLook = new EntropyLook(game); // (its look: the void, the tiles, the board view, the tilt-shift; Calissa's, vfx/entropy/)
   game.touchstone = new Touchstone(game); // (the Assay's room: the standard trials, world/touchstone/)
   // (the Well, the dock, the bazaar, the Touchstone and the duels' pull each frame, on the game's clock: core/systems.js, the `world` phase)
-  for (const name of ['margarite', 'bazaar', 'touchstone', 'entropyRoom']) game.systems.add('world', game[name], { name });
+  for (const name of ['margarite', 'bazaar', 'touchstone', 'entropyRoom', 'blueHole']) game.systems.add('world', game[name], { name });
   game.systems.add('world', () => game.duelFoes.update(), { name: 'duelFoes' });
   game.touchstoneLook = new TouchstoneLook(game); // (the Touchstone dressed as a dark assay hall, built and taken down with her area: vfx/touchstonelook.js)
   game.bazaarHall = new BazaarHall(game); // (the bazaar's Gold Saucer dress: dome, mosaic, stalls, neon, lanterns, carnival props; vfx/bazaarhall.js)

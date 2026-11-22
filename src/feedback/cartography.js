@@ -39,6 +39,7 @@ const LAYERS = [
   { id: 'bazaar', name: "RAKU'S BAZAAR", zone: 'bazaar', cell: 2, sight: 7 }, // (Raku's casino under its dome: world/bazaar/bazaar.js)
   { id: 'sandbox', name: 'THE SANDBOX', zone: 'sandbox', cell: 2, sight: 7 }, // (the hand's physics room: world/sandbox/sandbox.js)
   { id: 'strawmanwell', name: "STRAWMAN'S WELL", zone: 'strawmanwell', cell: 2, sight: 7 }, // (the 2D platformer's test bench: world/strawmanwell/)
+  { id: 'bluehole', name: 'THE BLUE HOLE', zone: 'bluehole', cell: 2, sight: 7 }, // (the cenote and the shaft under the Weir's Well: world/bluehole/bluehole.js)
   { id: 'entropy', name: 'ENTROPY TACTICS', zone: 'entropy', cell: 2, sight: 7 }, // (Entropy Tactics' own zone, the oasis in the void: world/entropy/entropyroom.js)
   { id: 'touchstone', name: 'THE TOUCHSTONE', zone: 'touchstone', cell: 2, sight: 7 }, // (the Assay's dark room: world/touchstone/touchstone.js)
   { id: 'hangar', name: 'THE HANGAR', zone: 'hangar', cell: 2, sight: 7 }, // (the mechs' hall: world/hangar/)

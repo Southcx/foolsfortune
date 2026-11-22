@@ -39,6 +39,7 @@ export function indexRooms() {
     { id: 'opensea', code: 'KeyO', tag: 'O', name: 'THE OPEN SEA', blurb: 'the Emocean off the lanes: sail at a free helm, chart squares, land on islets, report finds at a dock', group: 'THE OPEN', spawn: 'opensea' },
     { id: 'raceway', code: 'KeyR', tag: 'R', name: 'THE RACEWAY', blurb: 'the Solar Skiff\'s test circuit: three laps against the clock, F at the start\'s pillar · the sandfall drop', group: 'THE OPEN', spawn: 'raceway' },
     { id: 'bazaar', code: 'KeyG', tag: 'G', name: "RAKU'S BAZAAR", blurb: 'the casino under the dome: Querent, Zodiac, Event Horizon · chips at Raku\'s cage', group: 'THE OPEN', spawn: 'bazaar' },
+    { id: 'bluehole', code: 'KeyU', tag: 'U', name: 'THE BLUE HOLE', blurb: 'down the Weir\'s Well: a cenote open to the sky over a shaft 62 m deep · dive it, and fish it from the dock', group: 'THE OPEN', spawn: 'bluehole' },
     { id: 'dunemaw', code: 'KeyW', tag: 'W', name: 'THE GREAT DUNEMAW', blurb: 'the Well in the sand, north-west of the oasis: F at its mouth goes down', group: 'THE OPEN', spawn: 'dunemaw', danger: FOE.cls }, // (its FOE's class as the Index row's pips: ui/dangerpips.js)
   ];
 }
@@ -74,6 +75,7 @@ export function goRoom(c, id) {
   else if (r.spawn === 'weir') toWeir(c);
   else if (r.spawn === 'dunemaw') toDunemaw(c);
   else if (r.spawn === 'shore') toShore(c);
+  else if (r.spawn === 'bluehole') { c.game.blueHole?.arrive(); c.running = false; c.current = -1; c.lapT = null; sfx.geyser(); }
   else if (r.spawn === 'entropy') { c.game.entropyRoom?.arrive(); c.running = false; c.current = -1; c.lapT = null; sfx.geyser(); }
   else if (r.spawn === 'touchstone') { c.game.touchstone?.arrive(); c.running = false; c.current = -1; c.lapT = null; sfx.geyser(); }
   else if (r.spawn === 'sandbox') { c.game.sandbox?.arrive(); c.running = false; c.current = -1; c.lapT = null; sfx.geyser(); }

@@ -21,6 +21,7 @@ import { itemOf } from '../pneuka/items.js';
 import { MATS } from '../world/busk.js';
 import { TR } from '../world/throwingroom/layout.js';
 import { zoneOf } from '../render/zonemap.js';
+import { BLUE_HOLE } from '../world/bluehole/bluehole.js';
 
 /** Calissa's crate, casting no shadow (a debug crate is not the world's: and no depth program compiled in play for it). */
 const crate = () => { const C = debugChestModel(); C.group.traverse((o) => { o.castShadow = false; }); return C; };
@@ -76,6 +77,7 @@ export class DebugChests {
       case 'jetty': { const B = g.dunes?.beach; const L = B?.landing?.(); if (!L) return null; const x = L.pos.x, z = L.pos.z - 2.6; return { pos: new THREE.Vector3(x, sand(x, z, L.pos.y), z), face: L.pos.clone().setX(L.pos.x + 4) }; } // (on the sand by the jetty's foot, facing the sea)
       case 'opensea.jetty': { const B = g.dunes?.beach; const L = B?.landing?.(); if (!L) return null; const x = L.pos.x + 2.4, z = L.pos.z - 2.6; return { pos: new THREE.Vector3(x, sand(x, z, L.pos.y), z), face: L.pos.clone().setX(L.pos.x + 4) }; } // (beside the jetty's own chest, a step along the sand: the open sea's islet puzzles' kit, Dovina's)
       case 'mimic.flats': case 'mimic.shore': case 'mimic.ridges': case 'mimic.ruins': { const st = g.mimicry?.stones?.find((x) => `mimic.${x.site.id}` === at); if (!st) return null; const x = st.pos.x + 2.2, z = st.pos.z + 1.2; return { pos: new THREE.Vector3(x, sand(x, z, st.pos.y), z), face: st.pos.clone() }; } // (a step off the puzzle stone, off its patch's side)
+      case 'bluehole.dock': { const B = BLUE_HOLE; return { pos: new THREE.Vector3(B.x + B.dock.x - 0.9, B.y + B.dock.top, B.z + B.dock.z1 - 2.4), face: new THREE.Vector3(B.x, B.y + B.dock.top, B.z) }; } // (on the blue hole's dock, by the wall: world/bluehole/bluehole.js)
       case 'oasis.duel': return g.duelFoes?.chestSpot() ?? null; // (beside the test aberrant Lantern Wisp, by the Weir: world/duel/duelfoes.js)
       case 'throwingRoom.index': return g.throwingRoom ? { pos: new THREE.Vector3(TR.console.x, 0, TR.console.z - 1.7), face: TR.console.clone() } : null;
       case 'throwingRoom.paintrange': { const S = g.throwingRoom?.paintRange?.stand; return S ? { pos: S.pos.clone().add(new THREE.Vector3(-1.2, 0, 1.6)), face: S.pos.clone() } : null; } // (behind the stand mark, a step aside)

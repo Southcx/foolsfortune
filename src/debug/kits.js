@@ -26,6 +26,8 @@ export const DEBUG_KITS = {
     items: [['tool.crucibelle', 1]] },
   opensea: { at: 'opensea.jetty', for: "the open sea's islet puzzles: the Dreamvane's dowse and dig for the buried caches, the Crucibelle for the singing stones (OPEN-SEA.md 12, 14.7)", by: 'dovina', tests: [],
     items: [['tool.dreamvane', 1], ['tool.crucibelle', 1]] }, // (beside the jetty's own chest: debugchest.js spot 'opensea.jetty')
+  bluehole: { at: 'bluehole.dock', for: 'the blue hole: dive the shaft (C under the water), and fish it from the dock with the Sondelass\'s rod', by: 'petra', tests: [],
+    items: [['bottle.small', 1]] }, // (the chest is its teleport; the bottle a spare for the dive)
   dunemaw: { at: 'well.mouth', for: 'a run of the Great Dunemaw to the great cavern and the fight', by: 'dovina', tests: [],
     items: [['whistle.wake', 1], ['bottle.small', 2]], cubes: 500 },
   jetty: { at: 'jetty', for: 'a drafted passage: the sea chart, a long crossing, the encounters, the turns of the rail; the showcase crossing', by: 'petra', tests: ['T172', 'T173', 'T174', 'T179'],

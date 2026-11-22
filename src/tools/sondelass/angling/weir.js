@@ -194,7 +194,7 @@ export class Weir {
     if (!M.boundingSphere) M.computeBoundingSphere();
   }
 
-  get near() { const p = this.game.player.pos; return inWeir(p, 8) || !!this.hooks?.lure()?.active; }
+  get near() { const p = this.game.player.pos; return inWeir(p, 8) || !!this.game.blueHole?.here || !!this.hooks?.lure()?.active; } // (the blue hole's pool is one of these while it is built: world/bluehole/bluehole.js)
   poolAt(x, z) { for (const p of this.pools) if (x > p.x0 && x < p.x1 && z > p.z0 && z < p.z1) return p; return null; }
 
   // ---- the tally board (on its stone on the north beach)
@@ -297,7 +297,9 @@ export class Weir {
     this.spawnT -= dt;
     if (this.spawnT <= 0) {
       this.spawnT = 1.4;
+      const deep = !!g.blueHole?.here; // (only the water you are at is stocked: the blue hole's pool there, the Weir's here)
       for (const p of this.pools) {
+        if ((p.id === 'bluehole') !== deep) continue;
         const live = p.fish.filter((f) => !f.dying && f.sp.tides.includes(this.tide)).length;
         if (live < p.cap * (p.id === 'well' ? 0.7 : 1) && this.weights(p).length && !(p.id === 'well' && this.tide !== 2 && simRand() < 0.6)) this.spawn(p);
       }
