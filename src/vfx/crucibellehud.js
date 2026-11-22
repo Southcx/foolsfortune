@@ -12,7 +12,7 @@
 //   THE NOTCH        a channel at each end of the arc, as wide in angle as the bell's on-beat window really is (the angle the bob
 //                    sweeps while it is within the window), so a note pressed while the bob is in a notch is on the beat.
 //   THE NEUMES       a note pressed is written on the arc where the bob was, as its neume (a shape for each of the five, NEUMES):
-//                    solid inside the notch (a brighten that settles), hollow outside it; an octave up (RMB) doubles its line.
+//                    solid inside the notch (a brighten that settles), hollow outside it; the upper register (6 to 0) doubles its line.
 //   THE MOTIF        then it rises to the tape and the notes trail along it to the left, heighted by pitch over the tape's line: the
 //                    phrase written out. When the motif makes a song, its neumes draw together into the song's neume (the song's notes
 //                    joined in one ligature) and that is taken down into the bell's mark: the song cast. A motif the bell takes but
@@ -172,8 +172,7 @@ export class CrucibelleHud {
     const now = cb.now(), t = Number.isFinite(cb.lastNote) && now - cb.lastNote < 0.25 && cb.lastNote <= now ? cb.lastNote : now;
     const G = cb.grid(), s = this.swing(t, G), d = e.degree;
     if (!(d >= 1 && d <= 5)) return;
-    // (the octave: the bell reads RMB at the same press, tools/crucibelle/crucibelle.js use(); the event does not say it yet)
-    const high = e.octave ?? !!this.game.input?.isDown?.('Mouse2');
+    const high = !!e.octave; // (the upper register, keys 6 to 0; RMB is harmony now: tools/crucibelle/harmony.js)
     if (t - this.lastNote > G.spb * 4) this.dropMotif(t); // (a long pause starts the motif again, as the bell's does)
     this.lastNote = t;
     const r = LEN + 20, arc = [Math.sin(s.th) * r, -Math.cos(s.th) * r];

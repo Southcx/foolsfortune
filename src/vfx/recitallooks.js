@@ -6,7 +6,8 @@
 //     swinging off the Courier between beats and onto them on the beat, tinted the colour of the last note played (DEGREE_COLOR); at the
 //     rockstar moment they turn through the film's colours. They swell gently on the beat, never strobe.
 //   - The bolts of the licks while they fly (recital.lick.fly, following each), a ring off the amp at each note (recital.note), a lick's
-//     landing, the strum's wall of sound, the windmill's ring and pyro, the feedback's beam held from the amp along the aim, the rockstar
+//     landing, the strum's wall of sound, the windmill's ring and pyro, the feedback's beam held from the amp along the aim (swept by the whammy, its wobbling rings held while the bar is down; a chord out
+//     of the recital its harmony ring), the rockstar
 //     moment's pyro and confetti, and the amp smoking at fever (vfx/library/recital.js).
 //
 // Prior art: the arena show's moving heads (a spot swung onto the soloist on the downbeat), Guitar Hero's stage and star power, the
@@ -50,8 +51,13 @@ export class RecitalLooks {
     });
     E?.on?.('crucibelle.feedback', (e) => {
       this.fb?.stop?.(); this.fb = null;
-      if (e.on) this.fb = this.play('recital.feedback', { pos: this.mouth(new THREE.Vector3()), dir: this.fwd(new THREE.Vector3()), follow: (h) => !!this.recital?.play.feedbackOn && (this.mouth(h.pos), this.fwd(h.dir), true) });
+      if (e.on) this.fb = this.play('recital.feedback', { pos: this.mouth(new THREE.Vector3()), dir: this.fwd(new THREE.Vector3()), follow: (h) => !!this.recital?.play.feedbackOn && (this.mouth(h.pos), this.recital.play.beamDir(h.dir), true) }); // (the whammy sweeps it: recitalplay.js beamDir)
     });
+    E?.on?.('crucibelle.whammy', (e) => {
+      this.wh?.stop?.(); this.wh = null;
+      if (e.on) this.wh = this.play('recital.whammy', { pos: this.mouth(new THREE.Vector3()), dir: this.fwd(new THREE.Vector3()), follow: (h) => !!this.recital?.play.whamOn && (this.mouth(h.pos), this.recital.play.beamDir(h.dir), true) });
+    });
+    E?.on?.('crucibelle.harmony', (e) => { const P = this.game.player; if (P) this.play('recital.harmony', { pos: P.pos.clone(), tint: DEGREE_COLOR[(e.degrees?.[0] ?? 1) - 1] }); }); // (a chord out of the recital: crucibelle.js harmonyRing)
     E?.on?.('crucibelle.rockstar', () => { const P = this.game.player; if (P) this.play('recital.rockstar', { pos: P.pos.clone(), dir: this.fwd(new THREE.Vector3()) }); });
   }
   get recital() { return this.game.crucibelle?.recital ?? null; }

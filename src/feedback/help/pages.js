@@ -181,7 +181,7 @@ export const PAGES = [
     lead: 'A smoking bell held up like a lantern. Five notes, always in the key of the music playing.',
     rows: () => [
       ['X · R', `as your main, draw or stow · as your sub, ${lent('crucibelle')}`],
-      ['1 – 5 · hold RMB', 'the five notes · an octave up'],
+      ['1 – 5 · 6 – 0 · hold RMB', 'the five notes · an octave up · a chord (on the feedback, the whammy)'],
       ['LMB', 'toll the bell: a ring that staggers what is close'],
       ...songRows(),
     ],

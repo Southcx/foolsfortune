@@ -51,7 +51,7 @@ export function renderTools(codex, cx) {
   const inst = box?.fitted('instrument')[0] || 'bell';
   cb.appendChild(el('h3', '', 'THE CRUCIBELLE'));
   cb.appendChild(el('div', 'k', `${worn('crucibelle')} · ${INSTRUMENTS[inst].name}`));
-  cb.appendChild(el('p', '', '<b>1 to 5</b> play the five notes of whatever music is playing (its minor pentatonic: nothing is wrong); RMB held, an octave up. On the beat they build <b>fever</b>, and fever makes every song stronger and cheaper. <b>LMB</b> tolls the bell. The instrument fitted in the box is its voice, and makes one school of song stronger.'));
+  cb.appendChild(el('p', '', '<b>1 to 5</b> play the five notes of whatever music is playing (its minor pentatonic: nothing is wrong), and <b>6 to 0</b> the same an octave up; with <b>RMB</b> held a note is a chord (a little Lachryma), rung all round you. In the recital (Q) a chord throws three bolts, and RMB on the feedback is the whammy. On the beat they build <b>fever</b>, and fever makes every song stronger and cheaper. <b>LMB</b> tolls the bell. The instrument fitted in the box is its voice, and makes one school of song stronger.'));
   for (const [id, S] of Object.entries(SONGS)) {
     const d = el('div', 'song');
     d.appendChild(el('b', '', S.name));

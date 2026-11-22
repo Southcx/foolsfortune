@@ -2,7 +2,7 @@
 // THE CRUCIBELLE'S SONGS: five notes, and what playing them in a certain order does. The five are the MINOR PENTATONIC of whatever is
 // playing (music/player.js grid(): E flat in the sea, E in the workshop): the scale with no wrong notes, so anything played on it sounds
 // like music, and a song is a shape, not a test of fingers. Keys 1 to 5 are its degrees (1 the root, 2 the minor third, 3 the fourth,
-// 4 the fifth, 5 the minor seventh); held RMB plays them an octave up.
+// 4 the fifth, 5 the minor seventh); keys 6 to 0 play them an octave up (held RMB makes a note a chord: harmony.js).
 //
 // A SONG is a short motif of degrees (Ocarina of Time's songs: a few notes, a fixed order, learned and then played anywhere). Played on
 // the beat (each note within a small window of the music's eighth notes), the notes build FEVER (Patapon: keep the rhythm and the army

@@ -6,10 +6,11 @@
 // light reaches, the clip's arms near already: CLAUDE.md's IK rule); a cable of Lachryma runs from its jack to the bell's crown ring.
 //   - The notes (1 to 5 the lower register, 6 to 0 the upper) are the five strings, played through the bell in the guitar's voice
 //     (music/band.js guitar), each string shaking and lit in its note's colour, the bell's vent lit with it; on the beat as ever (fever,
-//     the songs: tools/crucibelle/songs.js). On the beat a note is also A LICK, a bolt of sound thrown from the amp at the foe.
+//     the songs: tools/crucibelle/songs.js). On the beat a note is also A LICK, a bolt of sound thrown from the amp at the foe; with RMB
+//     held a CHORD (harmony), three bolts fanned (tools/crucibelle/harmony.js).
 //   - LMB is the STRUM: a power chord (root, fifth, octave) rung out of the floating bell as a cone of sound, struck at the beat's grace
 //     (on the beat: x1.5 and fever), staggering what it hits; strums on the beat step THE STRUM CHAIN (1 to 4, wider and harder), the
-//     fourth THE WINDMILL rung all round; LMB held past a strum is FEEDBACK, a beam of sound out of the amp on every beat. The fever's
+//     fourth THE WINDMILL rung all round; LMB held past a strum is FEEDBACK, a beam of sound out of the amp on every beat, and RMB on it THE WHAMMY, the beam bent and swept. The fever's
 //     peak here is THE ROCKSTAR MOMENT. (Those four: tools/crucibelle/recitalplay.js, RECITAL_PLAY.)
 //   - THE CONCERT BODY: the head nodding, the knees giving, the body swaying with the bar, the neck lifted for the upper register, the
 //     lean into a held note, the windmill's arm (tools/crucibelle/recitalbody.js). THE AMP pumps on every beat like a speaker.
@@ -107,13 +108,13 @@ export class Recital {
   }
 
   /** A note: its string plucked and the bell's vent lit (the tool plays the voice); on the beat, a lick thrown (recitalplay.js). */
-  note(d, octave = 0, on = false) {
+  note(d, octave = 0, on = false, chord = null) {
     this.guitar.pluck(d - 1, 1); this.amp.lightVent(d - 1, 1); this.body.played(octave > 0);
     this.game.events?.emit('crucibelle.recital.note', { degree: d, octave, onBeat: on, by: 'courier' }); // (for the stage's looks: the amp's ring)
-    this.play.note(d, octave, on);
+    this.play.note(d, octave, on, chord);
   }
-  /** LMB held: the feedback past a strum (recitalplay.js). */
-  hold(down, dt) { if (this.on) this.play.hold(down, dt); }
+  /** LMB held: the feedback past a strum; RMB on it, the whammy (recitalplay.js, harmony.js). */
+  hold(down, dt, bar = false) { if (this.on) this.play.hold(down, dt, bar); }
   /** The fever's peak while plugged in. */
   rockstar() { this.play.rockstar(); }
   /** The concert body's legs, after the tool's layer (the Crucibelle's animate). */

@@ -4,7 +4,8 @@
 // they play for burns brighter.
 //
 //  - FIVE NOTES (1 to 5, and 6 to 0 the same five an octave up: two registers, South 2026-11-22): the scale of the bar sounding now (game.music.scale(): the minor pentatonic unless the music names its own), in its key, so nothing played is wrong (the grid comes from
-//    music/player.js; with no music the bell keeps its own time at 96). Hold RMB and they sound an octave up. The voice is the
+//    music/player.js; with no music the bell keeps its own time at 96). Hold RMB and a note sounds as a CHORD, HARMONY (tools/crucibelle/harmony.js): the
+//    harmony ring round them, in the recital three bolts fanned; RMB held on the recital's feedback is the WHAMMY. The voice is the
 //    instrument fitted to the bell (the Pneuka Box): the bell itself, a clay ocarina, a kalimba, a lute (band.js plays them).
 //  - ON THE BEAT: a note within a small window of the music's eighth notes builds FEVER; off the beat, or long silence, lets it fall.
 //    Fever is the ember in the bell and the smoke out of it, and it makes every song stronger and cheaper (Patapon's fever). Its peak,
@@ -23,7 +24,7 @@
 //    clears the face), a gesture for every note (Bell_Note1-5, the octave Bell_NoteHigh), the fever's peak (Bell_FeverPeak), a song cast
 //    out of it (Bell_SongCast). At a busker's mat the busking body is the rhythm mode's (courier/moves/rhythmhold.js); the bell stays out.
 //
-//   X      draw / stow (as the main: tools/belt.js; as the sub, R tolls once)          1-5  notes, 6-0 the same an octave up (RMB held: an octave more)          LMB  toll (in time: the string)   (the Codex: THE TOOLS has the songs)
+//   X      draw / stow (as the main: tools/belt.js; as the sub, R tolls once)          1-5  notes, 6-0 the same an octave up (RMB held: a chord)          LMB  toll (in time: the string)   (the Codex: THE TOOLS has the songs)
 //   (in the air the string cannot be played, so a press there rings one toll at once, as the toll always did: TOLL.cool apart)
 //
 // Prior art: Ocarina of Time (songs), Patapon (rhythm, fever, an army that the song commands), Crypt of the NecroDancer and Hi-Fi Rush
@@ -32,6 +33,7 @@
 // swing (the forehand ring, the backhand, the bell brought down), and the pentatonic scale, on which nothing is wrong.
 // ---------------------------------------------------------------------------------------
 import { Recital, RECITAL } from './recital.js';
+import { HARMONY, chordOf } from './harmony.js';
 import * as THREE from 'three';
 import { HeldTool } from '../heldtool.js';
 import { Moveset } from '../moveset.js';
@@ -134,9 +136,9 @@ export class Crucibelle extends HeldTool {
   }
 
   /** The recital's voice: the guitar (music/band.js), whatever is fitted to the bell. */
-  guitarVoice(midi, v = 0.6, dur = 0.7) {
+  guitarVoice(midi, v = 0.6, dur = 0.7, bend = 0) {
     const B = this.band(); if (!B) return;
-    try { B.guitar(sfx.ctx.currentTime + 0.005, dur * 1.4, midi - 12, v * 0.8, { vib: 0.04 }); } catch { /* a voice that failed is silent */ }
+    try { B.guitar(sfx.ctx.currentTime + 0.005, dur * 1.4, midi - 12, v * 0.8, { vib: bend ? 0.09 : 0.04, bend, bendAt: 0.05 }); } catch { /* a voice that failed is silent */ }
   }
   /** After the hands are placed: the recital's guitar and hands (tools/heldtool.js calls it). */
   placed() { this.recital?.placed(); }
@@ -146,7 +148,7 @@ export class Crucibelle extends HeldTool {
     if (this.mgr.get?.('rhythm')?.bell === this) return; // (at a busker's mat the rhythm mode has the keys and the body)
     if (inp.wasPressed(RECITAL.key)) this.recital.toggle();
     for (let k = 1; k <= 10; k++) if (inp.wasPressed(`Digit${k % 10}`)) this.note(((k - 1) % 5) + 1, inp.isDown('Mouse2'), k > 5 ? 1 : 0); // (1 to 5 the lower register, 6 to 0 the upper: South, 2026-11-22)
-    if (this.recital.on) { if (inp.wasPressed('Mouse0')) this.recital.strum(); this.recital.hold(inp.isDown('Mouse0'), dt); return; } // (the recital: LMB strums, held it feeds back; the toll string rests)
+    if (this.recital.on) { if (inp.wasPressed('Mouse0')) this.recital.strum(); this.recital.hold(inp.isDown('Mouse0'), dt, inp.isDown('Mouse2')); return; } // (the recital: LMB strums, held it feeds back, RMB on it the whammy; the toll string rests)
     if (inp.wasPressed('Mouse0')) this.pressAt = this.now(); // (the beat is judged at the press, though a buffered toll rings later)
     // in the air the engine plays no string (no air string is given), so the press rings one toll at once, as the toll always did
     const air = !this.P.grounded;
@@ -154,15 +156,20 @@ export class Crucibelle extends HeldTool {
     this.moves.update(dt, inp, { allow: this.P.techs.active?.id !== 'swim' });
     if (air) this.moves.buffer = 0; // (a press in the air is that toll, never a string begun on landing)
   }
-  note(d, high = false, reg = 0) {
+  note(d, harm = false, reg = 0) {
     const g = this.game, G = this.grid(), t = this.now();
     const off = this.offBeat(t, G), on = off < WINDOW;
-    const sc = this.scaleNow(), up = (high ? 12 : 0) + 12 * reg, midi = G.root + sc[d - 1] + up; // (reg: the upper register, keys 6 to 0; RMB held, an octave more)
-    if (this.recital.on) { this.guitarVoice(midi, on ? 0.7 : 0.55); this.recital.note(d, up / 12, on); } else this.voice(midi, on ? 0.7 : 0.55);
+    const sc = this.scaleNow(), up = 12 * reg, midi = G.root + sc[d - 1] + up; // (reg: the upper register, keys 6 to 0)
+    // harmony (RMB held): the chord, paid; dry, the plain note (tools/crucibelle/harmony.js)
+    let chord = null;
+    if (harm) { if (g.lachryma?.spend?.(HARMONY.cost, 'harmony')) chord = chordOf(d, reg); else g.log?.say('warn', 'Your mind is too dry for the chord.', { key: 'harmony.dry', throttle: 3 }); }
+    const voices = chord || [{ d, up: reg }], sing = this.recital.on ? this.guitarVoice.bind(this) : this.voice.bind(this);
+    voices.forEach((c, i) => sing(G.root + sc[c.d - 1] + 12 * c.up, (on ? 0.7 : 0.55) * (i ? HARMONY.voice : 1)));
+    if (this.recital.on) this.recital.note(d, reg, on, chord); else if (chord) this.harmonyRing(chord);
     this.beatHit(on, t, G);
     this.notes++;
-    this.model.lightVent(d - 1, 1);
-    if (!this.moves.busy && !this.recital.on) this.gesture(up ? 'Bell_NoteHigh' : `Bell_Note${d}`, { from: 0.05, fadeOut: 0.12 }); // (a toll swinging owns the arm)
+    for (const c of voices) this.model.lightVent(c.d - 1, 1);
+    if (!this.moves.busy && !this.recital.on) this.gesture(up || chord ? 'Bell_NoteHigh' : `Bell_Note${d}`, { from: 0.05, fadeOut: 0.12 }); // (a toll swinging owns the arm)
     const mouth = (this.recital.on ? this.recital.mouth(_a) : this.model.mouthWorld(_a)).clone();
     g.glyphs?.pop('note', mouth.clone().setY(mouth.y + 0.25), { color: DEGREE_COLOR[d - 1], size: 0.28 + 0.12 * this.fever, life: 0.8 });
     this.puff(mouth, DEGREE_COLOR[d - 1], 4 + Math.round(6 * this.fever));
@@ -172,7 +179,21 @@ export class Crucibelle extends HeldTool {
     this.history.push(d); if (this.history.length > 8) this.history.shift();
     const song = match(this.history);
     if (song) { this.history = []; this.sing(song); }
-    g.events?.emit('crucibelle.note', { degree: d, note: midi, octave: up / 12, onBeat: on, by: 'courier' }); // (note: the MIDI pitch; CRUCIBELLE-UI.md 5)
+    g.events?.emit('crucibelle.note', { degree: d, note: midi, octave: reg, onBeat: on, chord: chord ? chord.map((c) => c.d) : null, by: 'courier' }); // (note: the MIDI pitch; CRUCIBELLE-UI.md 5)
+  }
+  /** A chord out of the recital: the harmony ring, a soft stagger and shove all round, in the chord's three colours. */
+  harmonyRing(chord) {
+    const g = this.game, P = this.P, R = HARMONY.ring, k = 1 + this.fever;
+    let n = 0;
+    for (const cr of g.creatures.near(P.pos, R.range)) {
+      if (cr.ally) continue;
+      const d = _a.set(cr.pos.x - P.pos.x, 0, cr.pos.z - P.pos.z); if (d.lengthSq() < 1e-4) d.set(0, 0, 1); d.normalize();
+      g.creatures?.stagger(cr, R.stagger * k, { type: 'influence', by: 'courier', cause: 'harmony' }); cr.knock?.(d.clone().multiplyScalar(R.push * k).setY(0.6)); n++;
+    }
+    const mouth = this.model.mouthWorld(_a).clone();
+    chord.forEach((c, i) => this.ring(mouth, DEGREE_COLOR[c.d - 1], 14 + Math.round(8 * this.fever), 3 + 1.1 * i));
+    g.ai?.stimuli.emit('noise', P.pos, { radius: 14, strength: 0.4, by: 'courier' });
+    g.events?.emit('crucibelle.harmony', { degrees: chord.map((c) => c.d), n, by: 'courier' });
   }
   /** The fever's peak, once a fever: the ring at its widest, Dovina's feverPeak row (its power to all within its radius, once earned). */
   peak() {

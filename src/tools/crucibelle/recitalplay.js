@@ -11,6 +11,9 @@
 //     arm), and the chain starts over. A strum off the beat, or a beat let pass, drops it.
 //   - FEEDBACK (LMB held past a strum): the held chord left to howl through the amp: a beam of sound out of the amp's mouth along the
 //     aim, short, striking what stands in it on every beat, draining a little Lachryma a real second; let go, or the pool dry, it stops.
+//   - HARMONY AND THE WHAMMY (RMB held; tools/crucibelle/harmony.js): a chord on the beat throws three bolts fanned, one a voice, each
+//     HARMONY.share of a lick's blow; on the feedback, RMB is the whammy: the wail bent flat, the beam swept side to side twice a bar,
+//     wider and dizzier (WHAMMY). crucibelle.whammy { on, by } as the bar goes down and comes back.
 //   - THE ROCKSTAR MOMENT (the fever's peak, in the recital): the Courier down on their knees, leaning back into the chord (a knee slide
 //     where they stand: the capsule never moves; the core movement is the gold standard), the stage's pyro and its lights in the film's
 //     colours, about 1.5 real s.
@@ -26,10 +29,11 @@
 // knee slide and every arena show's pyro on the drop.
 //
 //   new RecitalPlay(recital)   .note(d, octave, on)   .strum(on, t, G) -> { chain, windmill, power, cone, range, stun }
-//   .hold(down, dt)   .rockstar()   .update(dt)   .end()   .bolts   .chain   .feedbackOn   .rockT   .windT   RECITAL_PLAY
+//   .hold(down, dt, bar)   .beamDir(out)   .wham (0..1)   .rockstar()   .update(dt)   .end()   .bolts   .chain   .feedbackOn   .rockT   .windT   RECITAL_PLAY
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { DEGREE_COLOR } from './songs.js';
+import { HARMONY, WHAMMY } from './harmony.js';
 
 /** The recital's numbers (proposals: Dovina's to rule). Distances in metres, times in real seconds, power in creatures.strike's units. */
 export const RECITAL_PLAY = {
@@ -44,7 +48,7 @@ export class RecitalPlay {
   constructor(recital) {
     this.r = recital; this.tool = recital.tool; this.game = recital.game;
     this.bolts = []; this.chain = 0; this.lastStrum = -99; this.feedbackOn = false; this.heldT = 0; this.tickBeat = -1;
-    this.rockT = 0; this.windT = 0; this.held = false;
+    this.rockT = 0; this.windT = 0; this.held = false; this.wham = 0; this.whamOn = false;
   }
 
   /** The foe a lick is thrown at: the lock-on's creature, else the nearest in front within reach. */
@@ -61,15 +65,22 @@ export class RecitalPlay {
   }
   aimAt(c, out) { return out.set(c.pos.x, c.pos.y + (c.height ?? 1.2) * 0.55, c.pos.z); }
 
-  /** A note: on the beat, a lick's bolt out of the amp at the foe (octave > 0: the upper register's, quicker and lighter). */
-  note(d, octave, on) {
+  /** A note: on the beat, a lick's bolt out of the amp at the foe (octave > 0: the upper register's, quicker and lighter); a chord
+   *  (harmony: [{ d, up }] x3), three bolts fanned, one a voice, each a share of the blow. */
+  note(d, octave, on, chord = null) {
     if (!on) return null;
     const c = this.target(); if (!c) return null;
     const R = RECITAL_PLAY.lick, high = octave > 0, from = this.r.mouth(new THREE.Vector3());
     const dir = this.aimAt(c, _a).sub(from).normalize();
-    const b = { pos: from, vel: dir.clone().multiplyScalar(high ? R.speedHigh : R.speed), c, degree: d, octave, color: DEGREE_COLOR[d - 1], t: 0, high, done: false };
-    this.bolts.push(b);
-    return b;
+    const voices = chord || [{ d, up: octave }], fan = chord ? HARMONY.fan : 0;
+    let first = null;
+    voices.forEach((v, i) => {
+      const yaw = (i - (voices.length - 1) / 2) * fan, cs = Math.cos(yaw), sn = Math.sin(yaw);
+      const vd = new THREE.Vector3(dir.x * cs + dir.z * sn, dir.y, -dir.x * sn + dir.z * cs);
+      const b = { pos: from.clone(), vel: vd.multiplyScalar(high ? R.speedHigh : R.speed), c, degree: v.d, octave, color: DEGREE_COLOR[v.d - 1], t: 0, high, done: false, k: chord ? HARMONY.share : 1, chord: !!chord };
+      this.bolts.push(b); first ??= b;
+    });
+    return first;
   }
 
   /** LMB's strum on the beat or off it: the chain stepped (or dropped) and what this strum rings with. */
@@ -86,12 +97,23 @@ export class RecitalPlay {
     return out;
   }
 
-  /** LMB held: past a strum by `after`, the feedback's beam comes on; let go, it stops. */
-  hold(down, dt) {
+  /** LMB held: past a strum by `after`, the feedback's beam comes on; let go, it stops. RMB on it (`bar`): the whammy, eased in. */
+  hold(down, dt, bar = false) {
+    const want = down && this.feedbackOn && bar ? 1 : 0;
+    this.wham += (want - this.wham) * (1 - Math.exp(-dt * WHAMMY.ease));
+    if (want !== +this.whamOn) { this.whamOn = !!want; this.game.events?.emit('crucibelle.whammy', { on: this.whamOn, by: 'courier' }); }
     if (!down) { this.held = false; if (this.feedbackOn) this.feedback(false); return; }
     if (!this.held) return;
     this.heldT += dt;
     if (!this.feedbackOn && this.heldT > RECITAL_PLAY.feedback.after) this.feedback(true);
+  }
+  /** The feedback beam's way along the ground: the aim, swept side to side by the whammy twice a bar (the looks read it too). */
+  beamDir(out) {
+    const T = this.tool, P = T.P; P.lookDir(out).setY(0).normalize();
+    if (this.wham < 1e-3) return out;
+    const G = T.grid(), bar = (T.now() - G.t0) / (G.spb * 4), yaw = WHAMMY.sweep * this.wham * Math.sin(bar * WHAMMY.per * Math.PI * 2);
+    const cs = Math.cos(yaw), sn = Math.sin(yaw), x = out.x, z = out.z;
+    return out.set(x * cs + z * sn, 0, -x * sn + z * cs);
   }
   feedback(on) {
     if (this.feedbackOn === on) return;
@@ -108,17 +130,19 @@ export class RecitalPlay {
 
   /** The feedback's beam: what stands in it struck on a beat. */
   feedbackTick(G) {
-    const g = this.game, T = this.tool, P = T.P, F = RECITAL_PLAY.feedback, dir = P.lookDir(_d).setY(0).normalize();
+    const g = this.game, T = this.tool, P = T.P, F = RECITAL_PLAY.feedback, W = this.wham, dir = this.beamDir(_d);
+    const width = F.width * (1 + (WHAMMY.width - 1) * W), stun = F.stun * (1 + (WHAMMY.stun - 1) * W), power = F.power * (1 + (WHAMMY.power - 1) * W);
     let n = 0;
     for (const c of g.creatures?.near?.(P.pos, F.range + 1) || []) {
       if (c.ally || !c.alive) continue;
       _a.copy(c.pos).sub(P.pos).setY(0); const along = _a.dot(dir);
-      if (along < 0 || along > F.range || _b.copy(_a).addScaledVector(dir, -along).length() > F.width + (c.radius ?? 0.4)) continue;
-      g.creatures.strike(c, this.aimAt(c, new THREE.Vector3()), dir.clone(), F.power * (1 + T.fever * 0.5), 'bashed', 'courier');
-      g.stun?.add(c, F.stun, { by: 'courier', cause: 'feedback' }); n++;
+      if (along < 0 || along > F.range || _b.copy(_a).addScaledVector(dir, -along).length() > width + (c.radius ?? 0.4)) continue;
+      g.creatures.strike(c, this.aimAt(c, new THREE.Vector3()), dir.clone(), power * (1 + T.fever * 0.5), 'bashed', 'courier');
+      g.stun?.add(c, stun, { by: 'courier', cause: W > 0.5 ? 'whammy' : 'feedback' }); n++;
     }
-    // (the wail on the beat: the guitar voice retriggered an octave up, Wanda's placeholder)
-    const sc = T.scaleNow(); T.guitarVoice(G.root + sc[0] + 12, 0.5, G.spb * 0.9); T.guitarVoice(G.root + sc[3] + 12, 0.35, G.spb * 0.9);
+    // (the wail on the beat: the guitar voice retriggered an octave up, Wanda's placeholder; the whammy bends it flat)
+    const sc = T.scaleNow(), bend = WHAMMY.bend * W;
+    T.guitarVoice(G.root + sc[0] + 12, 0.5, G.spb * 0.9, bend); T.guitarVoice(G.root + sc[3] + 12, 0.35, G.spb * 0.9, bend);
     this.r.guitar.pluck(0, 0.7); this.r.guitar.pluck(3, 0.7);
     return n;
   }
@@ -148,11 +172,11 @@ export class RecitalPlay {
     const g = this.game, T = this.tool, R = RECITAL_PLAY.lick;
     b.done = true;
     const dir = b.vel.clone().setY(0).normalize();
-    const hit = !!g.creatures?.strike?.(b.c, b.pos.clone(), dir, (b.high ? R.powerHigh : R.power) * (1 + T.fever * 0.5), 'bashed', 'courier');
+    const hit = !!g.creatures?.strike?.(b.c, b.pos.clone(), dir, (b.high ? R.powerHigh : R.power) * (b.k ?? 1) * (1 + T.fever * 0.5), 'bashed', 'courier');
     if (hit) g.stun?.add(b.c, R.stun, { by: 'courier', cause: 'lick' });
-    g.events?.emit('crucibelle.lick', { degree: b.degree, octave: b.octave, hit, at: b.pos.clone(), by: 'courier' });
+    g.events?.emit('crucibelle.lick', { degree: b.degree, octave: b.octave, hit, chord: b.chord, at: b.pos.clone(), by: 'courier' });
   }
 
   /** The recital ended: the bolts dropped, the feedback stopped, the moments let go. */
-  end() { for (const b of this.bolts) b.done = true; this.bolts.length = 0; this.feedback(false); this.held = false; this.chain = 0; this.rockT = 0; this.windT = 0; }
+  end() { for (const b of this.bolts) b.done = true; this.bolts.length = 0; this.feedback(false); this.held = false; this.wham = 0; if (this.whamOn) { this.whamOn = false; this.game.events?.emit('crucibelle.whammy', { on: false, by: 'courier' }); } this.chain = 0; this.rockT = 0; this.windT = 0; }
 }

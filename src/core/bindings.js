@@ -212,7 +212,7 @@ export const ACTIONS = [
   { id: 'dvSurvey', mouse: 'Mouse1',                    touch: 'dv.survey',  ctx: 'tool.dreamvane', how: 'tap' },
   { id: 'dvNet',    keys: ['KeyQ'],                     touch: 'dv.net',     ctx: 'tool.dreamvane', how: 'tap' },  // (the net, out and folded: tools/dreamvane/net.js)
   { id: 'crToll',   mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'tool.crucibelle', how: 'tap' }, // (TOLL, on the beat)
-  { id: 'crOctave', mouse: 'Mouse2',      pad: 'LT',    touch: 'aim',        ctx: 'tool.crucibelle', how: 'hold' }, // (the octave up, held under a note)
+  { id: 'crHarmony', mouse: 'Mouse2',     pad: 'LT',    touch: 'aim',        ctx: 'tool.crucibelle', how: 'hold' }, // (harmony: a note held under it a chord; on the recital's feedback, the whammy: tools/crucibelle/harmony.js)
   { id: 'crRecital', keys: ['KeyQ'],                    touch: 'cr.recital', ctx: 'tool.crucibelle', how: 'tap' },  // (the combat recital, on and off: tools/crucibelle/recital.js)
   { id: 'crN1',     keys: ['Digit1'],                   touch: 'cr.n1',      ctx: 'tool.crucibelle', how: 'tap' },  // (the five pads, an instrument on glass)
   { id: 'crN2',     keys: ['Digit2'],                   touch: 'cr.n2',      ctx: 'tool.crucibelle', how: 'tap' },

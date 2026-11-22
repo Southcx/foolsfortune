@@ -8,6 +8,9 @@
 //   recital.strum       a strum's chord thrown down the aim: a curved wall of sound in gold sweeping out, its size the chain's step (`power`)
 //   recital.windmill    the strum chain's fourth: the chord rung all round (a ring on the ground racing out), the pyro's two jets either side
 //   recital.feedback    the feedback held (following the amp's mouth along the aim): a beam of sound in the film, streaks running out of it
+//   recital.whammy      the whammy held on the feedback (following the amp's mouth): rings off the mouth wobbling out of round in ember, and
+//                       bent streaks shaken loose (the bar pushed down, the sound bending)
+//   recital.harmony     a chord out of the recital: the harmony ring on the ground round the Courier, three thin hoops racing out in gold
 //   recital.rockstar    the rockstar moment: two pyro columns either side and behind, a jet of sparks off each, confetti in the film, one lamp
 //   recital.smoke       the amp smoking at fever: a puff of grey off its mouth
 // NO FLICKER: each is one wash in and out; the pyro's lamp is one of the light budget's, held a moment and let go.
@@ -51,6 +54,14 @@ export const RECITAL_EFFECTS = {
       scale: 10, stretch: [0.2, 0.2, 1], edgeV: [0.02, 0.4], rim: -0.6, core: 0.7, glow: 1.6, erode: 0.08 }),
     L({ type: 'sprites', dur: Infinity, rate: 6, shape: 'ringthin', size: 0.3, sizeEnd: 2, life: 0.45, color: 'film', alpha: 0.7 }),
     L({ type: 'sprites', dur: Infinity, rate: 30, shape: 'streak', dir: 'cone', cone: 6, speed: [14, 20], size: [0.05, 0.08], sizeEnd: 0.02, life: [0.3, 0.5], stretch: 5, color: ['film', 'white'] }),
+  ] },
+  'recital.whammy': { layers: [
+    L({ type: 'sprites', dur: Infinity, rate: 9, shape: 'ringthin', size: 0.25, sizeEnd: 1.6, life: 0.4, color: ['ember', 'film'], alpha: 0.8, spin: [-4, 4] }),
+    L({ type: 'sprites', dur: Infinity, rate: 22, shape: 'streak', dir: 'cone', cone: 40, speed: [5, 9], size: [0.04, 0.07], sizeEnd: 0.01, life: [0.25, 0.4], stretch: 3, gravity: -1, drag: 1.5, color: ['ember', 'white'] }),
+  ] },
+  'recital.harmony': { layers: [
+    ...[0, 0.06, 0.12].map((at) => L({ type: 'shape', form: 'ring', ramp: 'gold', main: 'rays', tile: [32, 1], scroll: [0.5, 0], at, dur: 0.5, scale: [[0, 0.4], [1, 5.5]], offset: [0, 0.08, 0], edgeV: [0.46, 0.46], glow: 1.5, core: 0.3, erode: [[0, 0.1], [0.6, 0.1], [1, 1]] })),
+    L({ type: 'sprites', at: 0.03, count: [14, 18], shape: 'sparkle', spawn: 'ring', r: 0.6, offset: [0, 1.1, 0], dir: 'out', speed: [2, 3.5], drag: 1.8, gravity: -0.6, size: [0.12, 0.18], sizeEnd: 0, life: [0.6, 0.9], color: 'tint' }),
   ] },
   'recital.rockstar': { layers: [
     ...[-2.2, 2.2].map((x) => L({ type: 'shape', form: 'pillar', ramp: 'ember', main: 'noise', tile: [2, 3], scroll: [0, 3], dur: 1.3, scale: 1, stretch: [3, 3.6, 3], offset: [x, 0, -1.2], glow: 2.2, erode: [[0, 0.5], [0.12, 0.05], [0.7, 0.1], [1, 1]] })),
