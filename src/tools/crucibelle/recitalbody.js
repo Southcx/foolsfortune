@@ -30,6 +30,7 @@ export const CONCERT = {
   nod: 0.17, nodLag: 0.07, chest: 0.05, dip: 0.035, sway: 0.07, twist: 0.06,
   lean: { feedback: 0.55, rockstar: 1, spine: 0.13, chest: 0.15, head: 0.14 },
   lift: { up: 0.32, ease: 6, hold: 2 }, wind: 0.5, kneelAt: 1.6, kneelSink: 0.025,
+  slide: { lean: 1.25, shin: 0.55, sink: 0.04, head: 0.35 }, // (the knee slide: its lean as a share of the rockstar's, the thighs swung back to lay the shins along the floor, the head thrown back)
 };
 const C_ = CONCERT, TAU = Math.PI * 2;
 const sm = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
@@ -52,7 +53,8 @@ export class RecitalBody {
     this.act = Math.max(0, this.act - dt * 0.6); this.liftT -= dt;
     this.e = THREE.MathUtils.damp(this.e, 0.45 + 0.4 * this.act + 0.25 * T.fever, 3, dt);
     this.lift = THREE.MathUtils.damp(this.lift, this.liftT > 0 ? 1 : 0, C_.lift.ease, dt);
-    const leanWant = play.rockT > 0 ? C_.lean.rockstar : play.feedbackOn ? C_.lean.feedback : 0;
+    this.slide = P.fp ? 0 : (P.slideBlend || 0) * w; // (the knee slide's weight: the core slide's own)
+    const leanWant = Math.max(play.rockT > 0 ? C_.lean.rockstar : play.feedbackOn ? C_.lean.feedback : 0, C_.slide.lean * (P.slideBlend || 0));
     this.lean = THREE.MathUtils.damp(this.lean, leanWant, 7, dt);
     this.reachR = 1;
     if (P.fp || w < 0.01) return;
@@ -64,19 +66,21 @@ export class RecitalBody {
     ch.rotW(B.spine002, _l, C_.chest * k * p - C_.lean.spine * L);
     ch.rotW(B.spine003, _u, C_.twist * k * sway);
     ch.rotW(B.spine003, _l, -C_.lean.chest * L);
-    ch.rotW(B.head, _l, C_.nod * k * ph - C_.lean.head * L);
+    ch.rotW(B.head, _l, C_.nod * k * ph - C_.lean.head * L - C_.slide.head * this.slide);
     // the windmill: the strumming arm a whole turn about the shoulder (down, back, over the head, down onto the strings)
     if (play.windT > 0) {
       const u = Math.min(1, play.windT / C_.wind);
       ch.rotW(B.upper_armR, _l, TAU * sm(u)); // (a whole turn: identity at both ends, so the arm leaves and comes home without a jump)
       this.reachR = 1 - Math.pow(Math.sin(Math.PI * u), 0.6);
     }
+    this.slideLegs(ch);
     ch.root.updateMatrixWorld(true);
   }
 
-  /** The tool's animate, after its own layer: the knees' bounce and the rockstar's kneel, while they stand. */
+  /** The tool's animate, after its own layer: the knees' bounce and the rockstar's kneel, while they stand; the knee slide, sliding. */
   pose(ch, base, dt) {
     const T = this.tool, P = T.P, w = this.r.w, Cl = ch.clips;
+    this.kneeSlide(ch, base);
     const still = P.grounded ? 1 - THREE.MathUtils.smoothstep(Math.hypot(P.vel.x, P.vel.z), 0.3, 1.2) : 0;
     this.stand = THREE.MathUtils.damp(this.stand, still, 8, dt);
     const rk = this.r.play.rockT, env = rk > 0 ? sm(rk / 0.2) * (1 - sm((rk - 1.2) / 0.3)) : 0;
@@ -92,5 +96,20 @@ export class RecitalBody {
       Cl.blend(base, kp, kw, this.lower, 1);
       ch.st.footDown = Math.max(ch.st.footDown || 0, Math.min(1, kw));
     }
+  }
+
+  /** The knee slide: the slide's legs given the kneel's, both knees down, the shins laid back along the floor. */
+  kneeSlide(ch, base) {
+    const sw = this.slide || 0, Cl = ch.clips;
+    if (sw < 0.01 || !Cl.clips.kneel) return;
+    const kp = Cl.sample('kneel', C_.kneelAt, (this.kp2 ||= Cl.pose()), false); kp.p[1] -= C_.slide.sink;
+    this.lower ||= Float32Array.from(ch.MASK_UPPER, (v) => 1 - v);
+    Cl.blend(base, kp, sw, this.lower, 1);
+    ch.st.footDown = Math.max(ch.st.footDown || 0, Math.min(1, sw));
+  }
+  /** After the clips are posed (turn): both thighs swung back so the knees lead and the shins trail (the kneel kneels on one). */
+  slideLegs(ch) {
+    const sw = this.slide || 0, B = ch.bones; if (sw < 0.01 || !B.thighL) return;
+    for (const t of [B.thighL, B.thighR]) ch.rotW(t, _l, -C_.slide.shin * sw * 0.5);
   }
 }

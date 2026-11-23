@@ -15,7 +15,7 @@
 //
 //   c.stand(at, yaw)  c.travel(placeId)  c.tool(id, form?)  c.posture('stand'|'crouch'|'prone')  c.hold(...keys)  c.free(...keys)
 //   c.press(...keys) (one tick)  c.run(n) (measured)  c.warm(n) (not)  c.until(fn, max)  c.pool(v)  c.note(key, value)
-//   __paRun.run(state, { every, draw, trace }) -> { result, sheet (JPEG data URL) | null, tile ({ url, sx, sy, sw, sh, id }: a crop of the sheet) | null }
+//   __paRun.run(state, { every, draw, trace, look: [frames] }) -> { result, sheet (JPEG data URL) | null, tile ({ url, sx, sy, sw, sh, id }: a crop of the sheet) | null }
 //                     trace: joint measures (`kneeFlexL`, `thighTwistR`, ...: poseaudit.page.js joints()) kept frame by frame in result.trace
 //   __paRun.overview(tiles, title) -> a JPEG data URL
 // ---------------------------------------------------------------------------------------
@@ -159,7 +159,7 @@ window.__paRun = (() => {
     return { sheet: url, tile: tile ? { url, sx: 0, sy: top + 20, sw: TW, sh: TH, id: state.id } : null };
   }
 
-  async function run(state, { every = 1, draw = true, trace = null } = {}) {
+  async function run(state, { every = 1, draw = true, trace = null, look = null } = {}) {
     const t0 = performance.now();
     if (state.social) await g.clipPack?.social;
     reset();
@@ -184,6 +184,8 @@ window.__paRun = (() => {
     if (state.expect) { try { result.checks = state.expect(result).map(([id, ok, what]) => ({ id, ok: !!ok, what })); } catch (e) { result.checks = [{ id: 'expect', ok: false, what: String(e?.message || e) }]; } }
     let pics = { sheet: null, tile: null };
     const t1 = performance.now();
+    // (--look: whole-body rows at the first measured frame at or after each asked, clean or not, for judging a look)
+    for (const k of look || []) offs.push({ kind: 'look', frame: (frames.find((f) => f.k >= k) || frames[frames.length - 1])?.k, text: 'the whole body (--look)' });
     if (draw && offs.length) { try { pics = drawOffences(state, offs, frames, agg); } catch (e) { result.drawError = String(e?.message || e); } }
     result.ms = Math.round(performance.now() - t0); result.msDraw = Math.round(performance.now() - t1);
     frames.length = 0;

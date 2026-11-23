@@ -178,6 +178,9 @@ window.__paStates = (() => {
   for (const [tool] of TOOLS.filter(([t]) => t !== 'sondelass')) add(`${tool}.parry`, 'tools', `${tool}: V tapped (the parry's body)`, (c) => lab(c).tool(tool).pool(100).press('KeyV').run(45));
   add('soulbrush.soak', 'tools', 'the Soul Brush in mop mode: V tapped (the soak)', (c) => { lab(c).tool('soulbrush').pool(100); c.g.techs.get('soulbrush').load.setMode('mop'); c.warm(10).press('KeyV').run(45); c.g.techs.get('soulbrush').load.setMode('paint'); });
   add('dreamvane.twirl', 'tools', 'the Dreamvane: V held 1 s (the twirl, spinning)', (c) => lab(c).tool('dreamvane').pool(100).hold('KeyV').run(60).free('KeyV').run(30));
+  // the combat recital's knee slide (South, 2026-11-23: in place of the core slide's look while the recital is on; tools/crucibelle/recitalbody.js)
+  add('recital.kneeSlide', 'tools', 'the Crucibelle drawn, the recital on (Q), a sprint into the slide (C)', (c) => lab(c).tool('crucibelle').pool(100).warm(40).press('KeyQ').run(40).hold('KeyW', 'ShiftLeft').warm(45).press('KeyC').run(70));
+  add('recital.stand', 'tools', 'the Crucibelle drawn, the recital on (Q), standing', (c) => lab(c).tool('crucibelle').pool(100).warm(40).press('KeyQ').run(90));
   // the cutlass's own
   const cut =(c) => lab(c).tool('sondelass', 'cutlass').pool(100);
   add('cutlass.iaido', 'sondelass', 'the iaido\'s charge: crouched, RMB held 0.43 s', (c) => cut(c).posture('crouch').hold('Mouse2').run(26));

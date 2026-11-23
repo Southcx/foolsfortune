@@ -29,10 +29,10 @@ import { RecitalGuitar, GUITAR } from './guitar.js';
 import { CrucibelleModel } from './model.js';
 import { Rope } from '../../vfx/rope.js';
 import { RecitalPlay } from './recitalplay.js';
-import { RecitalBody } from './recitalbody.js';
+import { RecitalBody, CONCERT } from './recitalbody.js';
 
 export const RECITAL = { pump: 0.07, push: 0.09, power: 0.9, beat: 1.5, cool: 0.28, ampScale: 2.4, amp: [0.85, 1.75, -0.35], key: 'KeyQ' };
-const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _f = new THREE.Vector3(), _l = new THREE.Vector3(), _u = new THREE.Vector3(0, 1, 0), _x = new THREE.Vector3(), _y = new THREE.Vector3(), _z = new THREE.Vector3();
+const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _f = new THREE.Vector3(), _l = new THREE.Vector3(), _u = new THREE.Vector3(0, 1, 0), _x = new THREE.Vector3(), _y = new THREE.Vector3(), _z = new THREE.Vector3(), _cf = new THREE.Vector3(), _cu = new THREE.Vector3();
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _qh = new THREE.Quaternion();
 
 export class Recital {
@@ -59,18 +59,22 @@ export class Recital {
     this.body.turn(ch, this.dt || 1 / 60); // (the concert body's turns, before the guitar is hung on the chest and the hands reached)
     this.frame();
     const chest = ch.chestPoint(_a);
+    // the chest's own frame: the root's, tipped back by the concert body's lean (recitalbody.js turn: the spine's and the chest's), so the
+    // guitar leans with the body into a held note, the rockstar moment and the knee slide and the hands never reach back for it
+    const tip = (CONCERT.lean.spine + CONCERT.lean.chest) * this.body.lean * this.w;
+    _cf.copy(_f).multiplyScalar(Math.cos(tip)).addScaledVector(_u, Math.sin(tip)); _cu.copy(_u).multiplyScalar(Math.cos(tip)).addScaledVector(_f, -Math.sin(tip));
     // the guitar's frame: the neck to their left and up 32 degrees (more while the upper register plays), the top facing out and up a little
     const neck = 0.56 + this.body.lift * 0.32;
-    _x.copy(_l).multiplyScalar(Math.cos(neck)).addScaledVector(_u, Math.sin(neck)).normalize();
-    _z.copy(_f).addScaledVector(_u, 0.15).normalize();
+    _x.copy(_l).multiplyScalar(Math.cos(neck)).addScaledVector(_cu, Math.sin(neck)).normalize();
+    _z.copy(_cf).addScaledVector(_cu, 0.15).normalize();
     _y.crossVectors(_z, _x).normalize(); _z.crossVectors(_x, _y).normalize();
     _m.makeBasis(_x, _y, _z); G.quaternion.setFromRotationMatrix(_m);
-    G.position.copy(chest).addScaledVector(_u, -0.3).addScaledVector(_f, 0.16).addScaledVector(_l, -0.1);
+    G.position.copy(chest).addScaledVector(_cu, -0.3).addScaledVector(_cf, 0.16).addScaledVector(_l, -0.1);
     G.updateMatrixWorld(true);
     // the hands on it: the strumming one swept down and back by a strum, the fretting one round the neck
     // (the sweep grows with the strum chain's step: a bigger strum, a bigger arm)
     const s = Math.sin(Math.min(1, this.strumT) * Math.PI), big = 1 + 0.35 * Math.max(0, (this.lastChain || 1) - 1);
-    this.guitar.strumWorld(_b).addScaledVector(_u, 0.07 - s * 0.16 * big).addScaledVector(_f, s * 0.03 * big).addScaledVector(_l, -s * 0.05 * (big - 1));
+    this.guitar.strumWorld(_b).addScaledVector(_cu, 0.07 - s * 0.16 * big).addScaledVector(_cf, s * 0.03 * big).addScaledVector(_l, -s * 0.05 * (big - 1));
     ch.reachHand('R', _b, ch.arm.R.hand.getWorldQuaternion(_qh), this.w * 0.9 * this.body.reachR);
     this.guitar.neckWorld(_b);
     ch.reachHand('L', _b, ch.arm.L.hand.getWorldQuaternion(_qh), this.w * 0.85);
