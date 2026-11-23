@@ -1215,8 +1215,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   (its own root, second and fifth); the night **thins** every cue instead (`MusicPlayer.setNight`). A cue the weather must not touch is
   `moodless`. **the scale** (`game.music.scale()`): the five notes to play along in (the Crucibelle's), the cue's own, or the
   weather's mode when nothing plays.
-- **neume** (`NEUMES`, `songNeume`, `src/vfx/crucibellehud.js`; the chant's word for a sign of notes written without a staff): a note of
-  the Crucibelle written on the pendulum's arc where the bob was, by its shape, one a degree (Aikin's shape-note heads read from la:
+- **neume** (`NEUMES`, `songNeume`, `src/vfx/crucibellesongbook/look.js`; the chant's word for a sign of notes written without a staff): a note of
+  the Crucibelle written on the songbook's metronome's arc where the rod's tip was, worn on its tine and on its song's line, by its shape, one a degree (Aikin's shape-note heads read from la:
   the root a square, the minor third a triangle, the fourth a bowl, the fifth a diamond, the minor seventh a circle); solid on the
   beat, hollow off it, its line doubled an octave up. **The motif** is the last notes' neumes along the tape; **a song's neume** is a
   song's notes joined in one ligature, taken into the bell's mark when it is cast. *Not:* a sigil (the Soul Brush's, read from a
@@ -1263,11 +1263,23 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   the flight to it in faint dashes. The flight is the carry's throw worked forward (the release over the hold, the carry's speed, the
   physics' gravity and the body's damping): over seven throws at 2 to 8 m it fell within 0.03 to 0.3 m of the impact. Gone the moment
   the throw begins. *Not:* the crosshair (the psygun's alone), the god hand's throw (`god.throw`), the paint reticle (the Soul Brush's).
-- **the pendulum** (`CrucibelleHud`, `src/vfx/crucibellehud.js`; docs/plans/CRUCIBELLE-UI.md): the Crucibelle's beat for the eye, on the
-  wire compass while the bell is in the hands: a line pendulum hung from the **bell's mark** on the tape's centre, its ends landing on
-  the bell's eighths (the music's, or the bell's own 96 bpm, drawn fainter), heavier into each bar's downbeat; a **notch** at each end
-  as wide as the bell's on-beat window; the bob an ember whose smoke rises with fever. Its size is a setting (`visual.pendulumSize`).
-  *Not:* the metronome (the fob on the bell itself); never in the rhythm mode (its note chart).
+- **the Crucibelle's songbook** (`CrucibelleSongbook`, `src/vfx/crucibellesongbook.js`; South, 2026-11-23: "overhaul the Crucibelle UI
+  when equipped ... something more useful for music or the spellcasting via notes"): the Crucibelle's own UI by the Lachrimeter in the
+  house's tool-UI manner (a canvas on the overlay's flat plane, beside the Soul Brush's desk and the Lockheart's reliquary). **The
+  songbook's metronome**: a walnut Maelzel's pyramid whose rod (its own plane, turned every frame) swings so each end lands on a beat of
+  the bell's grid (folded to `BEAT.max`), slowing into each end; a gold **notch** at each end exactly as wide as the bell's on-beat window
+  (`WINDOW`), the end the downbeat lands on standing taller and the rod thicker into it; the bar's beats as studs on the plinth (the beat
+  that is raised, the downbeat a lozenge), the tempo on its face; its scale plate filling with ember to the fever, the weight an ember
+  trailing smoke, the peak a brighten that settles and a ring of smoke; with no music the bell's own tempo, drawn fainter; Half Time
+  (the knack) on every other beat with a notch in the middle. A note pressed is written on the arc where the tip was as its neume, solid
+  in the notch, hollow outside it. **A tine**: one of the ten keys as a kalimba's (1 to 5 low and long, 6 to 0 high and short), tipped in
+  its degree's colour and neume, its key on a chip at its foot, its note's name in the scale sounding over the bridge; lit and ringing as
+  played, a chord's three together. **A song's line**: a song on the page (its Codex name, its neumes, its cost now in Lachryma, red while
+  the pool cannot pay), the motif matched as a prefix: played inked, the next standing proud on a gold ring, a line the motif no longer
+  fits greyed; a pause of four beats lets the motif go; a song cast brightens its line and rules it gold. **The amp strip**: in the
+  combat recital, the strum chain's four picks, the feedback's wave across a grille, bent and swept by the whammy. No flash, no pulse of
+  light on the beat (CRUCIBELLE-UI.md 3). `read()` is what a sweep plays the bell by (tools sweep 9b). *Not:* the metronome (the fob on
+  the bell itself); never in the rhythm mode (its note chart).
 - **the lens's frame** (`VeritomeFrame`, `game.veritomeFrame`, `src/vfx/veritomeframe.js`): the Veritome's own mark in the third person
   (the owner, 2026-10-11: "each tool should have its own UI according to what it does"): four corners in the Flash's warm white, keylined
   in the stone's ink, round what a plate would hold: the lens's field (the zoom it was left at, the plate's 8 by 5 shape cut from the
@@ -1360,8 +1372,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   Gall disgust (the recoil), Grief crying (the head bowed, the hands to the face), Dread the startle (the flinch). `/awaken <feeling>`
   (DEBUG) plays the flood and the clip, nothing learned. *Not:* an emote, the glitch, the awakening itself (the act that wakes a feeling).
 - **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`): the tape of ticks round the eye at the top of the view (the quarters as
-  the sun's road), shown while the Dreamvane is worn or the Crucibelle is in the hands; the tools' own marks hang on it (the vane's,
-  `vfx/vanehud.js`; the pendulum). **compass contrast** (`visual.compassContrast`, a setting): the tape and its marks fainter or brighter,
+  the sun's road), shown while the Dreamvane is worn; the vane's marks hang on it (`vfx/vanehud.js`; the Crucibelle's pendulum hung there until
+  2026-11-23, when the Crucibelle's songbook replaced it). **compass contrast** (`visual.compassContrast`, a setting): the tape and its marks fainter or brighter,
   their keylines stronger as it rises. **the compass's ink** (`COMPASS_U.uInk`, `compassMaterial`): the whole device's tone, taken from
   what it is drawn against (the sky's state in memory, `sky.toneAt` under `clouds.over`; under a roof the room's background): pale light
   with a dark **keyline** on a dark ground, dark ink with a pale keyline on a bright one (R11, casebook rule 105). *Not:* the Mind's ink

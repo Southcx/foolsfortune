@@ -475,9 +475,9 @@ if (part('careless')) {
   S.check('careless: the core movement exactly as before', sameCore(c), { base: BASE, now: c });
 }
 
-// ================================================================== 9b. the Crucibelle's pendulum (vfx/crucibellehud.js), played by sight alone
-// (docs/plans/CRUCIBELLE-UI.md, acceptance 5): the sound muted, THE RALLY (1 3 5) pressed only while the pendulum's bob is in its notch and
-// swinging toward its end, as read off game.crucibelleHud.read(), never off the music's clock. The notes must land on the beat, the song
+// ================================================================== 9b. the Crucibelle's songbook's metronome (vfx/crucibellesongbook.js), played by sight alone
+// (docs/plans/CRUCIBELLE-UI.md, acceptance 5): the sound muted, THE RALLY (1 3 5) pressed only while the metronome's rod is in its notch and
+// swinging toward its end, as read off game.crucibelleSongbook.read(), never off the music's clock. The notes must land on the beat, the song
 // be cast, and the notch agree with the bell's own judgement on every note.
 if (part('pendulum')) {
   S.phase = 'pendulum';
@@ -485,11 +485,11 @@ if (part('pendulum')) {
   await tl("equip('crucibelle')"); await S.ticks(10);
   await S.ev(() => { __game.T.audio.volume = 0; __game.game.lachryma.value = __game.game.lachryma.max; });
   await draw('crucibelle', 2); await S.ticks(70);
-  const seen = await S.ev(() => __game.game.crucibelleHud?.read());
+  const seen = await S.ev(() => __game.game.crucibelleSongbook?.read());
   S.check('pendulum: shown with the Crucibelle drawn', seen?.shown === true, seen);
   const played = await S.ev(() => {
-    const g = __game.game, I = __game.input, H = g.crucibelleHud, out = { notes: [], song: null };
-    if (!H) return { ...out, missing: 'game.crucibelleHud (Calissa\'s, not merged yet)' };
+    const g = __game.game, I = __game.input, H = g.crucibelleSongbook, out = { notes: [], song: null };
+    if (!H) return { ...out, missing: 'game.crucibelleSongbook (Calissa\'s, not merged yet)' };
     const offN = g.events.on('crucibelle.note', (e) => out.notes.push(e.onBeat)), offS = g.events.on('song.play', (e) => { out.song = e.song; });
     for (const d of [1, 3, 5]) {
       let pressed = false;
@@ -507,7 +507,7 @@ if (part('pendulum')) {
   S.check('pendulum: the notch agrees with the bell on every note', played.disagree === 0, { disagree: played.disagree });
   await S.shot('pendulum-rally');
   await draw('crucibelle', 2); await S.ticks(80);
-  const gone = await S.ev(() => __game.game.crucibelleHud?.read());
+  const gone = await S.ev(() => __game.game.crucibelleSongbook?.read());
   S.check('pendulum: gone when the Crucibelle is stowed', gone?.shown === false, gone);
   await tl(`wearSet(${J(WORN0)})`);
   await settledChecks('pendulum: after', { expectOut: null });

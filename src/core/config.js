@@ -374,8 +374,7 @@ export const DEFAULTS = {
     glitch: true, // the data showing through at the big moments (vfx/glitch.js, vfx/datadrain.js): false turns every tear and drop-out off
     lensDrops: true, // rain and hail landing on the lens when you look up into it, Desire's grit in a gust (vfx/weatherfx/lensdrops.js): false turns it off (a setting: Calissa)
     warp: 1, // the crossing's psychic storm (vfx/stormwarp.js): how far the world bends and the veil hazes, 0 (off) to 1 (a setting: Calissa)
-    pendulumSize: 1, // the Crucibelle's pendulum on the compass (vfx/crucibellehud.js): its size, 0.5 to 2.5 (a setting: Calissa)
-    compassContrast: 1, // the wire compass's tape and the marks hung on it, fainter below 1 and brighter above; the pendulum's black keyline grows with it (a setting)
+    compassContrast: 1, // the wire compass's tape and the marks hung on it, fainter below 1 and brighter above; their black keyline grows with it (a setting)
     creatureTags: 'scan', // a creature's tag (vfx/creaturetags.js): 'scan' (the Veritome's lens raised, and the lock-on) | 'lockon' (the lock-on only) | 'off' (a setting: Calissa)
     arrowCamera: true, // the arrow keys turn and tilt the camera as well as the mouse (PHOTO-MODE.md step 1; a setting)
     creatureTagsMinimal: false, // a creature's tag with the least on it: its sprite, name and health line only (a setting)

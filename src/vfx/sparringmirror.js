@@ -45,7 +45,7 @@ export const SPARRING_MIRROR = {
 const MARK_NAMES = new Set(['paint-reticle', 'jet-ring']);
 /** The world marks the game holds, each a top-level object or none. */
 const marksOf = (g) => [...(g.targetMarks?.groups() || []), g.figmentTelegraphs?.group, g.wireCompass?.tape, g.wireCompass?.wpTape,
-  g.wireCompass?.wpWorld, g.vaneHud?.group, g.vaneHud?.res, g.crucibelleHud?.group, g.crucibelleHud?.ring];
+  g.wireCompass?.wpWorld, g.vaneHud?.group, g.vaneHud?.res];
 
 let PANE = null; // (the one glass; the wing builds it before the game dresses it)
 
