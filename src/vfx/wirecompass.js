@@ -11,11 +11,8 @@
 // Prior art: Metroid Prime's visor (the HUD belongs to a device and is drawn in perspective), the compass tape of Skyrim and of the
 // flight sims (a strip of bearings with the target marked on it), and Rez's wireframe.
 //
-// While the Crucibelle is in the hands its pendulum hangs from the tape's centre (vfx/crucibellehud.js), and the tape's lower half opens
-// a gap there for it (`hole`), so a quarter's glyph never stands inside the swing.
-//
 // READ ON ANY SKY (the owner, R11: "almost invisible against a clear, bright sky"; casebook rule 105: a mark the player must read carries
-// a light part and a dark part). Every line of the compass and of the marks hung on it (the vane's, the pendulum's) is drawn with a
+// a light part and a dark part). Every line of the compass and of the marks hung on it (the vane's) is drawn with a
 // KEYLINE under it, the same lines a pixel out to each side in the opposite tone, and the whole device takes its INK from what it is
 // drawn against: on a dark sky the lines are pale light added to it with a dark keyline; on a bright one they turn to dark ink laid
 // over it, the stone's near-black with its colour in it, with a pale keyline. What is behind is read from the sky's own state (the
@@ -28,10 +25,10 @@
 // cross (Mirror's Edge's and Halo's reticles, the "difference" blend of the cockpit symbology that keeps a HUD legible against sky and
 // sea); the print's halftone: ink where the ground is light.
 //
-//   const c = new WireCompass(game)     c.update(dt)     c.visible     c.hole(k, below, above)   (after update, each frame it is wanted)
+//   const c = new WireCompass(game)     c.update(dt)     c.visible   (shown while the Dreamvane is worn; the Crucibelle has its own songbook)
 //   c.ink (0 pale light .. 1 dark ink, eased)   c.skyL (how light what is behind it looks, 0..1)
-//   compassMaterial({ key, fade, vert, flat, alpha, hole })   compassLines(geo)   keyUnder(lineMesh, opts)   COMPASS_U   keyStrength(con)
-//     the device's one material and its keyline, for the marks hung on it (vfx/vanehud.js, vfx/crucibellehud.js)
+//   compassMaterial({ key, fade, flat, alpha })   compassLines(geo)   keyUnder(lineMesh, opts)   COMPASS_U   keyStrength(con)
+//     the device's one material and its keyline, for the marks hung on it (vfx/vanehud.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
@@ -42,30 +39,27 @@ const R = 10;            // the tape's radius round the eye, metres (it is drawn
 const RAISE = 0.40;      // how far up the view it sits, as a share of the half field of view
 
 const V = /* glsl */`
-attribute float aSize; attribute vec2 aOff; attribute vec4 aCol;
+attribute float aSize; attribute vec2 aOff;
 uniform vec2 uPx;
-varying vec3 vW; varying float vSize; varying vec4 vCol;
+varying vec3 vW; varying float vSize;
 void main() {
-  vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; vSize = aSize; vCol = aCol;
+  vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; vSize = aSize;
   gl_Position = projectionMatrix * viewMatrix * w;
   gl_Position.xy += aOff * uPx * gl_Position.w; // (a keyline's copy: a pixel out on the screen, whatever the distance)
 }`;
-// (uHole: strength, the cosines of its half-angles below the line and above it, the tape's height. uFlat: a colour of its own instead of
-// the stone's, and how much. uVert: the colour and weight are the vertices' own, the pendulum's pen. uFade: the tape's bearing fade and gap)
+// (uFlat: a colour of its own instead of the stone's, and how much. uFade: the tape's bearing fade)
 const F = /* glsl */`
-uniform vec3 uFwd; uniform float uAlpha, uInk, uKey, uVert, uFade; uniform vec4 uHole, uFlat;
-varying vec3 vW; varying float vSize; varying vec4 vCol;
+uniform vec3 uFwd; uniform float uAlpha, uInk, uKey, uFade; uniform vec4 uFlat;
+varying vec3 vW; varying float vSize;
 ${LAB_GLSL}
 void main() {
   vec3 d = vW - cameraPosition;
   float c = dot(normalize(d.xz), normalize(uFwd.xz));
   float fade = smoothstep(0.55, 0.85, c);          // (the tape shows about a hundred degrees, fading at its ends)
-  float below = step(vW.y, uHole.w - 0.03), above = step(uHole.w + 0.03, vW.y);
-  fade *= 1.0 - uHole.x * (below * smoothstep(uHole.y - 0.0015, uHole.y + 0.0015, c) + above * smoothstep(uHole.z - 0.00005, uHole.z + 0.00005, c)); // (the pendulum's gap, and its bell's)
   fade = mix(1.0, fade, uFade);
-  float own = max(uVert, uFlat.a);
-  vec3 hue = uVert > 0.5 ? vCol.rgb : mix(labSoft(labPhase(vW, normalize(-d))), uFlat.rgb, uFlat.a);
-  float w = uAlpha * fade * mix(0.45 + 0.55 * vSize, 1.0, own) * (uVert > 0.5 ? vCol.a : 1.0);
+  float own = uFlat.a;
+  vec3 hue = mix(labSoft(labPhase(vW, normalize(-d))), uFlat.rgb, uFlat.a);
+  float w = uAlpha * fade * mix(0.45 + 0.55 * vSize, 1.0, own);
   float wc = min(w * (1.0 + 0.5 * uInk * (1.0 - uKey)), 1.0);          // (ink a little heavier: a dark line one pixel wide reads thin)
   vec3 pale = hue * mix(0.8 + 0.4 * vSize, 1.0, own);                // (added light, on a dark ground)
   vec3 ink = LAB_INK + hue * 0.16;                                     // (laid over a bright one: the stone's near-black, its colour in it)
@@ -78,13 +72,12 @@ void main() {
 /** The device's shared uniforms: the eye's heading, a pixel's size in clip space (the keylines), and the ink (0 the marks are pale light
  *  added to a dark ground .. 1 they are dark ink laid over a bright one: WireCompass sets it from what is behind the tape). */
 export const COMPASS_U = { uFwd: { value: new THREE.Vector3(0, 0, -1) }, uPx: { value: new THREE.Vector2(2 / 854, 2 / 480) }, uInk: { value: 0 } };
-/** The device's one material (one shader program for every mark on it): `key` a keyline, `fade` the tape's bearing fade and gap, `vert`
- *  the vertices' own colour and weight (aCol: rgb, weight), `flat` a colour of its own (`uniforms.uFlat`); `alpha` and `hole` may be
- *  uniforms shared with another mark. Premultiplied: the colour added, the alpha how much of the ground it covers. */
-export function compassMaterial({ key = false, fade = false, vert = false, flat = false, alpha = null, hole = null } = {}) {
+/** The device's one material (one shader program for every mark on it): `key` a keyline, `fade` the tape's bearing fade, `flat` a
+ *  colour of its own (`uniforms.uFlat`); `alpha` may be a uniform shared with another mark. Premultiplied: the colour added, the alpha how much of the ground it covers. */
+export function compassMaterial({ key = false, fade = false, flat = false, alpha = null } = {}) {
   return new THREE.ShaderMaterial({
-    uniforms: { ...COMPASS_U, uMindT: mindTime, uAlpha: alpha || { value: 0 }, uHole: hole || { value: new THREE.Vector4(0, 1, 1, 0) },
-      uKey: { value: key ? 1 : 0 }, uFade: { value: fade ? 1 : 0 }, uVert: { value: vert ? 1 : 0 }, uFlat: { value: new THREE.Vector4(1, 1, 1, flat ? 1 : 0) } },
+    uniforms: { ...COMPASS_U, uMindT: mindTime, uAlpha: alpha || { value: 0 },
+      uKey: { value: key ? 1 : 0 }, uFade: { value: fade ? 1 : 0 }, uFlat: { value: new THREE.Vector4(1, 1, 1, flat ? 1 : 0) } },
     vertexShader: V, fragmentShader: F, transparent: true, depthTest: false, depthWrite: false, fog: false,
     blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
   });
@@ -176,8 +169,8 @@ export class WireCompass {
     this.tape = new THREE.LineSegments(geo, mat);
     this.tape.renderOrder = 35; this.tape.frustumCulled = false;
     this.keyA = { value: 0 }; this.wpKeyA = { value: 0 };
-    keyUnder(this.tape, { fade: true, alpha: this.keyA, hole: this.u.uHole }); // (its keyline, opening the same gap)
-    // the waypoint's diamond on the tape, and the one over the place (the waypoint is never in the gap)
+    keyUnder(this.tape, { fade: true, alpha: this.keyA }); // (its keyline)
+    // the waypoint's diamond on the tape, and the one over the place
     const dia = compassLines(new THREE.BufferGeometry().setFromPoints([[0, 1], [1, 0], [1, 0], [0, -1], [0, -1], [-1, 0], [-1, 0], [0, 1], [0, 0.45], [0.45, 0], [0.45, 0], [0, -0.45], [0, -0.45], [-0.45, 0], [-0.45, 0], [0, 0.45]].map(([x, y]) => new THREE.Vector3(x, y, 0))));
     this.wpTape = new THREE.LineSegments(dia, compassMaterial({ fade: true, alpha: this.u.uAlpha }));
     this.wpTape.renderOrder = 35; this.wpTape.frustumCulled = false;
@@ -209,7 +202,7 @@ export class WireCompass {
       if (name && name !== this.place) { this.place = name; if (!g.circuits?.active) g.events?.emit('place.enter', { room: name, layer: l?.name }); }
     }
     if (!on) return;
-    const con = THREE.MathUtils.clamp(T.visual.compassContrast ?? 1, 0.25, 3); // (the setting: the tape's contrast, vfx/crucibellehud.js reads it too)
+    const con = THREE.MathUtils.clamp(T.visual.compassContrast ?? 1, 0.25, 3); // (the setting: the tape's contrast, the vane's marks read it too)
     this.u.uAlpha.value = this.alpha * con;
     this.keyA.value = this.alpha * keyStrength(con);
     g.renderer?.getDrawingBufferSize(_px); if (_px.x > 0) COMPASS_U.uPx.value.set(2 / _px.x, 2 / _px.y); // (a pixel of the frame as drawn: the keylines)
@@ -255,7 +248,4 @@ export class WireCompass {
     const bg = g.scene.background?.isColor ? lum(g.scene.background) : 0.02;
     return shown(THREE.MathUtils.lerp(bg, W ? Y / W : bg, open), g.renderer?.toneMappingExposure ?? 1);
   }
-  /** A gap in the tape straight ahead: `k` 0..1, `half` its half-angle below the line and `top` above it (radians). Asked after update,
-   *  every frame it is wanted. */
-  hole(k, half, top = 0) { this.u.uHole.value.set(k, Math.cos(half), Math.cos(top), this.tape.position.y); }
 }

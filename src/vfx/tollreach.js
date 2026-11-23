@@ -105,7 +105,7 @@ export class TollReach {
     // the beat, on the bell's own clock: through the window round each beat the reach is lit, the bar's downbeat heavier
     const G = b.grid(), t = b.now(), e = G.spb, ph = (t - G.t0) / e, k = Math.round(ph), off = Math.abs(ph - k) * e;
     const lit = (1 - smooth(WINDOW, WINDOW + 0.06, off)) * 1, down = ((k % 4) + 4) % 4 === 0 && off < WINDOW + 0.03;
-    const Mg = g.music?.grid?.(), own = !Mg || Mg.t0 !== G.t0; // (the music folded is still the music's) // (the pendulum's test: vfx/crucibellehud.js)
+    const Mg = g.music?.grid?.(), own = !Mg || Mg.t0 !== G.t0; // (the music folded is still the music's) // (the songbook's test: vfx/crucibellesongbook.js)
     const A = this.alpha * (own ? OWN : 1), reach = A * (DIM + (1 - DIM) * lit);
 
     // the ground they stand on, kept while they stand on one floor

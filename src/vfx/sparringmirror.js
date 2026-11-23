@@ -10,7 +10,7 @@
 //              on the glass, so the Courier's reflection gets about two thirds of the screen's density from the striker's place.
 //   WHAT       The throwingRoom zone (render/zones.js) and the Courier in it, never the Workshop's zone; bodies, not marks: every sprite (the
 //              glyph pops, the parry mark's glints), the target mark (the chevron, the lock: vfx/targetmark.js), the Figment attack telegraphs, the wire
-//              compass with the vane's and the pendulum's marks, the paint reticle and the jet ring are drawn once, in the world, and never
+//              compass with the vane's marks, the paint reticle and the jet ring are drawn once, in the world, and never
 //              again in the glass. The glass itself is hidden for it. No HUD is in the scene to leave out (it is HTML over the canvas).
 //   WHEN       While the Courier is inside the bales (the ring's radius) and the glass is in the camera's view; every other frame while
 //              frames come faster than 45 a second (the target keeps the last image, its eye one frame old). The shadow pass is not
@@ -45,7 +45,7 @@ export const SPARRING_MIRROR = {
 const MARK_NAMES = new Set(['paint-reticle', 'jet-ring']);
 /** The world marks the game holds, each a top-level object or none. */
 const marksOf = (g) => [...(g.targetMarks?.groups() || []), g.figmentTelegraphs?.group, g.wireCompass?.tape, g.wireCompass?.wpTape,
-  g.wireCompass?.wpWorld, g.vaneHud?.group, g.vaneHud?.res, g.crucibelleHud?.group, g.crucibelleHud?.ring];
+  g.wireCompass?.wpWorld, g.vaneHud?.group, g.vaneHud?.res];
 
 let PANE = null; // (the one glass; the wing builds it before the game dresses it)
 

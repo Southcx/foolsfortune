@@ -6,6 +6,21 @@ Kept by Dovina (what it must show and why); the look is Calissa's (`src/vfx/`, b
 > "Design a UI for the Crucibelle that matches the vibes of the UI for the Dreamvane... we need a visual metronome (covers
 > accessibility for people with hearing difficulty)."
 
+## 0. Since 2026-11-23: the Crucibelle's songbook (Calissa, `src/vfx/crucibellesongbook.js`)
+
+> South, 2026-11-23: "overhaul the Crucibelle UI when equipped? The metronome looks good but it uses the same compass UI that the
+> Dreamvane has instead of something more useful for music or the spellcasting via notes."
+
+The pendulum on the compass (section 2) is retired with `vfx/crucibellehud.js`; the wire compass is the Dreamvane's alone again. The
+Crucibelle has its own UI by the Lachrimeter, as every other tool does: **the songbook's metronome** (a Maelzel's pyramid: the same swing,
+ease and truthful notches, now one end a **beat**, the bell's grid folded to `BEAT.max`; the downbeat's end taller, the bar's beats as
+studs, the tempo on the plinth; fever its scale plate's ember, the weight's ember and smoke, the peak's ring), **the tines** (the ten
+keys as a kalimba's, in their degrees' colours and neumes, the note names of the scale sounding, lit as played, a chord's three), **the
+page** (each song's line of neumes with the motif matched as a prefix: played, next, greyed when it no longer fits; its cost now) and,
+in the combat recital, **the amp strip** (the strum chain's picks, the feedback, the whammy). Section 3's rules hold: no flash, every cue
+to the ear given to the eye. `visual.pendulumSize` is retired with the pendulum; `game.crucibelleSongbook.read()` keeps the shape the
+tools sweep's 9b part reads. Section 2 below is the pendulum's record.
+
 ## 1. Why
 
 The Crucibelle is played by ear: notes on the beat build fever, songs are motifs in time. Today the beat is shown only by the brass fob
@@ -14,7 +29,7 @@ screen. A player who cannot hear the music cannot play the bell. The Dreamvane a
 compass** (`vfx/vanehud.js`): line-drawn, wordless, numberless marks hung on the wire compass's tape, in the colour of what the tool
 is doing. The Crucibelle gets its own, **the bell on the compass**, in the same hand.
 
-## 2. What it shows: built (Calissa, `src/vfx/crucibellehud.js`, 01268f8 on her branch; lines, no words, no numbers)
+## 2. What it showed: the pendulum (Calissa, `src/vfx/crucibellehud.js`, retired 2026-11-23 for the songbook: section 0)
 
 | mark | shows | as built |
 |---|---|---|
@@ -35,7 +50,7 @@ default contrast (additive lines vanish on the Dunes' noon sky).
   about playing the bell needs sound.
 - **Half Time** (the knack, Wanda's rule; the name stays, the owner approved it): the ends land on quarters and a centre notch marks the
   off-eighth, never slower than the music's grid. Wired to `game.knacks?.halfTime`; the knack itself is built with the knacks.
-- **Settings, not knacks** (owner's rule via Wanda): `visual.pendulumSize` and `visual.compassContrast`, from the start (built).
+- **Settings, not knacks** (owner's rule via Wanda): `visual.compassContrast` (built; `visual.pendulumSize` retired with the pendulum, 2026-11-23).
 - **No flash, ever** (the owner's, 2026-10-06): motion carries the beat; a landed note brightens, it does not blink.
 
 ## 4. What it teaches (the commandment)
@@ -67,5 +82,5 @@ owner's ruling).
 3. Five sigils, distinguishable in greyscale.
 4. A song played draws its trail together and the song is cast.
 5. With the sound muted, a sweep can play a song on the beat by reading only the pendulum (the accessibility test). Built: the tools
-   sweep's `pendulum` part plays THE RALLY (1 3 5) off `game.crucibelleHud.read()` alone (Calissa measured 19/19 on her branch;
+   sweep's `pendulum` part plays THE RALLY (1 3 5) off `game.crucibelleSongbook.read()` alone (the pendulum's `crucibelleHud` until 2026-11-23) (Calissa measured 19/19 on her branch;
    on main once her branch lands). 1 to 4 were measured headless by Calissa.

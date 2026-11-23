@@ -41,7 +41,7 @@ import { prewarmFish } from '../tools/sondelass/angling/fishmesh.js';
 import { shapeWarmMesh } from '../vfx/shapes/layer.js';
 import { WireCompass } from '../vfx/wirecompass.js';
 import { VaneHud } from '../vfx/vanehud.js';
-import { CrucibelleHud } from '../vfx/crucibellehud.js';
+import { CrucibelleSongbook } from '../vfx/crucibellesongbook.js';
 import { VeritomeFrame } from '../vfx/veritomeframe.js';
 import { SafariLens } from '../ui/safarilens.js';
 import { TollReach } from '../vfx/tollreach.js';
@@ -131,15 +131,15 @@ export async function bootWarmup(game, made) {
   game.rail?.build(); const seaLooks = game.rail ? game.rail.parked() : []; // (the crossing's sea, ship, foes and set pieces, parked: world/emocean/stage.js)
   const seaAt = seaLooks.map((o) => o.position.clone()); // (put back after the warm-up: the shoal's look and the wake draw in the world's own frame, and parked 50 m down they stayed under the crude: docs/CASEBOOK-CASES.md 2026-10-08)
   for (const o of seaLooks) { o.visible = true; o.position.set(0, -50, 0); }
-  // the compass and its tools' marks (the Dreamvane's vane, the Crucibelle's pendulum), made now and shown for the compile, else made on
-  // the first tick after the warm-up and compiled in play (3 programs, measured; casebook rules 17 and 18); their own update hides them after
-  game.wireCompass ||= new WireCompass(game); game.vaneHud ||= new VaneHud(game, game.wireCompass); game.crucibelleHud ||= new CrucibelleHud(game, game.wireCompass);
-  for (const o of [game.wireCompass.tape, game.wireCompass.wpTape, game.wireCompass.wpWorld, game.vaneHud.group, game.vaneHud.res, game.crucibelleHud.group, game.crucibelleHud.ring]) if (o) o.visible = true;
-  // (each frame, in the marks phase: core/systems.js. The compass shows while the Dreamvane is worn or the Crucibelle is in the hands;
-  // its two tools' marks draw on it after it, so the three are one system, in that order)
+  // the compass and the Dreamvane's vane on it, made now and shown for the compile, else made on the first tick after the warm-up and
+  // compiled in play (casebook rules 17 and 18); their own update hides them after
+  game.wireCompass ||= new WireCompass(game); game.vaneHud ||= new VaneHud(game, game.wireCompass);
+  for (const o of [game.wireCompass.tape, game.wireCompass.wpTape, game.wireCompass.wpWorld, game.vaneHud.group, game.vaneHud.res]) if (o) o.visible = true;
+  // (each frame, in the marks phase: core/systems.js. The compass shows while the Dreamvane is worn (the Crucibelle has its own
+  // songbook since 2026-11-23: vfx/crucibellesongbook.js); the vane draws on it after it, so the two are one system, in that order)
   game.systems.add('marks', (dt) => {
-    game.wireCompass.visible = !!game.belt?.isWorn('dreamvane') || !!game.crucibelle?.held;
-    game.wireCompass.update(dt); game.vaneHud.update(dt); game.crucibelleHud.update(dt);
+    game.wireCompass.visible = !!game.belt?.isWorn('dreamvane');
+    game.wireCompass.update(dt); game.vaneHud.update(dt);
   }, { name: 'wireCompass' });
   game.veritomeFrame ||= new VeritomeFrame(game); game.tollReach ||= new TollReach(game); game.chestFx ||= new ChestFx(game); // (the lens's frame, the toll's reach, a chest's opening)
   game.systems.add('marks', game.veritomeFrame, { clock: 'raw', name: 'veritomeFrame' });
@@ -153,6 +153,7 @@ export async function bootWarmup(game, made) {
   game.sondelassGuard = new SondelassGuard(game); // (the Sondelass's own UI, board v9)
   game.lockheartReliquary = new LockheartReliquary(game); // (the Lockheart's own UI, board v10 in its B orientation: vfx/lockheartreliquary.js)
   game.soulBrushDesk = new SoulBrushDesk(game); // (the Soul Brush's own UI, board v11: the scholar's desk, vfx/soulbrushdesk.js)
+  game.crucibelleSongbook = new CrucibelleSongbook(game); game.systems.add('marks', (dt) => game.crucibelleSongbook.tick(dt), { clock: 'raw', name: 'crucibelleSongbook' }); // (the Crucibelle's own UI: its metronome, tines, songs and amp, vfx/crucibellesongbook.js; read off the bell each tick, drawn in the overlay's scene)
   installLiveMoment(game); // (game.liveMoment(): what is under way that a pop-up must wait out, a race, a crossing, a duel ...: core/livemoment.js)
   game.sightLook = new SightLook(game); game.creatureTags = new CreatureTags(game); game.titlePlacard = new TitlePlacard(game); game.sealImprints = new SealImprints(game); game.sealPicker = new SealPicker(game); // (the overlay's instruments, tags, placard and seal: OVERLAY.md 10.5c, HANKO.md)
   game.instrumentSkins = new InstrumentSkins(game); // (the instruments' housing as one set, a preference kept in the settings: vfx/instrumentskins.js)

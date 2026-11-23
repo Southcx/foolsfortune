@@ -49,7 +49,7 @@ import { sfx } from '../../audio/sfx.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('tools/crucibelle/crucibelle'); // (the simulation's chance: core/rng.js, the same twice)
 
-export const WINDOW = 0.085; // (a note on the beat: within this many real seconds; Calissa's pendulum reads it, vfx/crucibellehud.js)
+export const WINDOW = 0.085; // (a note on the beat: within this many real seconds; the songbook's metronome reads it, vfx/crucibellesongbook.js)
 // The bell's beat (South, 2026-11-23: "the default metronome is WAY too high BPM"): one tick a beat, never an eighth, the music's tempo
 // folded in half until it is no faster than BEAT.max (a 140 cue is kept at 70), the bell's own BEAT.own with no music playing.
 export const BEAT = { own: 76, max: 108 };
