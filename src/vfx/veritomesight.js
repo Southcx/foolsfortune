@@ -28,7 +28,7 @@ export const VERITOME_SIGHT = Object.freeze({
   flinchTint: 'lens',      // vfx/hitflinch.js: the damage type's flash on the struck body (its shake, squash and knock stay)
   typeTell: 'lens',        // vfx/typetells.js: the trump's star, the resist's deflect, the status glyph
   glyph: 'lens',           // vfx/glyphs.js: a pop over a live creature (ask, bang, dots, star, note ...)
-  ward: 'lens',            // vfx/glyphs.js: the ward pop over a creature (a refused blow's resist mark: one word to flip it back)
+  ward: 'world',           // vfx/glyphs.js: the ward pop over a creature (a refused blow's resist mark: CLAUDE.md, an ability a foe refuses shows it)
   panic: 'lens',           // vfx/panic.js
   temper: 'lens',          // vfx/temper.js: the gloss, the glow, the steam, sparks, rings and flakes (the tremble is the body's)
   agate: 'lens',           // vfx/agatelook.js: the inner light, the crown flame, Two-Tone's veins (the Wisp's own flame stays)
