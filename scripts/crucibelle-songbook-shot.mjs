@@ -37,7 +37,7 @@ try {
     g.lachryma.value = g.lachryma.max * 0.4;
   });
   const look = async (name) => {
-    const st = await page.evaluate(() => { for (let i = 0; i < 20; i++) { __game.tick(1 / 60); __game.draw(); } const g = __game.game, B = g.crucibelleSongbook, C = g.crucibelle; return { state: B.state, read: B.read(), why: { inHand: g.belt.inHand?.id, same: g.belt.inHand === C, drawT: C?.drawT, target: C?.drawTarget, title: !!g.title?.active, rail: !!g.rail?.stage?.active, cls: document.body.className, a: B.a, shown: B.shown, S0: !!B.S0, tool: !!B.tool(), god: !!g.god?.controlling, rh: !!g.rhythm?.active, desk: g.soulBrushDesk?.a, slotVis: B.root?.visible, t: B.t } }; });
+    const st = await page.evaluate(() => { for (let i = 0; i < 20; i++) { __game.tick(1 / 60); __game.draw(); } const g = __game.game, B = g.crucibelleSongbook, C = g.player.techs.get('crucibelle'); return { state: B.state, read: B.read(), bells: { gameCrucibelleIsTheCouriers: g.crucibelle === g.player.techs.get('crucibelle'), feedbackOn: !!C?.recital?.play?.feedbackOn } }; });
     report[name] = st;
     await page.screenshot({ path: path.join(out, `${name}.png`) });
     await page.screenshot({ path: path.join(out, `${name}-panel.png`), clip: { x: 1920 - 1000, y: 1080 - 420, width: 1000, height: 420 } });
@@ -48,19 +48,20 @@ try {
     __k('Digit1'); await wait(500); __t(10); __k('Digit7'); await wait(3500); __t(10); // (a long pause: the bell begins its motif again)
     __k('Digit5'); await wait(450); __t(8); __k('Digit4'); await wait(450); __t(8);
     I.down.add('Mouse2'); __k('Digit3'); I.down.delete('Mouse2'); __t(3);
-    __game.game.crucibelle.fever = 0.55;
+    __game.game.player.techs.get('crucibelle').fever = 0.55;
   });
   await look('songbook-lullaby-half');
   // the combat recital: Q, strums, then LMB held into the feedback
   await page.evaluate(async () => {
     const I = __game.input, wait = (ms) => new Promise((r) => setTimeout(r, ms)), g = __game.game;
-    __k('KeyQ'); __t(40);
+    g.lachryma.value = g.lachryma.max; __k('KeyQ'); __t(40); // (the pool full: the feedback drinks it)
     for (let i = 0; i < 3; i++) { __k('Mouse0'); await wait(780); __t(6); }
     I.down.add('Mouse0'); I.pressed.add('Mouse0'); __t(80); // (held past the strum: the feedback)
-    g.crucibelle.fever = 0.85;
+    I.down.add('Mouse2'); __t(40); // (RMB on it: the whammy)
+    g.player.techs.get('crucibelle').fever = 0.85;
   });
   await look('songbook-recital');
-  await page.evaluate(() => __game.input.down.delete('Mouse0'));
+  await page.evaluate(() => { __game.input.down.delete('Mouse0'); __game.input.down.delete('Mouse2'); });
   await ctx.close();
 } finally {
   await browser.close(); await server.close();

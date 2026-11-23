@@ -22,7 +22,7 @@ export const DEBUG_KITS = {
     items: [] }, // (nothing to carry: the puzzle lends its own powers; the chest is its teleport)
   ostraca: { at: 'sealed', for: 'the ostraca: digging one up, ringing the sealed room open', by: 'dovina', tests: ['T164', 'T165'],
     items: [['tool.dreamvane', 1]] },
-  crucibelle: { at: 'busk.weir', for: "the Crucibelle's pendulum by sight, and busking", by: 'dovina', tests: [],
+  crucibelle: { at: 'busk.weir', for: "the Crucibelle's songbook (its metronome) by sight, and busking", by: 'dovina', tests: [],
     items: [['tool.crucibelle', 1]] },
   opensea: { at: 'opensea.jetty', for: "the open sea's islet puzzles: the Dreamvane's dowse and dig for the buried caches, the Crucibelle for the singing stones (OPEN-SEA.md 12, 14.7)", by: 'dovina', tests: [],
     items: [['tool.dreamvane', 1], ['tool.crucibelle', 1]] }, // (beside the jetty's own chest: debugchest.js spot 'opensea.jetty')

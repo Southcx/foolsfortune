@@ -26,9 +26,10 @@
 // tunebooks and the chant's neumes; Patapon's fever; Rhythm Heaven; the Soul Brush's desk and the Lockheart's reliquary (the house's
 // tool UIs by the Lachrimeter, their canvas and their gate: vfx/soulbrushdesk.js, vfx/redrawgate.js).
 //
-//   game.crucibelleSongbook = new CrucibelleSongbook(game)   (boot/warmup.js, beside the other tool UIs; it updates itself in the overlay's scene)
+//   game.crucibelleSongbook = new CrucibelleSongbook(game)   (boot/warmup.js, beside the other tool UIs; .tick(dt) in the marks phase reads
+//   the bell, its slot in the overlay's scene places and draws it)
 //   .read() -> { shown, angle, amp, notch, centre, inNotch, towardEnd, own, half, down, side, motif, notes, disagree, casts } (a sweep plays by it)
-//   .state -> { shown, motif, open, next, fever, recital }
+//   .state -> { shown, motif, open, next, fever, recital, chain, fb, wham, match }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { overlayFlat } from './lachrimetertube.js';
@@ -80,8 +81,7 @@ export class CrucibelleSongbook {
     document.fonts?.addEventListener?.('loadingdone', () => { pageRemeasure(); this.gate.reset(); });
   }
 
-  /** The bell: the Courier's (their techs', the belt's tool behind its adapter; game.crucibelle is the last one made, and the
-   *  Workbench's rig makes one too). */
+  /** The bell: the Courier's own (their techs'; the belt's tool is an adapter round it, `inHand.tech` the bell). */
   get bell() { const B = this.game.player?.techs?.get?.('crucibelle'); return B instanceof Crucibelle ? B : null; }
   /** The Crucibelle, drawn and in the hands as the belt says, or null. */
   tool() {
@@ -120,40 +120,45 @@ export class CrucibelleSongbook {
     pool.on('denied', (e) => { if (mine(e)) this.game.spiritualLink?.slack(); });
   }
 
-  // ---------------------------------------------------------------- each frame it may be drawn
-  update(dt, slot) {
+  // ---------------------------------------------------------------- each frame (the marks phase: what it shows, read off the bell)
+  tick(dt) {
     const g = this.game, Bc = document.body.classList, cb = this.tool();
     const allowed = !!cb && !g.title?.active && !g.rail?.stage?.active && !Bc.contains('cine') && !Bc.contains('bztable-seated');
     this.a = C01(this.a + (allowed ? dt / 0.22 : -dt / 0.16));
-    if (!allowed && this.a <= 0) return this.hide();
+    if (!allowed && this.a <= 0) { this.S = null; return this.hide(); }
     this.t += dt;
-    if (!this.shown) { this.shown = true; this.root.userData.overlayHidden = false; this.gate.reset(); this.rodGate.reset(); this.hookPool(); g.spiritualLink?.attach(this, this.endFn); }
+    if (!this.shown) { this.shown = true; if (this.root) this.root.userData.overlayHidden = false; this.gate?.reset(); this.rodGate?.reset(); this.hookPool(); g.spiritualLink?.attach(this, this.endFn); }
+    const B = cb || this.bell; this.S = B ? this.read1(dt, B) : null;
+  }
+
+  // ---------------------------------------------------------------- each frame it may be drawn (the overlay's scene)
+  update(dt, slot) {
+    const S = this.S; if (!this.shown || !S) return;
     const dot = (this.dot = (slot.view.h || innerHeight) / 480), W = slot.view.w || innerWidth, H = slot.view.h || innerHeight;
     const hx = Math.round((W - CLEAR - AT[0] * dot) / dot) * dot, hy = Math.round((H - AT[1] * dot) / dot) * dot;
     slot.x = hx - W; slot.y = hy - H;
     this.plane.scale.set(CW * dot, CH * dot, 1); this.plane.position.set((CW / 2 - OX) * dot, -(CH / 2 - OY) * dot, 0);
     const op = this.a * this.a * (3 - 2 * this.a);
     this.plane.material.opacity = op; this.rod.material.opacity = op;
-    const B = cb || this.bell; if (!B) return;
-    const S = this.read1(dt, B);
-    // the rod: its own plane about the pivot, turned every frame; thicker into the downbeat
+    // the rod: its own plane about the pivot, turned every frame (the bell's clock now, not the tick's); thicker into the downbeat
+    const B = this.tool() || this.bell, sw = B ? swing(B.now(), B.grid(), this.half(), METRO.AMP) : S.sw;
     const { RW, RH, RPX, RPY, X, PY } = METRO;
-    this.pivot.position.set(X * dot, -PY * dot, 0); this.pivot.rotation.z = -S.sw.th; this.pivot.scale.set(1 + 0.3 * S.sw.down, 1, 1);
+    this.pivot.position.set(X * dot, -PY * dot, 0); this.pivot.rotation.z = -sw.th; this.pivot.scale.set(1 + 0.3 * sw.down, 1, 1);
     this.rod.scale.set(RW * dot, RH * dot, 1); this.rod.position.set((RW / 2 - RPX) * dot, (RPY - RH / 2) * dot, 0);
     if (this.rodGate.sig(dt, `${Math.round(this.heat * 24)}`)) { const r = this.rx; r.setTransform(K * 2, 0, 0, K * 2, 0, 0); rodDraw(r, this.heat); this.rtex.needsUpdate = true; }
-    if (S.sw.beat !== this.lastBeat) { this.lastBeat = S.sw.beat; this.gate.reset(); } // (the bar's studs step on the beat itself, never late)
-    if (this.gate.rate(dt, this.busy, IDLE_HZ)) this.paint(S);
+    if (sw.beat !== this.lastBeat) { this.lastBeat = sw.beat; this.gate.reset(); } // (the bar's studs step on the beat itself, never late)
+    if (this.gate.rate(dt, this.busy, IDLE_HZ)) { S.sw = sw; this.paint(S); }
   }
 
   hide() {
     if (!this.shown) return;
-    this.shown = false; if (this.root) this.root.userData.overlayHidden = true; this.smoke = []; this.arcNotes = [];
+    this.shown = false; if (this.root) this.root.userData.overlayHidden = true; this.smoke = []; this.arcNotes = []; for (const T of this.tines) T.age = -1;
     this.game.spiritualLink?.detach(this); this.state.shown = false;
   }
 
   /** The bell, read: everything the canvas draws (S). */
   read1(dt, cb) {
-    const t = cb.now(), G = cb.grid(), sw = swing(t, G, this.half(), METRO.AMP), own = !this.game.music?.grid?.(); // (no music: the bell's own tempo, drawn fainter)
+    const t = cb.now(), G = cb.grid(), sw = swing(t, G, this.half(), METRO.AMP), M = this.game.music?.grid?.(), own = !M || M.t0 !== G.t0; // (no music: the bell's own tempo, drawn fainter; read() says the same)
     this.lastSw = { sw, own, t };
     this.heat += (cb.fever - this.heat) * (1 - Math.exp(-dt * 5));
     for (const T of this.tines) if (T.age >= 0) { T.age += dt; if (T.age > 2) T.age = -1; }
@@ -186,7 +191,7 @@ export class CrucibelleSongbook {
       arcNotes: this.arcNotes, tines: this.tines, names: scaleNames(cb), motif, motifA: 1, alive, songs, recital,
     };
     this.busy = this.heat > 0.02 || this.arcNotes.length > 0 || this.tines.some((T) => T.age >= 0) || alive || this.recA > 0 || S.peak > 0 || S.ringAge >= 0 || songs.some((s) => s.castAge >= 0 && s.castAge < 1.5);
-    Object.assign(this.state, { shown: this.shown && this.a > 0.5, motif: motif.map((m) => m.d), open: songs.filter((s) => s.open && s.k > 0).map((s) => s.id), next: Object.fromEntries(songs.filter((s) => s.open && s.k > 0).map((s) => [s.id, s.notes[s.k]])), fever: +this.heat.toFixed(2), recital: ron, chain, match: match(hist) });
+    Object.assign(this.state, { shown: this.shown && this.a > 0.5, motif: motif.map((m) => m.d), open: songs.filter((s) => s.open && s.k > 0).map((s) => s.id), next: Object.fromEntries(songs.filter((s) => s.open && s.k > 0).map((s) => [s.id, s.notes[s.k]])), fever: +this.heat.toFixed(2), recital: ron, chain, fb: recital.fb, wham: +recital.wham.toFixed(2), match: match(hist) });
     return S;
   }
 

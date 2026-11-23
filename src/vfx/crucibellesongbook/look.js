@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE CRUCIBELLE'S SONGBOOK: its look as data and its small helpers (part of vfx/crucibellesongbook.js). The five neumes (a shape a
-// degree, Aikin's shape-note heads read from la), a song's neume, the degree colours as css, the note names of the scale sounding, the
+// degree, Aikin's shape-note heads read from la), the degree colours as css, the note names of the scale sounding, the
 // swing of the songbook's metronome on the bell's own beat (one function, so what is drawn and what read() says are the same numbers),
 // the brass, the walnut, the paper and the ink. Everything in dots (a line of the 480-line present), as the other tool UIs draw.
 //
@@ -9,11 +9,11 @@
 // written without a staff) and their ligatures; Maelzel's metronome (1815), whose rod swings as a pendulum turned upside down, slowing
 // into each end.
 //
-//   NEUMES[d - 1] -> { id, pts, c }   songNeume(id)   neumePath(x, d, s)   DEG[d - 1] (css)   noteName(midi)   scaleNames(cb)
+//   NEUMES[d - 1] -> { id, pts, c }   neumePath(x, d, s)   DEG[d - 1] (css)   noteName(midi)   scaleNames(cb)
 //   swing(t, G, half, AMP) -> { ph, th, notch, centre, half, inNotch, towardEnd, toBar, side, down, beat, beats }
 //   BRASS WALNUT PAPER INK EMBER and the reliquary's helpers re-exported (C01 sm oB lerp KEY VERD J15 CZ film rgba mixH shade rng TAU D)
 // ---------------------------------------------------------------------------------------
-import { SONGS, DEGREE_COLOR } from '../../tools/crucibelle/songs.js';
+import { DEGREE_COLOR } from '../../tools/crucibelle/songs.js';
 import { WINDOW } from '../../tools/crucibelle/crucibelle.js';
 import { C01, sm, oB, lerp, KEY, VERD, J15, CZ, film, rgba, mixH, shade, rng, hexOf, TAU, D } from '../lockheartreliquary/look.js';
 export { C01, sm, oB, lerp, KEY, VERD, J15, CZ, film, rgba, mixH, shade, rng, hexOf, TAU, D };
@@ -39,11 +39,6 @@ export const NEUMES = [
   // 5, the minor seventh (sol): the circle, rolling home to the root above
   { id: 'circle', pts: ring(18, 0.9), c: [0, 0] },
 ];
-/** A song's neume: its notes' heads, heighted by degree, side by side (the chant's compound neume). Unit half-width. */
-export function songNeume(id) {
-  const notes = SONGS[id]?.notes || [], n = notes.length, step = n > 1 ? 1.8 / (n - 1) : 0, s = Math.min(0.3, 0.7 / n + 0.08);
-  return { s, heads: notes.map((d, i) => ({ d, x: -0.9 + i * step, y: (d - 3) * 0.32 })) };
-}
 /** The neume of degree `d` as a canvas path at the origin, `s` its half-size (canvas y is down: the shapes are flipped to stand up). */
 export function neumePath(x, d, s) {
   const N = NEUMES[d - 1]; x.beginPath();
@@ -74,5 +69,5 @@ export function swing(t, G, half, AMP) {
   const barAt = pb < beats / 2 ? ph - pb : ph + beats - pb, side = Math.cos(Math.PI * (half ? barAt / 2 : barAt)) >= 0 ? 1 : -1;
   const abs = Math.abs(th), inNotch = abs >= notch - 1e-6 || (half && abs <= centre + 1e-6);
   const towardEnd = Math.sin(2 * Math.PI * sw) < 0; // (|th| growing: d|th|/dt has the sign of -sin(2 pi sw))
-  return { ph, th, notch, centre, half, inNotch, towardEnd, toBar, side, down: sm(1 - toBar / 0.75), beat: Math.floor(pb + 0.5) % beats, beats };
+  return { ph, th, notch, centre, half, inNotch, towardEnd, toBar, side, down: sm(1 - toBar / 0.75), beat: Math.floor(pb) % beats, beats };
 }

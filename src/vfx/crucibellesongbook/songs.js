@@ -18,10 +18,10 @@ import { C01, sm, J15, CZ, PAPER, PAPER_LO, INK, VERM, BRASS, BRASS_HI, WALNUT, 
 
 const HEAD = 12; // (dots: the head rule's band)
 const fitCache = new Map();
-/** A name fitted to `w` dots at up to 9 dots tall (measured once a face). */
+/** A name fitted to `w` dots at up to 10 dots tall (measured once a face). */
 function fit(x, s, w) {
   const k = `${s}|${w}`; let n = fitCache.get(k);
-  if (!n) { n = 9; x.font = J15(n); while (n > 6 && x.measureText(s).width > w) { n -= 0.5; x.font = J15(n); } fitCache.set(k, n); }
+  if (!n) { n = 10; x.font = J15(n); while (n > 6 && x.measureText(s).width > w) { n -= 0.5; x.font = J15(n); } fitCache.set(k, n); }
   return n;
 }
 export const pageRemeasure = () => fitCache.clear();

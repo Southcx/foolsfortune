@@ -29,7 +29,7 @@ export function tinesDraw(x, S, t, X0, Y0, W, H) {
   x.beginPath(); x.roundRect(X0 + 2, Y0 + 2, W - 4, H - 4, r - 2); x.lineWidth = 0.7; x.strokeStyle = rgba(BRASS, 0.45); x.stroke();
   const pitch = (W - 10) / 10, by = Y0 + 9, cx = (i) => X0 + 5 + pitch * (i + 0.5) + (i >= 5 ? 1.5 : -1.5);
   // the note names over the bridge (the scale sounding now)
-  x.font = J15(8); x.textAlign = 'center'; x.textBaseline = 'alphabetic';
+  x.font = J15(9); x.textAlign = 'center'; x.textBaseline = 'alphabetic';
   for (let i = 0; i < 10; i++) { const nm = S.names[i % 5] || ''; x.fillStyle = KEY; x.fillText(nm, cx(i), by - 2.4); x.fillStyle = rgba(PAPER, i < 5 ? 0.82 : 0.62); x.fillText(nm, cx(i), by - 3.2); }
   // the bridge
   x.fillStyle = BRASS_LO; x.fillRect(X0 + 4, by - 0.5, W - 8, 4); x.fillStyle = BRASS; x.fillRect(X0 + 4, by - 0.5, W - 8, 2.2); x.fillStyle = BRASS_HI; x.fillRect(X0 + 4, by - 0.5, W - 8, 0.8);

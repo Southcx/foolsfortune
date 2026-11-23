@@ -73,14 +73,14 @@ export function metronomeDraw(x, S, t) {
   if (sw.half && sw.centre > 0.004) gate(-sw.centre, sw.centre, 0); // (Half Time: the beat between, in the middle)
   // the pivot's boss
   x.beginPath(); x.arc(X, PY, 3.2, 0, TAU); x.fillStyle = BRASS; x.fill(); x.lineWidth = 1; x.strokeStyle = KEY; x.stroke();
-  // the bar's beats: studs on the plinth's top, the beat that is raised, the downbeat a lozenge
+  // the bar's beats: studs on the plinth's top, the beat that is raised (its height, never a lamp), the downbeat a lozenge
   const n = sw.beats, gap = Math.min(10, 56 / n);
   for (let i = 0; i < n; i++) {
     const sx = X + (i - (n - 1) / 2) * gap, up = i === sw.beat, hgt = up ? 5 : 2;
     x.beginPath();
     if (i === 0) { x.moveTo(sx, BASE.top - hgt - 2.6); x.lineTo(sx + 2.6, BASE.top - hgt); x.lineTo(sx, BASE.top - hgt + 2.6); x.lineTo(sx - 2.6, BASE.top - hgt); x.closePath(); }
     else x.rect(sx - 1.6, BASE.top - hgt - 1.6, 3.2, hgt + 1.6);
-    x.fillStyle = up ? BRASS_HI : BRASS_LO; x.fill(); x.lineWidth = 0.8; x.strokeStyle = KEY; x.stroke();
+    x.fillStyle = BRASS; x.fill(); x.lineWidth = 0.8; x.strokeStyle = KEY; x.stroke();
   }
   // the notes pressed, written on the arc where the tip was
   for (const m of S.arcNotes) {

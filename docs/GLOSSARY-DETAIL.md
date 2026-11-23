@@ -1215,11 +1215,10 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   (its own root, second and fifth); the night **thins** every cue instead (`MusicPlayer.setNight`). A cue the weather must not touch is
   `moodless`. **the scale** (`game.music.scale()`): the five notes to play along in (the Crucibelle's), the cue's own, or the
   weather's mode when nothing plays.
-- **neume** (`NEUMES`, `songNeume`, `src/vfx/crucibellesongbook/look.js`; the chant's word for a sign of notes written without a staff): a note of
+- **neume** (`NEUMES`, `src/vfx/crucibellesongbook/look.js`; the chant's word for a sign of notes written without a staff): a note of
   the Crucibelle written on the songbook's metronome's arc where the rod's tip was, worn on its tine and on its song's line, by its shape, one a degree (Aikin's shape-note heads read from la:
   the root a square, the minor third a triangle, the fourth a bowl, the fifth a diamond, the minor seventh a circle); solid on the
-  beat, hollow off it, its line doubled an octave up. **The motif** is the last notes' neumes along the tape; **a song's neume** is a
-  song's notes joined in one ligature, taken into the bell's mark when it is cast. *Not:* a sigil (the Soul Brush's, read from a
+  beat, hollow off it, its line doubled an octave up. **The motif** is the last notes' neumes on the songbook's page, over its song lines. *Not:* a sigil (the Soul Brush's, read from a
   stroke in Celestial mode).
 - **the night alive** (`game.nightSky`, `src/vfx/nightsky.js`; drawn in the dome, `src/vfx/sky.js`): what the night sky does: our own
   **stars** on **the wheel** (turning about their pole once a game day, twinkling slowly), now and then a **meteor**, and at the Shore

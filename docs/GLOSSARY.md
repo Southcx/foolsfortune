@@ -1214,6 +1214,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | polarity (the ship's feeling on the rail) | the Astral and Umbral forms | (gone, v266: `rail.form` carries the aspect) |
 | slip (as a mechanic: wet slip, slip coverage, the slip field, the slip dive) | paint, crude, a slick; the Paint Dive (`docs/plans/PAINT.md`); "slip" stays in creature and move names (slip jelly, the slip schiller, slip geysers) | the Paint Dive's file and tech id (`courier/moves/slip.js`, `slip`); the ecology's offer id `slip` (the minds' data) |
 | title toast | the title placard (the owner, 2026-10-17) | (gone) |
+| the pendulum (the Crucibelle's, on the wire compass: `CrucibelleHud`, `visual.pendulumSize`) | the Crucibelle's songbook and its metronome (South, 2026-11-23) | `docs/plans/CRUCIBELLE-UI.md` 2 (its record); the tools sweep's part id `pendulum` |
 | course (for moving between rooms) | rooms (`game.rooms`) | `game.course` (`src/world/basement/basement.js`) |
 | the Lockheart's gauge (`LockheartMarks`, the padlock and sockets beside the coffin) | the Lockheart's reliquary (the owner, 2026-10-19: retired with board v10) | `docs/plans/MELEE-LOADOUT.md`, `docs/plans/REGISTERS.md` |
 | the string row (`CutlassStringRow`, the cutlass's pips at the bottom middle) | the Sondelass's guard, its blade's notches (the owner, 2026-10-18: retired with the old HUD) | (gone) |
