@@ -33,6 +33,7 @@
 import * as THREE from 'three';
 import { overlayFlat } from './lachrimetertube.js';
 import { SONGS, match } from '../tools/crucibelle/songs.js';
+import { Crucibelle } from '../tools/crucibelle/crucibelle.js';
 import { chordOf, WHAMMY } from '../tools/crucibelle/harmony.js';
 import { RECITAL_PLAY } from '../tools/crucibelle/recitalplay.js';
 import { C01, swing, scaleNames } from './crucibellesongbook/look.js';
@@ -79,11 +80,13 @@ export class CrucibelleSongbook {
     document.fonts?.addEventListener?.('loadingdone', () => { pageRemeasure(); this.gate.reset(); });
   }
 
-  get bell() { return this.game.crucibelle || null; }
+  /** The bell: the Courier's (their techs', the belt's tool behind its adapter; game.crucibelle is the last one made, and the
+   *  Workbench's rig makes one too). */
+  get bell() { const B = this.game.player?.techs?.get?.('crucibelle'); return B instanceof Crucibelle ? B : null; }
   /** The Crucibelle, drawn and in the hands as the belt says, or null. */
   tool() {
     const g = this.game, B = this.bell;
-    if (!B || g.belt?.inHand !== B || B.drawT <= 0.02 || B.drawTarget <= 0 || g.god?.controlling || g.rhythm?.active) return null;
+    if (!B || g.belt?.inHand?.tech !== B || B.drawT <= 0.02 || B.drawTarget <= 0 || g.god?.controlling || g.rhythm?.active) return null;
     return B;
   }
   half() { return !!this.game.knacks?.on?.('halfTime'); }
@@ -131,7 +134,7 @@ export class CrucibelleSongbook {
     this.plane.scale.set(CW * dot, CH * dot, 1); this.plane.position.set((CW / 2 - OX) * dot, -(CH / 2 - OY) * dot, 0);
     const op = this.a * this.a * (3 - 2 * this.a);
     this.plane.material.opacity = op; this.rod.material.opacity = op;
-    const B = this.bell; if (!B) return;
+    const B = cb || this.bell; if (!B) return;
     const S = this.read1(dt, B);
     // the rod: its own plane about the pivot, turned every frame; thicker into the downbeat
     const { RW, RH, RPX, RPY, X, PY } = METRO;
