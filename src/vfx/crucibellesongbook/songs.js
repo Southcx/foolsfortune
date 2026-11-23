@@ -21,7 +21,7 @@ const fitCache = new Map();
 /** A name fitted to `w` dots at up to 10 dots tall (measured once a face). */
 function fit(x, s, w) {
   const k = `${s}|${w}`; let n = fitCache.get(k);
-  if (!n) { n = 10; x.font = J15(n); while (n > 6 && x.measureText(s).width > w) { n -= 0.5; x.font = J15(n); } fitCache.set(k, n); }
+  if (!n) { n = 10; x.font = J15(n); while (n > 5 && x.measureText(s).width > w) { n -= 0.5; x.font = J15(n); } fitCache.set(k, n); }
   return n;
 }
 export const pageRemeasure = () => fitCache.clear();
@@ -54,7 +54,7 @@ export function pageDraw(x, S, t, X0, Y0, W, H) {
     if (i) { x.beginPath(); x.moveTo(X0 + 3, y); x.lineTo(X0 + W - 3, y); x.lineWidth = 0.5; x.strokeStyle = rgba(INK, 0.22); x.stroke(); }
     x.globalAlpha = S.a * dim;
     // the name
-    const fs = fit(x, R.name, nameW); x.font = J15(fs); x.textAlign = 'left';
+    const fs = fit(x, R.name, nameW - 10); x.font = J15(fs); x.textAlign = 'left';
     x.fillStyle = R.k > 0 && R.open ? INK : rgba(INK, 0.78); x.fillText(R.name, X0 + 4, cy + fs * 0.34);
     // the notes: played inked, the next standing proud, the rest hollow
     R.notes.forEach((d, j) => {
