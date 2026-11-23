@@ -2,7 +2,8 @@
 // A HIT FLINCH (plain name; docs/plans/SONDELASS-FEEL.md 3E): every creature struck through a hitlag (creatures.hitlag, the registry's)
 // answers on its drawn body, whatever its kind: shaken along the cut's line while its hitlag holds it (side to side every other frame,
 // dying out with the frames left), squashed on the frame it is struck, knocked back a hand's breadth away from the cut once the hitlag
-// lets it go and sprung home, and lit for a moment in the blow's damage type's colour (DAMAGE_TINT). Looks only: the creature's root
+// lets it go and sprung home, and lit for a moment in the blow's damage type's colour (DAMAGE_TINT; the flash only through a Veritome's
+// sight, vfx/veritomesight.js). Looks only: the creature's root
 // object (`c.root`), never its collider, never its position (`c.pos`), never its rule. Strawman keeps its own flinch (`model.flinch`,
 // vfx/strawman.js, asked by vfx/blowfeel.js) and is left alone here.
 //
@@ -20,6 +21,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { DAMAGE_TINT } from './library.js';
+import { sightShows } from './veritomesight.js';
 
 /** Its numbers. shake: m at the hitlag's first frame along the cut, dying out; squash: the body's height lost at the blow (its width
  *  gained by half), back over `squashT` real s; recoil: m pushed away from the cut once the hitlag ends, sprung home over `recoilT`;
@@ -73,7 +75,7 @@ export class HitFlinch {
     s.pos = put(R.position, s.pos, _o, false);
     const q = s.t < F.squashT ? (1 - s.t / F.squashT) ** 2 * F.squash * s.k : 0;
     s.scale = put(R.scale, s.scale, _o.set(1 + q * 0.5, 1 - q, 1 + q * 0.5), true);
-    const fl = s.t < F.flashT ? (1 - s.t / F.flashT) * F.flash * s.k : 0;
+    const fl = s.t < F.flashT && sightShows(this.game, 'flinchTint') ? (1 - s.t / F.flashT) * F.flash * s.k : 0;
     for (const e of s.em) {
       if (!(e.wrote && e.m.emissive.equals(e.wrote))) e.base.copy(e.m.emissive); // (the kind wrote its own this frame, or never wrote ours over: that is the base)
       e.m.emissive.copy(e.base).add(_c.copy(s.tint).multiplyScalar(fl));

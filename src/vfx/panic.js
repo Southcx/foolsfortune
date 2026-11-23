@@ -16,6 +16,7 @@
 //   game.panicMarks = new PanicMarks(game)   (boot/rooms.js)   .update(raw) (boot/frame.js)   .mark(c, heavy)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { sightShows } from './veritomesight.js';
 
 /** The numbers: the light mark's and the heavy one's glyph (size, life, how far it rises), how high over the head's top it sits (m),
  *  and how fresh the thrown blow must be to be this event's (real ms). */
@@ -44,7 +45,7 @@ export class PanicMarks {
 
   /** The mark over a creature: its glyph following the head, its drops thrown (a heavy one replaces a light one, never two at once). */
   mark(c, heavy = false) {
-    const g = this.game; if (!c?.pos || !g.glyphs) return null;
+    const g = this.game; if (!c?.pos || !g.glyphs || !sightShows(g, 'panic')) return null; // (through a Veritome's sight)
     const had = this.live.get(c);
     if (had && had.q.t < had.q.life) { if (had.heavy || !heavy) return had.q; had.q.close(); }
     const at = this.headOf(c), O = heavy ? P.heavy : P.light;

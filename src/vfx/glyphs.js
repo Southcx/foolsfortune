@@ -28,10 +28,17 @@
 //   pop(..., { bias: 2 })              a mark set inside something big: how far in front of it a thing must stand to hide it (m)
 //   nearer                             the bias as a sprite's own onBeforeRender (userData.bias): a sprite that must stand in front of the Courier borrows it
 //   On the rail (the crossing) every mark is seen over the sea, as before: no wall stands there and Charybdis's ward sits in its own body.
+//   pop(..., { sight: 'world' })       a pop that shows whatever the lens is doing (an effect's own glyph layer: vfx/vfx.js)
+//
+// OVER A CREATURE, THROUGH A VERITOME'S SIGHT (vfx/veritomesight.js: South, 2026-11-23): a pop whose nearest owner is a live creature
+// that is not an ally (among the creatures, the Courier, the party and the folk; over or round its body) is drawn only while the
+// Veritome's lens is raised (its key 'glyph', a ward's 'ward'); the Courier's, the folk's, a scan's (`throughWalls: true`) and the
+// crossing's and the open sea's (no lens there) are untouched. Judged once at the pop, shown or hidden each frame.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { STATUS_ART } from '../ui/icons/figmenttelegraphart.js';
 import { toneGrid } from '../ui/icons/hand.js';
+import { sightShows } from './veritomesight.js';
 
 const CACHE = new Map();
 const BIAS = { min: 1, k: 1.5 }; // (m, and per metre of the glyph's size: a mark is hidden only by what stands that far in front of it)
@@ -203,7 +210,7 @@ export class Glyphs {
     this.throughWalls = false; // (every pop seen through walls: off; a pop's own `throughWalls` says for itself)
   }
 
-  pop(kind, pos, { color = 0xffd76a, size = 0.6, life = 1.1, float = 0.7, burst = false, follow = null, ring = false, hold = 0, throughWalls = null, bias = null } = {}) {
+  pop(kind, pos, { color = 0xffd76a, size = 0.6, life = 1.1, float = 0.7, burst = false, follow = null, ring = false, hold = 0, throughWalls = null, bias = null, sight = null } = {}) {
     if (!KINDS[kind]) kind = 'bang1'; // (a kind the sheet lacks reads as a "!" and never throws: Crystals.reveal asked for 'bang')
     const K = KINDS[kind], g = this.game;
     const mk = (map, blending) => { const S = new THREE.Sprite(new THREE.SpriteMaterial({ map, color, transparent: true, depthWrite: false, blending, fog: false })); S.onBeforeRender = nearer; return S; };
@@ -214,12 +221,32 @@ export class Glyphs {
     if (burst) { parts.burst = mk(tex('burst'), THREE.AdditiveBlending); parts.burst.renderOrder = 29; g.scene.add(parts.burst); }
     if (ring) { parts.ring = mk(this.ringTex, THREE.AdditiveBlending); parts.ring.renderOrder = 28; g.scene.add(parts.ring); }
     const q = { K, parts, pos: pos.clone(), follow, t: 0, life: hold > 0 ? hold + 0.25 : life, hold, size, float, aspect: K.aspect, seed: Math.random() * 6, throughWalls, bias };
+    q.sight = sight === 'world' || throughWalls === true ? null : this.overCreature(pos) ? (kind === 'ward' ? 'ward' : 'glyph') : null;
     q.close = () => { q.life = Math.min(q.life, q.t + 0.25); q.hold = 0; q.closing = true; };
     this.list.push(q);
     return q;
   }
 
+  /** Is `pos` a mark over a live creature that is not an ally (its nearest owner among creatures, the Courier, the party, the folk)? */
+  overCreature(pos) {
+    const g = this.game, list = g.creatures?.list;
+    if (!list?.length || g.rail?.stage?.active || g.opensea?.sailing || g.duel?.active) return false;
+    let best = null, bd = Infinity;
+    const near = (o, p, r, h, creature) => {
+      if (!p) return;
+      if (pos.y < p.y - 0.6 || pos.y > p.y + h + 2.4) return;
+      const d = Math.hypot(pos.x - p.x, pos.z - p.z) - r;
+      if (d < bd) { bd = d; best = creature ? o : null; }
+    };
+    for (const c of list) if (c.alive !== false && !c.ally && !c.spirit) near(c, c.pos, c.radius ?? 0.5, c.height ?? 1.2, true);
+    near(null, g.player?.pos, 0.4, 1.8, false);
+    for (const s of g.party?.list || []) near(null, s.pos, 0.4, 1.8, false);
+    for (const n of g.folk?.list || []) near(null, n.pos, 0.4, 1.8, false);
+    return !!best && bd <= 1.0;
+  }
+
   update(dt) {
+    const lens = { glyph: sightShows(this.game, 'glyph'), ward: sightShows(this.game, 'ward') };
     const cam = this.game.camera.position, rail = !!this.game.rail?.stage.active; // (the crossing: no wall stands on it, and its foes are bigger than any bias, so its marks keep to being seen over the sea)
     for (let i = this.list.length - 1; i >= 0; i--) {
       const q = this.list[i];
@@ -250,7 +277,8 @@ export class Glyphs {
       }
       // walls hide it, its own thing never (drawn nearer each camera that draws it: nearer); seen through walls, over everything
       const through = !!(q.throughWalls ?? (this.throughWalls || rail)), bias = through ? 0 : q.bias ?? Math.max(BIAS.min, BIAS.k * worldK);
-      for (const s of Object.values(q.parts)) if (s) { s.material.depthTest = !through; s.userData.bias = bias; } // (a state, not a program)
+      const vis = !q.sight || lens[q.sight]; // (over a creature: through a Veritome's sight)
+      for (const s of Object.values(q.parts)) if (s) { s.material.depthTest = !through; s.userData.bias = bias; s.visible = vis; } // (a state, not a program)
     }
   }
 }

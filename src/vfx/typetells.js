@@ -6,7 +6,7 @@
 // those telegraphs show it). A blow the body turns aside by type (the multiplier under 1) shows the dull deflect and the resist mark.
 // One language with the puzzle duel's WEAK and RESIST (vfx/duelview/juice.js): the sharp spark and the cracked-glass star, the dull grey
 // deflect; in the world without the word (a world mark: CLAUDE.md), the glyph saying which type it was.
-// Looks only: it reads the rule, never moves a number. Asked by vfx.hit (vfx/vfx.js), which every typed blow on a creature passes through.
+// Shown only through a Veritome's sight (vfx/veritomesight.js: South, 2026-11-23). Looks only: it reads the rule, never moves a number. Asked by vfx.hit (vfx/vfx.js), which every typed blow on a creature passes through.
 //
 // Prior art: Pokemon's "super effective" spark and Shin Megami Tensei's and Persona's WEAK / RESIST (scouting a weakness is the play);
 // the duel's juice (the house's own form of them).
@@ -19,6 +19,7 @@ import * as THREE from 'three';
 import { TRUMPS, TYPES, multiplier } from '../progress/combat/types.js';
 import { affinityOf } from '../progress/combat/constitution.js';
 import { DAMAGE_TINT } from './library/damage.js';
+import { sightShows } from './veritomesight.js';
 
 /** `glyphEvery`: real s between one body's type glyphs (a fast tool's every shot still sparks; its sign is said once a while);
  *  `glyphSize`, `glyphUp` (m over the body's height). */
@@ -30,12 +31,12 @@ export class TypeTells {
   constructor(game) {
     this.game = game; this.said = new WeakMap();
     // A status the creature shrugged off (creatures.js's `creature.resist`, carrying `at`): the same dull deflect at its chest.
-    game.events?.on?.('creature.resist', (e) => { if (e?.at && game.vfx) game.vfx.play('tell.resist', { pos: _v.set(e.at.x, e.at.y + 1, e.at.z).clone() }); });
+    game.events?.on?.('creature.resist', (e) => { if (e?.at && game.vfx && sightShows(game, 'typeTell')) game.vfx.play('tell.resist', { pos: _v.set(e.at.x, e.at.y + 1, e.at.z).clone() }); });
   }
 
   /** A typed blow landed on `ent` at `point`: its trump's flash or its resist, if the chart says either. */
   hit(ent, type, point) {
-    const g = this.game; if (!type || !point || ent?.type !== 'creature' || !g.vfx) return;
+    const g = this.game; if (!type || !point || ent?.type !== 'creature' || !g.vfx || !sightShows(g, 'typeTell')) return; // (through a Veritome's sight)
     const aff = affinityOf(ent); if (!aff) return;
     const k = multiplier(type, aff).dmg;
     if (TRUMPS[type] === aff) {

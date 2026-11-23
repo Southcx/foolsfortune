@@ -397,7 +397,7 @@ export class Vfx {
       case 'shake': { const k = (L.k ?? 0.3) * Math.min(1.5, P) * (ctx.ladder?.shake ?? 1); g.player && (g.player.shake = Math.max(g.player.shake || 0, k * this.spend('shake', k, ctx))); break; }
       case 'hitstop': { const w = (L.dur ?? 0.06) * Math.min(1.5, P) * (ctx.ladder?.hitstop ?? 1), d = w * this.spend('hitstop', w, ctx); if (d > 0.012) g.time?.pulse?.(`vfx${Math.random()}`, L.scale ?? 0.05, d, { release: L.release ?? 0.08 }); break; }
       case 'smear': if (g.post?.accum && !g.death?.active) { Object.assign(g.post.accum, { amt: L.amt ?? 0.6, zoom: L.zoom ?? 0.006, spin: L.spin ?? 0 }); this.smearAmt = L.amt ?? 0.6; this.smearT = this.smearDur = L.dur ?? 0.6; } break;
-      case 'glyph': g.glyphs?.pop(L.kind || 'bang1', _v.copy(h.pos).addScaledVector(UP, L.up ?? 0.8), { color: color(L.color ?? 'tint', ctx), size: L.size ?? 0.5, burst: L.burst ?? true, ring: L.ring ?? false, throughWalls: ctx.throughWalls ?? null }); break;
+      case 'glyph': g.glyphs?.pop(L.kind || 'bang1', _v.copy(h.pos).addScaledVector(UP, L.up ?? 0.8), { color: color(L.color ?? 'tint', ctx), size: L.size ?? 0.5, burst: L.burst ?? true, ring: L.ring ?? false, throughWalls: ctx.throughWalls ?? null, sight: 'world' }); break;
       case 'sound': sfx[L.sfx]?.(...(L.args || [])); break;
       case 'fx': this.play(L.fx, { ...ctx, pos: _v.copy(h.pos).add(_a.fromArray(L.offset || [0, 0, 0])) }); break;
     }
