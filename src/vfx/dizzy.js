@@ -2,7 +2,8 @@
 // DIZZY: the stars that circle a head. Two uses, one look; each star a puffy five-pointed 3D star (the owner, 2026-10-18: "swap out the
 // diamonds ... with 3d star meshes"), its geometry shared as `starGeometry` so the clapperjars' own stars (clappers.js) can wear it too:
 //   the BUILD     while a stun meter fills (stun.js), a ring of small pale stars gathers over the head, one more for each quarter of
-//                 the way, turning slowly and brightening: you can see how near a thing is to going down without a number
+//                 the way, turning slowly and brightening: you can see how near a thing is to going down without a number (only
+//                 through a Veritome's sight, vfx/veritomesight.js: South, 2026-11-23)
 //   the STUN      once it is down, five gold stars wheel fast round its head until it comes to
 // A mark in the world, not text (CLAUDE.md): it sits on the thing it is about.
 //
@@ -17,6 +18,7 @@
 //   const d = new Dizzy(scene)   d.set(key, headPos, { build: 0..1, stunned: bool, size })   (each frame it is shown)   d.update(dt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { sightShows } from './veritomesight.js';
 
 const N = 5;
 const STARS = new Map(); // r -> geometry (shared; never disposed)
@@ -71,7 +73,7 @@ export class Dizzy {
       r.seen = false;
       r.t += dt * (r.stunned ? 5.5 : 1.4);
       if (r.head) r.g.position.copy(r.head);
-      const shown = r.stunned ? N : Math.min(N, Math.ceil(r.build * 4 - 1e-3));
+      const shown = r.stunned ? N : sightShows(null, 'stunBuild') ? Math.min(N, Math.ceil(r.build * 4 - 1e-3)) : 0; // (the build through a Veritome's sight)
       const R = (r.stunned ? 0.32 : 0.26) * r.size;
       r.stars.forEach((m, i) => {
         m.visible = i < shown && r.k > 0.01;

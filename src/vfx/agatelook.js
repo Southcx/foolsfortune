@@ -13,6 +13,9 @@
 //   TWO-TONE          the knack's look (G314; its rule Dovina's: shown only while `game.knacks.on('twoTone')`): both colours marbled
 //                     over the body as two veins ('agate.vein' played once a feeling), so the agate is read at a glance.
 //
+// THROUGH A VERITOME'S SIGHT (vfx/veritomesight.js: South, 2026-11-23): the inner light, the crown flame and the veins show only with
+// the lens raised; the Lantern Wisp's own flame keeps its colours in the world (it is its body).
+//
 // Where the feelings come from, first found wins: `c.mood.shown()` or `c.shown()` (WHEEL.md 3, Petra's), else `c.agateTest`
 // ({ a, b, k }: the placeholder `/agatelook` sets in DEBUG, for the look's own test until the mind has one). Nothing there: no look,
 // and every body is exactly as it was.
@@ -28,6 +31,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { COLOR, ASPECTS, OPPOSITE } from '../progress/weather.js';
+import { sightShows } from './veritomesight.js';
 
 /** Its numbers. ease: how fast the look follows the mind (/s); lift: the least lightness a feeling's colour is shown at (Dread's
  *  ink-green is too dark to glow); flame: the Wisp's flame bones' stretch, [none, full] strength, its core's edge in the emissive
@@ -113,7 +117,7 @@ export class AgateLook {
     let R = this.rec.get(c);
     if (!R) { R = { w: 0, k: 0, h: 0, core: new THREE.Color(1, 1, 1), skin: new THREE.Color(1, 1, 1), glow: new THREE.Color(), a: null, b: null, flamed: !!c.look?.mats?.flame?.length, held: {} }; this.rec.set(c, R); }
     this.live.add(c);
-    const on = !!s && c.alive !== false && c.root?.visible !== false;
+    const on = !!s && c.alive !== false && c.root?.visible !== false && (R.flamed || sightShows(this.game, 'agate'));
     R.w += ((on ? 1 : 0) - R.w) * e;
     if (s) { R.k += (s.k - R.k) * e; R.core.lerp(litColour(s.a, _c), e); R.skin.lerp(litColour(s.b, _c), e); R.a = s.a; R.b = s.b; }
     R.h = A.flame.h[0] + (A.flame.h[1] - A.flame.h[0]) * R.k;
@@ -129,7 +133,7 @@ export class AgateLook {
     const cam = this.game.camera?.position, near = !cam || cam.distanceToSquared(c.pos) < AGATE_LOOK.reach ** 2;
     const H = c.height || 1, C = AGATE_LOOK.crown;
     this.keep(R, 'flame', !R.flamed && on && near, 'agate.flame', R.b, c, H * C.at, H * (C.h[0] + (C.h[1] - C.h[0]) * R.k), R.w);
-    const two = on && near && this.twoTone() && R.a && R.b && R.a !== R.b;
+    const two = on && near && sightShows(this.game, 'agate') && this.twoTone() && R.a && R.b && R.a !== R.b;
     const bodyY = c.center ? c.center(_v).y - c.pos.y : H * 0.5; // (its own middle: the Wisp's clay hangs over its hover)
     this.keep(R, 'veinA', two, 'agate.vein', R.a, c, bodyY, H * (R.flamed ? 0.55 : 1), R.w);
     this.keep(R, 'veinB', two, 'agate.vein', R.b, c, bodyY, H * (R.flamed ? 0.55 : 1), R.w * 0.85);

@@ -3,7 +3,9 @@
 // slow, melt, calm, soft, haste, empower, forget, and the four the damage types build: doubt, charm, blind, confusion; soaked, the status bench's) and holds the library's look for each (`aura.<status>`, or `aura.<status>.<kind>`
 // for one creature's own), on the creature, sized to it, as strong as the status and fading out as it runs down. The creature's body
 // still decides what a status MEANS (a sleeping jelly sags); this is only the particles round it. A status with no look in the
-// library shows nothing here (stun has its own wheel of stars: vfx/dizzy.js).
+// library shows nothing here (stun has its own wheel of stars: vfx/dizzy.js). In the world only the lasting conditions (sleep, halt,
+// slow, melt, calm, charm, confusion, doubt, blind); the passing ones (haste, empower, forget, soft, soaked) through a Veritome's sight
+// (vfx/veritomesight.js, South 2026-11-23).
 //
 // Prior art: the status auras of Final Fantasy XIV and World of Warcraft (a looping effect on the target per buff and debuff, named by
 // the status, tuned apart from it), Kingdom Hearts' sleep bubbles and stop-frost, Monster Hunter's status particles over a monster.
@@ -13,6 +15,7 @@
 //   auras.throughWalls = false | true | (c) -> bool   drawn over walls (off: a wall hides an aura as it hides its creature: vfx/glyphs.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { sightShows } from './veritomesight.js';
 
 const FADE = 0.6; // (seconds: the last of a status fades its aura out)
 
@@ -31,6 +34,7 @@ export class Auras {
       if (!c.alive || !c.status?.size) continue;
       for (const [name, s] of c.status) {
         if (s.t <= 0) continue;
+        if (!sightShows(g, `aura.${name}`)) continue; // (a passing state: shown only through a Veritome's sight, vfx/veritomesight.js)
         if (name === 'halt' && c.dueling) continue; // (a puzzle duel's pin, never a status to see: its foe held, duelsession.js pin, not frozen in stop-frost the whole fight)
         const fx = `aura.${name}.${c.kind}`;
         const R = V.resolve(fx);

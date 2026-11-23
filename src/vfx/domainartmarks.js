@@ -17,6 +17,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Bubble } from './caster/bubble.js';
+import { sightShows } from './veritomesight.js';
 
 export const DOMAIN_ART_MARKS = {
   watch: { ticks: 12, r: 0.3, up: 1.75, len: 0.12, w: 0.05, col: 0x9fd8ff, ember: 0xff8a3a, dark: 0x1a2430, max: 6 },
@@ -52,7 +53,7 @@ export class DomainArtMarks {
   update(raw = 1 / 60) {
     const g = this.game, run = g.domainArtsRun; this.t += raw;
     // the Watch: a ring of ticks counting its head's time down
-    const shown = run?.shown;
+    const shown = sightShows(g, 'watch') ? run?.shown : null; // (both marks through a Veritome's sight: vfx/veritomesight.js)
     for (const [c, M] of this.watch) if (!shown?.has(c) || !c.alive) { M.group.visible = false; this.freeWatch.push(M); this.watch.delete(c); }
     if (shown) {
       let n = 0;
@@ -67,7 +68,7 @@ export class DomainArtMarks {
       }
     }
     // Shatter: the glaze shell crazed round a body one heavy blow would break
-    const near = run?.near;
+    const near = sightShows(g, 'shatterShell') ? run?.near : null;
     for (const [c, B] of this.shells) if (!near?.has(c) || !c.alive) { B.object.visible = false; this.freeShells.push(B); this.shells.delete(c); }
     if (near) {
       let n = 0;

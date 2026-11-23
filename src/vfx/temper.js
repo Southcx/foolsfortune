@@ -12,7 +12,8 @@
 //
 // Prior art: Shadow of the Colossus's and Monster Hunter's tells (a monster shows its rage with its body: steam, glow, posture, never a
 // bar), Okami's and Ico's restraint (the state of a thing in its surface, not a label), the iridescent "oil on water" of Lisa Frank
-// over Moebius for the liquid end. The looks are data: `temper.*` in vfx/library.js, played through game.vfx and held on the creature.
+// over Moebius for the liquid end. All of it but the tremble (the body's own motion) shows only through a Veritome's sight
+// (vfx/veritomesight.js: South, 2026-11-23); out of it the body is its own, its roughness given back. The looks are data: `temper.*` in vfx/library.js, played through game.vfx and held on the creature.
 //
 //   game.temper = new Temper(game)
 //   temper.set(c, { state, emo, enrage })   whenever they change (missing keys keep their value)
@@ -23,6 +24,7 @@
 //                                           switch the Dreamvane's survey will throw as a psychic sonar ping: vfx/glyphs.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { sightShows } from './veritomesight.js';
 
 const NONE = Object.freeze({ gloss: 0.5, glow: new THREE.Color(0, 0, 0), tremble: 0 }); // (an unregistered creature: nothing to add, nothing made)
 const _ember = new THREE.Color(0xff6a2a), _gold = new THREE.Color(0xffd76a);
@@ -50,16 +52,19 @@ export class Temper {
   look(c) {
     const T = this.on.get(c), ag = this.game.agateLook; // (and two feelings at once lighting it from inside: vfx/agatelook.js)
     if (!T) return ag?.bare(c) || NONE;
+    const lit = sightShows(this.game, 'temper');
     const t = this.game.events?.time ?? performance.now() / 1000;
     const heat = smooth(0.5, 1, T.emo), rage = T.enrage || T.emo >= ENRAGE ? 1 : 0;
     const pulse = 0.5 + 0.5 * Math.sin(t * (3 + 9 * heat)); // (a breath that quickens)
     T.glow.copy(_ember).multiplyScalar(0.25 * heat * (0.6 + 0.4 * pulse)).lerp(_gold, rage * 0.4 * pulse);
+    if (!lit) T.glow.setRGB(0, 0, 0);
     const L = T.look ||= { gloss: 0.5, glow: T.glow, tremble: 0 }; // (one answer kept on the creature: nothing made a call)
     const ga = ag?.glow(c); if (ga) T.glow.add(ga);
-    L.gloss = (T.state + 2) / 4; L.tremble = Math.max(heat * 0.4, rage); return L;
+    L.gloss = lit ? (T.state + 2) / 4 : 0.5; L.tremble = Math.max(heat * 0.4, rage); return L;
   }
 
   update() {
+    this.lit = sightShows(this.game, 'temper');
     if (!this.game.vfx) { this.on.forEach(this.glossOnly ||= (T, c) => { if (!c.alive) this.drop(c, T); else this.gloss(c, T); }); return; }
     this.on.forEach(this.step ||= (T, c) => this.stepOne(c, T)); // (one bound step, made once: nothing allocated a frame)
   }
@@ -68,7 +73,7 @@ export class Temper {
   gloss(c, T) {
     if (!c.mat || !('roughness' in c.mat)) return;
     T.base ??= c.mat.roughness;
-    const s = T.state;
+    const s = this.lit === false ? 0 : T.state; // (out of a Veritome's sight: its own roughness)
     c.mat.roughness = s < 0 ? THREE.MathUtils.lerp(T.base, 0.98, -s / 2) : THREE.MathUtils.lerp(T.base, 0.12, s / 2);
   }
 
@@ -78,6 +83,7 @@ export class Temper {
     const V = this.game.vfx, scale = THREE.MathUtils.clamp(c.height || 1, 0.5, 2.5), xr = !!(typeof this.throughWalls === 'function' ? this.throughWalls(c) : this.throughWalls);
     const W = T.want ||= new Float32Array(LOOKS.length); // (the four looks' strengths, kept on the creature)
     W[0] = smooth(1, 2, -T.state); W[1] = smooth(1, 2, T.state); W[2] = smooth(0.5, 0.9, T.emo) * (T.enrage ? 0.4 : 1); W[3] = T.enrage || T.emo >= ENRAGE ? 1 : 0;
+    if (!this.lit) W.fill(0); // (out of a Veritome's sight: every held look let go)
     const y = c.pos.y + (c.height || 1) * 0.5;
     for (let i = 0; i < LOOKS.length; i++) {
       const name = LOOKS[i], k = W[i]; let h = T.held.get(name);

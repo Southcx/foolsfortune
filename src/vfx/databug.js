@@ -20,6 +20,9 @@
 // '/aberrant invert' in DEBUG), its colours inverted (the placeholder, PUZZLE-DUELS.md 16.4: vfx/aberrantinvert.js); given back with
 // the rest when it is mended or gone.
 //
+// THROUGH A VERITOME'S SIGHT (vfx/veritomesight.js: South, 2026-11-23): the aura and the cast's veins and glints show only with the
+// lens raised; the error in the body and the aberrant's own look stay in the world (its identity).
+//
 // A drain mends it (.hack's data drain repairs a data bug): `mend(c)` gives the mesh back and the aura goes. The drain's set-down
 // (a drained creature a step paler) rides the same per-frame tint: `drained(c)`.
 //
@@ -38,6 +41,7 @@ import * as THREE from 'three';
 import { LIBRARY } from './library.js';
 import { AberrantInversion } from './aberrantinvert.js';
 import { AberrantLook, ABERRANT_LOOK } from './aberrantlook.js';
+import { sightShows } from './veritomesight.js';
 
 export const BUG_KINDS = ['limb', 'slide', 'cast'];
 const CAST = new THREE.Color(0.34, 0.27, 0.5); // (over the body's sand: toward #4a3a52, grey-violet)
@@ -161,7 +165,7 @@ export class DataBugs {
         B.eyes = eyes.map((p) => { const e = new THREE.Mesh(GLINT_GEO, plain(GLINT, THREE.AdditiveBlending)); e.name = 'databug-glint'; e.renderOrder = 8; e.position.copy(p); mesh.add(e); B.marks.push(e); return e; });
       }
     }
-    B.aura = this.game.vfx?.play?.('databug.aura', { pos: c.pos.clone(), scale: (c.radius || 0.5) / 0.5, follow: (h) => { h.pos.copy(c.pos); h.k = B.k * (0.85 + 0.15 * Math.sin(this.t * 2.094)); return true; } }) || null; // (it breathes every three real seconds)
+    B.aura = this.game.vfx?.play?.('databug.aura', { pos: c.pos.clone(), scale: (c.radius || 0.5) / 0.5, follow: (h) => { h.pos.copy(c.pos); h.k = B.k * (B.lit ?? 0) * (0.85 + 0.15 * Math.sin(this.t * 2.094)); return true; } }) || null; // (it breathes every three real seconds)
     this.bugs.set(c, B);
     return B;
   }
@@ -193,8 +197,10 @@ export class DataBugs {
       for (const c of [...this.bugs.keys()]) if (!list.includes(c)) this.undress(c);
       for (const c of [...this.tints.keys()]) if (!list.includes(c)) this.tints.delete(c);
     }
-    const drain = g.dataDrain?.run?.target;
+    const drain = g.dataDrain?.run?.target, lit = sightShows(g, 'dataBug');
     for (const [c, B] of this.bugs) {
+      B.lit = THREE.MathUtils.damp(B.lit ?? 0, lit ? 1 : 0, 6, raw); // (the aura and the marks through a Veritome's sight)
+      for (const m of B.marks) m.visible = lit;
       const shown = c.alive !== false && c.root?.visible !== false;
       B.k = THREE.MathUtils.damp(B.k, shown && drain !== c ? 1 : 0, shown ? 1.2 : 6, raw); // (it gathers slowly, and goes at once)
       if (!B.eyes || !cam) continue;
