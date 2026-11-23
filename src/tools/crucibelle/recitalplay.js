@@ -10,7 +10,8 @@
 //     wider, longer and harder a step (Guitar Hero's multiplier); the fourth is THE WINDMILL, the chord rung all round (Pete Townshend's
 //     arm), and the chain starts over. A strum off the beat, or a beat let pass, drops it.
 //   - FEEDBACK (LMB held past a strum): the held chord left to howl through the amp: a beam of sound out of the amp's mouth along the
-//     aim, short, striking what stands in it on every beat, draining a little Lachryma a real second; let go, or the pool dry, it stops.
+//     aim, short, striking what stands in it once a bar on its downbeat (no stun, no pluck: the chord rings on, it is never strummed again
+//     while held), draining Lachryma a real second; let go, or the pool dry, it stops.
 //   - HARMONY AND THE WHAMMY (RMB held; tools/crucibelle/harmony.js): a chord on the beat throws three bolts fanned, one a voice, each
 //     HARMONY.share of a lick's blow; on the feedback, RMB is the whammy: the wail bent flat, the beam swept side to side twice a bar,
 //     wider and dizzier (WHAMMY). crucibelle.whammy { on, by } as the bar goes down and comes back.
@@ -39,7 +40,7 @@ import { HARMONY, WHAMMY } from './harmony.js';
 export const RECITAL_PLAY = {
   lick: { reach: 14, cone: 0.75, speed: 24, speedHigh: 32, power: 0.35, powerHigh: 0.25, stun: 0.08, life: 1.1, land: 0.45 },
   chain: { range0: 8, cone0: 0.9, stun0: 0.25, max: 4, gap: 1.0, slack: 0.17, cone: 0.16, range: 1.0, power: 0.22, windmill: { range: 7, power: 1.9, stun: 0.5 } },
-  feedback: { after: 0.35, range: 10, width: 1.3, power: 0.3, stun: 0.06, drain: 4 },
+  feedback: { after: 0.35, range: 10, width: 1.3, power: 0.45, stun: 0, every: 4, drain: 6 }, // (South, 2026-11-23: held LMB "just deletes enemies": one blow a bar, no stun, never a strum again)
   rockstar: { dur: 1.5 },
 };
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _d = new THREE.Vector3();
@@ -131,19 +132,20 @@ export class RecitalPlay {
   /** The feedback's beam: what stands in it struck on a beat. */
   feedbackTick(G) {
     const g = this.game, T = this.tool, P = T.P, F = RECITAL_PLAY.feedback, W = this.wham, dir = this.beamDir(_d);
-    const width = F.width * (1 + (WHAMMY.width - 1) * W), stun = F.stun * (1 + (WHAMMY.stun - 1) * W), power = F.power * (1 + (WHAMMY.power - 1) * W);
+    const width = F.width * (1 + (WHAMMY.width - 1) * W), stun = (F.stun || 0.04) * (WHAMMY.stun - 1) * W, // (only the whammy dazes)
+      power = F.power * (1 + (WHAMMY.power - 1) * W);
     let n = 0;
     for (const c of g.creatures?.near?.(P.pos, F.range + 1) || []) {
       if (c.ally || !c.alive) continue;
       _a.copy(c.pos).sub(P.pos).setY(0); const along = _a.dot(dir);
       if (along < 0 || along > F.range || _b.copy(_a).addScaledVector(dir, -along).length() > width + (c.radius ?? 0.4)) continue;
       g.creatures.strike(c, this.aimAt(c, new THREE.Vector3()), dir.clone(), power * (1 + T.fever * 0.5), 'bashed', 'courier');
-      g.stun?.add(c, stun, { by: 'courier', cause: W > 0.5 ? 'whammy' : 'feedback' }); n++;
+      if (stun > 0.005) g.stun?.add(c, stun, { by: 'courier', cause: 'whammy' }); n++;
     }
-    // (the wail on the beat: the guitar voice retriggered an octave up, Wanda's placeholder; the whammy bends it flat)
-    const sc = T.scaleNow(), bend = WHAMMY.bend * W;
-    T.guitarVoice(G.root + sc[0] + 12, 0.5, G.spb * 0.9, bend); T.guitarVoice(G.root + sc[3] + 12, 0.35, G.spb * 0.9, bend);
-    this.r.guitar.pluck(0, 0.7); this.r.guitar.pluck(3, 0.7);
+    // (the wail swelling once a bar, held the bar long: the guitar voice an octave up, Wanda's placeholder; no pluck, so it never reads as a
+    //  strum; the whammy bends it flat)
+    const sc = T.scaleNow(), bend = WHAMMY.bend * W, len = G.spb * F.every * 0.95;
+    T.guitarVoice(G.root + sc[0] + 12, 0.4, len, bend); T.guitarVoice(G.root + sc[3] + 12, 0.28, len, bend);
     return n;
   }
 
@@ -159,10 +161,10 @@ export class RecitalPlay {
       if (b.t > R.life || !alive) { b.done = true; g.events?.emit('crucibelle.lick', { degree: b.degree, octave: b.octave, hit: false, by: 'courier' }); }
     }
     if (this.bolts.some((b) => b.done)) this.bolts = this.bolts.filter((b) => !b.done);
-    // the feedback: Lachryma drained a real second, a tick on each beat
+    // the feedback: Lachryma drained a real second, a blow on each bar's downbeat
     if (this.feedbackOn) {
       if (!(g.lachryma?.drain?.(RECITAL_PLAY.feedback.drain * dt, 'feedback') > 0)) { this.feedback(false); g.log?.say('warn', 'Your mind is too dry to hold the feedback.', { key: 'feedback.dry', throttle: 3 }); }
-      else { const G = T.grid(), beat = Math.floor((T.now() - G.t0) / G.spb); if (beat !== this.tickBeat) { this.tickBeat = beat; this.feedbackTick(G); } }
+      else { const G = T.grid(), bar = Math.floor((T.now() - G.t0) / (G.spb * RECITAL_PLAY.feedback.every)); if (bar !== this.tickBeat) { const first = this.tickBeat < 0; this.tickBeat = bar; if (!first) this.feedbackTick(G); } } // (a bar's downbeat; the bar it came on in is the strum's)
     }
     if (this.rockT > 0) { this.rockT += dt; if (this.rockT > RECITAL_PLAY.rockstar.dur) this.rockT = 0; }
     if (this.windT > 0) { this.windT += dt; if (this.windT > 0.5) this.windT = 0; }

@@ -5,7 +5,7 @@
 // 4 the fifth, 5 the minor seventh); keys 6 to 0 play them an octave up (held RMB makes a note a chord: harmony.js).
 //
 // A SONG is a short motif of degrees (Ocarina of Time's songs: a few notes, a fixed order, learned and then played anywhere). Played on
-// the beat (each note within a small window of the music's eighth notes), the notes build FEVER (Patapon: keep the rhythm and the army
+// the beat (each note within a small window of the bell's beat, crucibelle.js BEAT), the notes build FEVER (Patapon: keep the rhythm and the army
 // burns brighter), and fever makes every song stronger. The bell takes what is played into it and makes it MORE (it is a crucible: the
 // note goes in, smoke and light come out): a song done costs Lachryma, less in fever.
 //

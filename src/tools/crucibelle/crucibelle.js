@@ -7,7 +7,7 @@
 //    music/player.js; with no music the bell keeps its own time at 96). Hold RMB and a note sounds as a CHORD, HARMONY (tools/crucibelle/harmony.js): the
 //    harmony ring round them, in the recital three bolts fanned; RMB held on the recital's feedback is the WHAMMY. The voice is the
 //    instrument fitted to the bell (the Pneuka Box): the bell itself, a clay ocarina, a kalimba, a lute (band.js plays them).
-//  - ON THE BEAT: a note within a small window of the music's eighth notes builds FEVER; off the beat, or long silence, lets it fall.
+//  - ON THE BEAT: a note within a small window of the bell's beat (the music's, folded to no faster than BEAT.max) builds FEVER; off the beat, or long silence, lets it fall.
 //    Fever is the ember in the bell and the smoke out of it, and it makes every song stronger and cheaper (Patapon's fever). Its peak,
 //    once a fever, rings out at its widest and strikes all round (Dovina's feverPeak row, progress/combat/moves.js, once earned).
 //  - SONGS: a short motif played in order (tools/crucibelle/songs.js: Ocarina of Time's songs) is TAKEN by the bell and comes out as more:
@@ -50,7 +50,10 @@ import { stream } from '../../core/rng.js';
 const simRand = stream('tools/crucibelle/crucibelle'); // (the simulation's chance: core/rng.js, the same twice)
 
 export const WINDOW = 0.085; // (a note on the beat: within this many real seconds; Calissa's pendulum reads it, vfx/crucibellehud.js)
-const OWN_BPM = 96; export const TOLL = { range: 4.2, cone: 1.1, cool: 0.4 }; // (cool: between tolls rung in the air, the old cooldown; the toll's reach reads range and cone, vfx/tollreach.js)
+// The bell's beat (South, 2026-11-23: "the default metronome is WAY too high BPM"): one tick a beat, never an eighth, the music's tempo
+// folded in half until it is no faster than BEAT.max (a 140 cue is kept at 70), the bell's own BEAT.own with no music playing.
+export const BEAT = { own: 76, max: 108 };
+const OWN_BPM = BEAT.own; export const TOLL = { range: 4.2, cone: 1.1, cool: 0.4 }; // (cool: between tolls rung in the air, the old cooldown; the toll's reach reads range and cone, vfx/tollreach.js)
 // The toll string, a table for the combo engine (tools/moveset.js). Each move is a toll at `at` (clip seconds: the swing's fastest moment,
 // measured), begun near it (`from`) so the bell rings with the press: a rhythm game's blow lands on the input, never a windup later.
 // The chain windows are the old cooldown (0.4 s between tolls) reshaped to the string: the next toll may begin 0.3 s after this one, so
@@ -101,18 +104,19 @@ export class Crucibelle extends HeldTool {
   now() { return sfx.ok?.() ? sfx.ctx.currentTime : performance.now() / 1000; }
   /** The beat to play to: the music's (in its key), or the bell's own. */
   grid() {
-    const G = sfx.ok?.() ? this.game.music?.grid?.() : null;
-    return G || { t0: this.ownT0, spb: 60 / OWN_BPM, root: 63 };
+    const M = sfx.ok?.() ? this.game.music?.grid?.() : null;
+    if (!M) return { t0: this.ownT0, spb: 60 / OWN_BPM, root: 63, fold: 1 };
+    let spb = M.spb, fold = 1; while (60 / spb > BEAT.max + 0.5 && fold < 8) { spb *= 2; fold *= 2; } // (folded: the downbeats still the music's)
+    return fold === 1 ? M : { ...M, spb, fold };
   }
   /** The five notes to play in now: the bar's own scale (music/player.js scale(): a score's or a section's, else the weather's mode with
    *  nothing playing), so a phrase rung over a cue in another mode stays in it; the minor pentatonic when there is no music to ask. */
   /** Five note pads: a mount at sea plays them from the helm (world/opensea/seamounts.js asks). */
   get pads() { return 5; }
   scaleNow() { const s = sfx.ok?.() ? this.game.music?.scale?.() : null; return Array.isArray(s) && s.length === 5 ? s : SCALE; }
-  /** How far from the nearest eighth note `t` is (seconds). */
   /** Is now on the song's beat (within WINDOW)? The toll's parry widens on it (courier/parries.js). */
   get onTheBeat() { return this.offBeat(this.now(), this.grid()) < WINDOW; }
-  offBeat(t, G) { const e = G.spb / 2, p = ((((t - G.t0) / e) % 1) + 1) % 1; return Math.min(p, 1 - p) * e; }
+  offBeat(t, G) { const e = G.spb, p = ((((t - G.t0) / e) % 1) + 1) % 1; return Math.min(p, 1 - p) * e; }
   band() {
     if (this.bandObj || !sfx.ok?.()) return this.bandObj || null;
     const ctx = sfx.ctx, dry = ctx.createGain(); dry.gain.value = 0.9; dry.connect(sfx.master);
@@ -323,7 +327,7 @@ export class Crucibelle extends HeldTool {
     // the clapper swings (a spring), the vents fade, the ember is the fever, and the bell smokes while it is out
     this.swingV += (-this.swing * 60 - this.swingV * 4) * dt; this.swing += this.swingV * dt;
     this.model.setSwing(THREE.MathUtils.clamp(this.swing * 0.2, -0.6, 0.6));
-    { const G = this.grid(); this.model.setBeat((this.now() - G.t0) / (G.spb / 2)); } // (the metronome on the bell: tools/crucibelle/model.js)
+    { const G = this.grid(); this.model.setBeat((this.now() - G.t0) / G.spb); } // (the metronome on the bell: tools/crucibelle/model.js)
     this.model.update(raw);
     this.model.setFever(this.fever);
     this.recital.update(raw);

@@ -9,7 +9,7 @@
 //                cone's two edges in toward the feet. The string's last toll is brought down overhead and rings all round (5.2 m): the
 //                whole ring is drawn. In the air a toll is the plain one. The lines lie on the ground and follow it.
 //   THE BEAT     on the bell's own clock (`grid()`: the music's, or its own 96 bpm, drawn fainter, as the pendulum is): the reach
-//                brightens through the window in which a toll counts as on the beat (the bell's WINDOW either side of each eighth; on
+//                brightens through the window in which a toll counts as on the beat (the bell's WINDOW either side of each beat (crucibelle.js BEAT); on
 //                a quarter more than on the off-eighth) and dims between. At each bar's downbeat its line is heavier: shape, never a
 //                flash. Between the beats a faint ripple runs out from the feet and reaches the ring on the next beat (the beat
 //                travelling to the mark you act on).
@@ -102,10 +102,10 @@ export class TollReach {
     this.yaw = this.yaw == null ? to : this.yaw + wrap(to - this.yaw) * (1 - Math.exp(-12 * raw));
     const N = this.next(), R = N.range, cone = N.cone, all = cone >= Math.PI - 1e-3;
 
-    // the beat, on the bell's own clock: through the window round each eighth the reach is lit, a quarter more than an off-eighth
-    const G = b.grid(), t = b.now(), e = G.spb / 2, ph = (t - G.t0) / e, k = Math.round(ph), off = Math.abs(ph - k) * e;
-    const lit = (1 - smooth(WINDOW, WINDOW + 0.06, off)) * (k % 2 === 0 ? 1 : 0.6), down = ((k % 8) + 8) % 8 === 0 && off < WINDOW + 0.03;
-    const Mg = g.music?.grid?.(), own = !Mg || Mg.t0 !== G.t0 || Mg.spb !== G.spb; // (the pendulum's test: vfx/crucibellehud.js)
+    // the beat, on the bell's own clock: through the window round each beat the reach is lit, the bar's downbeat heavier
+    const G = b.grid(), t = b.now(), e = G.spb, ph = (t - G.t0) / e, k = Math.round(ph), off = Math.abs(ph - k) * e;
+    const lit = (1 - smooth(WINDOW, WINDOW + 0.06, off)) * 1, down = ((k % 4) + 4) % 4 === 0 && off < WINDOW + 0.03;
+    const Mg = g.music?.grid?.(), own = !Mg || Mg.t0 !== G.t0; // (the music folded is still the music's) // (the pendulum's test: vfx/crucibellehud.js)
     const A = this.alpha * (own ? OWN : 1), reach = A * (DIM + (1 - DIM) * lit);
 
     // the ground they stand on, kept while they stand on one floor
