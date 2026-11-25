@@ -1,0 +1,340 @@
+{
+ "BRIAR_VISITORS": [
+  "wisp",
+  "blotling"
+ ],
+ "DRILLS": {
+  "sprint": {
+   "stat": "mirth",
+   "gain": 18
+  },
+  "scout": {
+   "stat": "wonder",
+   "gain": 18
+  },
+  "haul": {
+   "stat": "desire",
+   "gain": 18
+  },
+  "swim": {
+   "stat": "grief",
+   "gain": 18
+  },
+  "sit": {
+   "stat": "dread",
+   "gain": 18
+  }
+ },
+ "FATIGUE": {
+  "perDrill": 20,
+  "fail": 80,
+  "perHour": 10
+ },
+ "FEATURES": {
+  "terrace": {
+   "name": "Planter",
+   "size": "medium",
+   "job": "grow",
+   "does": "Grows more of a material you plant",
+   "n": 1,
+   "firing": 1
+  },
+  "pavilion": {
+   "name": "Trophy Hall",
+   "size": "large",
+   "job": "work",
+   "does": "Pays cubes for a fight you beat",
+   "n": 1,
+   "firing": 2
+  },
+  "spiritHouse": {
+   "name": "Spirit House",
+   "size": "medium",
+   "job": "shelter",
+   "does": "Room for two more spirits",
+   "n": 2,
+   "firing": 3
+  },
+  "pond": {
+   "name": "Pond",
+   "size": "medium",
+   "job": "water",
+   "does": "Water that flows downhill; visitors drink here",
+   "n": 1,
+   "firing": 1
+  },
+  "lantern": {
+   "name": "Lantern",
+   "size": "small",
+   "job": "light",
+   "does": "Light at night; night visitors come",
+   "n": 1,
+   "firing": 1
+  },
+  "incense": {
+   "name": "Incense",
+   "size": "small",
+   "job": "calm",
+   "does": "Calms you faster while you rest near it",
+   "n": 0.1,
+   "firing": 2
+  },
+  "stone": {
+   "name": "Booster Stone",
+   "size": "small",
+   "job": "empower",
+   "does": "Boosts the features next to it",
+   "n": 2,
+   "firing": 2
+  },
+  "drillYard": {
+   "name": "Training Yard",
+   "size": "large",
+   "job": "drill",
+   "does": "Spirits train here",
+   "n": 1,
+   "firing": 4
+  },
+  "sporebed": {
+   "name": "Spore Bed",
+   "size": "small",
+   "job": "transmute",
+   "does": "Fungus that transforms what you put in it",
+   "n": 1,
+   "firing": 1
+  }
+ },
+ "GENERATES": {
+  "wonder": "mirth",
+  "mirth": "desire",
+  "desire": "grief",
+  "grief": "dread",
+  "dread": "wonder"
+ },
+ "GROUND": {
+  "moss": {
+   "phase": "wood",
+   "feeling": "wonder",
+   "spreads": true
+  },
+  "ash": {
+   "phase": "fire",
+   "feeling": "mirth",
+   "spreads": false
+  },
+  "loam": {
+   "phase": "earth",
+   "feeling": "desire",
+   "spreads": true
+  },
+  "slate": {
+   "phase": "metal",
+   "feeling": "grief",
+   "spreads": false
+  },
+  "silt": {
+   "phase": "water",
+   "feeling": "dread",
+   "spreads": true
+  }
+ },
+ "GROWTH": {
+  "ground": 1.25,
+  "water": 1.25
+ },
+ "GUEST": {
+  "gifts": 1,
+  "may": [
+   "hop",
+   "look",
+   "pet",
+   "spar",
+   "gift"
+  ]
+ },
+ "ORBIT": {
+  "slots": 10,
+  "radius": 95,
+  "tilt": 12
+ },
+ "OVERCOMES": {
+  "wonder": "desire",
+  "desire": "dread",
+  "dread": "mirth",
+  "mirth": "grief",
+  "grief": "wonder"
+ },
+ "PHASE": {
+  "wonder": "wood",
+  "mirth": "fire",
+  "desire": "earth",
+  "grief": "metal",
+  "dread": "water"
+ },
+ "PLANETOID_PLOTS": {
+  "dantian": {
+   "radius": 20,
+   "plots": 6,
+   "fixed": [
+    "arrival lotus",
+    "the Lachryma lake",
+    "the Pneuka Box shed"
+   ]
+  },
+  "terraces": {
+   "radius": 12,
+   "plots": 6,
+   "fixed": []
+  },
+  "athanor": {
+   "radius": 10,
+   "plots": 3,
+   "fixed": [
+    "the spirit press",
+    "the plate shrine"
+   ]
+  },
+  "pavilions": {
+   "radius": 14,
+   "plots": 5,
+   "fixed": []
+  },
+  "mulberryGrove": {
+   "radius": 16,
+   "plots": 8,
+   "fixed": [
+    "the cocoon tree"
+   ]
+  },
+  "chimney": {
+   "radius": 8,
+   "plots": 2,
+   "fixed": [
+    "the meditation mat"
+   ]
+  }
+ },
+ "RACE": {
+  "minLength": 40,
+  "runners": 4,
+  "bond": 2,
+  "base": 4,
+  "per999": 3
+ },
+ "RAIN": {
+  "Stoic": 0,
+  "Resolved": 0,
+  "Balanced": 0,
+  "Fluid": 0.5,
+  "Prismatic": 0.9,
+  "brim": 0.1
+ },
+ "SETTLE": {
+  "lapse": 3
+ },
+ "SPAR": {
+  "gain": 6,
+  "fatigue": 25,
+  "seconds": 45
+ },
+ "SPOIL": {
+  "gall": {
+   "leads": 0.4,
+   "linger": 0.3333333333333333
+  },
+  "fury": {
+   "stiffAt": 0.5,
+   "stiff": 0.5,
+   "scorch": 2
+  }
+ },
+ "STONE_BOOST": 0.25,
+ "TRIBULATION": {
+  "base": 12,
+  "more": 4,
+  "every": 1.2,
+  "faster": 0.9,
+  "may": 3
+ },
+ "VEIN": {
+  "cone": 35,
+  "reach": 3
+ },
+ "VISITORS": {
+  "slipjelly": {
+   "wants": {
+    "feature": {
+     "pond": 1
+    },
+    "feeling": {
+     "grief": 2
+    }
+   },
+   "settle": 3,
+   "does": "slip jellies come to a pond in a grieving garden"
+  },
+  "clapperjar": {
+   "wants": {
+    "feature": {
+     "lantern": 2
+    },
+    "feeling": {
+     "mirth": 2
+    }
+   },
+   "settle": 3,
+   "does": "clapperjars come to lights in a merry garden"
+  },
+  "glint": {
+   "wants": {
+    "feature": {
+     "pond": 2
+    },
+    "feeling": {
+     "wonder": 2
+    }
+   },
+   "settle": 4,
+   "does": "glints come to deep water in a wondering garden"
+  },
+  "lobber": {
+   "wants": {
+    "feature": {
+     "drillYard": 1
+    },
+    "feeling": {
+     "desire": 2
+    }
+   },
+   "settle": 3,
+   "does": "lobbers come to a drill yard in a wanting garden"
+  },
+  "wisp": {
+   "wants": {
+    "briar": 1,
+    "feeling": {
+     "dread": 2
+    }
+   },
+   "settle": 4,
+   "does": "Lantern Wisps come to a briar in a dreading garden"
+  },
+  "blotling": {
+   "wants": {
+    "briar": 2
+   },
+   "settle": 3,
+   "does": "blotlings come where two planetoids have run to briar"
+  }
+ },
+ "WATERS": {
+  "drink": 1,
+  "opposite": {
+   "wonder": "grief",
+   "grief": "wonder",
+   "mirth": "dread",
+   "dread": "mirth",
+   "desire": null
+  }
+ }
+}

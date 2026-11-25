@@ -1,0 +1,74 @@
+{
+ "TRIALS": {
+  "gonogo": {
+   "label": "Go / No-Go",
+   "into": "inhibition",
+   "unit": "d'",
+   "better": "high",
+   "kind": "detect",
+   "trials": 60,
+   "noGo": 0.25,
+   "gap": [
+    0.8,
+    1.6
+   ],
+   "window": 0.6,
+   "line": "Press on a plain light, hold on an outlined one."
+  },
+  "pitch": {
+   "label": "Pitch threshold",
+   "into": "pitch",
+   "unit": "cents",
+   "better": "low",
+   "kind": "staircase",
+   "start": 100,
+   "step": 1.41,
+   "floor": 1,
+   "ceil": 400,
+   "reversals": 10,
+   "keep": 6,
+   "choices": 2,
+   "line": "Two crystals sound in turn: say which is higher."
+  },
+  "colour": {
+   "label": "Colour threshold",
+   "into": "colour",
+   "unit": "deltaE (Oklab x 100)",
+   "better": "low",
+   "kind": "staircase",
+   "start": 12,
+   "step": 1.41,
+   "floor": 0.2,
+   "ceil": 40,
+   "reversals": 10,
+   "keep": 6,
+   "choices": 3,
+   "line": "Three tiles: pick the one that is not like the others."
+  },
+  "rhythm": {
+   "label": "Tapping",
+   "into": "timing",
+   "unit": "ms of spread",
+   "better": "low",
+   "kind": "tap",
+   "bpm": 100,
+   "taps": 40,
+   "settle": 4,
+   "line": "Tap along with the bell."
+  },
+  "react": {
+   "label": "Reaction",
+   "into": "react",
+   "unit": "ms",
+   "better": "low",
+   "kind": "react",
+   "trials": 20,
+   "wait": [
+    1,
+    3
+   ],
+   "guess": 100,
+   "line": "A windup flashes: answer it as soon as you see it."
+  }
+ }
+}

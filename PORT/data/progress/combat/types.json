@@ -1,0 +1,89 @@
+{
+ "BONUS": {
+  "trump": 0.25,
+  "trumpBuild": 0.5,
+  "annihilation": 0.5
+ },
+ "BUILD": {
+  "drainPerSec": 0.25
+ },
+ "CAUSE_TYPE": {
+  "shot": "impact",
+  "charged": "impact",
+  "ricochet": "impact",
+  "homing": "impact",
+  "sliced": "impact",
+  "hooked": "impact",
+  "picked": "impact",
+  "bashed": "impact",
+  "slam": "impact",
+  "kick": "impact",
+  "lunge": "impact",
+  "spit": "impact",
+  "explosion": "impact",
+  "flash": "ego",
+  "reprogram": "ego",
+  "song": "influence",
+  "toll": "influence",
+  "fork": "illusion",
+  "empower": "illusion",
+  "brushed": "illusion",
+  "nuke": "delirium",
+  "lockheart": "delirium"
+ },
+ "TRUMPS": {
+  "impact": "illusion",
+  "illusion": "ego",
+  "ego": "influence",
+  "influence": "delirium",
+  "delirium": "impact"
+ },
+ "TYPES": {
+  "impact": {
+   "id": "impact",
+   "name": "Impact",
+   "axis": -2,
+   "builds": "stun",
+   "poise": 0.08
+  },
+  "ego": {
+   "id": "ego",
+   "name": "Ego",
+   "axis": -1,
+   "builds": "doubt",
+   "buildAt": 3,
+   "buildDur": 6
+  },
+  "influence": {
+   "id": "influence",
+   "name": "Influence",
+   "axis": 0,
+   "builds": "charm",
+   "buildAt": 3,
+   "buildDur": 4
+  },
+  "illusion": {
+   "id": "illusion",
+   "name": "Illusion",
+   "axis": 1,
+   "builds": "blind",
+   "buildAt": 4,
+   "buildDur": 5
+  },
+  "delirium": {
+   "id": "delirium",
+   "name": "Delirium",
+   "axis": 2,
+   "builds": "confusion",
+   "buildAt": 2,
+   "buildDur": 6
+  }
+ },
+ "TYPE_IDS": [
+  "impact",
+  "ego",
+  "influence",
+  "illusion",
+  "delirium"
+ ]
+}

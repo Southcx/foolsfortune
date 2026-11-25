@@ -1,0 +1,31 @@
+{
+ "ACTIONS": {
+  "push": {
+   "form": "courier",
+   "cost": 1
+  },
+  "kick": {
+   "form": "courier",
+   "cost": 2
+  },
+  "swap": {
+   "form": "hand",
+   "cost": 1
+  },
+  "drag": {
+   "form": "hand"
+  },
+  "rotate": {
+   "form": "hand",
+   "cost": 1
+  },
+  "drop": {
+   "form": "hand",
+   "cost": 1
+  },
+  "form": {
+   "form": null,
+   "cost": 0
+  }
+ }
+}

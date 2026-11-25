@@ -1,0 +1,70 @@
+{
+ "FAMILIARITY": {
+  "downs": [
+   0,
+   1,
+   5,
+   20,
+   60
+  ],
+  "names": [
+   "UNKNOWN",
+   "GLIMPSED",
+   "OBSERVED",
+   "STUDIED",
+   "UNDERSTOOD"
+  ]
+ },
+ "READS": [
+  {
+   "tag": true,
+   "name": false,
+   "health": null,
+   "blow": null,
+   "statuses": false,
+   "multiplier": false,
+   "emo": false,
+   "grain": 0
+  },
+  {
+   "tag": true,
+   "name": true,
+   "health": "quarters",
+   "blow": "mark",
+   "statuses": false,
+   "multiplier": false,
+   "emo": false,
+   "grain": 1
+  },
+  {
+   "tag": true,
+   "name": true,
+   "health": "eighths",
+   "blow": "rounded",
+   "statuses": false,
+   "multiplier": false,
+   "emo": "band",
+   "grain": 2
+  },
+  {
+   "tag": true,
+   "name": true,
+   "health": "bar",
+   "blow": "exact",
+   "statuses": true,
+   "multiplier": false,
+   "emo": "band",
+   "grain": 3
+  },
+  {
+   "tag": true,
+   "name": true,
+   "health": "numbers",
+   "blow": "exact",
+   "statuses": true,
+   "multiplier": true,
+   "emo": "value",
+   "grain": 5
+  }
+ ]
+}

@@ -1,0 +1,55 @@
+{
+ "JELLY_MOUNT": {
+  "call": {
+   "hold": 0.35,
+   "arrive": 1.2
+  },
+  "speeds": {
+   "cruise": 9,
+   "max": 13,
+   "accel": 14,
+   "turn": 3.5
+  },
+  "hop": {
+   "up": 8.4,
+   "window": 0.25,
+   "gain": 0.12,
+   "links": 3
+  },
+  "ground": {
+   "sand": 0.8,
+   "stone": 1,
+   "paint": 1.4,
+   "crude": 1.4,
+   "liquid": 0.6,
+   "tint": 10,
+   "drink": 1
+  },
+  "hp": {
+   "max": 8,
+   "reform": 60,
+   "mend": 0.25
+  },
+  "ends": [
+   "dismiss",
+   "burst",
+   "door",
+   "skiff",
+   "seam"
+  ],
+  "events": [
+   "mount.call",
+   "mount.hop",
+   "mount.hurt",
+   "mount.burst",
+   "mount.drink",
+   "mount.end"
+  ],
+  "ledger": [
+   "mount.slipjelly.secs",
+   "mount.slipjelly.hops.best",
+   "mount.slipjelly.drink",
+   "mount.slipjelly.burst"
+  ]
+ }
+}

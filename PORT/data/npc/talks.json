@@ -1,0 +1,1178 @@
+{
+ "PLANETOIDS": {
+  "dantian": {
+   "name": "the Dantian",
+   "gloss": "the elixir field: where a cultivator keeps what they have refined; your own Lachryma, a lake"
+  },
+  "terraces": {
+   "name": "the Herb Terraces",
+   "gloss": "the beds, stepped round a small world"
+  },
+  "athanor": {
+   "name": "the Athanor",
+   "gloss": "the alchemist's furnace, kept at one slow heat (al-tannur, the oven): the press and the firing"
+  },
+  "pavilions": {
+   "name": "the Pavilions of Echoes",
+   "gloss": "where echoes of the encounters you mastered keep working"
+  },
+  "mulberryGrove": {
+   "name": "the Mulberry Grove",
+   "gloss": "the spirits' home; the cocoon tree is a mulberry, as silk's is"
+  },
+  "chimney": {
+   "name": "the Chimney",
+   "gloss": "a kiln's chimney, where the Heavenly Kiln draws; the needle of rock it stands on"
+  }
+ },
+ "RAKU_HAGGLE": {
+  "open": [
+   "For you? {ask} cubes. {p:0.3}{small}A bargain, really. I'm practically giving it away.{/}",
+   "Ah, a {lach}discerning{/} eye! {ask} cubes, and I'm robbing myself.",
+   "{ask}. {p:0.4}{slow}And not a cube less.{/} {p:0.3}{small}Probably.{/}",
+   "That one? {p:0.3}{wobble}Oh, that one's special.{/} {p:0.4}{ask}."
+  ],
+  "counter": [
+   "{offer}? {p:0.3}{wobble}Ha!{/} {ask}, and that's me being {gold}generous{/}.",
+   "Mm. {p:0.4}{ask}. {small}You drive a hard bargain. I hate it.{/}",
+   "I could go to {ask}. {p:0.3}{slow}Could.{/}",
+   "{offer}… {p:0.4}{slow}{offer}…{/} {p:0.3}No. {ask}. {small}I have mouths to feed. Mine.{/}"
+  ],
+  "insult": [
+   "{big}{offer}?!{/}{burst} {p:0.3}{shake}Are you trying to {hot}ruin{/} me?{/}",
+   "{hot}{offer}!{/} {p:0.3}I've had better offers from the {wave}fish{/}.{burst}",
+   "Out. {p:0.5}{small}No, stay. But that was rude.{/}",
+   "{offer}. {p:0.5}{slow}I'm going to pretend you didn't say that.{/} {p:0.3}{small}I won't, though.{/}"
+  ],
+  "flatter": [
+   "Oh, {bounce}stop{/}. {p:0.3}{small}Don't stop.{/}",
+   "It {gold}is{/} a fine fez, isn't it? {p:0.3}{wave}Red-hot, then sawdust!{/}",
+   "Flattery! {p:0.3}{small}It works, you know.{/} {ask}, for you."
+  ],
+  "bored": [
+   "{slow}Yes, yes, I shine.{/} {p:0.4}{ask}.",
+   "Compliments don't pay for keys, Courier.",
+   "You said that already. {p:0.3}{ask}."
+  ],
+  "clink": [
+   "{big}Ooh.{/}{burst} {p:0.3}{lach}That sound.{/} {p:0.4}Well. {ask}, then.",
+   "Cubes on the counter! {wave}Now we're talking.{/}",
+   "{slow}Mmm.{/} {p:0.3}Put them a little closer."
+  ],
+  "last": [
+   "{ask}. {p:0.4}{slow}My last word.{/}",
+   "That's it, I'm tired. {ask} or nothing.",
+   "Enough! {ask}. {p:0.3}{small}Final. Really final.{/}"
+  ],
+  "callback": [
+   "{big}Wait!{/}{burst} {p:0.3}{ask}. Just for you. {p:0.3}{small}Don't tell anyone.{/}",
+   "Oh, come back, come back! {ask}!",
+   "{shake}Fine!{/} {ask}, you {hot}bandit{/}."
+  ],
+  "deal": [
+   "{burst}{bounce}Done!{/} {price} cubes. {p:0.3}{small}Pleasure, as always.{/}",
+   "A deal! {price}. {p:0.3}{wave}Lovely, lovely.{/}",
+   "{price}. {p:0.4}{slow}I'll weep later.{/}",
+   "{price}, and it's yours. {p:0.4}{small}Count them out slowly. I like to listen.{/}"
+  ],
+  "gone": [
+   "{slow}Fine.{/} {p:0.4}Go. {small}I didn't want to sell it anyway.{/}",
+   "Off you go, then. {p:0.4}{small}Cheapskate.{/}",
+   "Your loss! {p:0.5}{slow}Mostly.{/}"
+  ]
+ },
+ "REALM_NAMES": [
+  "HEMA-LUNO",
+  "KITH-HEMA",
+  "LUNO-DEO",
+  "STIL-DEO",
+  "EZA-LON",
+  "ROMI-LON",
+  "SIVA-LUNO",
+  "HUSA-HEMA",
+  "AMI-HEMA",
+  "MOR-LUNO"
+ ],
+ "TALKS": {
+  "saggar": {
+   "start": "hello",
+   "again": "again",
+   "nodes": {
+    "hello": {
+     "lines": [
+      {
+       "mood": "surprise",
+       "text": "Oh! {big}Courier!{/} {p:0.3}{mood:joy}Come in, come in, mind the {wave}slip{/} on the floor."
+      },
+      {
+       "mood": "calm",
+       "text": "I'm Saggar. I keep the kiln. Everything on this island came out of her belly, one way or another."
+      },
+      {
+       "mood": "sly",
+       "text": "You too. {p:0.4}The Immaculate One fired you in her with his own hands, they say. {p:0.3}{small}Wouldn't let a soul near the door.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "again": {
+     "lines": [
+      {
+       "mood": "joy",
+       "text": "Back again? {bounce}Good.{/} The kiln likes company. {p:0.3}{small}So do I.{/}"
+      },
+      {
+       "mood": "awe",
+       "text": "Look at you, lit up from inside like a good firing. {p:0.3}{small}Who's been at the press?{/}"
+      },
+      {
+       "mood": "calm",
+       "text": "You came back to me in pieces. {p:0.3}{mood:joy}And out of my kiln whole again. {p:0.3}{small}That's what she's for.{/}"
+      },
+      {
+       "mood": "awe"
+      },
+      {
+       "mood": "joy",
+       "text": "They say you set a gone-wrong one right. {p:0.3}{bounce}Mended it!{/} {p:0.3}{small}I mend things too, you know.{/}"
+      },
+      {
+       "mood": "awe",
+       "text": "Something's taking root in that Pneuka Jar of yours. {p:0.3}{small}I can hear it, like a kiln ticking as it cools.{/}"
+      },
+      {
+       "mood": "calm",
+       "text": "You've been at the stone with a chisel. {p:0.3}It's on your hands. {p:0.4}{small}Gently, now. Whatever's in there slept a long time.{/}"
+      },
+      {
+       "mood": "joy",
+       "text": "A flawless carving? {p:0.3}{bounce}Not a crack in it!{/} {p:0.3}{small}Took me twenty years to fire a bowl that clean.{/}"
+      },
+      {
+       "mood": "calm"
+      }
+     ],
+     "next": "menu"
+    },
+    "menu": {
+     "lines": [],
+     "choices": [
+      {
+       "text": "What are the clapperjars?",
+       "go": "jars"
+      },
+      {
+       "text": "About the pots I broke…",
+       "go": "pots"
+      },
+      {
+       "text": "What is Lachryma?",
+       "go": "lach"
+      },
+      {
+       "text": "Tell me about the Prince.",
+       "go": "prince"
+      },
+      {
+       "text": "Goodbye.",
+       "go": "bye"
+      }
+     ]
+    },
+    "jars": {
+     "lines": [
+      {
+       "mood": "calm",
+       "text": "The clapperjars? Earthenware. {p:0.3}The hive's little workers, fresh-baked, too small to hold a thought for long. The kiln makes them when she's {gold}too full{/}."
+      },
+      {
+       "mood": "anger",
+       "k": 1
+      },
+      {
+       "mood": "calm",
+       "text": "{p:0.3}…Oh, there's always more. {small}The Prince never misses the little ones, they say.{/}"
+      },
+      {
+       "mood": "joy",
+       "text": "And you've not hurt a single one. {wave}Good.{/}"
+      },
+      {
+       "mood": "sad",
+       "text": "They come back, mind. The slip runs home and she bakes them again. {p:0.4}{slow}That's the whole trouble with clay.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "pots": {
+     "lines": [
+      {
+       "mood": "confused",
+       "text": "You… haven't broken anything? {glyph:ask}In MY workshop? {p:0.3}{wobble}Are you feeling well?{/}"
+      },
+      {
+       "mood": "sly"
+      },
+      {
+       "mood": "anger",
+       "k": 1
+      },
+      {
+       "mood": "calm",
+       "text": "{p:0.3}…Oh, never mind. Pots grow back. {small}I just like to shout about it.{/}"
+      },
+      {
+       "mood": "whisper",
+       "text": "Only leave the fine ones be. {p:0.4}They say he has favourites. {p:0.3}{small}And that he sulks.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "lach": {
+     "lines": [
+      {
+       "mood": "awe",
+       "text": "Lachryma… {slow}the tears of the world{/}, the old mistress of this kiln called it. Black as a kiln at midnight, and every colour at once when the light finds it."
+      },
+      {
+       "mood": "whisper",
+       "text": "It's in everything. The clay, the slip, me. {p:0.4}Let too much of it into a pot and the pot goes {cold}strange{/}. {p:0.4}{slow}Then it goes wrong.{/}"
+      },
+      {
+       "mood": "calm",
+       "text": "You can stand it. {p:0.3}That's what you're for. {p:0.4}{small}The rest of us had better not try.{/}"
+      },
+      {
+       "mood": "fear",
+       "text": "And when there's too much of it in one place… {p:0.3}the chests go {cold}{big}prismatic{/}{/}. {burst}{p:0.3}I don't go near those."
+      }
+     ],
+     "next": "menu"
+    },
+    "prince": {
+     "lines": [
+      {
+       "mood": "awe",
+       "text": "The {lach}Immaculate One{/}? {p:0.4}{slow}I've never been in a room with him.{/} All my years at this kiln, and never once."
+      },
+      {
+       "mood": "calm",
+       "text": "His work comes down the hill, though. A cup of his passed through my kiln once, for a second firing. {p:0.4}{small}I didn't sleep for a week.{/}"
+      },
+      {
+       "mood": "sad",
+       "text": "You look at a thing like that and you think, why do I bother. {p:0.5}{slow}And then you fire the next pot anyway.{/}"
+      },
+      {
+       "mood": "joy",
+       "text": "{p:0.3}That's the whole trick of it, Courier. {p:0.4}{small}The next pot.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "bye": {
+     "lines": [
+      {
+       "mood": "joy",
+       "text": "Off you go, then. {wave}Mind the slip!{/}"
+      }
+     ]
+    }
+   }
+  },
+  "pip": {
+   "start": "hello",
+   "again": "again",
+   "nodes": {
+    "hello": {
+     "lines": [
+      {
+       "mood": "fear",
+       "k": 1,
+       "text": "{shake}{big}AH!{/}{/}{burst} {p:0.5}Oh. Oh, it's only you. I thought you were a clapperjar."
+      },
+      {
+       "mood": "fear",
+       "text": "I'm Pip. I'm Mistress Saggar's apprentice. {p:0.4}{small}I'm hiding.{/}"
+      },
+      {
+       "mood": "sad",
+       "text": "She sent me down for glaze and the clapperjars {tremble}clapped at me{/}. All of them. {slow}At once.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "again": {
+     "lines": [
+      {
+       "mood": "fear",
+       "text": "{shake}Is it gone?{/} {p:0.4}{mood:joy}Oh, it's you again. {bounce}Hello!{/}"
+      },
+      {
+       "mood": "awe",
+       "text": "You're glowing! {p:0.3}{small}Is it hot? Can I... no. I'd only break it.{/}"
+      },
+      {
+       "mood": "surprise",
+       "text": "You {big}fought one of the wrong ones{/}? {shake}With a puzzle?{/} {p:0.3}{mood:joy}I'm good at puzzles! {p:0.3}{small}Not the fighting part.{/}"
+      },
+      {
+       "mood": "joy",
+       "text": "You found a Shrine! {p:0.3}{small}Is it quiet there? I'd like somewhere quiet.{/}"
+      },
+      {
+       "mood": "surprise",
+       "text": "You went {big}inside{/} Strawman's head? {p:0.3}{shake}Is it all straw?{/} {p:0.3}{mood:confused}A theatre? {p:0.3}{small}I didn't sew a theatre in there. I don't think I did.{/}"
+      },
+      {
+       "mood": "sad",
+       "text": "You met my old tries. {p:0.3}The button one, the sock one... {p:0.4}{small}Go easy on them. They didn't stand back up the first time either.{/}"
+      },
+      {
+       "mood": "fear",
+       "text": "The {shake}duck{/}. You found the duck. {p:0.3}I copied it off a fair. {p:0.4}{small}It kept falling over, so I soldered it. It still falls over.{/}"
+      },
+      {
+       "mood": "joy",
+       "text": "Strawman's been different. {p:0.3}{slow}Standing up straighter.{/} {p:0.4}{small}I think you gave it a good part.{/}"
+      },
+      {
+       "mood": "calm"
+      }
+     ],
+     "next": "menu"
+    },
+    "menu": {
+     "lines": [],
+     "choices": [
+      {
+       "text": "Why are you scared of them?",
+       "go": "scared"
+      },
+      {
+       "text": "Want me to deal with them?",
+       "go": "deal"
+      },
+      {
+       "text": "Have you met the Prince?",
+       "go": "prince"
+      },
+      {
+       "text": "Tell me about Strawman.",
+       "go": "strawman"
+      },
+      {
+       "text": "Bye, Pip.",
+       "go": "bye"
+      }
+     ]
+    },
+    "scared": {
+     "lines": [
+      {
+       "mood": "fear",
+       "text": "Have you {big}heard{/} them? {shake}Clap clap clap{/}, right behind you, and when you turn round they're {wave}dancing{/} like nothing happened!"
+      },
+      {
+       "mood": "confused",
+       "text": "And they {wobble}steal the baubles{/}. What does a jar want with a bauble? {glyph:ask}Where does it {big}put{/} it?"
+      },
+      {
+       "mood": "sad",
+       "text": "I want to be a potter. {p:0.4}{slow}Potters aren't supposed to be afraid of pots.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "deal": {
+     "lines": [
+      {
+       "mood": "joy",
+       "k": 1
+      },
+      {
+       "mood": "surprise",
+       "text": "You would? {big}Really?{/}{burst} {p:0.3}{mood:joy}{wave}Thank you thank you thank you!{/}"
+      },
+      {
+       "mood": "fear",
+       "text": "But be careful. They clap {big}louder{/} when they're scared."
+      }
+     ],
+     "next": "menu"
+    },
+    "prince": {
+     "lines": [
+      {
+       "mood": "awe",
+       "text": "The {lach}Immaculate One{/}? {p:0.4}{slow}Once.{/} From the very back of the hall. {p:0.3}He was holding a cup."
+      },
+      {
+       "mood": "awe",
+       "text": "Just a cup. {p:0.5}And it was the most {big}perfect{/} thing I have ever seen, and I had to sit down on the floor."
+      },
+      {
+       "mood": "sad",
+       "text": "I made a cup after that. {p:0.4}It leans. {p:0.5}{small}I keep it under my bed, so it doesn't have to see his.{/}"
+      },
+      {
+       "mood": "joy",
+       "text": "One day I'll make something he looks at twice. {p:0.4}{small}Or once. Once would be fine.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "strawman": {
+     "lines": [
+      {
+       "mood": "joy",
+       "text": "Strawman? {p:0.3}{bounce}I made Strawman!{/} {p:0.4}{small}Well. I sewed Strawman.{/}"
+      },
+      {
+       "mood": "sad",
+       "text": "Everything here is clay, and clay breaks. {p:0.4}{slow}I break things.{/} {p:0.3}So I made something that {big}can't{/}."
+      },
+      {
+       "mood": "fear",
+       "text": "It took a lot of tries. {p:0.4}{small}The ones that fell over, I couldn't throw away. They're... around.{/}"
+      },
+      {
+       "mood": "awe",
+       "text": "It always stood back up. {p:0.4}{slow}Now it gets to do something else.{/} {p:0.3}{small}Thank you.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "bye": {
+     "lines": [
+      {
+       "mood": "fear",
+       "text": "Bye! I'll just… stay here. {small}In the corner. Where it's safe.{/}"
+      }
+     ]
+    }
+   }
+  },
+  "grog": {
+   "start": "hello",
+   "again": "again",
+   "nodes": {
+    "hello": {
+     "lines": [
+      {
+       "mood": "calm",
+       "text": "{slow}Mm.{/} {p:0.6}A visitor. Not many come this far into the Dunes."
+      },
+      {
+       "mood": "sad",
+       "text": "I've fished this pool since it was a {small}puddle{/}. Since before the sand came. {p:0.5}{slow}Since before the Weir was a weir.{/}"
+      },
+      {
+       "mood": "awe",
+       "text": "Do you see how the water holds the sky? {p:0.3}{slow}That's the Lachryma in it.{/} The tide brings it up from somewhere deep."
+      }
+     ],
+     "next": "menu"
+    },
+    "again": {
+     "lines": [
+      {
+       "mood": "calm",
+       "text": "{slow}Mm.{/} {p:0.4}The Courier again. {bob}Sit a while.{/}"
+      },
+      {
+       "mood": "sad",
+       "text": "Hm. {p:0.5}You've a light in you. {p:0.4}{slow}The town had that, once.{/}"
+      },
+      {
+       "mood": "calm",
+       "text": "{slow}Salt on you.{/} {p:0.4}You've been out past the Weir, on the big water. {p:0.4}{small}I used to watch the ships go.{/}"
+      },
+      {
+       "mood": "sad",
+       "text": "{slow}Did you see them? The ghost ships, in the fog.{/} {p:0.5}Crews that don't know they're gone, still working the run. {p:0.4}{small}Some of the town's folk sailed like that. Couldn't stop.{/}"
+      },
+      {
+       "mood": "joy",
+       "text": "{slow}Mm.{/} {p:0.4}You've learned to sit still. {p:0.4}A fish won't bite while it can see you. {p:0.3}{small}Figments neither, it turns out.{/}"
+      },
+      {
+       "mood": "fear",
+       "text": "{slow}The ground got up and walked, did it?{/} {p:0.5}The island doesn't like being moved about. {p:0.4}{small}Nor do I, these days.{/}"
+      },
+      {
+       "mood": "sad",
+       "text": "You put one of the island's guards down. {p:0.5}{slow}It'll send another.{/} {p:0.4}It's only trying to keep the shape it remembers. {p:0.4}{small}I know how that is.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "menu": {
+     "lines": [],
+     "choices": [
+      {
+       "text": "What's in the water?",
+       "go": "fish"
+      },
+      {
+       "text": "Why so sad?",
+       "go": "sad"
+      },
+      {
+       "text": "Any advice?",
+       "go": "advice"
+      },
+      {
+       "text": "Do you buy fish?",
+       "go": "buyfish"
+      },
+      {
+       "text": "What do you make of the Prince?",
+       "go": "prince"
+      },
+      {
+       "text": "Let's trade.",
+       "go": null
+      },
+      {
+       "text": "Goodbye.",
+       "go": "bye"
+      }
+     ]
+    },
+    "fish": {
+     "lines": [
+      {
+       "mood": "sly",
+       "text": "You've not caught a thing yet. {p:0.4}Good. {small}The pool likes a patient angler.{/}"
+      },
+      {
+       "mood": "joy"
+      },
+      {
+       "mood": "fear",
+       "text": "But there's something {cold}big{/} down there. {p:0.4}I've seen its shadow when the tide turns.{glyph:bang1} {shake}{big}Bigger than the pier.{/}{/}{burst}"
+      }
+     ],
+     "next": "menu"
+    },
+    "sad": {
+     "lines": [
+      {
+       "mood": "sad",
+       "text": "Sad? {p:0.7}{slow}No… just old.{/} The clay forgets things, when it's fired twice."
+      },
+      {
+       "mood": "sad",
+       "text": "There was a town here once. {p:0.4}Jars and jugs and big round-bellied pots, all talking at once. {p:0.6}{slow}Now there's me, and the fish, and the wind.{/}"
+      },
+      {
+       "mood": "fear",
+       "text": "Too near the Well, they were. {p:0.5}{slow}It got into them.{/} {p:0.6}{small}Some of them are still out there. You'll have met them.{/}"
+      },
+      {
+       "mood": "awe",
+       "text": "{p:0.4}But you came. {p:0.3}{lach}Maybe the town's coming back.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "advice": {
+     "lines": [
+      {
+       "mood": "calm",
+       "text": "Mind the {gold}tides{/}. Some fish only come up when the water's high, others only in the slack."
+      },
+      {
+       "mood": "sly",
+       "text": "And tie on something they {wave}like{/}. A fish knows what it wants. {p:0.3}{small}Like most of us.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "buyfish": {
+     "lines": [
+      {
+       "mood": "calm",
+       "text": "I'll buy what you land, and pay fair. {p:0.4}{small}Fairer than the fez up the beach, anyway.{/}"
+      },
+      {
+       "mood": "joy",
+       "text": "{bob}You keep me busy.{/} {p:0.4}The little ones I put back, mostly. {slow}Mm.{/} {small}Don't tell Raku.{/}"
+      },
+      {
+       "mood": "calm",
+       "text": "And mind you keep that book of yours fed with pictures, while you're here. {p:0.3}The pool likes having its picture taken. {small}Slowly.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "prince": {
+     "lines": [
+      {
+       "mood": "awe",
+       "text": "The Prince? {p:0.5}{slow}Mm.{/} {p:0.4}I saw him throw a bowl once, before the sand. One pull of the wheel."
+      },
+      {
+       "mood": "sad",
+       "text": "I've been making pots ever since, and I've never made that bowl. {p:0.5}{small}Nobody will.{/} {p:0.4}{slow}That's all right.{/}"
+      },
+      {
+       "mood": "calm",
+       "text": "{p:0.3}I'm the bit of him that sits by water and remembers. {p:0.5}{small}Somebody has to.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "bye": {
+     "lines": [
+      {
+       "mood": "sad",
+       "text": "{slow}Mm.{/} Come back when the tide's in."
+      }
+     ]
+    }
+   }
+  },
+  "raku": {
+   "start": "hello",
+   "again": "again",
+   "nodes": {
+    "hello": {
+     "lines": [
+      {
+       "mood": "sly",
+       "text": "Welcome, welcome, {gold}welcome{/}! Raku, treasurer of the Weir, at your service. {p:0.4}{small}For a small fee.{/}"
+      },
+      {
+       "mood": "joy",
+       "text": "You've come about the {lach}Tithe{/}, of course. {bounce}Everyone does, eventually.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "again": {
+     "lines": [
+      {
+       "mood": "sly",
+       "text": "Ah, my {gold}favourite{/} customer! {p:0.3}{small}Is that a purse I hear?{/}"
+      },
+      {
+       "mood": "sly",
+       "text": "That glow. {p:0.3}Is it real? {p:0.3}{small}What would you take for it?{/}"
+      },
+      {
+       "mood": "surprise",
+       "text": "A {gold}sealed{/} chest? {p:0.3}And you opened it without me? {p:0.3}{mood:sly}{small}Next time, bring it here. I know a fellow.{/}"
+      },
+      {
+       "mood": "sly"
+      },
+      {
+       "mood": "sly"
+      },
+      {
+       "mood": "fear",
+       "text": "You can {shake}see the odds{/} now? {p:0.3}The {gold}real{/} ones? {p:0.4}{mood:sly}Well. {p:0.3}You'll find my Tithe is perfectly honest. {p:0.4}{small}It was always honest. That's the worst part.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "menu": {
+     "lines": [],
+     "choices": [
+      {
+       "text": "Let's trade.",
+       "go": null
+      },
+      {
+       "text": "What's the Tithe?",
+       "go": "tithe"
+      },
+      {
+       "text": "How many cubes have I got?",
+       "go": "cubes"
+      },
+      {
+       "text": "Do you buy curios?",
+       "go": "curios"
+      },
+      {
+       "text": "What is the Prince like?",
+       "go": "prince"
+      },
+      {
+       "text": "Your glaze is lovely.",
+       "go": "flatter"
+      },
+      {
+       "text": "Goodbye.",
+       "go": "bye"
+      }
+     ]
+    },
+    "tithe": {
+     "lines": [
+      {
+       "mood": "sly"
+      },
+      {
+       "mood": "awe",
+       "text": "Sometimes it's a little chest. Sometimes {slow}it's a very, very big one{/}."
+      },
+      {
+       "mood": "fear",
+       "k": 1,
+       "text": "And sometimes it goes {cold}{shake}prismatic{/}{/} and the lights go out and everyone dances and {big}I hate it{/}.{burst}"
+      }
+     ],
+     "next": "menu"
+    },
+    "cubes": {
+     "lines": [
+      {
+       "mood": "joy",
+       "k": 1
+      },
+      {
+       "mood": "sad"
+      }
+     ],
+     "next": "menu"
+    },
+    "curios": {
+     "lines": [
+      {
+       "mood": "sly",
+       "text": "Curios! {p:0.3}Little things with a life behind them. {p:0.4}I buy them, yes. {gold}Lovingly.{/} {p:0.3}{small}Cheaply.{/}"
+      },
+      {
+       "mood": "joy",
+       "text": "A curio is worth a fortune. {p:0.4}{small}When I'm selling it.{/} {p:0.3}When you're selling it, it's worth {wobble}sentiment{/}, and I pay very well for sentiment."
+      }
+     ],
+     "next": "menu"
+    },
+    "prince": {
+     "lines": [
+      {
+       "mood": "awe",
+       "text": "His Highness? {p:0.3}A genius, naturally. {p:0.4}{small}An expensive one.{/}"
+      },
+      {
+       "mood": "confused",
+       "text": "Last month he had me buy a whole barrow of gold leaf so he could gild a {wobble}puddle{/}. {glyph:ask}{p:0.5}{small}It was a very good puddle.{/}"
+      },
+      {
+       "mood": "sly",
+       "text": "But the {gold}inventions{/}! {p:0.3}Every one a marvel, and every one a bill. {p:0.4}{slow}Somebody has to keep the books, while he plays.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "flatter": {
+     "lines": [
+      {
+       "mood": "surprise",
+       "text": "{big}Lovely?{/}{burst} {p:0.3}{mood:joy}It's raku! {wave}Pulled out of the kiln red-hot and dropped in sawdust!{/}"
+      },
+      {
+       "mood": "joy",
+       "text": "That's where the {lach}crackle{/} comes from. {p:0.3}{small}It hurt a lot, actually.{/} But look at me {gold}shine{/}!"
+      }
+     ],
+     "next": "menu"
+    },
+    "bye": {
+     "lines": [
+      {
+       "mood": "sly",
+       "text": "Come back {gold}richer{/}!"
+      }
+     ]
+    },
+    "haggle": {
+     "lines": [
+      {}
+     ],
+     "choices": [
+      {
+       "go": "haggle"
+      },
+      {
+       "go": "haggle"
+      },
+      {
+       "go": "haggle"
+      },
+      {
+       "go": "haggle"
+      },
+      {
+       "text": "Clink a few cubes on the counter.",
+       "go": "haggle"
+      },
+      {
+       "go": "haggle"
+      },
+      {
+       "text": "Shake on it.",
+       "go": null
+      },
+      {}
+     ]
+    },
+    "hagbye": {
+     "lines": [
+      {
+       "mood": "sad"
+      }
+     ]
+    }
+   }
+  },
+  "letty": {
+   "start": "hello",
+   "again": "again",
+   "nodes": {
+    "hello": {
+     "lines": [
+      {
+       "mood": "joy",
+       "text": "Letty Marque, licensed by the King's own letter, and that's marque with a Q-U-E, {p:0.3}though if you ask me it ought to be spelled with a few more teeth."
+      },
+      {
+       "poll": true,
+       "mood": "joy",
+       "text": "{big}{shake}HEAD COUNT! HEAD COUNT!{/}{/}"
+      },
+      {
+       "mood": "anger",
+       "text": "This is my board, and every notice on it is a wrong thing loose in the sea that ought to have been dealt with yesterday, {p:0.3}and if I had my way we'd be dealing with all of them {hot}today{/}."
+      }
+     ],
+     "next": "menu"
+    },
+    "again": {
+     "lines": [
+      {
+       "mood": "joy",
+       "text": "There you are! {p:0.3}I was starting to think you'd gone soft on me, and the board has only grown since you left."
+      },
+      {
+       "mood": "anger",
+       "text": "You've crossed, so you've seen them: the Wreckers. {p:0.3}Every hull of theirs runs on a {hot}forged seal{/}. {p:0.3}A counterfeit name in the heart of a ship. {p:0.4}{small}I can smell one a league off.{/}"
+      },
+      {
+       "poll": true,
+       "mood": "joy",
+       "text": "{big}{shake}MENDED! MENDED!{/}{/}"
+      },
+      {
+       "mood": "joy",
+       "text": "Word came over from Anagami that the island sent its own guard after you, for pushing its ground about. {p:0.3}Good! {p:0.3}A place that fights for its own shape is worth something, {p:0.3}{hot}and now imagine one that fights for ours{/}."
+      },
+      {
+       "poll": true,
+       "mood": "surprise",
+       "text": "{big}{shake}ANTIBODY! ANTIBODY!{/}{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "menu": {
+     "lines": [],
+     "choices": [
+      {
+       "text": "What's on the board?",
+       "go": "board"
+      },
+      {
+       "text": "Who pays?",
+       "go": "pays"
+      },
+      {
+       "text": "What is that bird?",
+       "go": "poll"
+      },
+      {
+       "text": "Tell me about the King.",
+       "go": "king"
+      },
+      {
+       "text": "What is out on the far shore?",
+       "go": "shore"
+      },
+      {
+       "text": "Why are you out here?",
+       "go": "why"
+      },
+      {
+       "text": "What do you make of me?",
+       "go": "me"
+      },
+      {
+       "text": "Goodbye.",
+       "go": "bye"
+      }
+     ]
+    },
+    "board": {
+     "lines": [
+      {
+       "mood": "anger",
+       "text": "Aberrants: Egregores off the Emocean, and Figments that slipped their island and went {cold}wrong{/}. {p:0.4}The King posts the little ones, and I keep telling him that if we only ever chase the little ones, {hot}the big ones get bigger{/}."
+      },
+      {
+       "mood": "sly",
+       "text": "Take a notice, bring it in and I'll pay you out, {p:0.3}and once you've cleared a few, come back and ask me about the ones I'm not allowed to post yet."
+      }
+     ],
+     "next": "menu"
+    },
+    "pays": {
+     "lines": [
+      {
+       "mood": "calm",
+       "text": "Margarite pays, the lamp gets fed and the sea gets a little cleaner, {p:0.3}which is fine as far as it goes, {p:0.4}{small}but a little cleaner was never the plan.{/}"
+      },
+      {
+       "mood": "anger",
+       "text": "They aren't his strays, you know; he just pays to have them put right. {p:0.4}Ask the crude where they come from, {p:0.3}and then ask yourself why nobody has sailed over there to {hot}shut off the tap{/}."
+      }
+     ],
+     "next": "menu"
+    },
+    "poll": {
+     "lines": [
+      {
+       "mood": "joy",
+       "text": "Poll's my Tulpa, folded from every notice I ever closed, and it keeps the Emocean off me while I work, {p:0.3}though I'll admit I folded it bigger than it needed to be, {small}because I'm planning on a lot more paper.{/}"
+      },
+      {
+       "poll": true,
+       "mood": "surprise",
+       "text": "{big}MORE PAPER! MORE PAPER!{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "king": {
+     "lines": [
+      {
+       "mood": "awe",
+       "text": "King Magnus keeps the light lit every night, every grain of the glass, and I'd follow him off the edge of the map, {p:0.4}but holding the line is all he ever does, {p:0.3}and a line you only ever hold is a line you're slowly losing."
+      },
+      {
+       "mood": "anger",
+       "text": "Give me a fleet of destroyers and one good season {p:0.3}and I would {hot}{big}take the fight to them{/}{/}, instead of waiting in the dark for them to come to us."
+      }
+     ],
+     "next": "menu"
+    },
+    "shore": {
+     "lines": [
+      {
+       "mood": "anger",
+       "text": "Entropolis! {p:0.3}A whole city that never sleeps, where the lights hum all night and every feeling runs at full boil, where every stray that ever crawled onto my board was hatched in the gutters, {p:0.3}{hot}and the Queen sits on top of it all and feeds it{/}."
+      },
+      {
+       "mood": "sly",
+       "text": "Every sailor on this dock has a story about it, each one worse than the last, {p:0.3}and the King himself won't say her name, {p:0.4}which tells you everything you need to know."
+      }
+     ],
+     "choices": [
+      {
+       "text": "Have you been there?",
+       "go": "been"
+      },
+      {
+       "text": "I see.",
+       "go": "menu"
+      }
+     ]
+    },
+    "been": {
+     "lines": [
+      {
+       "mood": "surprise",
+       "text": "Been there? {p:0.5}{small}Well, no. Not yet.{/}"
+      },
+      {
+       "mood": "joy",
+       "text": "{p:0.3}But you don't have to touch a fire to know it burns, and the day the King lets me sail, {p:0.3}{hot}I'll see it with my own eyes, and then I'll see it put out{/}."
+      }
+     ],
+     "next": "menu"
+    },
+    "why": {
+     "lines": [
+      {
+       "mood": "sad",
+       "text": "Margarite is the safest place in the whole Emocean, and I couldn't stand it: {p:0.3}all those walls and that patient light, and everyone waiting for the deep things to give up first, {p:0.4}{slow}as if they ever would.{/}"
+      },
+      {
+       "mood": "joy",
+       "text": "So I took the King's letter and went out where they breed, {p:0.3}and I haven't looked back once, {bounce}not once{/}."
+      }
+     ],
+     "next": "menu"
+    },
+    "me": {
+     "lines": [
+      {
+       "mood": "surprise",
+       "text": "You're one of those jars that walks, full to the brim with Lachryma and somehow still yourself, {p:0.3}which makes you about the most useful thing I've seen all year."
+      },
+      {
+       "mood": "sly",
+       "text": "{p:0.4}Stay that way, won't you? {p:0.5}{small}I'd hate to have to put your notice on my board.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "bye": {
+     "lines": [
+      {
+       "mood": "joy",
+       "text": "Fair winds and good hunting, and if you see anything big out there, {p:0.3}{hot}don't you dare leave it for the lamp{/}."
+      }
+     ]
+    }
+   }
+  },
+  "purser": {
+   "start": "hello",
+   "again": "again",
+   "nodes": {
+    "hello": {
+     "lines": [
+      {
+       "mood": "calm",
+       "text": "Margarite dock. {p:0.3}State your cargo."
+      },
+      {
+       "mood": "calm",
+       "text": "I am the Purser. I buy for the lamp, at the lamp's price. {p:0.3}The price is posted. {p:0.3}{small}The price is always posted.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "again": {
+     "lines": [
+      {
+       "mood": "calm",
+       "text": "You are back on the hour, which I appreciate. {p:0.3}What is the cargo?"
+      },
+      {
+       "mood": "calm"
+      }
+     ],
+     "next": "menu"
+    },
+    "menu": {
+     "lines": [],
+     "choices": [
+      {
+       "text": "I have cargo.",
+       "go": null
+      },
+      {
+       "text": "What do you buy?",
+       "go": "buy"
+      },
+      {
+       "text": "Can we talk price?",
+       "go": "price"
+      },
+      {
+       "text": "What is the lamp for?",
+       "go": "lamp"
+      },
+      {
+       "text": "Where is the best crude?",
+       "go": "shore"
+      },
+      {
+       "text": "Do you know the Prince?",
+       "go": "prince"
+      },
+      {
+       "text": "Goodbye.",
+       "go": "bye"
+      }
+     ]
+    },
+    "buy": {
+     "lines": [
+      {
+       "mood": "calm",
+       "text": "Crude, by the cask. Materials, from the Wells. {p:0.3}And charts of the Wells, while they are fresh."
+      },
+      {
+       "mood": "calm",
+       "text": "A Well drifts. {p:0.4}{small}A chart of yesterday is worth less today.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "price": {
+     "lines": [
+      {
+       "mood": "confused",
+       "text": "Talk? {glyph:ask}{p:0.4}The price is on the board. {p:0.3}The King sets it, by the hourglass, by the grain."
+      },
+      {
+       "mood": "calm",
+       "text": "{p:0.3}Nobody haggles at Margarite. {p:0.4}{small}It saves a great deal of time.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "lamp": {
+     "lines": [
+      {
+       "mood": "awe",
+       "text": "The lamp burns crude and keeps the deep things back. {p:0.5}It has never gone out."
+      },
+      {
+       "mood": "calm",
+       "text": "{p:0.4}{slow}It is not going to go out on my watch.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "shore": {
+     "lines": [
+      {
+       "mood": "calm",
+       "text": "Anagami's crude is thin. {p:0.4}The heaviest grade, the dread, comes from further out."
+      },
+      {
+       "mood": "whisper",
+       "text": "{p:0.4}{slow}From the far shore.{/} {p:0.4}We pay well for it. {p:0.3}We do not say where it comes from."
+      }
+     ],
+     "next": "menu"
+    },
+    "prince": {
+     "lines": [
+      {
+       "mood": "calm",
+       "text": "The Prince of Clay. {p:0.4}His Majesty asks after him. {p:0.5}{small}Not in so many words.{/}"
+      }
+     ],
+     "next": "menu"
+    },
+    "bye": {
+     "lines": [
+      {
+       "mood": "calm",
+       "text": "Fair tide. {p:0.3}The lamp sees you out."
+      }
+     ]
+    }
+   }
+  }
+ }
+}

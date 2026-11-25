@@ -1,0 +1,36 @@
+{
+ "FORGE": {
+  "serpentKeel": {
+   "beast": "seaSerpent",
+   "carves": 3,
+   "minutes": 15
+  },
+  "akhlutHull": {
+   "beast": "wolfWhale",
+   "carves": 3,
+   "minutes": 15
+  },
+  "monkHull": {
+   "beast": "seaMonk",
+   "carves": 3,
+   "minutes": 15
+  },
+  "krakenSail": {
+   "beast": "bigSquid",
+   "carves": 3,
+   "minutes": 30
+  },
+  "worldSail": {
+   "beast": "worldSerpent",
+   "carves": 1,
+   "minutes": 60
+  }
+ },
+ "FORGE_PARTS": [
+  "serpentKeel",
+  "akhlutHull",
+  "monkHull",
+  "krakenSail",
+  "worldSail"
+ ]
+}

@@ -1,0 +1,194 @@
+{
+ "ARCANA": [
+  {
+   "id": "magician",
+   "numeral": "I",
+   "label": "The Magician",
+   "line": "A random item.",
+   "tone": "good"
+  },
+  {
+   "id": "lovers",
+   "numeral": "VI",
+   "label": "The Lovers",
+   "line": "You and a rival each find a material.",
+   "tone": "good"
+  },
+  {
+   "id": "chariot",
+   "numeral": "VII",
+   "label": "The Chariot",
+   "line": "Carried forward up to six spaces.",
+   "tone": "odd"
+  },
+  {
+   "id": "hermit",
+   "numeral": "IX",
+   "label": "The Hermit",
+   "line": "One floor of this ring counts as cleared.",
+   "tone": "good"
+  },
+  {
+   "id": "wheel",
+   "numeral": "X",
+   "label": "Wheel of Fortune",
+   "line": "Trade purses with a rival.",
+   "tone": "odd"
+  },
+  {
+   "id": "justice",
+   "numeral": "XI",
+   "label": "Justice",
+   "line": "The richest seat gives 10 cubes to the poorest.",
+   "tone": "odd"
+  },
+  {
+   "id": "hanged",
+   "numeral": "XII",
+   "label": "The Hanged Man",
+   "line": "Miss your next turn.",
+   "tone": "bad"
+  },
+  {
+   "id": "death",
+   "numeral": "XIII",
+   "label": "Death",
+   "line": "Every crack mended. Your newest material is lost.",
+   "tone": "odd"
+  },
+  {
+   "id": "temperance",
+   "numeral": "XIV",
+   "label": "Temperance",
+   "line": "Mends two cracks.",
+   "tone": "good"
+  },
+  {
+   "id": "devil",
+   "numeral": "XV",
+   "label": "The Devil",
+   "line": "Take 8 cubes from each rival.",
+   "tone": "good"
+  },
+  {
+   "id": "tower",
+   "numeral": "XVI",
+   "label": "The Tower",
+   "line": "A crack, and half your cubes lost.",
+   "tone": "bad"
+  },
+  {
+   "id": "star",
+   "numeral": "XVII",
+   "label": "The Star",
+   "line": "20 cubes.",
+   "tone": "good"
+  },
+  {
+   "id": "moon",
+   "numeral": "XVIII",
+   "label": "The Moon",
+   "line": "Led back up to six spaces.",
+   "tone": "bad"
+  },
+  {
+   "id": "sun",
+   "numeral": "XIX",
+   "label": "The Sun",
+   "line": "Every spent die comes back, and 10 cubes.",
+   "tone": "good"
+  }
+ ],
+ "ITEMS": {
+  "twin": {
+   "label": "Twin throw",
+   "line": "Your next die is thrown twice and added.",
+   "cost": 20,
+   "weight": 3
+  },
+  "loaded": {
+   "label": "Loaded die",
+   "line": "Pick the face of your next die.",
+   "cost": 30,
+   "weight": 2
+  },
+  "kit": {
+   "label": "Mending kit",
+   "line": "Mends one crack.",
+   "cost": 15,
+   "weight": 3
+  },
+  "pick": {
+   "label": "Door pick",
+   "line": "Counts as one cleared floor for the door of this ring.",
+   "cost": 25,
+   "weight": 2
+  },
+  "swap": {
+   "label": "Swap",
+   "line": "Trade places with a rival.",
+   "cost": 20,
+   "weight": 2
+  },
+  "snare": {
+   "label": "Snare",
+   "line": "Set on your space. The next rival to land there pays you.",
+   "cost": 10,
+   "weight": 3
+  },
+  "recast": {
+   "label": "Fresh cast",
+   "line": "Every spent die comes back.",
+   "cost": 15,
+   "weight": 3
+  }
+ },
+ "ITEM_IDS": [
+  "twin",
+  "loaded",
+  "kit",
+  "pick",
+  "swap",
+  "snare",
+  "recast"
+ ],
+ "POWERS": {
+  "ward": {
+   "label": "Ward",
+   "domain": "spellscription",
+   "slot": "any",
+   "line": "Spend a die. The next crack, snare or lost duel is turned aside."
+  },
+  "push": {
+   "label": "Push",
+   "domain": "psychokinesis",
+   "slot": "any",
+   "line": "Spend a die and throw it. A rival on your ring, or its stray, is carried back that many spaces."
+  },
+  "transmute": {
+   "label": "Transmute",
+   "domain": "alteration",
+   "slot": "big",
+   "line": "Spend the d12 or the d20. Every Hazard on this ring becomes a Spring."
+  }
+ },
+ "POWER_IDS": [
+  "ward",
+  "push",
+  "transmute"
+ ],
+ "STANCES": {
+  "strike": {
+   "label": "Strike",
+   "beats": "feint"
+  },
+  "feint": {
+   "label": "Feint",
+   "beats": "guard"
+  },
+  "guard": {
+   "label": "Guard",
+   "beats": "strike"
+  }
+ }
+}

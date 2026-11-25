@@ -1,0 +1,89 @@
+{
+ "BURN": {
+  "2": {
+   "burn": 0.8,
+   "fuel": 20,
+   "away": true
+  },
+  "6": {
+   "burn": 1,
+   "fuel": 5,
+   "away": true
+  },
+  "7": {
+   "burn": 0.9,
+   "fuel": 12,
+   "away": true
+  }
+ },
+ "BURNT": {
+  "share": 0.15,
+  "within": 60
+ },
+ "FIRE": {
+  "hz": 4,
+  "spread": {
+   "side": 0.35,
+   "up": 0.875,
+   "down": 0.105
+  },
+  "scorch": 5,
+  "scorchHp": 0.5,
+  "soften": 15,
+  "glass": 0.08,
+  "wet": 30,
+  "douse": {
+   "water": 12,
+   "pound": 5
+  },
+  "light": {
+   "shot": 0.35,
+   "beam": 0.8,
+   "flame": 2,
+   "chunk": 1,
+   "giant": 0.3
+  }
+ },
+ "GIANT_FIRE": {
+  "straw": {
+   "burns": true,
+   "fuel": 30,
+   "k": 0.04,
+   "stagger": 6,
+   "touch": 3
+  },
+  "colossus": {
+   "burns": false,
+   "vitrify": {
+    "rate": 0.25,
+    "hold": 12,
+    "blowK": 1.5,
+    "fed": 0.5,
+    "ebb": 0.5
+   }
+  }
+ },
+ "HEAT": {
+  "rise": 0.5,
+  "fall": 0.25,
+  "near": 3,
+  "drainKW": 400,
+  "crack": {
+   "region": "legs",
+   "k": 0.15,
+   "every": 2
+  }
+ },
+ "STATE": {
+  "none": 0,
+  "burning": 1,
+  "scorched": 2,
+  "soft": 3,
+  "wet": 4
+ },
+ "WHOLE": {
+  "burn": 0.7,
+  "fuel": 14,
+  "away": true
+ }
+}

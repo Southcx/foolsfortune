@@ -1,0 +1,13 @@
+{
+ "SPOIL": {
+  "gall": {
+   "leads": 0.4,
+   "linger": 0.3333333333333333
+  },
+  "fury": {
+   "stiffAt": 0.5,
+   "stiff": 0.5,
+   "scorch": 2
+  }
+ }
+}

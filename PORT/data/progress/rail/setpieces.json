@@ -1,0 +1,199 @@
+{
+ "BOSS": {
+  "shots": [
+   1100,
+   1300
+  ],
+  "enrage": 180,
+  "quicken": 0.6666666666666666
+ },
+ "CHARYBDIS": {
+  "bars": 4,
+  "rise": 7,
+  "depth": -6,
+  "swing": 1,
+  "hp": 640,
+  "surface": 2,
+  "band": 1.5,
+  "eyes": {
+   "count": 6,
+   "hp": 40
+  },
+  "combs": {
+   "count": 2,
+   "hp": 160
+  },
+  "pay": {
+   "felled": 2,
+   "driven": 0
+  }
+ },
+ "LANCE": 4,
+ "LEVIATHAN": {
+  "deck": {
+   "base": 12,
+   "perDanger": 3,
+   "min": 4,
+   "max": 16,
+   "pall": 0.5
+  },
+  "gills": {
+   "count": 4,
+   "hp": 100,
+   "open": 3,
+   "of": 4
+  },
+  "teeth": {
+   "count": 6,
+   "hp": 30
+  },
+  "throat": {
+   "spits": 5,
+   "hp": 500
+  },
+  "breach": {
+   "warn": 1,
+   "hits": 2
+  },
+  "fin": {
+   "every": 2,
+   "windup": 1,
+   "hits": 1,
+   "parry": false
+  },
+  "spit": {
+   "every": 1,
+   "parry": true,
+   "returned": 5
+  },
+  "sound": {
+   "grow": 2,
+   "radius": 8,
+   "hits": 2,
+   "at": 84
+  },
+  "pay": {
+   "driven": 1,
+   "felled": 3
+  }
+ },
+ "PIRATES": {
+  "brig": {
+   "hull": 720,
+   "rigging": 4,
+   "riggingHp": 60,
+   "ports": 6,
+   "portHp": 40
+  },
+  "chaser": {
+   "every": 2,
+   "speed": 16,
+   "parry": true,
+   "returned": 6
+  },
+  "broadside": {
+   "every": 2,
+   "telegraph": 1,
+   "shotsPerPort": 3,
+   "speed": 20,
+   "parry": false
+  },
+  "boarders": {
+   "every": 4,
+   "count": 2,
+   "swing": 1,
+   "stay": 1,
+   "steals": 1
+  },
+  "ram": {
+   "eta": 1.5,
+   "hits": 2
+  },
+  "loot": {
+   "sunk": 2,
+   "struck": 1
+  },
+  "comeAbout": 3
+ },
+ "SHOAL": {
+  "boids": {
+   "sep": [
+    0.8,
+    1.6
+   ],
+   "align": [
+    3,
+    1
+   ],
+   "coh": [
+    4.5,
+    0.8
+   ],
+   "speed": 12,
+   "burst": 22,
+   "turn": 6
+  },
+  "ball": {
+   "radius": 10,
+   "tighten": 0.6,
+   "min": 5
+  },
+  "frenzy": {
+   "every": 1,
+   "lead": 0.35,
+   "telegraph": 0.25
+  },
+  "reinforce": {
+   "perBar": 6
+  },
+  "silhouette": {
+   "at": 24,
+   "draw": 2,
+   "length": 40,
+   "up": 9,
+   "ahead": 30,
+   "eye": 2.6,
+   "burn": 1.5
+  },
+  "bite": {
+   "perHit": 5
+  },
+  "fish": {
+   "hp": 1
+  },
+  "caller": {
+   "hp": 40,
+   "size": 2,
+   "guarded": true
+  },
+  "scatter": {
+   "share": 0.3,
+   "within": 1,
+   "bars": 2
+  }
+ },
+ "WAVES": {
+  "fire": {
+   "school": 0.25,
+   "darter": 0.5,
+   "heavy": 2
+  },
+  "outlined": {
+   "school": 0,
+   "darter": 1,
+   "heavy": 0.5
+  },
+  "stay": {
+   "school": 2,
+   "darter": 1,
+   "heavy": 10
+  },
+  "hp": [
+   1,
+   3,
+   12,
+   40,
+   150
+  ]
+ }
+}

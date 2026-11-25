@@ -1,0 +1,57 @@
+{
+ "CLASSES": {
+  "fool": {
+   "id": "fool",
+   "label": "The Fool",
+   "suit": null,
+   "passive": "No suit of its own, so no opposite: your tokens never take double damage. Once a turn, pay 2 to roll the Hungry Die again.",
+   "active": "cycle",
+   "cost": 2,
+   "does": "Cycle: draw three more cards."
+  },
+  "chariot": {
+   "id": "chariot",
+   "label": "The Chariot",
+   "suit": 1,
+   "passive": "Swords: your sword tokens advance one tile further, and your sword cards play one up or down. Every token of yours advances one tile further, takes 3 less from a hit, and wins a meeting unhurt.",
+   "active": "charge",
+   "cost": 2,
+   "does": "Charge: your tokens fight and strike with 3 more power this turn."
+  },
+  "empress": {
+   "id": "empress",
+   "label": "The Empress",
+   "suit": 2,
+   "passive": "Pentacles: your pentacle tokens advance one tile further, and your pentacle cards play one up or down. Tokens you place are one rank stronger (not faster).",
+   "active": "bloom",
+   "cost": 2,
+   "does": "Bloom: every tile under one of your tokens turns yours."
+  },
+  "hermit": {
+   "id": "hermit",
+   "label": "The Hermit",
+   "suit": 0,
+   "passive": "Cups: your cup tokens advance one tile further, and your cup cards play one up or down. You keep three cards between turns, not two.",
+   "active": "lantern",
+   "cost": 3,
+   "does": "Lantern: this turn's Hungry Die roll is 3 higher."
+  },
+  "tower": {
+   "id": "tower",
+   "label": "The Tower",
+   "suit": 3,
+   "passive": "Wands: your wand tokens advance one tile further, and your wand cards play one up or down. Your tokens that fall are fed to your Hungry Die, not discarded.",
+   "active": "lightning",
+   "cost": 2,
+   "does": "Lightning: every token on the board takes 3, yours too but your wands."
+  }
+ },
+ "CLASS_IDS": [
+  "fool",
+  "chariot",
+  "empress",
+  "hermit",
+  "tower"
+ ],
+ "HEALTH": 20
+}

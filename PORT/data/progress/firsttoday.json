@@ -1,0 +1,76 @@
+{
+ "FIRST_TODAY": {
+  "pay": 1,
+  "modules": {
+   "angling": {
+    "label": "Angling",
+    "on": [
+     "angle.catch"
+    ]
+   },
+   "raceway": {
+    "label": "The Raceway",
+    "on": [
+     "race.finish"
+    ]
+   },
+   "duel": {
+    "label": "A puzzle duel",
+    "on": [
+     "duel.end"
+    ]
+   },
+   "crossing": {
+    "label": "A crossing",
+    "on": [
+     "rail.end"
+    ]
+   },
+   "opensea": {
+    "label": "The open sea",
+    "on": [
+     "sea.chart",
+     "sea.herd",
+     "sea.habit",
+     "sea.salvage"
+    ]
+   },
+   "garden": {
+    "label": "The Spirit Garden",
+    "on": [
+     "garden.tend"
+    ]
+   },
+   "bazaar": {
+    "label": "Raku's tables",
+    "on": [
+     "casino.result"
+    ]
+   },
+   "godhand": {
+    "label": "The god hand",
+    "on": [
+     "god.miracle"
+    ]
+   },
+   "well": {
+    "label": "A Well",
+    "on": [
+     "well.floor"
+    ]
+   },
+   "dunes": {
+    "label": "The crystals",
+    "on": [
+     "crystal.harvest"
+    ]
+   },
+   "safari": {
+    "label": "The safari",
+    "on": [
+     "safari.plate"
+    ]
+   }
+  }
+ }
+}

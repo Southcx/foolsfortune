@@ -1,0 +1,131 @@
+{
+ "PALM": {
+  "sizes": [
+   4,
+   6,
+   8,
+   12,
+   20
+  ],
+  "rate": {
+   "4": 0.03,
+   "6": 0.04,
+   "8": 0.05,
+   "12": 0.065,
+   "20": 0.08
+  },
+  "capPerSide": 2,
+  "grow": {
+   "4": 0,
+   "6": 40,
+   "8": 120,
+   "12": 300,
+   "20": 700
+  }
+ },
+ "PALM_HOLD": {
+  "against": 20,
+  "perLevel": 1
+ },
+ "REROLL": {
+  "perDay": 1,
+  "bitsPerExtra": 100,
+  "max": 3
+ },
+ "SET": [
+  {
+   "die": "d4",
+   "sides": 4,
+   "solid": "tetrahedron",
+   "suit": "wands"
+  },
+  {
+   "die": "d6",
+   "sides": 6,
+   "solid": "cube",
+   "suit": "pentacles"
+  },
+  {
+   "die": "d8",
+   "sides": 8,
+   "solid": "octahedron",
+   "suit": "swords"
+  },
+  {
+   "die": "d10",
+   "sides": 10,
+   "solid": "pentagonal trapezohedron",
+   "suit": "cups"
+  },
+  {
+   "die": "d%",
+   "sides": 10,
+   "solid": "pentagonal trapezohedron",
+   "suit": null
+  },
+  {
+   "die": "d12",
+   "sides": 12,
+   "solid": "dodecahedron",
+   "suit": "wild",
+   "zodiac": {
+    "western": [
+     "aries",
+     "taurus",
+     "gemini",
+     "cancer",
+     "leo",
+     "virgo",
+     "libra",
+     "scorpio",
+     "sagittarius",
+     "capricorn",
+     "aquarius",
+     "pisces"
+    ],
+    "chinese": [
+     "rat",
+     "ox",
+     "tiger",
+     "rabbit",
+     "dragon",
+     "snake",
+     "horse",
+     "goat",
+     "monkey",
+     "rooster",
+     "dog",
+     "pig"
+    ]
+   }
+  },
+  {
+   "die": "d20",
+   "sides": 20,
+   "solid": "icosahedron",
+   "suit": "wild",
+   "majors": [
+    "magician",
+    "priestess",
+    "empress",
+    "emperor",
+    "hierophant",
+    "lovers",
+    "chariot",
+    "strength",
+    "hermit",
+    "wheel",
+    "justice",
+    "hanged",
+    "death",
+    "temperance",
+    "devil",
+    "tower",
+    "star",
+    "moon",
+    "sun",
+    "judgement"
+   ]
+  }
+ ]
+}

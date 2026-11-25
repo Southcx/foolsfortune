@@ -1,0 +1,975 @@
+{
+ "HOLDS": {
+  "stagger": 0.8,
+  "airborne": 1.6,
+  "trip": 1
+ },
+ "MOVES": {
+  "sondelass": {
+   "combo1": {
+    "power": 1.2,
+    "time": 0.25
+   },
+   "combo2": {
+    "power": 1.3,
+    "time": 0.27
+   },
+   "combo3": {
+    "power": 1.4,
+    "time": 0.27
+   },
+   "combo4": {
+    "power": 2,
+    "time": 0.42
+   },
+   "pause1": {
+    "power": 1,
+    "time": 0.27
+   },
+   "pause2": {
+    "power": 1,
+    "time": 0.26
+   },
+   "pause3": {
+    "power": 2.6,
+    "time": 0.45,
+    "status": "stagger"
+   },
+   "thrust2": {
+    "power": 0.9,
+    "hits": 3,
+    "time": 0.72,
+    "status": "stagger"
+   },
+   "charge": {
+    "power": 4,
+    "time": 1.3,
+    "shatter": 0.25
+   },
+   "launcher": {
+    "power": 0.8,
+    "time": 0.38,
+    "status": "airborne",
+    "ways": {
+     "count": [
+      {
+       "key": "cut.hit",
+       "n": 50
+      }
+     ],
+     "feat": []
+    }
+   },
+   "air1": {
+    "power": 0.9,
+    "time": 0.28,
+    "ways": {
+     "count": [
+      {
+       "key": "move.launch",
+       "n": 10
+      }
+     ],
+     "feat": []
+    }
+   },
+   "air2": {
+    "power": 1,
+    "time": 0.41,
+    "ways": {
+     "count": [
+      {
+       "key": "move.launch",
+       "n": 10
+      }
+     ],
+     "feat": []
+    }
+   },
+   "plunge": {
+    "power": 2,
+    "time": 0.6,
+    "status": "stagger",
+    "ways": {
+     "count": [
+      {
+       "key": "move.launch",
+       "n": 10
+      }
+     ],
+     "feat": []
+    }
+   },
+   "dash": {
+    "power": 1.6,
+    "time": 0.36
+   },
+   "counter": {
+    "power": 0.8,
+    "hits": 4,
+    "time": 0.96
+   },
+   "stinger": {
+    "power": 3,
+    "time": 0.7,
+    "cost": 6
+   },
+   "iaido": {
+    "power": 1.54,
+    "time": 0.6,
+    "parent": "stinger"
+   },
+   "quickSlash": {
+    "power": 1,
+    "time": 0.24,
+    "parent": "c1",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.c1.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.c1.finish",
+       "n": 5
+      }
+     ]
+    }
+   },
+   "bodyBlow": {
+    "power": 0.9,
+    "time": 0.2,
+    "parent": "c1",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.c1.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.c1.finish",
+       "n": 5
+      }
+     ]
+    }
+   },
+   "backhand": {
+    "power": 1.1,
+    "time": 0.25,
+    "parent": "c2",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.c2.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.c2.finish",
+       "n": 5
+      }
+     ]
+    }
+   },
+   "guardBreak": {
+    "power": 1.1,
+    "time": 0.3,
+    "status": "stagger",
+    "parent": "c2",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.c2.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.c2.finish",
+       "n": 5
+      },
+      {
+       "key": "sond.effect.guardBreak",
+       "n": 3
+      }
+     ]
+    }
+   },
+   "lungeSlash": {
+    "power": 1.4,
+    "time": 0.28,
+    "parent": "c3",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.c3.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.c3.finish",
+       "n": 5
+      }
+     ]
+    }
+   },
+   "lowSweep": {
+    "power": 1.35,
+    "time": 0.4,
+    "status": "trip",
+    "parent": "c3",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.c3.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.c3.finish",
+       "n": 5
+      },
+      {
+       "key": "sond.effect.trip",
+       "n": 3
+      }
+     ]
+    }
+   },
+   "heavyChop": {
+    "power": 2.4,
+    "time": 0.45,
+    "status": "stagger",
+    "parent": "c4",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.c4.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.c4.finish",
+       "n": 5
+      }
+     ]
+    }
+   },
+   "pushKick": {
+    "power": 1.45,
+    "time": 0.45,
+    "parent": "c4",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.c4.hit",
+       "n": 60
+      },
+      {
+       "key": "kick.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.c4.finish",
+       "n": 5
+      },
+      {
+       "key": "sond.effect.knock",
+       "n": 5
+      }
+     ]
+    }
+   },
+   "spinSlash": {
+    "power": 0.85,
+    "hits": 4,
+    "time": 0.84,
+    "cost": 8,
+    "parent": "backhand",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.backhand.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.struck.best",
+       "n": 3,
+       "best": true
+      }
+     ]
+    }
+   },
+   "powerSlash": {
+    "power": 3,
+    "time": 0.55,
+    "cost": 8,
+    "parent": "heavyChop",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.heavyChop.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.heavyChop.finish",
+       "n": 5
+      }
+     ]
+    }
+   },
+   "risingCut": {
+    "power": 2.3,
+    "time": 0.45,
+    "cost": 6,
+    "status": "airborne",
+    "parent": "quickSlash",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.quickSlash.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "move.launch",
+       "n": 10
+      }
+     ]
+    }
+   },
+   "guardCrush": {
+    "power": 2.8,
+    "time": 0.5,
+    "cost": 6,
+    "shatter": 0.3,
+    "status": "stagger",
+    "parent": "stinger",
+    "ways": {
+     "count": [
+      {
+       "key": "cut.stinger",
+       "n": 30
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.effect.guardBreak",
+       "n": 1
+      }
+     ]
+    }
+   },
+   "backstepSlash": {
+    "power": 2.5,
+    "time": 0.55,
+    "cost": 5,
+    "parent": "c3",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.c3.hit",
+       "n": 30
+      }
+     ],
+     "feat": [
+      {
+       "key": "parry.sondelass",
+       "n": 10
+      }
+     ]
+    }
+   },
+   "frontKick": {
+    "power": 1.45,
+    "time": 0.4,
+    "parent": "c2",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.c2.hit",
+       "n": 60
+      },
+      {
+       "key": "kick.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.c2.finish",
+       "n": 5
+      }
+     ]
+    }
+   },
+   "roundKick": {
+    "power": 1.35,
+    "time": 0.42,
+    "parent": "c1",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.c1.hit",
+       "n": 60
+      },
+      {
+       "key": "kick.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.c1.finish",
+       "n": 5
+      },
+      {
+       "key": "sond.effect.knock",
+       "n": 5
+      }
+     ]
+    }
+   },
+   "sideKick": {
+    "power": 1.3,
+    "time": 0.38,
+    "parent": "c4",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.c4.hit",
+       "n": 60
+      },
+      {
+       "key": "kick.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.c4.finish",
+       "n": 5
+      },
+      {
+       "key": "sond.effect.knock",
+       "n": 5
+      }
+     ]
+    }
+   },
+   "kneeStrike": {
+    "power": 1.35,
+    "time": 0.38,
+    "parent": "c3",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.c3.hit",
+       "n": 60
+      },
+      {
+       "key": "kick.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.c3.finish",
+       "n": 5
+      }
+     ]
+    }
+   },
+   "lowKick": {
+    "power": 1.6,
+    "time": 0.4,
+    "status": "trip",
+    "parent": "c3",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.c3.hit",
+       "n": 60
+      },
+      {
+       "key": "kick.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.c3.finish",
+       "n": 5
+      },
+      {
+       "key": "sond.effect.trip",
+       "n": 3
+      }
+     ]
+    }
+   },
+   "straightPunch": {
+    "power": 1.35,
+    "time": 0.3,
+    "parent": "c3",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.c3.hit",
+       "n": 60
+      },
+      {
+       "key": "kick.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.c3.finish",
+       "n": 5
+      }
+     ]
+    }
+   },
+   "hookPunch": {
+    "power": 1.1,
+    "time": 0.27,
+    "parent": "c2",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.c2.hit",
+       "n": 60
+      },
+      {
+       "key": "kick.hit",
+       "n": 60
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.c2.finish",
+       "n": 5
+      }
+     ]
+    }
+   },
+   "flyingKick": {
+    "power": 3.6,
+    "time": 0.75,
+    "cost": 7,
+    "parent": "pushKick",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.pushKick.hit",
+       "n": 60
+      },
+      {
+       "key": "kick.hit",
+       "n": 150
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.effect.knock",
+       "n": 10
+      }
+     ]
+    }
+   },
+   "tornadoKick": {
+    "power": 3.6,
+    "time": 0.6,
+    "cost": 8,
+    "parent": "roundKick",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.roundKick.hit",
+       "n": 60
+      },
+      {
+       "key": "kick.hit",
+       "n": 150
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.struck.best",
+       "n": 3,
+       "best": true
+      }
+     ]
+    }
+   },
+   "spinHeelKick": {
+    "power": 3.8,
+    "time": 0.75,
+    "cost": 7,
+    "status": "stagger",
+    "parent": "sideKick",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.sideKick.hit",
+       "n": 60
+      },
+      {
+       "key": "kick.hit",
+       "n": 150
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.sideKick.finish",
+       "n": 5
+      }
+     ]
+    }
+   },
+   "risingKick": {
+    "power": 2.7,
+    "time": 0.5,
+    "cost": 6,
+    "status": "airborne",
+    "parent": "frontKick",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.frontKick.hit",
+       "n": 60
+      },
+      {
+       "key": "kick.hit",
+       "n": 150
+      }
+     ],
+     "feat": [
+      {
+       "key": "move.launch",
+       "n": 10
+      }
+     ]
+    }
+   },
+   "flurry": {
+    "power": 1,
+    "hits": 3,
+    "time": 0.74,
+    "cost": 5,
+    "status": "stagger",
+    "parent": "bodyBlow",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.bodyBlow.hit",
+       "n": 60
+      },
+      {
+       "key": "kick.hit",
+       "n": 150
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.move.bodyBlow.finish",
+       "n": 5
+      }
+     ]
+    }
+   },
+   "breakKick": {
+    "power": 2.7,
+    "time": 0.5,
+    "cost": 6,
+    "status": "stagger",
+    "parent": "guardBreak",
+    "ways": {
+     "count": [
+      {
+       "key": "sond.move.guardBreak.hit",
+       "n": 60
+      },
+      {
+       "key": "kick.hit",
+       "n": 150
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.effect.guardBreak",
+       "n": 3
+      }
+     ]
+    }
+   },
+   "special": {
+    "id": "tidecutter",
+    "power": 7,
+    "time": 2.63,
+    "cost": 12,
+    "shatter": 0.35,
+    "ways": {
+     "count": [
+      {
+       "key": "cut.hit",
+       "n": 500
+      }
+     ],
+     "feat": [
+      {
+       "key": "sond.struck.best",
+       "n": 5,
+       "best": true
+      }
+     ]
+    }
+   },
+   "paidCut": {
+    "cost": 5
+   }
+  },
+  "unarmed": {
+   "combo1": {
+    "power": 0.6,
+    "time": 0.32
+   },
+   "combo2": {
+    "power": 0.6,
+    "time": 0.32
+   },
+   "combo3": {
+    "power": 0.7,
+    "time": 0.36
+   },
+   "roundhouse": {
+    "power": 1.4,
+    "time": 0.6
+   },
+   "frontKick": {
+    "power": 1,
+    "time": 0.45
+   },
+   "shove": {
+    "power": 0.6,
+    "time": 0.4,
+    "status": "stagger"
+   },
+   "launcher": {
+    "power": 0.6,
+    "time": 0.5,
+    "status": "airborne"
+   },
+   "groundPound": {
+    "power": 1.6,
+    "time": 0.7
+   },
+   "dash": {
+    "power": 0.9,
+    "time": 0.55
+   },
+   "sweep": {
+    "power": 0.5,
+    "time": 0.5,
+    "status": "trip"
+   }
+  },
+  "brush": {
+   "combo1": {
+    "power": 1.68,
+    "time": 0.43
+   },
+   "combo2": {
+    "power": 1.8,
+    "time": 0.53
+   },
+   "combo3": {
+    "power": 2.4,
+    "time": 1.3
+   },
+   "spin": {
+    "power": 0.8,
+    "hits": 3,
+    "time": 0.9
+   },
+   "airSlam": {
+    "power": 2.4,
+    "time": 0.8
+   },
+   "air1": {
+    "power": 0.9,
+    "time": 0.35,
+    "ways": {
+     "count": [
+      {
+       "key": "move.launch",
+       "n": 10
+      }
+     ],
+     "feat": []
+    }
+   },
+   "air2": {
+    "power": 1,
+    "time": 0.38,
+    "ways": {
+     "count": [
+      {
+       "key": "move.launch",
+       "n": 10
+      }
+     ],
+     "feat": []
+    }
+   },
+   "air3": {
+    "power": 1.4,
+    "time": 0.5
+   },
+   "dash": {
+    "power": 1.2,
+    "time": 0.6
+   }
+  },
+  "dreamvane": {
+   "combo1": {
+    "power": 1.2,
+    "time": 0.45
+   },
+   "combo2": {
+    "power": 1.3,
+    "time": 0.5
+   },
+   "combo3": {
+    "power": 1.6,
+    "time": 0.6
+   },
+   "pick": {
+    "power": 1.6,
+    "time": 0.55
+   },
+   "pause1": {
+    "power": 1.1,
+    "time": 0.45
+   },
+   "pause2": {
+    "power": 1.1,
+    "time": 0.45
+   },
+   "pause3": {
+    "power": 2.6,
+    "time": 0.85
+   },
+   "launcher": {
+    "power": 0.8,
+    "time": 0.55,
+    "status": "airborne"
+   },
+   "charge": {
+    "power": 4.2,
+    "time": 1.3,
+    "shatter": 0.25
+   },
+   "vault": {
+    "power": 0,
+    "time": 0.8
+   },
+   "special": {
+    "id": "dreamquake",
+    "power": 5,
+    "time": 1.2,
+    "cost": 10,
+    "radius": 5,
+    "shatter": 0.2,
+    "status": "stagger"
+   }
+  },
+  "crucibelle": {
+   "toll1": {
+    "power": 0.8,
+    "time": 0.5,
+    "status": "stagger"
+   },
+   "toll2": {
+    "power": 0.8,
+    "time": 0.5
+   },
+   "toll3": {
+    "power": 1.6,
+    "time": 0.8,
+    "status": "stagger"
+   },
+   "feverPeak": {
+    "power": 3,
+    "time": 1,
+    "radius": 6
+   }
+  },
+  "lockheart": {
+   "flail1": {
+    "power": 1.2,
+    "time": 0.55,
+    "drink": 2
+   },
+   "flail2": {
+    "power": 1.3,
+    "time": 0.6,
+    "drink": 2
+   },
+   "flail3": {
+    "power": 2,
+    "time": 0.9,
+    "drink": 4
+   }
+  },
+  "veritome": {
+   "bash1": {
+    "power": 0.9,
+    "time": 0.45
+   },
+   "bash2": {
+    "power": 1.4,
+    "time": 0.6,
+    "status": "stagger"
+   }
+  },
+  "psygun": {
+   "whip": {
+    "power": 1.4,
+    "time": 0.45,
+    "status": "stagger"
+   },
+   "special": {
+    "id": "fan",
+    "power": 1,
+    "hits": 6,
+    "time": 0.6,
+    "cost": 8
+   }
+  }
+ },
+ "RECORDS": {
+  "move.launch": "launchers that lifted something (opens the air string)",
+  "move.air.best": "the most blows in one air string, the creature never touching the ground",
+  "move.special.<id>": "specials used, by id",
+  "move.cut.paid": "recoveries cut short for Lachryma (the paid cut, a working name)",
+  "skiff.bail": "bails off the Solar Skiff (a wall struck over 14 m/s, a landing past 17 m/s, or one landed badly crooked: skiff.js BAIL; a wobble is a near miss, not a bail)",
+  "skiff.ollie.geyser": "ollies off a geyser"
+ }
+}

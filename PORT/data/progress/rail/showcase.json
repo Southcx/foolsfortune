@@ -1,0 +1,391 @@
+{
+ "ROSTER": {
+  "swarm": {
+   "cls": 0,
+   "hp": 1,
+   "fires": [],
+   "formation": "river",
+   "count": 24,
+   "views": "COS",
+   "moves": {
+    "kind": "flock",
+    "shapes": [
+     "river",
+     "ribbon",
+     "bloom"
+    ]
+   }
+  },
+  "school": {
+   "cls": 0,
+   "hp": 1,
+   "fires": [
+    {
+     "name": "aimedBurst",
+     "params": {
+      "n": 1,
+      "volleys": 2
+     }
+    }
+   ],
+   "formation": "line",
+   "count": 8,
+   "views": "COS"
+  },
+  "swooper": {
+   "cls": 0,
+   "hp": 1,
+   "fires": [
+    {
+     "name": "oddFan",
+     "params": {
+      "n": 3,
+      "volleys": 1
+     }
+    }
+   ],
+   "formation": "pincer",
+   "count": 2,
+   "views": "OS",
+   "moves": {
+    "kind": "arc",
+    "fireAt": "apex"
+   }
+  },
+  "darter": {
+   "cls": 1,
+   "hp": 1,
+   "fires": [
+    {
+     "name": "mixed",
+     "params": {
+      "of": "aimedBurst",
+      "share": 1
+     }
+    }
+   ],
+   "formation": "dash",
+   "count": 2,
+   "views": "CS",
+   "moves": {
+    "kind": "dash",
+    "hold": 2,
+    "side": "flank"
+   }
+  },
+  "rammer": {
+   "cls": 1,
+   "hp": 2,
+   "fires": [
+    {
+     "name": "frenzyDash",
+     "params": {
+      "n": 1,
+      "volleys": 2
+     }
+    }
+   ],
+   "formation": "dash",
+   "count": 1,
+   "views": "COS",
+   "moves": {
+    "kind": "charge",
+    "glow": 1,
+    "speed": 34,
+    "from": 5,
+    "at": "last",
+    "through": true,
+    "windupPay": 1.5
+   }
+  },
+  "sniper": {
+   "cls": 1,
+   "hp": 1,
+   "fires": [
+    {
+     "name": "sweepBeam",
+     "params": {
+      "from": 0,
+      "to": 0,
+      "warn": 1.5,
+      "burn": 0.5,
+      "volleys": 1
+     }
+    }
+   ],
+   "formation": "hold",
+   "count": 1,
+   "views": "COS",
+   "moves": {
+    "kind": "hold",
+    "at": "farEdge",
+    "hold": 4
+   }
+  },
+  "ambusher": {
+   "cls": 1,
+   "hp": 1,
+   "fires": [
+    {
+     "name": "oddFan",
+     "params": {
+      "n": 5,
+      "volleys": 1
+     }
+    }
+   ],
+   "formation": "dash",
+   "count": 2,
+   "views": "COS",
+   "moves": {
+    "kind": "overtake",
+    "from": "behind",
+    "mark": 4
+   }
+  },
+  "turret": {
+   "cls": 1,
+   "hp": 3,
+   "fires": [
+    {
+     "name": "rotatingRing",
+     "params": {
+      "volleys": 4
+     }
+    }
+   ],
+   "formation": "hold",
+   "count": 1,
+   "views": "OS",
+   "moves": {
+    "kind": "fixed",
+    "onScreen": 3
+   }
+  },
+  "mine-layer": {
+   "cls": 1,
+   "hp": 1,
+   "fires": [],
+   "formation": "line",
+   "count": 1,
+   "views": "OS",
+   "moves": {
+    "kind": "cross"
+   },
+   "mine": {
+    "every": 1,
+    "hp": 1,
+    "pay": 50,
+    "fuse": 2,
+    "near": 8,
+    "burst": {
+     "name": "rotatingRing",
+     "params": {
+      "n": 8,
+      "speed": 9,
+      "volleys": 1
+     }
+    }
+   }
+  },
+  "escort": {
+   "cls": 1,
+   "hp": 2,
+   "fires": [
+    {
+     "name": "aimedBurst",
+     "params": {
+      "n": 1,
+      "volleys": 2
+     }
+    }
+   ],
+   "formation": "hold",
+   "count": 2,
+   "views": "COS",
+   "with": "gunship",
+   "show": 10,
+   "moves": {
+    "kind": "tether",
+    "length": 6,
+    "turn": 2
+   }
+  },
+  "carrier": {
+   "cls": 1,
+   "hp": 2,
+   "fires": [],
+   "formation": "hold",
+   "count": 1,
+   "views": "COS"
+  },
+  "sweeper": {
+   "cls": 2,
+   "hp": 1,
+   "fires": [
+    {
+     "name": "sweepBeam",
+     "params": {
+      "volleys": 1
+     }
+    }
+   ],
+   "formation": "hold",
+   "count": 1,
+   "views": "COS",
+   "moves": {
+    "kind": "hold",
+    "at": "edge",
+    "hold": "sweep"
+   }
+  },
+  "heavy": {
+   "cls": 2,
+   "hp": 8,
+   "fires": [
+    {
+     "name": "rotatingRing",
+     "params": {
+      "volleys": 4
+     }
+    }
+   ],
+   "formation": "hold",
+   "count": 1,
+   "views": "OCS",
+   "moves": {
+    "kind": "hold",
+    "at": "middle",
+    "hold": 8,
+    "until": "beaten"
+   },
+   "show": 8
+  },
+  "gunship": {
+   "cls": 2,
+   "hp": 4,
+   "fires": [
+    {
+     "name": "stackFan",
+     "params": {
+      "volleys": 2
+     }
+    },
+    {
+     "name": "splitShell",
+     "params": {
+      "volleys": 2
+     }
+    }
+   ],
+   "formation": "hold",
+   "count": 1,
+   "views": "COS",
+   "shown": "escort",
+   "moves": {
+    "kind": "hold",
+    "at": "broadside",
+    "hold": 8,
+    "until": "beaten"
+   }
+  },
+  "blocker": {
+   "cls": 2,
+   "hp": 2,
+   "fires": [],
+   "formation": "hold",
+   "count": 1,
+   "views": "OS",
+   "moves": {
+    "kind": "drift",
+    "closes": 0.3333333333333333,
+    "hold": 4
+   }
+  },
+  "spawner": {
+   "cls": 1,
+   "hp": 3,
+   "fires": [],
+   "formation": "hold",
+   "count": 1,
+   "views": "OS",
+   "spawns": {
+    "role": "school",
+    "count": 4,
+    "every": 2
+   },
+   "moves": {
+    "kind": "hold",
+    "at": "edge",
+    "hold": 8
+   },
+   "show": 8
+  },
+  "grappler": {
+   "cls": 1,
+   "hp": 1,
+   "fires": [],
+   "formation": "dash",
+   "count": 1,
+   "views": "CS",
+   "latch": {
+    "pace": 0.8
+   },
+   "moves": {
+    "kind": "swing",
+    "from": "edge"
+   }
+  }
+ },
+ "SHOW": {
+  "foeBars": 4,
+  "lead": 5,
+  "forms": 16
+ },
+ "SHOWCASE": [
+  {
+   "leg": "show.forms",
+   "hull": "sloop",
+   "mounts": [
+    "crucibelle",
+    "lockheart"
+   ],
+   "note": "Q and E alone: Astral volleys, Umbral volleys, outlined ones only the roll turns; the mast folding both ways, the periscope stub in Umbral"
+  },
+  {
+   "leg": "show.chase",
+   "hull": "galleon",
+   "mounts": [
+    "sondelass"
+   ],
+   "note": "every chase foe alone, four bars each, on the heaviest hull: the big hurtbox, four locks"
+  },
+  {
+   "leg": "show.above",
+   "hull": "destroyer",
+   "mounts": [
+    "veritome",
+    "crucibelle"
+   ],
+   "note": "every overhead foe alone, on the quickest hull: twin-stick, no lock-on, the forms drinking rings; Flash and Bomb for the blocker; the blade mast hinging on Q and E"
+  },
+  {
+   "leg": "show.side",
+   "hull": "frigate",
+   "mounts": [
+    "veritome",
+    "crucibelle",
+    "sondelass"
+   ],
+   "note": "every side foe alone, on a hull that dives: the waterline crossed under the broadside; Flash and Bomb for the blocker, Grapple for the grappler"
+  },
+  {
+   "leg": "show.forms",
+   "hull": "tanker",
+   "mounts": [
+    "crucibelle"
+   ],
+   "note": "the forms again on a hull that cannot dive: Q refused, the short mast dropping into its house on E"
+  }
+ ]
+}

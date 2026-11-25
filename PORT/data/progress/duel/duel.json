@@ -1,0 +1,159 @@
+{
+ "ACTIONS": {
+  "push": {
+   "form": "courier",
+   "cost": 1
+  },
+  "kick": {
+   "form": "courier",
+   "cost": 2
+  },
+  "swap": {
+   "form": "hand",
+   "cost": 1
+  },
+  "drag": {
+   "form": "hand"
+  },
+  "rotate": {
+   "form": "hand",
+   "cost": 1
+  },
+  "drop": {
+   "form": "hand",
+   "cost": 1
+  },
+  "form": {
+   "form": null,
+   "cost": 0
+  },
+  "run": {
+   "form": "courier",
+   "tool": null,
+   "cost": 1,
+   "pool": 0
+  },
+  "shoot": {
+   "form": "courier",
+   "tool": "psygun",
+   "cost": 1,
+   "pool": 5
+  },
+  "grab": {
+   "form": "courier",
+   "tool": "sondelass",
+   "cost": 1,
+   "pool": 5
+  },
+  "drill": {
+   "form": "courier",
+   "tool": "dreamvane",
+   "cost": 1,
+   "pool": 3
+  },
+  "paint": {
+   "form": "courier",
+   "tool": "soulbrush",
+   "cost": 2,
+   "pool": 10
+  },
+  "tune": {
+   "form": "courier",
+   "tool": "crucibelle",
+   "cost": 1,
+   "pool": 8
+  },
+  "delay": {
+   "form": "courier",
+   "tool": "crucibelle",
+   "cost": 2,
+   "pool": 15
+  },
+  "hold": {
+   "form": "courier",
+   "tool": "lockheart",
+   "cost": 1,
+   "pool": 0
+  },
+  "send": {
+   "form": "courier",
+   "tool": "lockheart",
+   "cost": 1,
+   "pool": 5
+  },
+  "read": {
+   "form": "courier",
+   "tool": "veritome",
+   "cost": 1,
+   "pool": 0
+  },
+  "finisher": {
+   "form": "hand",
+   "cost": 2
+  },
+  "flee": {
+   "form": null,
+   "cost": 3
+  },
+  "skill": {
+   "form": null,
+   "cost": 0
+  },
+  "power": {
+   "form": null,
+   "cost": 0
+  },
+  "whistle": {
+   "form": null,
+   "cost": 0
+  },
+  "grabthrow": {
+   "form": "hand",
+   "cost": 2
+  }
+ },
+ "CHAIN_CAP": 5,
+ "DIM": {
+  "k": 0.5,
+  "junk": false
+ },
+ "DUEL": {
+  "ap": 5,
+  "pool": 30,
+  "settleCap": 64,
+  "landCap": 9,
+  "perColumn": 3,
+  "turnCap": 200,
+  "fill": 0.4,
+  "refund": {
+   "size": 5,
+   "chain": 3,
+   "max": 1
+  },
+  "trickle": 2,
+  "allClear": 6,
+  "weakness": {
+   "k": [
+    1.5,
+    0.5
+   ]
+  },
+  "margin": {
+   "after": 10,
+   "step": 0.25
+  },
+  "style": "pve"
+ },
+ "PVE": {
+  "maxPath": 48,
+  "stagger": {
+   "step": 4,
+   "sent": 10
+  },
+  "columns": 2,
+  "drink": 1,
+  "drinkStep": 3,
+  "restCut": true,
+  "regen": 8
+ }
+}

@@ -1,0 +1,902 @@
+{
+ "KIND_WORDS": {
+  "start": "From the start",
+  "rung": "Rung",
+  "power": "Power",
+  "trait": "Trait",
+  "epic": "Epic miracle",
+  "summit": "Summit"
+ },
+ "LADDER": {
+  "ouranurgy": [
+   {
+    "at": 10,
+    "kind": "rung",
+    "id": "postpone",
+    "label": "Postpone",
+    "line": "A blow that gets past your shield cracks you 4 seconds late.",
+    "built": true,
+    "art": "reaction",
+    "domain": "ouranurgy"
+   },
+   {
+    "at": 20,
+    "kind": "power",
+    "id": "hasten",
+    "label": "Hasten / Stay",
+    "line": "matter's time over a patch runs four times as fast, or stops",
+    "built": true,
+    "domain": "ouranurgy"
+   },
+   {
+    "at": 30,
+    "kind": "rung",
+    "id": "recall",
+    "label": "Recall",
+    "line": "Blink back to where you stood 3 seconds ago, your pool as it was then if it was fuller.",
+    "built": true,
+    "art": "action",
+    "domain": "ouranurgy"
+   },
+   {
+    "at": 40,
+    "kind": "power",
+    "id": "portal",
+    "label": "Portal",
+    "line": "a linked pair of holes: what goes in one comes out the other",
+    "built": true,
+    "domain": "ouranurgy"
+   },
+   {
+    "at": 50,
+    "kind": "power",
+    "id": "fold",
+    "label": "Swap",
+    "line": "two patches of ground trade places",
+    "built": true,
+    "domain": "ouranurgy"
+   },
+   {
+    "at": 60,
+    "kind": "rung",
+    "id": "fuse",
+    "label": "The Fuse",
+    "line": "Fuse the nearest foe. For 8 seconds, every affliction you put on it is delayed. Press again and they all go off at once, each lasting half again as long.",
+    "built": true,
+    "art": "action",
+    "domain": "ouranurgy"
+   },
+   {
+    "at": 70,
+    "kind": "trait",
+    "id": "postponeDeep",
+    "label": "Enhanced Postpone",
+    "line": "A parried Postponed blow lands at a quarter of its damage, down from half.",
+    "built": true,
+    "of": "postpone",
+    "domain": "ouranurgy"
+   },
+   {
+    "at": 80,
+    "kind": "epic",
+    "id": "stoppedHour",
+    "label": "Stopped Hour",
+    "line": "The epic miracle of the dread sign, drawn with Shift.",
+    "built": true,
+    "domain": "ouranurgy"
+   },
+   {
+    "at": 90,
+    "kind": "rung",
+    "id": "planned.ouranurgy.90",
+    "label": "Stasis",
+    "line": "A bubble where time runs at a fifth.",
+    "built": false,
+    "domain": "ouranurgy"
+   },
+   {
+    "at": 99,
+    "kind": "summit",
+    "id": "planned.ouranurgy.99",
+    "label": "The Rewind",
+    "line": "The area put back as it was 6 seconds ago. You keep only what you know.",
+    "built": false,
+    "domain": "ouranurgy"
+   }
+  ],
+  "manifestation": [
+   {
+    "at": 1,
+    "kind": "start",
+    "id": "manifest",
+    "label": "Manifest",
+    "line": "raise clay",
+    "built": true,
+    "domain": "manifestation"
+   },
+   {
+    "at": 10,
+    "kind": "rung",
+    "id": "plating",
+    "label": "Plating",
+    "line": "Set 20 of your pool solid over the part of you facing the nearest foe: it takes most of that part's next crack.",
+    "built": true,
+    "art": "action",
+    "domain": "manifestation"
+   },
+   {
+    "at": 20,
+    "kind": "power",
+    "id": "sculpt",
+    "label": "Sculpt",
+    "line": "raise a pillar, an arch, a bridge or a ramp of clay",
+    "built": true,
+    "domain": "manifestation"
+   },
+   {
+    "at": 30,
+    "kind": "rung",
+    "id": "footholds",
+    "label": "Footholds",
+    "line": "Set a step of Lachrymite where you are about to be: under your feet in the air, a stair ahead on the ground.",
+    "built": true,
+    "art": "action",
+    "domain": "manifestation"
+   },
+   {
+    "at": 40,
+    "kind": "power",
+    "id": "setfast",
+    "label": "Lock",
+    "line": "set a creation so the mending leaves it be",
+    "built": true,
+    "domain": "manifestation"
+   },
+   {
+    "at": 50,
+    "kind": "power",
+    "id": "totem",
+    "label": "Weather Anchor",
+    "line": "hold a miracle's weather on one spot for a game hour",
+    "built": true,
+    "domain": "manifestation"
+   },
+   {
+    "at": 60,
+    "kind": "rung",
+    "id": "catchWeather",
+    "label": "Catch the Weather",
+    "line": "Stand in a feeling's weather, out under the sky, with a Bottle on, and the Bottle fills with that feeling.",
+    "built": true,
+    "art": "passive",
+    "domain": "manifestation"
+   },
+   {
+    "at": 70,
+    "kind": "trait",
+    "id": "platingWhole",
+    "label": "Enhanced Plating",
+    "line": "Plating absorbs its region's whole next crack. It cannot stop a blow that would shatter you.",
+    "built": true,
+    "of": "plating",
+    "domain": "manifestation"
+   },
+   {
+    "at": 80,
+    "kind": "epic",
+    "id": "volcano",
+    "label": "Volcano",
+    "line": "The epic miracle of the fury sign, drawn with Shift.",
+    "built": true,
+    "domain": "manifestation"
+   },
+   {
+    "at": 90,
+    "kind": "rung",
+    "id": "planned.manifestation.90",
+    "label": "Made of a Feeling",
+    "line": "A made thing of a feeling: a wall of Grief's rain, a ward of Fury's sparks.",
+    "built": false,
+    "domain": "manifestation"
+   },
+   {
+    "at": 99,
+    "kind": "summit",
+    "id": "planned.manifestation.99",
+    "label": "A Second Vessel",
+    "line": "A clay double made from your pool, with its own cracks.",
+    "built": false,
+    "domain": "manifestation"
+   }
+  ],
+  "divination": [
+   {
+    "at": 10,
+    "kind": "rung",
+    "id": "watch",
+    "label": "The Watch",
+    "line": "A Figment's watch shows: while its head is down, how long until it looks up.",
+    "built": true,
+    "art": "passive",
+    "domain": "divination"
+   },
+   {
+    "at": 20,
+    "kind": "power",
+    "id": "strata",
+    "label": "Layer View",
+    "line": "see the layers under the hand",
+    "built": true,
+    "domain": "divination"
+   },
+   {
+    "at": 30,
+    "kind": "rung",
+    "id": "makeup",
+    "label": "A Body's Make-up",
+    "line": "Lock on to a creature and you read what it is made of, and so the type that bites it.",
+    "built": true,
+    "art": "passive",
+    "domain": "divination"
+   },
+   {
+    "at": 40,
+    "kind": "power",
+    "id": "course",
+    "label": "Flow Preview",
+    "line": "see where a pour will run before it falls",
+    "built": true,
+    "domain": "divination"
+   },
+   {
+    "at": 50,
+    "kind": "power",
+    "id": "read",
+    "label": "Scan Intent",
+    "line": "see a creature's next intent from above",
+    "built": true,
+    "domain": "divination"
+   },
+   {
+    "at": 60,
+    "kind": "rung",
+    "id": "trueOdds",
+    "label": "True Odds",
+    "line": "See chance as real numbers. Near the Tithe's console you get the next pull's odds for each tier, pity included. Near a crystal you see what it might give.",
+    "built": true,
+    "art": "passive",
+    "domain": "divination"
+   },
+   {
+    "at": 70,
+    "kind": "trait",
+    "id": "watchFar",
+    "label": "Enhanced Watch",
+    "line": "A Figment's watch can be read from 50 m, up from 30 m.",
+    "built": true,
+    "of": "watch",
+    "domain": "divination"
+   },
+   {
+    "at": 80,
+    "kind": "epic",
+    "id": "prophecy",
+    "label": "Prophecy",
+    "line": "The epic miracle of the wonder sign, drawn with Shift.",
+    "built": true,
+    "domain": "divination"
+   },
+   {
+    "at": 90,
+    "kind": "rung",
+    "id": "planned.divination.90",
+    "label": "Call It",
+    "line": "Commit to a read of a creature's next move. Right, and your read is exact a while.",
+    "built": false,
+    "domain": "divination"
+   },
+   {
+    "at": 99,
+    "kind": "summit",
+    "id": "planned.divination.99",
+    "label": "See the Next Roll",
+    "line": "Your own dice's next throw shown before you commit, once a game hour.",
+    "built": false,
+    "domain": "divination"
+   }
+  ],
+  "psychokinesis": [
+   {
+    "at": 1,
+    "kind": "start",
+    "id": "scoop",
+    "label": "Scoop",
+    "line": "take matter up and pour it out",
+    "built": true,
+    "domain": "psychokinesis"
+   },
+   {
+    "at": 1,
+    "kind": "start",
+    "id": "telekinesis",
+    "label": "Telekinesis",
+    "line": "lift and throw",
+    "built": true,
+    "domain": "psychokinesis"
+   },
+   {
+    "at": 10,
+    "kind": "rung",
+    "id": "shatter",
+    "label": "Shatter",
+    "line": "A Figment whose shell is near breaking glows; a heavy blow on it then breaks it at once.",
+    "built": true,
+    "art": "passive",
+    "domain": "psychokinesis"
+   },
+   {
+    "at": 20,
+    "kind": "power",
+    "id": "gust",
+    "label": "Gust",
+    "line": "a stroke of wind",
+    "built": true,
+    "domain": "psychokinesis"
+   },
+   {
+    "at": 30,
+    "kind": "rung",
+    "id": "catch",
+    "label": "The Catch",
+    "line": "Parry a shot and keep holding the parry: you catch it, and let go to throw it where you aim, half again as hard.",
+    "built": true,
+    "art": "reaction",
+    "domain": "psychokinesis"
+   },
+   {
+    "at": 40,
+    "kind": "power",
+    "id": "slab",
+    "label": "Lift Ground",
+    "line": "lift a slab of ground and set it down elsewhere",
+    "built": true,
+    "domain": "psychokinesis"
+   },
+   {
+    "at": 50,
+    "kind": "trait",
+    "id": "catchLong",
+    "label": "Enhanced Catch",
+    "line": "A caught shot can be kept for 2.5 seconds, up from 1.5.",
+    "built": true,
+    "of": "catch",
+    "domain": "psychokinesis"
+   },
+   {
+    "at": 60,
+    "kind": "rung",
+    "id": "relay",
+    "label": "Relay",
+    "line": "Hit a creature hard and the force carries on to the one behind it, up to three in a row.",
+    "built": true,
+    "art": "passive",
+    "domain": "psychokinesis"
+   },
+   {
+    "at": 70,
+    "kind": "trait",
+    "id": "catchHard",
+    "label": "Hard Return",
+    "line": "A caught shot thrown back deals double damage, up from 1.5 times.",
+    "built": true,
+    "of": "catch",
+    "domain": "psychokinesis"
+   },
+   {
+    "at": 80,
+    "kind": "epic",
+    "id": "maelstrom",
+    "label": "Maelstrom",
+    "line": "The epic miracle of the desire sign, drawn with Shift.",
+    "built": true,
+    "domain": "psychokinesis"
+   },
+   {
+    "at": 90,
+    "kind": "rung",
+    "id": "planned.psychokinesis.90",
+    "label": "Heft",
+    "line": "A carried mass held off your pool's top, thrown as hard as it weighs.",
+    "built": false,
+    "domain": "psychokinesis"
+   },
+   {
+    "at": 99,
+    "kind": "summit",
+    "id": "planned.psychokinesis.99",
+    "label": "Banked Motion",
+    "line": "Your speed stored as you move and let go as one blow.",
+    "built": false,
+    "domain": "psychokinesis"
+   }
+  ],
+  "possession": [
+   {
+    "at": 10,
+    "kind": "rung",
+    "id": "receptivity",
+    "label": "Receptivity",
+    "line": "A mind whose agitation is in its best band shows open, and you may reprogram it without stunning it first.",
+    "built": true,
+    "art": "passive",
+    "domain": "possession"
+   },
+   {
+    "at": 20,
+    "kind": "power",
+    "id": "herd",
+    "label": "Herd",
+    "line": "creatures near a drawn line walk it",
+    "built": true,
+    "domain": "possession"
+   },
+   {
+    "at": 30,
+    "kind": "rung",
+    "id": "link",
+    "label": "The Link",
+    "line": "The last creature you reprogrammed is bound to you: a crack meant for you is split, half on it.",
+    "built": true,
+    "art": "passive",
+    "domain": "possession"
+   },
+   {
+    "at": 40,
+    "kind": "power",
+    "id": "take",
+    "label": "Possess",
+    "line": "play a creature from above",
+    "built": true,
+    "domain": "possession"
+   },
+   {
+    "at": 50,
+    "kind": "power",
+    "id": "muster",
+    "label": "Rally",
+    "line": "hatched clapperjars carry matter where the hand points",
+    "built": true,
+    "domain": "possession"
+   },
+   {
+    "at": 60,
+    "kind": "rung",
+    "id": "borrowVerb",
+    "label": "Borrow a Verb",
+    "line": "Reprogram a creature and you can use its move on R for 20 seconds, in place of your sub's.",
+    "built": true,
+    "art": "passive",
+    "domain": "possession"
+   },
+   {
+    "at": 70,
+    "kind": "trait",
+    "id": "linkDeep",
+    "label": "Enhanced Link",
+    "line": "The linked creature takes two thirds of each crack meant for you, up from half.",
+    "built": true,
+    "of": "link",
+    "domain": "possession"
+   },
+   {
+    "at": 80,
+    "kind": "epic",
+    "id": "stampede",
+    "label": "Stampede",
+    "line": "The epic miracle of the mirth sign, drawn with Shift.",
+    "built": true,
+    "domain": "possession"
+   },
+   {
+    "at": 90,
+    "kind": "rung",
+    "id": "planned.possession.90",
+    "label": "Ride",
+    "line": "Leave your vessel standing and drive a creature's body.",
+    "built": false,
+    "domain": "possession"
+   },
+   {
+    "at": 99,
+    "kind": "summit",
+    "id": "planned.possession.99",
+    "label": "No Border",
+    "line": "A bound spirit's pool and yours are one.",
+    "built": false,
+    "domain": "possession"
+   }
+  ],
+  "alteration": [
+   {
+    "at": 1,
+    "kind": "start",
+    "id": "shape",
+    "label": "Shape",
+    "line": "raise or lower the ground; Shift to level it",
+    "built": true,
+    "domain": "alteration"
+   },
+   {
+    "at": 1,
+    "kind": "start",
+    "id": "wring",
+    "label": "Wring",
+    "line": "twist the clay",
+    "built": true,
+    "domain": "alteration"
+   },
+   {
+    "at": 1,
+    "kind": "start",
+    "id": "swell",
+    "label": "Swell",
+    "line": "grow or shrink",
+    "built": true,
+    "domain": "alteration"
+   },
+   {
+    "at": 1,
+    "kind": "start",
+    "id": "sunder",
+    "label": "Sunder",
+    "line": "draw a blade",
+    "built": true,
+    "domain": "alteration"
+   },
+   {
+    "at": 10,
+    "kind": "rung",
+    "id": "retype",
+    "label": "Re-type",
+    "line": "For 20 seconds the tool in your hands strikes as another type: the nearest creature's weakness if you know its kind, else the next type in turn.",
+    "built": true,
+    "art": "action",
+    "domain": "alteration"
+   },
+   {
+    "at": 20,
+    "kind": "power",
+    "id": "transmute",
+    "label": "Transmute",
+    "line": "sand to clay and back; a pool to your draught's feeling",
+    "built": true,
+    "domain": "alteration"
+   },
+   {
+    "at": 30,
+    "kind": "rung",
+    "id": "reactions",
+    "label": "Reactions",
+    "line": "Paint one feeling over another and they react: opposites cancel to bare ground and calm what stands there; two that wedge flare as the old paint's blow.",
+    "built": true,
+    "art": "passive",
+    "domain": "alteration"
+   },
+   {
+    "at": 40,
+    "kind": "power",
+    "id": "carve",
+    "label": "Carve",
+    "line": "cut a channel",
+    "built": true,
+    "domain": "alteration"
+   },
+   {
+    "at": 40,
+    "kind": "trait",
+    "id": "retypeLong",
+    "label": "Enhanced Re-type",
+    "line": "Re-type lasts 30 seconds, up from 20.",
+    "built": true,
+    "of": "retype",
+    "domain": "alteration"
+   },
+   {
+    "at": 50,
+    "kind": "trait",
+    "id": "reactionsWide",
+    "label": "Enhanced Reactions",
+    "line": "Reactions reach 2.5 m, up from 1.5 m.",
+    "built": true,
+    "of": "reactions",
+    "domain": "alteration"
+   },
+   {
+    "at": 60,
+    "kind": "rung",
+    "id": "walkCycle",
+    "label": "Walk the Cycle",
+    "line": "Turn every affliction on the nearest foe into the one it beats: doubt into charm, charm into confusion, confusion into a stun, blindness into doubt.",
+    "built": true,
+    "art": "action",
+    "domain": "alteration"
+   },
+   {
+    "at": 70,
+    "kind": "trait",
+    "id": "reactionsCalm",
+    "label": "Lasting Reactions",
+    "line": "A cancel calms everything inside it for 5 seconds, up from 3.",
+    "built": true,
+    "of": "reactions",
+    "domain": "alteration"
+   },
+   {
+    "at": 80,
+    "kind": "epic",
+    "id": "earthquake",
+    "label": "Earthquake",
+    "line": "The epic miracle of the gall sign, drawn with Shift.",
+    "built": true,
+    "domain": "alteration"
+   },
+   {
+    "at": 90,
+    "kind": "rung",
+    "id": "planned.alteration.90",
+    "label": "The Exchange",
+    "line": "Pool into mending, or a crack into pool, at a loss.",
+    "built": false,
+    "domain": "alteration"
+   },
+   {
+    "at": 99,
+    "kind": "summit",
+    "id": "planned.alteration.99",
+    "label": "Re-make a Body",
+    "line": "A creature's make-up changed a while.",
+    "built": false,
+    "domain": "alteration"
+   }
+  ],
+  "spellscription": [
+   {
+    "at": 1,
+    "kind": "start",
+    "id": "miracle",
+    "label": "Miracles",
+    "line": "draw a feeling's sign to call its weather down",
+    "built": true,
+    "domain": "spellscription"
+   },
+   {
+    "at": 10,
+    "kind": "rung",
+    "id": "standingRule",
+    "label": "A Standing Rule",
+    "line": "Write one rule: when you do one thing, another follows, for 5 of your pool.",
+    "built": true,
+    "art": "passive",
+    "domain": "spellscription"
+   },
+   {
+    "at": 20,
+    "kind": "power",
+    "id": "ward",
+    "label": "Barrier",
+    "line": "a circle creatures cannot cross",
+    "built": true,
+    "domain": "spellscription"
+   },
+   {
+    "at": 30,
+    "kind": "rung",
+    "id": "vow",
+    "label": "A Vow",
+    "line": "Swear off one thing and every cost is a quarter less while you keep it. Break it and it cracks you.",
+    "built": true,
+    "art": "passive",
+    "domain": "spellscription"
+   },
+   {
+    "at": 40,
+    "kind": "power",
+    "id": "stamp",
+    "label": "Copy Terrain",
+    "line": "copy a patch of terrain and press it down elsewhere",
+    "built": true,
+    "domain": "spellscription"
+   },
+   {
+    "at": 50,
+    "kind": "trait",
+    "id": "ruleCheap",
+    "label": "Enhanced Standing Rule",
+    "line": "A standing rule costs 2 pool to fire, down from 5.",
+    "built": true,
+    "of": "standingRule",
+    "domain": "spellscription"
+   },
+   {
+    "at": 60,
+    "kind": "rung",
+    "id": "sealCreature",
+    "label": "A Seal on a Creature",
+    "line": "Seal a creature as it winds up a blow. The blow breaks off, and it can't use that kind of blow for 20 seconds.",
+    "built": true,
+    "art": "action",
+    "domain": "spellscription"
+   },
+   {
+    "at": 70,
+    "kind": "trait",
+    "id": "vowDeep",
+    "label": "Enhanced Vow",
+    "line": "A kept vow cuts every cost by a third, up from a quarter.",
+    "built": true,
+    "of": "vow",
+    "domain": "spellscription"
+   },
+   {
+    "at": 80,
+    "kind": "epic",
+    "id": "deluge",
+    "label": "Deluge",
+    "line": "The epic miracle of the grief sign, drawn with Shift.",
+    "built": true,
+    "domain": "spellscription"
+   },
+   {
+    "at": 90,
+    "kind": "rung",
+    "id": "planned.spellscription.90",
+    "label": "Rewrite a Tag",
+    "line": "Add a tag to a thing, or take one off.",
+    "built": false,
+    "domain": "spellscription"
+   },
+   {
+    "at": 99,
+    "kind": "summit",
+    "id": "planned.spellscription.99",
+    "label": "A Place's Law",
+    "line": "An inscription that changes one rule inside its circle.",
+    "built": false,
+    "domain": "spellscription"
+   }
+  ]
+ },
+ "QUESTIONS": {
+  "ouranurgy": "When, and where?",
+  "manifestation": "In what form?",
+  "divination": "What is known?",
+  "psychokinesis": "With how much force?",
+  "possession": "Whose?",
+  "alteration": "Of which kind?",
+  "spellscription": "Under which rule?"
+ },
+ "TENS": [
+  10,
+  20,
+  30,
+  40,
+  50,
+  60,
+  70,
+  80,
+  90,
+  99
+ ],
+ "TRAITS": {
+  "retypeLong": {
+   "domain": "alteration",
+   "at": 40,
+   "of": "retype",
+   "label": "Enhanced Re-type",
+   "line": "Re-type lasts 30 seconds, up from 20.",
+   "set": {
+    "dur": 30
+   }
+  },
+  "reactionsWide": {
+   "domain": "alteration",
+   "at": 50,
+   "of": "reactions",
+   "label": "Enhanced Reactions",
+   "line": "Reactions reach 2.5 m, up from 1.5 m.",
+   "set": {
+    "radius": 2.5
+   }
+  },
+  "catchLong": {
+   "domain": "psychokinesis",
+   "at": 50,
+   "of": "catch",
+   "label": "Enhanced Catch",
+   "line": "A caught shot can be kept for 2.5 seconds, up from 1.5.",
+   "set": {
+    "hold": 2.5
+   }
+  },
+  "ruleCheap": {
+   "domain": "spellscription",
+   "at": 50,
+   "of": "standingRule",
+   "label": "Enhanced Standing Rule",
+   "line": "A standing rule costs 2 pool to fire, down from 5.",
+   "set": {
+    "cost": 2
+   }
+  },
+  "postponeDeep": {
+   "domain": "ouranurgy",
+   "at": 70,
+   "of": "postpone",
+   "label": "Enhanced Postpone",
+   "line": "A parried Postponed blow lands at a quarter of its damage, down from half.",
+   "set": {
+    "parried": 0.25
+   }
+  },
+  "platingWhole": {
+   "domain": "manifestation",
+   "at": 70,
+   "of": "plating",
+   "label": "Enhanced Plating",
+   "line": "Plating absorbs its region's whole next crack. It cannot stop a blow that would shatter you.",
+   "set": {
+    "takes": 1
+   }
+  },
+  "watchFar": {
+   "domain": "divination",
+   "at": 70,
+   "of": "watch",
+   "label": "Enhanced Watch",
+   "line": "A Figment's watch can be read from 50 m, up from 30 m.",
+   "set": {
+    "reach": 50
+   }
+  },
+  "catchHard": {
+   "domain": "psychokinesis",
+   "at": 70,
+   "of": "catch",
+   "label": "Hard Return",
+   "line": "A caught shot thrown back deals double damage, up from 1.5 times.",
+   "set": {
+    "mult": 2
+   }
+  },
+  "linkDeep": {
+   "domain": "possession",
+   "at": 70,
+   "of": "link",
+   "label": "Enhanced Link",
+   "line": "The linked creature takes two thirds of each crack meant for you, up from half.",
+   "set": {
+    "share": 0.6666666666666666
+   }
+  },
+  "reactionsCalm": {
+   "domain": "alteration",
+   "at": 70,
+   "of": "reactions",
+   "label": "Lasting Reactions",
+   "line": "A cancel calms everything inside it for 5 seconds, up from 3.",
+   "set": {
+    "calm": 5
+   }
+  },
+  "vowDeep": {
+   "domain": "spellscription",
+   "at": 70,
+   "of": "vow",
+   "label": "Enhanced Vow",
+   "line": "A kept vow cuts every cost by a third, up from a quarter.",
+   "set": {
+    "costMult": 0.6666666666666666
+   }
+  }
+ }
+}

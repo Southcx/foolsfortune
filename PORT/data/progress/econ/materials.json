@@ -1,0 +1,76 @@
+{
+ "KINDS": {
+  "eldritch": {
+   "id": "eldritch",
+   "name": "eldritch artefacts",
+   "hue": [
+    250,
+    300
+   ],
+   "shape": "spiral"
+  },
+  "arcane": {
+   "id": "arcane",
+   "name": "arcane relics",
+   "hue": [
+    190,
+    240
+   ],
+   "shape": "zigzag"
+  },
+  "finery": {
+   "id": "finery",
+   "name": "finery",
+   "hue": [
+    310,
+    360
+   ],
+   "shape": "arc"
+  },
+  "mechanism": {
+   "id": "mechanism",
+   "name": "mechanisms",
+   "hue": [
+    30,
+    60
+   ],
+   "shape": "zigzag"
+  },
+  "edge": {
+   "id": "edge",
+   "name": "edges and tools",
+   "hue": [
+    0,
+    30
+   ],
+   "shape": "line"
+  },
+  "art": {
+   "id": "art",
+   "name": "art",
+   "hue": [
+    60,
+    120
+   ],
+   "shape": "arc"
+  },
+  "provision": {
+   "id": "provision",
+   "name": "provisions",
+   "hue": [
+    120,
+    180
+   ],
+   "shape": "spiral"
+  }
+ },
+ "KIND_IDS": [
+  "eldritch",
+  "arcane",
+  "finery",
+  "mechanism",
+  "edge",
+  "art",
+  "provision"
+ ]
+}

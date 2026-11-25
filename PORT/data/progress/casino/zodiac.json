@@ -1,0 +1,23 @@
+{
+ "ZODIAC": {
+  "id": "zodiac",
+  "seats": [
+   2,
+   4
+  ]
+ },
+ "ZODIAC_RULES": {
+  "tiles": 12,
+  "ante": 5,
+  "chips": 100,
+  "attack": 4,
+  "tokens": 3,
+  "abilities": [
+   "reroll",
+   "downgrade",
+   "refund",
+   "scramble"
+  ],
+  "cap": 400
+ }
+}

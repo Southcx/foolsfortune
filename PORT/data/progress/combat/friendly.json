@@ -1,0 +1,10 @@
+{
+ "FRIENDLY": {
+  "damage": 0.2,
+  "cap": 0.25,
+  "buildMult": 2,
+  "durMult": 0.5,
+  "immuneAt": 3,
+  "windowSec": 20
+ }
+}

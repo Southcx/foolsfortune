@@ -1,0 +1,9 @@
+{
+ "AREA_IDS": [
+  "weir",
+  "shore",
+  "ridges",
+  "flats",
+  "ruins"
+ ]
+}

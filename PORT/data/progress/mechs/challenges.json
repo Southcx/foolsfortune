@@ -1,0 +1,126 @@
+{
+ "CHALLENGES": {
+  "javelin": {
+   "label": "Javelin",
+   "line": "Throw a post or girder from the line: your best of three, in metres.",
+   "kind": "throw",
+   "props": [
+    "post",
+    "girder"
+   ],
+   "tries": 3,
+   "unit": "m",
+   "medals": [
+    80,
+    120,
+    155
+   ]
+  },
+  "bullseye": {
+   "label": "Bullseye",
+   "line": "Three throws at the rings. The middle is worth the most.",
+   "kind": "throw",
+   "props": [
+    "chunk",
+    "tower"
+   ],
+   "tries": 3,
+   "unit": "points",
+   "medals": [
+    100,
+    175,
+    250
+   ],
+   "target": 70
+  },
+  "bowling": {
+   "label": "Bowling",
+   "line": "Throw the water tower at the pins. Two throws: knock all ten.",
+   "kind": "throw",
+   "props": [
+    "tower"
+   ],
+   "tries": 2,
+   "unit": "pins",
+   "medals": [
+    7,
+    9,
+    10
+   ],
+   "from": 70
+  },
+  "demolition": {
+   "label": "Demolition",
+   "line": "Sixty seconds: break as much of the city as you can.",
+   "kind": "timed",
+   "secs": 60,
+   "unit": "cells",
+   "medals": [
+    400,
+    900,
+    1600
+   ]
+  },
+  "wrecking": {
+   "label": "Wrecking Crew",
+   "line": "Two minutes: bring down as many buildings as you can.",
+   "kind": "timed",
+   "secs": 120,
+   "unit": "buildings",
+   "medals": [
+    2,
+    4,
+    6
+   ]
+  }
+ },
+ "CHALLENGE_IDS": [
+  "javelin",
+  "bullseye",
+  "bowling",
+  "demolition",
+  "wrecking"
+ ],
+ "LANE": {
+  "z": -155,
+  "line": -150,
+  "east": 1,
+  "lectern": {
+   "x": -162,
+   "z": -140
+  },
+  "width": 30
+ },
+ "MEDAL_NAMES": [
+  "no medal",
+  "bronze",
+  "silver",
+  "gold"
+ ],
+ "PINS": {
+  "at": 115,
+  "gap": 6,
+  "h": 8,
+  "r": 3,
+  "reach": 7.5,
+  "cone": 0.85
+ },
+ "RINGS": [
+  {
+   "r": 4,
+   "pts": 100
+  },
+  {
+   "r": 10,
+   "pts": 50
+  },
+  {
+   "r": 18,
+   "pts": 25
+  },
+  {
+   "r": 28,
+   "pts": 10
+  }
+ ]
+}

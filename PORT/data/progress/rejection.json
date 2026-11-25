@@ -1,0 +1,62 @@
+{
+ "REJECTION": {
+  "levels": [
+   25,
+   60,
+   110,
+   170,
+   240
+  ],
+  "fall": 0.7,
+  "rise": {
+   "moved": 0.5,
+   "made": 1,
+   "miracle": 8,
+   "epic": 60,
+   "throw": 2,
+   "act": 3
+  },
+  "ebb": 2,
+  "quiet": 12,
+  "every": 20,
+  "cap": 8,
+  "answer": [
+   null,
+   {
+    "jelly": 2,
+    "cls": 0
+   },
+   {
+    "jelly": 3,
+    "cls": 0,
+    "wisp": 1
+   },
+   {
+    "jelly": 2,
+    "cls": 1,
+    "wisp": 2
+   },
+   {
+    "jelly": 1,
+    "cls": 2,
+    "wisp": 2
+   },
+   {
+    "jelly": 1,
+    "cls": 2,
+    "size": 2.2,
+    "wisp": 3,
+    "boss": true
+   }
+  ],
+  "emo": 0.8,
+  "stash": [
+   0,
+   4,
+   6,
+   10,
+   20,
+   60
+  ]
+ }
+}

@@ -1,0 +1,46 @@
+{
+ "SEA_SERPENT": {
+  "cls": 2,
+  "hp": 60,
+  "segments": 20,
+  "length": 105,
+  "speed": 9,
+  "weak": "head",
+  "sense": 200,
+  "give": {
+   "minutes": 6,
+   "kept": [
+    0.75,
+    1.25
+   ],
+   "bountyCls": 2,
+   "material": "serpent scale"
+  },
+  "moves": {
+   "ram": {
+    "windup": 1.4,
+    "hits": 1,
+    "answer": "steer",
+    "cooldown": 6
+   },
+   "spit": {
+    "windup": 0.9,
+    "shot": "outlined",
+    "answer": "parry",
+    "cooldown": 4
+   },
+   "coil": {
+    "windup": 2,
+    "hits": 1,
+    "answer": "shoot",
+    "cooldown": 10,
+    "hold": 5
+   },
+   "dive": {
+    "windup": 0.5,
+    "answer": "read",
+    "cooldown": 3
+   }
+  }
+ }
+}

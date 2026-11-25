@@ -1,0 +1,30 @@
+{
+ "SUPERNOVA": {
+  "id": "supernova",
+  "seats": [
+   1,
+   6
+  ]
+ },
+ "SUPERNOVA_RULES": {
+  "start": [
+   6,
+   6,
+   6,
+   6
+  ],
+  "maxDice": 12,
+  "threshold": 500,
+  "cap": 240,
+  "sizes": [
+   4,
+   6,
+   8,
+   10,
+   12,
+   20
+  ],
+  "nova": 2,
+  "guard": 400
+ }
+}

@@ -1,0 +1,12 @@
+{
+ "AUTO": {
+  "cooks": 5,
+  "trues": 1,
+  "below": 1,
+  "ceiling": "perfect"
+ },
+ "BATCH": {
+  "max": 10,
+  "trues": 3
+ }
+}

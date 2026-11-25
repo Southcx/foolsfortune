@@ -1,0 +1,659 @@
+{
+ "OPTIONS": {
+  "grain": [
+   -1,
+   -0.5,
+   0,
+   0.5,
+   1
+  ],
+  "mind": [
+   "free",
+   "stoic",
+   "resolved",
+   "balanced",
+   "fluid",
+   "prismatic"
+  ],
+  "affinity": [
+   "impact",
+   "ego",
+   "influence",
+   "illusion",
+   "delirium"
+  ],
+  "poise": [
+   0.5,
+   1,
+   2,
+   3,
+   5
+  ],
+  "stunFor": [
+   0,
+   2,
+   4,
+   5,
+   8
+  ],
+  "build": [
+   0.5,
+   1,
+   2
+  ],
+  "friendly": [
+   false,
+   true
+  ],
+  "guard": [
+   30,
+   60,
+   90,
+   180
+  ]
+ },
+ "PRESETS": {
+  "plain": {
+   "label": "Plain",
+   "line": "Strawman as it stands."
+  },
+  "slipjelly": {
+   "label": "Slip jelly",
+   "line": "A slip jelly's grain, poise and stun.",
+   "grain": {
+    "o": 0.2,
+    "c": -0.6,
+    "e": 0.7,
+    "a": -0.2,
+    "n": 0.3
+   },
+   "poise": 1,
+   "stunFor": 5,
+   "mind": "free"
+  },
+  "boldjelly": {
+   "label": "Bold jelly",
+   "line": "A slip jelly at the bold end: harder to stun.",
+   "grain": {
+    "o": 0.2,
+    "c": -0.6,
+    "e": 1,
+    "a": -0.2,
+    "n": 0.3
+   },
+   "poise": 1.2,
+   "stunFor": 5,
+   "mind": "free"
+  },
+  "crowned": {
+   "label": "Great Slip Jelly, crowned",
+   "line": "The FOE under its crown: poise x3, Resolved, guarding.",
+   "grain": {
+    "o": 0.2,
+    "c": -0.6,
+    "e": 1,
+    "a": -0.2,
+    "n": 0.3
+   },
+   "poise": 3,
+   "stunFor": 5,
+   "mind": "resolved",
+   "behaviour": "guard",
+   "guard": 90
+  },
+  "bare": {
+   "label": "Great Slip Jelly, bare",
+   "line": "The FOE with its crown burst: poise x3, its mind loosed.",
+   "grain": {
+    "o": 0.2,
+    "c": -0.6,
+    "e": 1,
+    "a": -0.2,
+    "n": 0.3
+   },
+   "poise": 3,
+   "stunFor": 5,
+   "mind": "free"
+  }
+ },
+ "RIG": {
+  "preset": "plain",
+  "grain": {
+   "o": 0,
+   "c": 0,
+   "e": 0,
+   "a": 0,
+   "n": 0
+  },
+  "mind": "free",
+  "affinity": "impact",
+  "poise": 1,
+  "stunFor": 4,
+  "build": {
+   "ego": 1,
+   "influence": 1,
+   "illusion": 1,
+   "delirium": 1
+  },
+  "friendly": false,
+  "guard": 60,
+  "behaviour": "still"
+ },
+ "SCRIPTS": {
+  "light": {
+   "label": "Twelve light blows",
+   "line": "Twelve power-1 Impact blows, one every 0.5 s.",
+   "blows": [
+    {
+     "at": 0,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 0.5,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 1,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 1.5,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 2,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 2.5,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 3,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 3.5,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 4,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 4.5,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 5,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 5.5,
+     "type": "impact",
+     "power": 1
+    }
+   ]
+  },
+  "burst": {
+   "label": "A burst",
+   "line": "Twenty power-1 Impact blows, one every 0.15 s.",
+   "blows": [
+    {
+     "at": 0,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 0.15,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 0.3,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 0.45,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 0.6,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 0.75,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 0.9,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 1.05,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 1.2,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 1.35,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 1.5,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 1.65,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 1.8,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 1.95,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 2.1,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 2.25,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 2.4,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 2.55,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 2.7,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 2.85,
+     "type": "impact",
+     "power": 1
+    }
+   ]
+  },
+  "heavy": {
+   "label": "Five heavy blows",
+   "line": "Five power-3 Impact blows, one every 1.2 s.",
+   "blows": [
+    {
+     "at": 0,
+     "type": "impact",
+     "power": 3
+    },
+    {
+     "at": 1.2,
+     "type": "impact",
+     "power": 3
+    },
+    {
+     "at": 2.4,
+     "type": "impact",
+     "power": 3
+    },
+    {
+     "at": 3.6,
+     "type": "impact",
+     "power": 3
+    },
+    {
+     "at": 4.8,
+     "type": "impact",
+     "power": 3
+    }
+   ]
+  },
+  "types": {
+   "label": "Each type",
+   "line": "Four power-1 blows of each damage type, one every 0.4 s.",
+   "blows": [
+    {
+     "at": 0,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 0.4,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 0.8,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 1.2,
+     "type": "impact",
+     "power": 1
+    },
+    {
+     "at": 1.8,
+     "type": "ego",
+     "power": 1
+    },
+    {
+     "at": 2.2,
+     "type": "ego",
+     "power": 1
+    },
+    {
+     "at": 2.6,
+     "type": "ego",
+     "power": 1
+    },
+    {
+     "at": 3,
+     "type": "ego",
+     "power": 1
+    },
+    {
+     "at": 3.6,
+     "type": "influence",
+     "power": 1
+    },
+    {
+     "at": 4,
+     "type": "influence",
+     "power": 1
+    },
+    {
+     "at": 4.4,
+     "type": "influence",
+     "power": 1
+    },
+    {
+     "at": 4.8,
+     "type": "influence",
+     "power": 1
+    },
+    {
+     "at": 5.4,
+     "type": "illusion",
+     "power": 1
+    },
+    {
+     "at": 5.8,
+     "type": "illusion",
+     "power": 1
+    },
+    {
+     "at": 6.2,
+     "type": "illusion",
+     "power": 1
+    },
+    {
+     "at": 6.6,
+     "type": "illusion",
+     "power": 1
+    },
+    {
+     "at": 7.2,
+     "type": "delirium",
+     "power": 1
+    },
+    {
+     "at": 7.6,
+     "type": "delirium",
+     "power": 1
+    },
+    {
+     "at": 8,
+     "type": "delirium",
+     "power": 1
+    },
+    {
+     "at": 8.4,
+     "type": "delirium",
+     "power": 1
+    }
+   ]
+  },
+  "status": {
+   "label": "Build a status",
+   "line": "Ten power-1 blows of each non-Impact type, one every 0.3 s, a type after a type.",
+   "blows": [
+    {
+     "at": 0,
+     "type": "ego",
+     "power": 1
+    },
+    {
+     "at": 0.3,
+     "type": "ego",
+     "power": 1
+    },
+    {
+     "at": 0.6,
+     "type": "ego",
+     "power": 1
+    },
+    {
+     "at": 0.9,
+     "type": "ego",
+     "power": 1
+    },
+    {
+     "at": 1.2,
+     "type": "ego",
+     "power": 1
+    },
+    {
+     "at": 1.5,
+     "type": "ego",
+     "power": 1
+    },
+    {
+     "at": 1.8,
+     "type": "ego",
+     "power": 1
+    },
+    {
+     "at": 2.1,
+     "type": "ego",
+     "power": 1
+    },
+    {
+     "at": 2.4,
+     "type": "ego",
+     "power": 1
+    },
+    {
+     "at": 2.7,
+     "type": "ego",
+     "power": 1
+    },
+    {
+     "at": 3.6,
+     "type": "influence",
+     "power": 1
+    },
+    {
+     "at": 3.9,
+     "type": "influence",
+     "power": 1
+    },
+    {
+     "at": 4.2,
+     "type": "influence",
+     "power": 1
+    },
+    {
+     "at": 4.5,
+     "type": "influence",
+     "power": 1
+    },
+    {
+     "at": 4.8,
+     "type": "influence",
+     "power": 1
+    },
+    {
+     "at": 5.1,
+     "type": "influence",
+     "power": 1
+    },
+    {
+     "at": 5.4,
+     "type": "influence",
+     "power": 1
+    },
+    {
+     "at": 5.7,
+     "type": "influence",
+     "power": 1
+    },
+    {
+     "at": 6,
+     "type": "influence",
+     "power": 1
+    },
+    {
+     "at": 6.3,
+     "type": "influence",
+     "power": 1
+    },
+    {
+     "at": 7.2,
+     "type": "illusion",
+     "power": 1
+    },
+    {
+     "at": 7.5,
+     "type": "illusion",
+     "power": 1
+    },
+    {
+     "at": 7.8,
+     "type": "illusion",
+     "power": 1
+    },
+    {
+     "at": 8.1,
+     "type": "illusion",
+     "power": 1
+    },
+    {
+     "at": 8.4,
+     "type": "illusion",
+     "power": 1
+    },
+    {
+     "at": 8.7,
+     "type": "illusion",
+     "power": 1
+    },
+    {
+     "at": 9,
+     "type": "illusion",
+     "power": 1
+    },
+    {
+     "at": 9.3,
+     "type": "illusion",
+     "power": 1
+    },
+    {
+     "at": 9.6,
+     "type": "illusion",
+     "power": 1
+    },
+    {
+     "at": 9.9,
+     "type": "illusion",
+     "power": 1
+    },
+    {
+     "at": 10.8,
+     "type": "delirium",
+     "power": 1
+    },
+    {
+     "at": 11.1,
+     "type": "delirium",
+     "power": 1
+    },
+    {
+     "at": 11.4,
+     "type": "delirium",
+     "power": 1
+    },
+    {
+     "at": 11.7,
+     "type": "delirium",
+     "power": 1
+    },
+    {
+     "at": 12,
+     "type": "delirium",
+     "power": 1
+    },
+    {
+     "at": 12.3,
+     "type": "delirium",
+     "power": 1
+    },
+    {
+     "at": 12.6,
+     "type": "delirium",
+     "power": 1
+    },
+    {
+     "at": 12.9,
+     "type": "delirium",
+     "power": 1
+    },
+    {
+     "at": 13.2,
+     "type": "delirium",
+     "power": 1
+    },
+    {
+     "at": 13.5,
+     "type": "delirium",
+     "power": 1
+    }
+   ]
+  }
+ }
+}

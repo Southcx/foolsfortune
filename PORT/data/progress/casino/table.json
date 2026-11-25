@@ -1,0 +1,91 @@
+{
+ "DIE_STEPS": [
+  4,
+  6,
+  8,
+  10,
+  12,
+  20
+ ],
+ "DND_SET": [
+  4,
+  6,
+  8,
+  10,
+  10,
+  12,
+  20
+ ],
+ "SEAT_COLOURS": [
+  {
+   "id": "red",
+   "label": "Red",
+   "hex": "#e5484d",
+   "shape": "circle"
+  },
+  {
+   "id": "yellow",
+   "label": "Yellow",
+   "hex": "#f5c542",
+   "shape": "triangle"
+  },
+  {
+   "id": "green",
+   "label": "Green",
+   "hex": "#3fb950",
+   "shape": "square"
+  },
+  {
+   "id": "blue",
+   "label": "Blue",
+   "hex": "#3b82f6",
+   "shape": "diamond"
+  },
+  {
+   "id": "purple",
+   "label": "Purple",
+   "hex": "#a371f7",
+   "shape": "star"
+  },
+  {
+   "id": "pink",
+   "label": "Pink",
+   "hex": "#f472b6",
+   "shape": "heart"
+  },
+  {
+   "id": "black",
+   "label": "Black",
+   "hex": "#2b2b33",
+   "shape": "hexagon"
+  },
+  {
+   "id": "white",
+   "label": "White",
+   "hex": "#f2f2f2",
+   "shape": "ring"
+  }
+ ],
+ "SUIT_COLOURS": [
+  {
+   "suit": "cups",
+   "hex": "#3b82f6",
+   "pip": "♥"
+  },
+  {
+   "suit": "swords",
+   "hex": "#3fb950",
+   "pip": "♠"
+  },
+  {
+   "suit": "pentacles",
+   "hex": "#f5c542",
+   "pip": "♦"
+  },
+  {
+   "suit": "wands",
+   "hex": "#e5484d",
+   "pip": "♣"
+  }
+ ]
+}

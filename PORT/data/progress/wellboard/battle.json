@@ -1,0 +1,71 @@
+{
+ "BATTLE": {
+  "poise": 16,
+  "crack": 2,
+  "least": 2,
+  "bare": 4,
+  "rounds": 10
+ },
+ "FOES": {},
+ "GEAR": {
+  "cutlass": {
+   "does": "hit",
+   "label": "Cutlass",
+   "slot": "any",
+   "line": "Any die. Deals its face.",
+   "uses": 1
+  },
+  "psygun": {
+   "does": "hit",
+   "bonus": 2,
+   "label": "Psygun",
+   "slot": "max4",
+   "line": "A face of 4 or less. Deals its face + 2. Twice a round.",
+   "uses": 2
+  },
+  "lockheart": {
+   "does": "guard",
+   "label": "Lockheart",
+   "slot": "even",
+   "line": "An even face. Guards that much of the foe's blow.",
+   "uses": 1
+  },
+  "dreamvane": {
+   "does": "split",
+   "label": "Dreamvane",
+   "slot": "min2",
+   "line": "A face of 2 or more. Splits it into two dice.",
+   "uses": 1
+  },
+  "veritome": {
+   "does": "again",
+   "label": "Veritome",
+   "slot": "any",
+   "line": "Any die. Throws it again.",
+   "uses": 1
+  },
+  "crucibelle": {
+   "does": "count",
+   "label": "Crucibelle",
+   "slot": "count",
+   "count": 12,
+   "line": "Any dice. Counts down from 12 across rounds; at 0 the foe's blow is stopped.",
+   "uses": 6
+  }
+ },
+ "GEAR_IDS": [
+  "cutlass",
+  "psygun",
+  "lockheart",
+  "dreamvane",
+  "veritome",
+  "crucibelle"
+ ],
+ "SLOT": {
+  "any": "ANY",
+  "max4": "MAX 4",
+  "even": "EVEN",
+  "min2": "MIN 2",
+  "count": "COUNTDOWN"
+ }
+}

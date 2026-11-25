@@ -1,0 +1,26 @@
+{
+ "POOL": {
+  "islet": {
+   "n": 18,
+   "off": 1
+  },
+  "monument": {
+   "n": 12,
+   "off": 1
+  },
+  "wreck": {
+   "n": 10,
+   "off": 0
+  },
+  "phenomenon": {
+   "n": 8,
+   "off": 1
+  },
+  "seep": {
+   "n": 6,
+   "off": 1
+  },
+  "legends": 3,
+  "perSquare": 2
+ }
+}

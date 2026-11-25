@@ -1,0 +1,51 @@
+{
+ "SONGS": {
+  "east": {
+   "name": "Wind to the Chaos end",
+   "to": 1.5707963267948966,
+   "notes": [
+    1,
+    2,
+    3
+   ]
+  },
+  "west": {
+   "name": "Wind to the Law end",
+   "to": -1.5707963267948966,
+   "notes": [
+    3,
+    2,
+    1
+   ]
+  },
+  "north": {
+   "name": "Wind to the north",
+   "to": 3.141592653589793,
+   "notes": [
+    1,
+    3,
+    5
+   ]
+  },
+  "south": {
+   "name": "Wind to the south",
+   "to": 0,
+   "notes": [
+    5,
+    3,
+    1
+   ]
+  }
+ },
+ "WINDSONG": {
+  "cost": 0.4,
+  "hours": 1,
+  "rest": 2,
+  "floor": 0.6,
+  "gap": 4,
+  "open": {
+   "count": 20,
+   "feat": 12
+  }
+ }
+}

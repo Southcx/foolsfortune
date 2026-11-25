@@ -1,0 +1,52 @@
+{
+ "LESSON": {
+  "idle": 1,
+  "steps": [
+   {
+    "id": "move"
+   },
+   {
+    "id": "clear"
+   },
+   {
+    "id": "form"
+   },
+   {
+    "id": "run"
+   },
+   {
+    "id": "tool"
+   },
+   {
+    "id": "chain"
+   }
+  ],
+  "dragSteps": [
+   {
+    "id": "drag",
+    "ask": "Drag a gem: every gem it passes trades places with it."
+   },
+   {
+    "id": "clear",
+    "ask": "Line up 3 of one colour, or 4 touching, to clear them."
+   },
+   {
+    "id": "chain",
+    "ask": "Clear so the gems that fall clear again: that is a chain."
+   },
+   {
+    "id": "skill",
+    "ask": "A skill is full: fire it from its tile beside the board."
+   }
+  ],
+  "pveSteps": [
+   "[cycle]",
+   "[cycle]",
+   "[cycle]",
+   {
+    "id": "power",
+    "ask": "Pick a power beside the board, then drag on your half to cast it."
+   }
+  ]
+ }
+}

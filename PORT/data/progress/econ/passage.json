@@ -1,0 +1,63 @@
+{
+ "PASSAGE": {
+  "types": {
+   "shoal": {
+    "cls": "threat"
+   },
+   "wreckers": {
+    "cls": "threat",
+    "minCol": 1,
+    "noRepeat": true
+   },
+   "eyewall": {
+    "cls": "threat",
+    "noRepeat": true
+   },
+   "graveyard": {
+    "cls": "threat"
+   },
+   "calm": {
+    "cls": "haven",
+    "noRepeat": true,
+    "notLast": true
+   },
+   "encounter": {
+    "cls": "haven",
+    "noRepeat": true,
+    "notLast": true
+   },
+   "maelstrom": {
+    "cls": "boss",
+    "one": true,
+    "minCol": 2
+   },
+   "bounty": {
+    "cls": "boss",
+    "one": true,
+    "minCol": 1
+   },
+   "leviathan": {
+    "cls": "boss",
+    "one": true,
+    "lastCols": 2
+   }
+  },
+  "lanes": 4
+ },
+ "PLUME": {
+  "entra": {
+   "feelings": [
+    "fury",
+    "gall"
+   ],
+   "reach": 0.3333333333333333,
+   "chance": 0.5
+  }
+ },
+ "STORM": {
+  "minCol": 1,
+  "strength": 1,
+  "density": 1.4,
+  "pays": 1.25
+ }
+}

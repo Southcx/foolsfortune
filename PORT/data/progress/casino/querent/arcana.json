@@ -1,0 +1,114 @@
+{
+ "ARCANA": [
+  {
+   "id": 0,
+   "name": "The Fool",
+   "does": "Choose any Major Arcana: it is that one."
+  },
+  {
+   "id": 1,
+   "name": "The Magician",
+   "does": "+2 for each Ace in your winning hand."
+  },
+  {
+   "id": 2,
+   "name": "The High Priestess",
+   "does": "Nothing can reveal your hand."
+  },
+  {
+   "id": 3,
+   "name": "The Empress",
+   "does": "+2 for each Queen in your winning hand."
+  },
+  {
+   "id": 4,
+   "name": "The Emperor",
+   "does": "+2 for each King in your winning hand."
+  },
+  {
+   "id": 5,
+   "name": "The Hierophant",
+   "does": "Name a rank: +1 for each card of it in your winning hand."
+  },
+  {
+   "id": 6,
+   "name": "The Lovers",
+   "does": "Link with a player: neither steals from the other, and your arcana count for both."
+  },
+  {
+   "id": 7,
+   "name": "The Chariot",
+   "does": "+2 for each Knight in your winning hand."
+  },
+  {
+   "id": 8,
+   "name": "Strength",
+   "does": "x2, and +1 for each other Strength on the table."
+  },
+  {
+   "id": 9,
+   "name": "The Hermit",
+   "does": "Look at your next nine cards; put any on top, the rest beneath."
+  },
+  {
+   "id": 10,
+   "name": "The Wheel of Fortune",
+   "does": "Throw back up to eight cards and draw as many."
+  },
+  {
+   "id": 11,
+   "name": "Justice",
+   "does": "Every stolen card goes home; its owner takes it back as if drawn."
+  },
+  {
+   "id": 12,
+   "name": "The Hanged Man",
+   "does": "Your discards become your draw pile, and your draw pile your discards."
+  },
+  {
+   "id": 13,
+   "name": "Death",
+   "does": "The round starts again; next round everyone begins with two arcana."
+  },
+  {
+   "id": 14,
+   "name": "Temperance",
+   "does": "+1 for each steal no one used this round."
+  },
+  {
+   "id": 15,
+   "name": "The Devil",
+   "does": "+1 for each steal made this round, and one more steal for you."
+  },
+  {
+   "id": 16,
+   "name": "The Tower",
+   "does": "Your hand goes back into your deck; draw eight new. +4 if you win this round."
+  },
+  {
+   "id": 17,
+   "name": "The Star",
+   "does": "Your discards shuffle back into your deck."
+  },
+  {
+   "id": 18,
+   "name": "The Moon",
+   "does": "Your discards are face down from now on."
+  },
+  {
+   "id": 19,
+   "name": "The Sun",
+   "does": "Choose a player: their hand is shown to you."
+  },
+  {
+   "id": 20,
+   "name": "Judgement",
+   "does": "Choose a player: they cannot steal; +2 for each card they stole."
+  },
+  {
+   "id": 21,
+   "name": "The World",
+   "does": "+1 for each different arcana on the table."
+  }
+ ]
+}

@@ -1,0 +1,23 @@
+{
+ "HAUNTERS": [
+  {
+   "name": "Petra",
+   "skill": 0.85,
+   "eager": 0.75
+  },
+  {
+   "name": "Calissa",
+   "skill": 0.7,
+   "eager": 0.9
+  },
+  {
+   "name": "Espada",
+   "skill": 0.78,
+   "eager": 0.8
+  }
+ ],
+ "READ": {
+  "early": 0.8,
+  "range": 120
+ }
+}

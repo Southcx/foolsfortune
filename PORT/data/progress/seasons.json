@@ -1,0 +1,41 @@
+{
+ "SEASON": {
+  "days": 7
+ },
+ "SEASONS": [
+  {
+   "id": "spring",
+   "name": "Spring"
+  },
+  {
+   "id": "summer",
+   "name": "Summer"
+  },
+  {
+   "id": "autumn",
+   "name": "Autumn"
+  },
+  {
+   "id": "winter",
+   "name": "Winter"
+  }
+ ],
+ "SEASON_MATERIAL": {
+  "spring": {
+   "name": "Spring Blossom",
+   "kind": "arcane"
+  },
+  "summer": {
+   "name": "Summer Reed",
+   "kind": "provision"
+  },
+  "autumn": {
+   "name": "Autumn Leaf",
+   "kind": "art"
+  },
+  "winter": {
+   "name": "Winter Frost",
+   "kind": "eldritch"
+  }
+ }
+}

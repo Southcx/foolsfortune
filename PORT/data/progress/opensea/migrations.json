@@ -1,0 +1,19 @@
+{
+ "MIGRATION": {
+  "herds": 4,
+  "size": [
+   3,
+   7
+  ],
+  "share": 0.5,
+  "hostile": false
+ },
+ "RUMOUR": {
+  "ids": [
+   "seaSerpent",
+   "wolfWhale",
+   "worldSerpent"
+  ],
+  "bounty": 1
+ }
+}

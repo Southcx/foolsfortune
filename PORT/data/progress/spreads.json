@@ -1,0 +1,919 @@
+{
+ "CLASS": {
+  "held": 1,
+  "lift": 2,
+  "world": 4,
+  "balance": 0.5,
+  "affinity": 1.25
+ },
+ "CLASS_DOMAIN": {
+  "magician": "spellscription",
+  "lovers": "spellscription",
+  "hermit": "spellscription",
+  "sun": "divination",
+  "strength": "divination",
+  "empress": "manifestation",
+  "justice": "manifestation",
+  "hierophant": "manifestation",
+  "wheel": "ouranurgy",
+  "temperance": "ouranurgy",
+  "moon": "ouranurgy",
+  "tower": "psychokinesis",
+  "emperor": "psychokinesis",
+  "death": "psychokinesis",
+  "priestess": "possession",
+  "chariot": "possession",
+  "world": "alteration",
+  "star": "alteration",
+  "devil": "alteration"
+ },
+ "COLS": 8,
+ "CONTRARY": {
+  "wands": "cups",
+  "cups": "wands",
+  "swords": "pentacles",
+  "pentacles": "swords"
+ },
+ "COURT": {
+  "held": 1,
+  "lift": 2,
+  "world": 4,
+  "balance": 0.5,
+  "affinity": 1.25
+ },
+ "COURT_DEPTH": [
+  [
+   9,
+   "king"
+  ],
+  [
+   6,
+   "queen"
+  ],
+  [
+   3,
+   "knight"
+  ],
+  [
+   0,
+   "page"
+  ]
+ ],
+ "DAY_CARD": {
+  "k": 2
+ },
+ "FOOL_CELL": {
+  "under": [
+   2,
+   3
+  ],
+  "face": [
+   5,
+   3
+  ]
+ },
+ "FOOTPRINTS": {
+  "fool": [
+   [
+    0,
+    0
+   ]
+  ],
+  "magician": [
+   [
+    -1,
+    0
+   ],
+   [
+    0,
+    0
+   ],
+   [
+    1,
+    0
+   ],
+   [
+    0,
+    -1
+   ]
+  ],
+  "priestess": [
+   [
+    -1,
+    0
+   ],
+   [
+    -1,
+    -1
+   ],
+   [
+    1,
+    0
+   ],
+   [
+    1,
+    -1
+   ]
+  ],
+  "empress": [
+   [
+    0,
+    0
+   ],
+   [
+    -1,
+    1
+   ],
+   [
+    1,
+    1
+   ]
+  ],
+  "emperor": [
+   [
+    0,
+    0
+   ],
+   [
+    0,
+    1
+   ],
+   [
+    0,
+    2
+   ],
+   [
+    1,
+    2
+   ]
+  ],
+  "hierophant": [
+   [
+    0,
+    0
+   ],
+   [
+    0,
+    -1
+   ],
+   [
+    -1,
+    1
+   ],
+   [
+    1,
+    1
+   ]
+  ],
+  "lovers": [
+   [
+    -1,
+    0
+   ],
+   [
+    1,
+    0
+   ],
+   [
+    0,
+    -1
+   ]
+  ],
+  "chariot": [
+   [
+    0,
+    0
+   ],
+   [
+    1,
+    0
+   ],
+   [
+    0,
+    1
+   ],
+   [
+    1,
+    1
+   ]
+  ],
+  "strength": [
+   [
+    0,
+    0
+   ],
+   [
+    1,
+    0
+   ],
+   [
+    -1,
+    1
+   ],
+   [
+    0,
+    1
+   ]
+  ],
+  "hermit": [
+   [
+    0,
+    0
+   ],
+   [
+    0,
+    -1
+   ],
+   [
+    1,
+    0
+   ]
+  ],
+  "wheel": [
+   [
+    0,
+    0
+   ],
+   [
+    -1,
+    0
+   ],
+   [
+    1,
+    0
+   ],
+   [
+    0,
+    -1
+   ],
+   [
+    0,
+    1
+   ]
+  ],
+  "justice": [
+   [
+    -2,
+    0
+   ],
+   [
+    -1,
+    0
+   ],
+   [
+    0,
+    0
+   ],
+   [
+    1,
+    0
+   ],
+   [
+    2,
+    0
+   ]
+  ],
+  "hanged": [
+   [
+    -1,
+    0
+   ],
+   [
+    0,
+    0
+   ],
+   [
+    1,
+    0
+   ],
+   [
+    0,
+    1
+   ]
+  ],
+  "death": [
+   [
+    0,
+    1
+   ],
+   [
+    0,
+    0
+   ],
+   [
+    0,
+    -1
+   ],
+   [
+    1,
+    -1
+   ],
+   [
+    2,
+    -1
+   ]
+  ],
+  "temperance": [
+   [
+    -1,
+    -1
+   ],
+   [
+    -1,
+    0
+   ],
+   [
+    0,
+    0
+   ],
+   [
+    1,
+    1
+   ]
+  ],
+  "devil": [
+   [
+    0,
+    0
+   ],
+   [
+    -1,
+    -1
+   ],
+   [
+    1,
+    -1
+   ],
+   [
+    -1,
+    1
+   ],
+   [
+    1,
+    1
+   ]
+  ],
+  "tower": [
+   [
+    0,
+    -2
+   ],
+   [
+    0,
+    -1
+   ],
+   [
+    0,
+    0
+   ],
+   [
+    0,
+    1
+   ],
+   [
+    0,
+    2
+   ],
+   [
+    0,
+    3
+   ]
+  ],
+  "star": [
+   [
+    0,
+    0
+   ],
+   [
+    -1,
+    -1
+   ],
+   [
+    1,
+    -1
+   ],
+   [
+    -1,
+    1
+   ],
+   [
+    1,
+    1
+   ],
+   [
+    0,
+    -2
+   ]
+  ],
+  "moon": [
+   [
+    -2,
+    0
+   ],
+   [
+    -1,
+    1
+   ],
+   [
+    0,
+    1
+   ],
+   [
+    1,
+    1
+   ],
+   [
+    2,
+    0
+   ]
+  ],
+  "sun": [
+   [
+    0,
+    -1
+   ],
+   [
+    1,
+    -1
+   ],
+   [
+    -1,
+    0
+   ],
+   [
+    2,
+    0
+   ],
+   [
+    0,
+    1
+   ],
+   [
+    1,
+    1
+   ]
+  ],
+  "judgement": [
+   [
+    -1,
+    0
+   ],
+   [
+    -1,
+    -1
+   ],
+   [
+    0,
+    -1
+   ],
+   [
+    1,
+    -1
+   ],
+   [
+    1,
+    0
+   ]
+  ],
+  "world": [
+   [
+    -1,
+    -1
+   ],
+   [
+    0,
+    -1
+   ],
+   [
+    1,
+    -1
+   ],
+   [
+    1,
+    0
+   ],
+   [
+    1,
+    1
+   ],
+   [
+    0,
+    1
+   ],
+   [
+    -1,
+    1
+   ]
+  ]
+ },
+ "KINDRED": {
+  "wands": "swords",
+  "swords": "wands",
+  "cups": "pentacles",
+  "pentacles": "cups"
+ },
+ "KIND_SUIT": {
+  "instrument": "wands",
+  "crude": "wands",
+  "psygun": "wands",
+  "shell": "wands",
+  "bottle": "cups",
+  "fish": "cups",
+  "lure": "cups",
+  "heart": "cups",
+  "key": "swords",
+  "whistle": "swords",
+  "rutter": "swords",
+  "material": "pentacles",
+  "curio": "pentacles",
+  "map": "pentacles"
+ },
+ "MAJOR_SUIT": {
+  "fool": "wild",
+  "magician": "wild",
+  "priestess": "wild",
+  "empress": "wild",
+  "emperor": "wands",
+  "hierophant": "pentacles",
+  "lovers": "swords",
+  "chariot": "cups",
+  "strength": "wands",
+  "hermit": "pentacles",
+  "wheel": "wild",
+  "justice": "swords",
+  "hanged": "cups",
+  "death": "cups",
+  "temperance": "wands",
+  "devil": "pentacles",
+  "tower": "wild",
+  "star": "swords",
+  "moon": "cups",
+  "sun": "wild",
+  "judgement": "wands",
+  "world": "pentacles"
+ },
+ "MAJOR_TITLE": {
+  "fool": "the Fool",
+  "magician": "the Magician",
+  "priestess": "the High Priestess",
+  "empress": "the Empress",
+  "emperor": "the Emperor",
+  "hierophant": "the Hierophant",
+  "lovers": "the Lovers",
+  "chariot": "the Chariot",
+  "strength": "Strength",
+  "hermit": "the Hermit",
+  "wheel": "the Wheel of Fortune",
+  "justice": "Justice",
+  "hanged": "the Hanged Man",
+  "death": "Death",
+  "temperance": "Temperance",
+  "devil": "the Devil",
+  "tower": "the Tower",
+  "star": "the Star",
+  "moon": "the Moon",
+  "sun": "the Sun",
+  "judgement": "Judgement",
+  "world": "the World"
+ },
+ "MIRROR": true,
+ "OPEN_AT": {
+  "one": 0,
+  "three": 3,
+  "horseshoe": 7,
+  "celtic": 12
+ },
+ "POSITION_RULES": {},
+ "RANK_CELLS": {
+  "C": 3,
+  "B": 4,
+  "A": 5,
+  "S": 6,
+  "SS": 7
+ },
+ "ROWS": 7,
+ "SEASON_K": 1.25,
+ "SEASON_SUIT": {
+  "spring": "pentacles",
+  "summer": "cups",
+  "autumn": "wands",
+  "winter": "swords"
+ },
+ "SPREADS": {
+  "one": {
+   "id": "one",
+   "label": "One card",
+   "positions": [
+    {
+     "id": "present",
+     "label": "Present",
+     "at": [
+      3,
+      3
+     ],
+     "rule": "flat",
+     "turn": 0,
+     "pair": true
+    }
+   ]
+  },
+  "three": {
+   "id": "three",
+   "label": "Three cards",
+   "positions": [
+    {
+     "id": "past",
+     "label": "Past",
+     "at": [
+      1,
+      3
+     ],
+     "rule": "fade",
+     "turn": 0
+    },
+    {
+     "id": "present",
+     "label": "Present",
+     "at": [
+      4,
+      3
+     ],
+     "rule": "flat",
+     "turn": 0,
+     "pair": true
+    },
+    {
+     "id": "future",
+     "label": "Future",
+     "at": [
+      6,
+      3
+     ],
+     "rule": "grow",
+     "turn": 0
+    }
+   ]
+  },
+  "horseshoe": {
+   "id": "horseshoe",
+   "label": "The Horseshoe",
+   "positions": [
+    {
+     "id": "past",
+     "label": "Past",
+     "at": [
+      0,
+      1
+     ],
+     "rule": "fade",
+     "turn": 0
+    },
+    {
+     "id": "present",
+     "label": "Present",
+     "at": [
+      1,
+      3
+     ],
+     "rule": "flat",
+     "turn": 0,
+     "pair": true
+    },
+    {
+     "id": "hidden",
+     "label": "Hidden influences",
+     "at": [
+      2,
+      5
+     ],
+     "rule": "flat",
+     "turn": 0,
+     "hidden": true
+    },
+    {
+     "id": "obstacles",
+     "label": "Obstacles",
+     "at": [
+      4,
+      5
+     ],
+     "rule": "fight",
+     "turn": 90
+    },
+    {
+     "id": "others",
+     "label": "Others",
+     "at": [
+      5,
+      5
+     ],
+     "rule": "company",
+     "turn": 0
+    },
+    {
+     "id": "advice",
+     "label": "Advice",
+     "at": [
+      6,
+      3
+     ],
+     "rule": "flat",
+     "turn": 0,
+     "advice": true
+    },
+    {
+     "id": "outcome",
+     "label": "Outcome",
+     "at": [
+      7,
+      1
+     ],
+     "rule": "outcome",
+     "turn": 0
+    }
+   ]
+  },
+  "celtic": {
+   "id": "celtic",
+   "label": "The Celtic Cross",
+   "positions": [
+    {
+     "id": "significator",
+     "label": "Significator",
+     "at": [
+      2,
+      3
+     ],
+     "rule": "flat",
+     "turn": 0,
+     "fixed": "fool"
+    },
+    {
+     "id": "present",
+     "label": "Present",
+     "at": [
+      2,
+      3
+     ],
+     "rule": "flat",
+     "turn": 0,
+     "pair": true
+    },
+    {
+     "id": "challenge",
+     "label": "Challenge",
+     "at": [
+      2,
+      3
+     ],
+     "rule": "fight",
+     "turn": 90
+    },
+    {
+     "id": "foundation",
+     "label": "Foundation",
+     "at": [
+      2,
+      5
+     ],
+     "rule": "root",
+     "turn": 0
+    },
+    {
+     "id": "past",
+     "label": "Recent past",
+     "at": [
+      0,
+      3
+     ],
+     "rule": "fade",
+     "turn": 0
+    },
+    {
+     "id": "crownPosition",
+     "label": "Crown",
+     "at": [
+      2,
+      1
+     ],
+     "rule": "crown",
+     "turn": 0
+    },
+    {
+     "id": "future",
+     "label": "Near future",
+     "at": [
+      4,
+      3
+     ],
+     "rule": "grow",
+     "turn": 0
+    },
+    {
+     "id": "self",
+     "label": "Self",
+     "at": [
+      6,
+      6
+     ],
+     "rule": "self",
+     "turn": 0
+    },
+    {
+     "id": "environment",
+     "label": "Environment",
+     "at": [
+      6,
+      4
+     ],
+     "rule": "company",
+     "turn": 0
+    },
+    {
+     "id": "hopes",
+     "label": "Hopes and fears",
+     "at": [
+      6,
+      2
+     ],
+     "rule": "hopes",
+     "turn": 0
+    },
+    {
+     "id": "outcome",
+     "label": "Outcome",
+     "at": [
+      6,
+      0
+     ],
+     "rule": "outcome",
+     "turn": 0
+    }
+   ]
+  }
+ },
+ "SPREAD_ORDER": [
+  "one",
+  "three",
+  "horseshoe",
+  "celtic"
+ ],
+ "SUITS": [
+  "wands",
+  "cups",
+  "swords",
+  "pentacles"
+ ],
+ "TALLY": {
+  "cap": 10,
+  "cellCap": 2,
+  "wands": {
+   "per": -0.015,
+   "does": "the tools' Lachryma costs"
+  },
+  "cups": {
+   "per": 0.02,
+   "does": "the pool's regen and the Bottles' feed"
+  },
+  "swords": {
+   "per": 0.02,
+   "does": "the status your blows build"
+  },
+  "pentacles": {
+   "per": 0.015,
+   "does": "worth when sold or condensed"
+  }
+ },
+ "TOOL_SUIT": {
+  "psygun": "wands",
+  "crucibelle": "wands",
+  "sondelass": "swords",
+  "veritome": "swords",
+  "soulbrush": "cups",
+  "lockheart": "cups",
+  "dreamvane": "pentacles"
+ },
+ "WILD_K": 0.75,
+ "ZODIAC": {
+  "wands": {
+   "cardinal": "emperor",
+   "fixed": "strength",
+   "mutable": "temperance"
+  },
+  "cups": {
+   "cardinal": "chariot",
+   "fixed": "death",
+   "mutable": "moon"
+  },
+  "swords": {
+   "cardinal": "justice",
+   "fixed": "star",
+   "mutable": "lovers"
+  },
+  "pentacles": {
+   "cardinal": "devil",
+   "fixed": "hierophant",
+   "mutable": "hermit"
+  }
+ }
+}

@@ -1,0 +1,20 @@
+{
+ "SEASON_MATERIAL": {
+  "spring": {
+   "kind": "arcane",
+   "label": "spring blossom"
+  },
+  "summer": {
+   "kind": "mechanism",
+   "label": "summer reed"
+  },
+  "autumn": {
+   "kind": "edge",
+   "label": "autumn leaf"
+  },
+  "winter": {
+   "kind": "provision",
+   "label": "winter frost"
+  }
+ }
+}

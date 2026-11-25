@@ -1,0 +1,53 @@
+{
+ "CRIB": {
+  "macros": 100,
+  "heldFive": 1,
+  "ostraca": 6
+ },
+ "DUNEMAW_DECK": {
+  "size": 6,
+  "chance": 0.25,
+  "certainWithin": 8
+ },
+ "OSTRACA": {
+  "total": 16,
+  "places": {
+   "dunes": {
+    "n": 6,
+    "how": "buried: the Dreamvane's survey shows a glint, the pick lifts it (the fossils' dig)"
+   },
+   "dunemaw": {
+    "n": 6,
+    "how": "in a floor's forgotten pots, from a deck (below): broken open, one may hold a sherd with writing"
+   },
+   "ruins": {
+    "n": 2,
+    "how": "in plain sight on the ruins' columns, for the one who reads walls"
+   },
+   "workshop": {
+    "n": 2,
+    "how": "set into the workshop's old walls, under the plaster: found by striking the right patch"
+   }
+  }
+ },
+ "STELAE": [
+  {
+   "id": "stele.sealed",
+   "where": "the ruins' sealed room in the Dunes (a door the fork's ring opens: the Dreamvane, tuned)",
+   "words": [
+    "dipsa",
+    "gula",
+    "voyd"
+   ]
+  },
+  {
+   "id": "stele.ring",
+   "where": "the great cavern's upper ring, above the bowl (reached during or after the fight)",
+   "words": [
+    "ami",
+    "lon",
+    "deo"
+   ]
+  }
+ ]
+}

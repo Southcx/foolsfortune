@@ -1,0 +1,78 @@
+{
+ "ALIGN": {
+  "pet": -0.02,
+  "flick": 0.02,
+  "spar": 0.01,
+  "tend": -0.005,
+  "third": 0.3333333333333333
+ },
+ "ATTRS": [
+  "willpower",
+  "focus",
+  "charisma",
+  "perception",
+  "dexterity",
+  "visualization",
+  "resilience"
+ ],
+ "FEED": {
+  "stat": {
+   "mechanism": "mirth",
+   "arcane": "wonder",
+   "edge": "desire",
+   "provision": "grief",
+   "eldritch": "dread",
+   "finery": "dread",
+   "art": "desire",
+   "roe": "grief"
+  },
+  "bond": [],
+  "perTier": [
+   6,
+   10,
+   16,
+   24,
+   36
+  ],
+  "feeling": 0.1,
+  "curioBond": [
+   2,
+   4,
+   7,
+   12,
+   20
+  ]
+ },
+ "FIRINGS": [
+  0,
+  7,
+  14,
+  24,
+  36,
+  50
+ ],
+ "FIRING_NAMES": [
+  "Candling",
+  "Sinter",
+  "Lustre",
+  "Salt",
+  "Reduction",
+  "Anagama"
+ ],
+ "MATURE": {
+  "bond": 50,
+  "stat": 300
+ },
+ "MAX": 999,
+ "STATS": {
+  "wonder": "sight",
+  "mirth": "speed",
+  "desire": "strength",
+  "grief": "stamina",
+  "dread": "will"
+ },
+ "STRUGGLE": {
+  "perClass": 1,
+  "base": 1
+ }
+}

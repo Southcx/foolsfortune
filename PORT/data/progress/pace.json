@@ -1,0 +1,94 @@
+{
+ "PACE": [
+  {
+   "id": "wonder",
+   "label": "awakened to Wonder (the first vantage)",
+   "ach": "sk12",
+   "target": 10
+  },
+  {
+   "id": "shrine",
+   "label": "rested at a Shrine",
+   "ach": "sr1",
+   "target": 12
+  },
+  {
+   "id": "clapper",
+   "label": "first clapperjar downed",
+   "ach": "cl1",
+   "target": 15
+  },
+  {
+   "id": "chest",
+   "label": "first chest opened",
+   "ach": "tc1",
+   "target": 15
+  },
+  {
+   "id": "art",
+   "label": "first Movement Art",
+   "ach": "ar1",
+   "target": 20
+  },
+  {
+   "id": "fish",
+   "label": "first fish landed",
+   "ach": "ac1",
+   "target": 30
+  },
+  {
+   "id": "skiff",
+   "label": "the Solar Skiff unfurled",
+   "ach": "sf1",
+   "target": 35
+  },
+  {
+   "id": "firing",
+   "label": "first firing at the kiln",
+   "ach": "vf1",
+   "target": 45
+  },
+  {
+   "id": "duel",
+   "label": "first puzzle duel won",
+   "ach": "du1",
+   "target": 45
+  },
+  {
+   "id": "well",
+   "label": "first time down a Well",
+   "ach": "wl1",
+   "target": 60
+  },
+  {
+   "id": "race",
+   "label": "first race finished",
+   "ach": "rw1",
+   "target": 60
+  },
+  {
+   "id": "press",
+   "label": "first firing at the press",
+   "ach": "sa1",
+   "target": 90
+  },
+  {
+   "id": "bind",
+   "label": "first spirit bound",
+   "ach": "sv1",
+   "target": 90
+  },
+  {
+   "id": "hop",
+   "label": "first crossing of the Emocean",
+   "ach": "em1",
+   "target": 120
+  },
+  {
+   "id": "gold",
+   "label": "first gold at the Raceway",
+   "ach": "rw4",
+   "target": 240
+  }
+ ]
+}

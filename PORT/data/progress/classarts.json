@@ -1,0 +1,1444 @@
+{
+ "ACCENT": {
+  "k": 1.25,
+  "cost": 0.8
+ },
+ "ARTS_BY_CLASS": {
+  "arcana.fool": [
+   "beginnersLuck",
+   "zero"
+  ],
+  "page.wands": [
+   "spark",
+   "eager"
+  ],
+  "knight.wands": [
+   "charge",
+   "momentum"
+  ],
+  "queen.wands": [
+   "kindleHeart",
+   "warmth"
+  ],
+  "king.wands": [
+   "command",
+   "rally"
+  ],
+  "page.cups": [
+   "offering",
+   "tender"
+  ],
+  "knight.cups": [
+   "wade",
+   "gallant"
+  ],
+  "queen.cups": [
+   "wellUp",
+   "empath"
+  ],
+  "king.cups": [
+   "stillWaters",
+   "steady"
+  ],
+  "page.swords": [
+   "scout",
+   "quickStudy"
+  ],
+  "knight.swords": [
+   "ripostRush",
+   "edge"
+  ],
+  "queen.swords": [
+   "clearSight",
+   "cutThrough"
+  ],
+  "king.swords": [
+   "verdict",
+   "judge"
+  ],
+  "page.pentacles": [
+   "prospect",
+   "thrift"
+  ],
+  "knight.pentacles": [
+   "bulwark",
+   "steadfast"
+  ],
+  "queen.pentacles": [
+   "harvest",
+   "hearth"
+  ],
+  "king.pentacles": [
+   "stronghold",
+   "dividend"
+  ],
+  "arcana.emperor": [
+   "ram",
+   "dominion"
+  ],
+  "arcana.strength": [
+   "tame",
+   "courage"
+  ],
+  "arcana.temperance": [
+   "arrowOfTime",
+   "moderation"
+  ],
+  "arcana.chariot": [
+   "ride",
+   "reins"
+  ],
+  "arcana.death": [
+   "reap",
+   "rebirth"
+  ],
+  "arcana.moon": [
+   "mirageStep",
+   "tides"
+  ],
+  "arcana.justice": [
+   "weigh",
+   "due"
+  ],
+  "arcana.star": [
+   "wish",
+   "hope"
+  ],
+  "arcana.lovers": [
+   "echo",
+   "choice"
+  ],
+  "arcana.devil": [
+   "bind",
+   "temptation"
+  ],
+  "arcana.hierophant": [
+   "sanctum",
+   "teaching"
+  ],
+  "arcana.hermit": [
+   "lantern",
+   "solitude"
+  ],
+  "arcana.world": [
+   "completion",
+   "wholeness"
+  ],
+  "arcana.magician": [
+   "sleight",
+   "will"
+  ],
+  "arcana.priestess": [
+   "veil",
+   "intuition"
+  ],
+  "arcana.empress": [
+   "bloom",
+   "abundance"
+  ],
+  "arcana.wheel": [
+   "spin",
+   "fortune"
+  ],
+  "arcana.tower": [
+   "collapse",
+   "upheaval"
+  ],
+  "arcana.sun": [
+   "daybreak",
+   "radiance"
+  ],
+  "arcana.hanged": [
+   "suspend",
+   "surrender"
+  ],
+  "arcana.judgement": [
+   "reckoning",
+   "secondChance"
+  ]
+ },
+ "CLASS_ARTS": {
+  "beginnersLuck": {
+   "cls": "arcana.fool",
+   "kind": "action",
+   "label": "Beginner's Luck",
+   "line": "Your next roll of chance within 30 s is thrown twice, and the better throw is kept.",
+   "does": {
+    "rolls": 2,
+    "within": 30
+   },
+   "feat": [
+    "flee",
+    3
+   ],
+   "cost": 10,
+   "cooldown": 60
+  },
+  "zero": {
+   "cls": "arcana.fool",
+   "kind": "reaction",
+   "label": "Running on Empty",
+   "line": "When your pool runs dry, your blows and shots cost nothing for 4 s.",
+   "does": {
+    "free": 4
+   },
+   "feat": [
+    "down",
+    25
+   ],
+   "cooldown": 45
+  },
+  "spark": {
+   "cls": "page.wands",
+   "kind": "action",
+   "label": "Spark",
+   "line": "Flick an ember up to 14 m: it staggers what it hits and burns away any slick or blot it lands on.",
+   "does": {
+    "reach": 14,
+    "power": 0.8,
+    "status": "stagger",
+    "burns": true
+   },
+   "feat": [
+    "mop",
+    10
+   ],
+   "cost": 6,
+   "cooldown": 8
+  },
+  "eager": {
+   "cls": "page.wands",
+   "kind": "reaction",
+   "label": "First Strike",
+   "line": "Your first blow of a fight deals x1.5 damage.",
+   "does": {
+    "first": 1.5
+   },
+   "feat": [
+    "firstBlood",
+    10
+   ]
+  },
+  "charge": {
+   "cls": "knight.wands",
+   "kind": "action",
+   "label": "Onrush",
+   "line": "Dash 8 m forward, striking everything in your path.",
+   "does": {
+    "dist": 8,
+    "power": 2,
+    "width": 1.6
+   },
+   "feat": [
+    "down",
+    40
+   ],
+   "cost": 8,
+   "cooldown": 6
+  },
+  "momentum": {
+   "cls": "knight.wands",
+   "kind": "reaction",
+   "label": "Momentum",
+   "line": "Sprint for 3 s and your next blow deals x1.3 damage.",
+   "does": {
+    "after": 3,
+    "mult": 1.3
+   },
+   "feat": [
+    "combo",
+    5
+   ]
+  },
+  "kindleHeart": {
+   "cls": "queen.wands",
+   "kind": "action",
+   "label": "Stoke",
+   "line": "For 6 s your blows build statuses x1.5 faster and your pool fills x1.5 faster.",
+   "does": {
+    "dur": 6,
+    "build": 1.5,
+    "regen": 1.5
+   },
+   "feat": [
+    "stunDeep",
+    10
+   ],
+   "cost": 15,
+   "cooldown": 30
+  },
+  "warmth": {
+   "cls": "queen.wands",
+   "kind": "reaction",
+   "label": "Afterglow",
+   "line": "A feeling you drink stays in you twice as long.",
+   "does": {
+    "draught": 2
+   },
+   "feat": [
+    "awaken",
+    1
+   ]
+  },
+  "command": {
+   "cls": "king.wands",
+   "kind": "action",
+   "label": "Roar",
+   "line": "Stagger every creature within 8 m and break off its windup.",
+   "does": {
+    "reach": 8,
+    "status": "stagger",
+    "breaks": true
+   },
+   "feat": [
+    "parry",
+    30
+   ],
+   "cost": 20,
+   "cooldown": 40
+  },
+  "rally": {
+   "cls": "king.wands",
+   "kind": "reaction",
+   "label": "Rally",
+   "line": "Each creature you down gives you back 5 of your pool.",
+   "does": {
+    "pool": 5
+   },
+   "feat": [
+    "down",
+    60
+   ]
+  },
+  "offering": {
+   "cls": "page.cups",
+   "kind": "action",
+   "label": "Offering",
+   "line": "Set down a cup of 10 of your pool: creatures within 6 m drink from it and are calmed for 4 s.",
+   "does": {
+    "pool": 10,
+    "reach": 6,
+    "status": "calm",
+    "dur": 4
+   },
+   "feat": [
+    "release",
+    5
+   ],
+   "cooldown": 30
+  },
+  "tender": {
+   "cls": "page.cups",
+   "kind": "reaction",
+   "label": "Kindness",
+   "line": "Letting a fish go, or granting a spirit's wish, mends 1 crack.",
+   "does": {
+    "mends": 1
+   },
+   "feat": [
+    "wish",
+    3
+   ]
+  },
+  "wade": {
+   "cls": "knight.cups",
+   "kind": "action",
+   "label": "Water Walk",
+   "line": "For 5 s you walk on liquid Lachryma, and run x1.2 faster through paint.",
+   "does": {
+    "dur": 5,
+    "paintSpeed": 1.2
+   },
+   "feat": [
+    "paint",
+    10
+   ],
+   "cost": 8,
+   "cooldown": 20
+  },
+  "gallant": {
+   "cls": "knight.cups",
+   "kind": "reaction",
+   "label": "Gallant",
+   "line": "A parry gives you back 4 of your pool.",
+   "does": {
+    "pool": 4
+   },
+   "feat": [
+    "parry",
+    20
+   ]
+  },
+  "wellUp": {
+   "cls": "queen.cups",
+   "kind": "action",
+   "label": "Catch the Rain",
+   "line": "Under falling weather, fill 30% of a Lachrymato Bottle from the sky.",
+   "does": {
+    "bottle": 0.3,
+    "open": true
+   },
+   "feat": [
+    "fish",
+    15
+   ],
+   "cooldown": 60
+  },
+  "empath": {
+   "cls": "queen.cups",
+   "kind": "reaction",
+   "label": "Empath",
+   "line": "You see a creature's agitation at once, and drain x1.25 more from it in its best band.",
+   "does": {
+    "emoTag": true,
+    "drain": 1.25
+   },
+   "feat": [
+    "drain",
+    15
+   ]
+  },
+  "stillWaters": {
+   "cls": "king.cups",
+   "kind": "action",
+   "label": "Still Waters",
+   "line": "Every creature within 6 m settles: its mind to Balanced, its agitation to its best band.",
+   "does": {
+    "reach": 6,
+    "mind": 0,
+    "emo": "band"
+   },
+   "feat": [
+    "reprogram",
+    3
+   ],
+   "cost": 20,
+   "cooldown": 45
+  },
+  "steady": {
+   "cls": "king.cups",
+   "kind": "reaction",
+   "label": "Steady",
+   "line": "While your pool is over half full, your cracks mend twice as fast.",
+   "does": {
+    "over": 0.5,
+    "mend": 2
+   },
+   "feat": [
+    "bind",
+    3
+   ]
+  },
+  "scout": {
+   "cls": "page.swords",
+   "kind": "action",
+   "label": "Scout",
+   "line": "For 6 s, every creature and source of Lachryma within 40 m is tagged through walls.",
+   "does": {
+    "reach": 40,
+    "dur": 6
+   },
+   "feat": [
+    "photo",
+    5
+   ],
+   "cost": 8,
+   "cooldown": 20
+  },
+  "quickStudy": {
+   "cls": "page.swords",
+   "kind": "reaction",
+   "label": "Quick Study",
+   "line": "You learn a kind of creature twice as fast.",
+   "does": {
+    "familiarity": 2
+   },
+   "feat": [
+    "windup",
+    20
+   ]
+  },
+  "ripostRush": {
+   "cls": "knight.swords",
+   "kind": "action",
+   "label": "Riposte Rush",
+   "line": "Within 1 s of a parry, blink behind the attacker and strike it hard.",
+   "does": {
+    "after": 1,
+    "power": 2.5
+   },
+   "feat": [
+    "parry",
+    25
+   ],
+   "cost": 6,
+   "cooldown": 4
+  },
+  "edge": {
+   "cls": "knight.swords",
+   "kind": "reaction",
+   "label": "Edge",
+   "line": "A blow to a weak point builds its status x1.5 faster.",
+   "does": {
+    "weakBuild": 1.5
+   },
+   "feat": [
+    "downWeak",
+    15
+   ]
+  },
+  "clearSight": {
+   "cls": "queen.swords",
+   "kind": "action",
+   "label": "Clear Sight",
+   "line": "For 8 s, every windup shows its Figment telegraph in full.",
+   "does": {
+    "dur": 8
+   },
+   "feat": [
+    "windup",
+    40
+   ],
+   "cost": 10,
+   "cooldown": 30
+  },
+  "cutThrough": {
+   "cls": "queen.swords",
+   "kind": "reaction",
+   "label": "Cut Through",
+   "line": "A status that is resisted does not make the creature harder to affect.",
+   "does": {
+    "noHarden": true
+   },
+   "feat": [
+    "stunDeep",
+    10
+   ]
+  },
+  "verdict": {
+   "cls": "king.swords",
+   "kind": "action",
+   "label": "Mark for Death",
+   "line": "Mark a creature for 8 s: your blows on it deal x1.3 damage and it cannot resist them.",
+   "does": {
+    "dur": 8,
+    "mult": 1.3,
+    "noResist": true
+   },
+   "feat": [
+    "downWeak",
+    30
+   ],
+   "cost": 15,
+   "cooldown": 35
+  },
+  "judge": {
+   "cls": "king.swords",
+   "kind": "reaction",
+   "label": "Judge",
+   "line": "A kind of creature you have photographed takes x1.1 damage from you.",
+   "does": {
+    "mult": 1.1
+   },
+   "feat": [
+    "photo",
+    15
+   ]
+  },
+  "prospect": {
+   "cls": "page.pentacles",
+   "kind": "action",
+   "label": "Prospect",
+   "line": "Ping the strongest Lachryma up to 30 m ahead of you, as the dowse does.",
+   "does": {
+    "reach": 30,
+    "cone": 0.6
+   },
+   "feat": [
+    "sweet",
+    10
+   ],
+   "cost": 5,
+   "cooldown": 10
+  },
+  "thrift": {
+   "cls": "page.pentacles",
+   "kind": "reaction",
+   "label": "Thrift",
+   "line": "Your shells cost 10% less to fire.",
+   "does": {
+    "shellCost": 0.9
+   },
+   "feat": [
+    "shell",
+    30
+   ]
+  },
+  "bulwark": {
+   "cls": "knight.pentacles",
+   "kind": "action",
+   "label": "Bulwark",
+   "line": "Brace for 3 s: blows deal 60% less damage, but you cannot move.",
+   "does": {
+    "dur": 3,
+    "taken": 0.4
+   },
+   "feat": [
+    "parry",
+    15
+   ],
+   "cost": 10,
+   "cooldown": 20
+  },
+  "steadfast": {
+   "cls": "knight.pentacles",
+   "kind": "reaction",
+   "label": "Steadfast",
+   "line": "Stand still for 2 s and the next blow you take cracks nothing.",
+   "does": {
+    "still": 2
+   },
+   "feat": [
+    "salvage",
+    10
+   ]
+  },
+  "harvest": {
+   "cls": "queen.pentacles",
+   "kind": "action",
+   "label": "Harvest",
+   "line": "Ripen one Spirit Garden bed at once, or strike 1 more cube from a crystal.",
+   "does": {
+    "beds": 1,
+    "crystalCube": 1
+   },
+   "feat": [
+    "tend",
+    10
+   ],
+   "cooldown": "gameDay"
+  },
+  "hearth": {
+   "cls": "queen.pentacles",
+   "kind": "reaction",
+   "label": "Hearth",
+   "line": "Resting at a Shrine mends 1 crack too.",
+   "does": {
+    "mends": 1
+   },
+   "feat": [
+    "wish",
+    5
+   ]
+  },
+  "stronghold": {
+   "cls": "king.pentacles",
+   "kind": "action",
+   "label": "Earth Wall",
+   "line": "Raise a wall of ground 4 m wide and 2.5 m high in front of you for 6 s.",
+   "does": {
+    "width": 4,
+    "height": 2.5,
+    "dur": 6
+   },
+   "feat": [
+    "sculpt",
+    5
+   ],
+   "cost": 15,
+   "cooldown": 30
+  },
+  "dividend": {
+   "cls": "king.pentacles",
+   "kind": "reaction",
+   "label": "Dividend",
+   "line": "The first of each thing in a game day pays 25% more.",
+   "does": {
+    "firstToday": 1.25
+   },
+   "feat": [
+    "build",
+    2
+   ]
+  },
+  "ram": {
+   "cls": "arcana.emperor",
+   "kind": "action",
+   "label": "Ram",
+   "line": "A wave of force ahead of you knocks everything within 10 m back 6 m.",
+   "does": {
+    "reach": 10,
+    "cone": 0.7,
+    "knock": 6,
+    "power": 1.5
+   },
+   "feat": [
+    "down",
+    50
+   ],
+   "cost": 12,
+   "cooldown": 15
+  },
+  "dominion": {
+   "cls": "arcana.emperor",
+   "kind": "reaction",
+   "label": "Unshaken",
+   "line": "Hold your ground through a windup and its blow cannot stagger you.",
+   "does": {
+    "noStagger": true
+   },
+   "feat": [
+    "parry",
+    30
+   ]
+  },
+  "tame": {
+   "cls": "arcana.strength",
+   "kind": "action",
+   "label": "Tame",
+   "line": "A creature stunned or out cold fights beside you for 15 s.",
+   "does": {
+    "depth": 2,
+    "dur": 15
+   },
+   "feat": [
+    "stunDeep",
+    15
+   ],
+   "cost": 20,
+   "cooldown": 60
+  },
+  "courage": {
+   "cls": "arcana.strength",
+   "kind": "reaction",
+   "label": "Courage",
+   "line": "With your pool under a quarter, your blows deal x1.25 damage.",
+   "does": {
+    "under": 0.25,
+    "mult": 1.25
+   },
+   "feat": [
+    "down",
+    40
+   ]
+  },
+  "arrowOfTime": {
+   "cls": "arcana.temperance",
+   "kind": "action",
+   "label": "Blink Mark",
+   "line": "Throw a mark up to 18 m; press again within 1.5 s to blink to it.",
+   "does": {
+    "reach": 18,
+    "window": 1.5
+   },
+   "feat": [
+    "blink",
+    40
+   ],
+   "cost": 8,
+   "cooldown": 6
+  },
+  "moderation": {
+   "cls": "arcana.temperance",
+   "kind": "reaction",
+   "label": "Spillover",
+   "line": "What your pool cannot hold tops up a Lachrymato Bottle instead.",
+   "does": {
+    "overflowToBottle": 1
+   },
+   "feat": [
+    "song",
+    5
+   ]
+  },
+  "ride": {
+   "cls": "arcana.chariot",
+   "kind": "action",
+   "label": "Ride",
+   "line": "Take the reins of a staggered creature for 8 s: it moves and fights as you steer.",
+   "does": {
+    "dur": 8
+   },
+   "feat": [
+    "gold",
+    3
+   ],
+   "cost": 20,
+   "cooldown": 60
+  },
+  "reins": {
+   "cls": "arcana.chariot",
+   "kind": "reaction",
+   "label": "Reins",
+   "line": "The Solar Skiff and your ship take 30% less from a hit.",
+   "does": {
+    "taken": 0.7
+   },
+   "feat": [
+    "crossing",
+    3
+   ]
+  },
+  "reap": {
+   "cls": "arcana.death",
+   "kind": "action",
+   "label": "Reap",
+   "line": "A sweep that downs any creature within 3 m that is under 15% of its health.",
+   "does": {
+    "under": 0.15,
+    "reach": 3
+   },
+   "feat": [
+    "down",
+    60
+   ],
+   "cost": 12,
+   "cooldown": 20
+  },
+  "rebirth": {
+   "cls": "arcana.death",
+   "kind": "reaction",
+   "label": "Rebirth",
+   "line": "Once a game day, a blow that would shatter you leaves you whole instead.",
+   "does": {
+    "daily": 1
+   },
+   "feat": [
+    "downWeak",
+    25
+   ]
+  },
+  "mirageStep": {
+   "cls": "arcana.moon",
+   "kind": "action",
+   "label": "Vanish",
+   "line": "Leave a decoy of yourself and go unseen for 3 s.",
+   "does": {
+    "dur": 3
+   },
+   "feat": [
+    "windup",
+    30
+   ],
+   "cost": 12,
+   "cooldown": 25
+  },
+  "tides": {
+   "cls": "arcana.moon",
+   "kind": "reaction",
+   "label": "Tides",
+   "line": "At night your pool fills x1.3 faster.",
+   "does": {
+    "regen": 1.3
+   },
+   "feat": [
+    "fish",
+    10
+   ]
+  },
+  "weigh": {
+   "cls": "arcana.justice",
+   "kind": "action",
+   "label": "Payback",
+   "line": "The next blow you take within 4 s is dealt back in full to whoever struck it.",
+   "does": {
+    "within": 4
+   },
+   "feat": [
+    "parry",
+    40
+   ],
+   "cost": 12,
+   "cooldown": 25
+  },
+  "due": {
+   "cls": "arcana.justice",
+   "kind": "reaction",
+   "label": "Grudge",
+   "line": "A creature that hurt you takes x1.3 damage from your next blow.",
+   "does": {
+    "mult": 1.3
+   },
+   "feat": [
+    "down",
+    40
+   ]
+  },
+  "wish": {
+   "cls": "arcana.star",
+   "kind": "action",
+   "label": "Starlight",
+   "line": "Under the open night sky, turn the weather where you stand toward Wonder for 1 game hour.",
+   "does": {
+    "toward": "wonder",
+    "hours": 1,
+    "night": true
+   },
+   "feat": [
+    "vantage",
+    3
+   ],
+   "cost": 30,
+   "cooldown": "gameDay"
+  },
+  "hope": {
+   "cls": "arcana.star",
+   "kind": "reaction",
+   "label": "Hope",
+   "line": "Made whole after a shatter, the next 3 blows you take within 30 s crack nothing.",
+   "does": {
+    "ward": 3,
+    "secs": 30
+   },
+   "feat": [
+    "awaken",
+    2
+   ]
+  },
+  "echo": {
+   "cls": "arcana.lovers",
+   "kind": "action",
+   "label": "Encore",
+   "line": "Your last tool move plays again from where you stood, 1 s later.",
+   "does": {
+    "delay": 1
+   },
+   "feat": [
+    "lend",
+    40
+   ],
+   "cost": 10,
+   "cooldown": 15
+  },
+  "choice": {
+   "cls": "arcana.lovers",
+   "kind": "reaction",
+   "label": "Choice",
+   "line": "When you swap your main and sub, your next lend is free.",
+   "does": {
+    "freeLend": 1
+   },
+   "feat": [
+    "lend",
+    20
+   ]
+  },
+  "bind": {
+   "cls": "arcana.devil",
+   "kind": "action",
+   "label": "Shackle",
+   "line": "Chain a creature where it stands for 5 s; it cannot resist.",
+   "does": {
+    "dur": 5,
+    "status": "halt",
+    "noResist": true
+   },
+   "feat": [
+    "stunDeep",
+    20
+   ],
+   "cost": 15,
+   "cooldown": 30
+  },
+  "temptation": {
+   "cls": "arcana.devil",
+   "kind": "reaction",
+   "label": "Excess",
+   "line": "While your pool overflows, your blows deal x1.2 damage.",
+   "does": {
+    "mult": 1.2
+   },
+   "feat": [
+    "drain",
+    20
+   ]
+  },
+  "sanctum": {
+   "cls": "arcana.hierophant",
+   "kind": "action",
+   "label": "Sanctum",
+   "line": "A circle 5 m across for 8 s: nothing outside may enter, and nothing done inside costs pool.",
+   "does": {
+    "reach": 5,
+    "dur": 8
+   },
+   "feat": [
+    "glyph",
+    10
+   ],
+   "cost": 20,
+   "cooldown": 60
+  },
+  "teaching": {
+   "cls": "arcana.hierophant",
+   "kind": "reaction",
+   "label": "Teaching",
+   "line": "Practising a Movement Art counts x1.5 toward opening it.",
+   "does": {
+    "count": 1.5
+   },
+   "feat": [
+    "blink",
+    50
+   ]
+  },
+  "lantern": {
+   "cls": "arcana.hermit",
+   "kind": "action",
+   "label": "Lamp",
+   "line": "A lamp for 20 s that shows hidden things within 8 m and keeps Dread's fog off you.",
+   "does": {
+    "reach": 8,
+    "dur": 20
+   },
+   "feat": [
+    "charted",
+    2
+   ],
+   "cost": 8,
+   "cooldown": 30
+  },
+  "solitude": {
+   "cls": "arcana.hermit",
+   "kind": "reaction",
+   "label": "Solitude",
+   "line": "With no sibling or spirit within 12 m, everything costs 15% less.",
+   "does": {
+    "costMult": 0.85,
+    "alone": 12
+   },
+   "feat": [
+    "secret",
+    1
+   ]
+  },
+  "completion": {
+   "cls": "arcana.world",
+   "kind": "action",
+   "label": "Completion",
+   "line": "For 10 s every art you know costs nothing and cools down twice as fast.",
+   "does": {
+    "dur": 10,
+    "cool": 2
+   },
+   "feat": [
+    "secret",
+    2
+   ],
+   "cost": 30,
+   "cooldown": 120
+  },
+  "wholeness": {
+   "cls": "arcana.world",
+   "kind": "reaction",
+   "label": "Wholeness",
+   "line": "Your spread's four tallies each count 10% more.",
+   "does": {
+    "tallies": 1.1
+   },
+   "feat": [
+    "crossing",
+    5
+   ]
+  },
+  "sleight": {
+   "cls": "arcana.magician",
+   "kind": "action",
+   "label": "Quick Swap",
+   "line": "Swap your next shell or move for any other the tool knows, without opening the Pneuka Box.",
+   "does": {
+    "swap": 1
+   },
+   "feat": [
+    "shell",
+    50
+   ],
+   "cost": 5,
+   "cooldown": 10
+  },
+  "will": {
+   "cls": "arcana.magician",
+   "kind": "reaction",
+   "label": "Will",
+   "line": "Celestial mode's sigils cost 30% less.",
+   "does": {
+    "sigilCost": 0.7
+   },
+   "feat": [
+    "glyph",
+    20
+   ]
+  },
+  "veil": {
+   "cls": "arcana.priestess",
+   "kind": "action",
+   "label": "Veil",
+   "line": "A creature within 12 m loses track of you and forgets what it knew of you.",
+   "does": {
+    "reach": 12
+   },
+   "feat": [
+    "windup",
+    30
+   ],
+   "cost": 10,
+   "cooldown": 20
+  },
+  "intuition": {
+   "cls": "arcana.priestess",
+   "kind": "reaction",
+   "label": "Intuition",
+   "line": "An aberrant's secret shows you where it begins.",
+   "does": {
+    "hint": 1
+   },
+   "feat": [
+    "secret",
+    1
+   ]
+  },
+  "bloom": {
+   "cls": "arcana.empress",
+   "kind": "action",
+   "label": "Overgrowth",
+   "line": "A thicket grows within 6 m for 10 s, blocking creatures and slowing them by half.",
+   "does": {
+    "reach": 6,
+    "dur": 10,
+    "slow": 0.5
+   },
+   "feat": [
+    "tend",
+    15
+   ],
+   "cost": 15,
+   "cooldown": 30
+  },
+  "abundance": {
+   "cls": "arcana.empress",
+   "kind": "reaction",
+   "label": "Abundance",
+   "line": "Your Spirit Garden beds each yield 1 more.",
+   "does": {
+    "beds": 1
+   },
+   "feat": [
+    "wish",
+    5
+   ]
+  },
+  "spin": {
+   "cls": "arcana.wheel",
+   "kind": "action",
+   "label": "Spin",
+   "line": "Luck's re-roll is yours again, now.",
+   "does": {
+    "reroll": 1
+   },
+   "feat": [
+    "flee",
+    3
+   ],
+   "cooldown": "gameDay"
+  },
+  "fortune": {
+   "cls": "arcana.wheel",
+   "kind": "reaction",
+   "label": "Fortune",
+   "line": "Luck grows x1.25 faster from the unlikely things you live through.",
+   "does": {
+    "luck": 1.25
+   },
+   "feat": [
+    "gold",
+    3
+   ]
+  },
+  "collapse": {
+   "cls": "arcana.tower",
+   "kind": "action",
+   "label": "Collapse",
+   "line": "Bring the ground down within 4 m, stunning everything under it.",
+   "does": {
+    "reach": 4,
+    "power": 3,
+    "status": "stun"
+   },
+   "feat": [
+    "stunDeep",
+    20
+   ],
+   "cost": 18,
+   "cooldown": 30
+  },
+  "upheaval": {
+   "cls": "arcana.tower",
+   "kind": "reaction",
+   "label": "Upheaval",
+   "line": "A guard you break stays broken twice as long.",
+   "does": {
+    "guardBreak": 2
+   },
+   "feat": [
+    "parry",
+    30
+   ]
+  },
+  "daybreak": {
+   "cls": "arcana.sun",
+   "kind": "action",
+   "label": "Daybreak",
+   "line": "A flash of daylight blinds what is within 10 m and lights the dark for 1 game hour.",
+   "does": {
+    "reach": 10,
+    "status": "blind",
+    "light": 1
+   },
+   "feat": [
+    "photo",
+    10
+   ],
+   "cost": 12,
+   "cooldown": 30
+  },
+  "radiance": {
+   "cls": "arcana.sun",
+   "kind": "reaction",
+   "label": "Radiance",
+   "line": "Your photographs score 20% higher.",
+   "does": {
+    "photo": 1.2
+   },
+   "feat": [
+    "photo",
+    25
+   ]
+  },
+  "suspend": {
+   "cls": "arcana.hanged",
+   "kind": "action",
+   "label": "Hang Time",
+   "line": "Hang in the air for 3 s while time round you slows by half.",
+   "does": {
+    "dur": 3,
+    "slow": 0.5
+   },
+   "feat": [
+    "swing",
+    20
+   ],
+   "cost": 10,
+   "cooldown": 20
+  },
+  "surrender": {
+   "cls": "arcana.hanged",
+   "kind": "reaction",
+   "label": "Surrender",
+   "line": "A blow taken while you guard gives back the pool it cost.",
+   "does": {
+    "refund": 1
+   },
+   "feat": [
+    "parry",
+    30
+   ]
+  },
+  "reckoning": {
+   "cls": "arcana.judgement",
+   "kind": "action",
+   "label": "Settle the Score",
+   "line": "Every creature within 12 m that hurt you takes back 30% of all it dealt you, at once.",
+   "does": {
+    "reach": 12,
+    "share": 0.3
+   },
+   "feat": [
+    "down",
+    80
+   ],
+   "cost": 25,
+   "cooldown": 60
+  },
+  "secondChance": {
+   "cls": "arcana.judgement",
+   "kind": "reaction",
+   "label": "Second Chance",
+   "line": "Once a game day, a failed flee or a lost duel may be tried again.",
+   "does": {
+    "daily": 1
+   },
+   "feat": [
+    "duelWin",
+    10
+   ]
+  }
+ },
+ "FEATS": {
+  "down": {
+   "event": "creature.struck"
+  },
+  "downWeak": {
+   "event": "creature.struck"
+  },
+  "firstBlood": {
+   "event": "creature.struck"
+  },
+  "stunDeep": {
+   "event": "creature.stun"
+  },
+  "parry": {
+   "event": "move.parry"
+  },
+  "windup": {
+   "event": "windup.read"
+  },
+  "blink": {
+   "event": "move.blink"
+  },
+  "swing": {
+   "event": "grapple.swing"
+  },
+  "gold": {
+   "event": "race.finish"
+  },
+  "combo": {
+   "event": "skiff.combo.bank"
+  },
+  "fish": {
+   "event": "angle.catch"
+  },
+  "release": {
+   "event": "angle.release"
+  },
+  "sweet": {
+   "event": "crystal.strike"
+  },
+  "photo": {
+   "event": "photo.take"
+  },
+  "reprogram": {
+   "event": "reprogram.run"
+  },
+  "drain": {
+   "event": "lockheart.drain"
+  },
+  "song": {
+   "event": "song.play"
+  },
+  "rhythm": {
+   "event": "rhythm.score"
+  },
+  "paint": {
+   "event": "brush.paint"
+  },
+  "mop": {
+   "event": "stain.wash"
+  },
+  "glyph": {
+   "event": "brush.glyph"
+  },
+  "miracle": {
+   "event": "god.miracle"
+  },
+  "sculpt": {
+   "event": "god.sculpt"
+  },
+  "duelWin": {
+   "event": "duel.end"
+  },
+  "secret": {
+   "event": "duel.secret"
+  },
+  "tend": {
+   "event": "garden.tend"
+  },
+  "bind": {
+   "event": "spirit.bind"
+  },
+  "wish": {
+   "event": "spirit.wish.done"
+  },
+  "salvage": {
+   "event": "sea.salvage"
+  },
+  "beast": {
+   "event": "seabeast.down"
+  },
+  "serpent": {
+   "event": "seaserpent.down"
+  },
+  "haunt": {
+   "event": "haunt.end"
+  },
+  "build": {
+   "event": "track.validate"
+  },
+  "crossing": {
+   "event": "emocean.stage"
+  },
+  "charted": {
+   "event": "well.charted"
+  },
+  "vantage": {
+   "event": "vantage.reach"
+  },
+  "awaken": {
+   "event": "feeling.wake"
+  },
+  "flee": {
+   "event": "duel.flee"
+  },
+  "shell": {
+   "event": "shell.fire"
+  },
+  "lend": {
+   "event": "tool.lend"
+  }
+ },
+ "FEAT_WORDS": {
+  "down": "creatures downed",
+  "downWeak": "creatures downed by a blow they are weak to",
+  "firstBlood": "big creatures downed",
+  "stunDeep": "creatures stunned deep",
+  "parry": "blows parried",
+  "windup": "windups read",
+  "blink": "blinks",
+  "swing": "big grapple swings",
+  "gold": "gold medals",
+  "combo": "trick combos banked at x4",
+  "fish": "fish caught",
+  "release": "fish let go",
+  "sweet": "crystals struck on the sweet spot",
+  "photo": "great photographs",
+  "reprogram": "clean reprogrammings",
+  "drain": "drains",
+  "song": "songs played at fever",
+  "rhythm": "rhythm songs at 90%",
+  "paint": "patches of paint laid",
+  "mop": "blots and slicks washed",
+  "glyph": "glyphs drawn with two sigils or more",
+  "miracle": "miracles drawn well",
+  "sculpt": "creations raised",
+  "duelWin": "puzzle duels won",
+  "secret": "aberrants' secrets found",
+  "tend": "beds tended to bloom",
+  "bind": "spirits bound",
+  "wish": "spirits' wishes granted",
+  "salvage": "crates salvaged",
+  "beast": "sea beasts sunk",
+  "serpent": "sea serpents sunk",
+  "haunt": "haunts held",
+  "build": "made tracks validated",
+  "crossing": "crossings sailed",
+  "charted": "Wells charted",
+  "vantage": "vantage points reached",
+  "awaken": "feelings awakened to",
+  "flee": "flees made good",
+  "shell": "caster shells fired",
+  "lend": "lends"
+ },
+ "OPEN": {
+  "action": 45,
+  "reaction": 90
+ }
+}

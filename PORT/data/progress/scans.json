@@ -1,0 +1,23 @@
+{
+ "PHOTO_KIND": {
+  "clapperjar": "clapper"
+ },
+ "ROSTER": [
+  "slipjelly",
+  "clapperjar",
+  "wisp",
+  "spirit"
+ ],
+ "SCAN": {
+  "perDay": 3,
+  "again": 1,
+  "material": 0.25,
+  "cls": [
+   0.5,
+   0.25,
+   0.13,
+   0.08,
+   0.04
+  ]
+ }
+}

@@ -1,0 +1,33 @@
+{
+ "CRUDE_GRIP": 0.5,
+ "LINE_PAINT": {
+  "wonder": {
+   "grip": 1.25,
+   "note": "frost grips"
+  },
+  "mirth": {
+   "grip": 1.1,
+   "note": "dots spring"
+  },
+  "desire": {
+   "grip": 1.15,
+   "note": "ripples catch"
+  },
+  "fury": {
+   "grip": 0.85,
+   "note": "cracks loosen"
+  },
+  "dread": {
+   "grip": 0.8,
+   "note": "marbling drags"
+  },
+  "gall": {
+   "grip": 0.7,
+   "note": "curds slide"
+  },
+  "grief": {
+   "grip": 0.55,
+   "note": "streaks are slick"
+  }
+ }
+}

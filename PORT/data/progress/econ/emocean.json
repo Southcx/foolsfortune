@@ -1,0 +1,122 @@
+{
+ "CHART": {
+  "perLaw": 2
+ },
+ "CLASSES": [
+  "Guppy",
+  "Barracuda",
+  "Marlin",
+  "Whale",
+  "Leviathan"
+ ],
+ "LEG": {
+  "first": 62,
+  "setPiece": 34,
+  "breather": 12,
+  "arrive": 4,
+  "max": 3,
+  "mend": 3,
+  "deeper": 0.5
+ },
+ "NODES": {
+  "margarite": {
+   "id": "margarite",
+   "name": "Margarite",
+   "law": -2,
+   "locked": false
+  },
+  "anagami": {
+   "id": "anagami",
+   "name": "Anagami Island",
+   "law": 0,
+   "locked": false
+  },
+  "entra": {
+   "id": "entra",
+   "name": "Entropolis",
+   "law": 2,
+   "locked": true
+  }
+ },
+ "RECKON": {
+  "lead": 3,
+  "open": 0.6
+ },
+ "ROLE_CLASS": {},
+ "STAGE": {
+  "seconds": 150,
+  "bears": 6,
+  "waves": [
+   {
+    "at": 0.09,
+    "role": "school",
+    "count": 5,
+    "formation": "line",
+    "lane": 0
+   },
+   {
+    "at": 0.17,
+    "role": "school",
+    "count": 6,
+    "formation": "vee",
+    "lane": null
+   },
+   {
+    "at": 0.26,
+    "role": "school",
+    "count": 8,
+    "formation": "pincer",
+    "lane": 0
+   },
+   {
+    "at": 0.36,
+    "role": "darter",
+    "count": 2,
+    "formation": "dash",
+    "lane": null
+   },
+   {
+    "at": 0.44,
+    "role": "darter",
+    "count": 3,
+    "formation": "dash",
+    "lane": null
+   },
+   {
+    "at": 0.62,
+    "role": "school",
+    "count": 6,
+    "formation": "ring",
+    "lane": 0
+   },
+   {
+    "at": 0.68,
+    "role": "darter",
+    "count": 2,
+    "formation": "dash",
+    "lane": null
+   },
+   {
+    "at": 0.74,
+    "role": "school",
+    "count": 8,
+    "formation": "vee",
+    "lane": null
+   },
+   {
+    "at": 0.84,
+    "role": "heavy",
+    "count": 1,
+    "formation": "hold",
+    "lane": 0
+   },
+   {
+    "at": 0.86,
+    "role": "school",
+    "count": 4,
+    "formation": "line",
+    "lane": null
+   }
+  ]
+ }
+}

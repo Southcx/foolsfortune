@@ -1,0 +1,152 @@
+{
+ "SECOND_WAYS": {
+  "magician": {
+   "line": "Use all seven tools within one real minute.",
+   "n": 1
+  },
+  "priestess": {
+   "line": "Gloss 10 neuralese words.",
+   "n": 10
+  },
+  "empress": {
+   "line": "Bring a planetoid of the Spirit Garden into bloom.",
+   "n": 1,
+   "hear": [
+    "garden.tend",
+    null
+   ]
+  },
+  "emperor": {
+   "line": "Give your siblings 20 orders.",
+   "n": 20,
+   "hear": [
+    "party.order",
+    null
+   ]
+  },
+  "hierophant": {
+   "line": "Learn 5 Movement Arts from the System.",
+   "n": 5
+  },
+  "lovers": {
+   "line": "Stand in an agate: two feelings felt at once.",
+   "n": 1,
+   "hear": [
+    "weather.change",
+    null
+   ]
+  },
+  "chariot": {
+   "line": "Win a race at the Raceway.",
+   "n": 1,
+   "hear": [
+    "race.finish",
+    null
+   ]
+  },
+  "strength": {
+   "line": "Calm a creature with the bell, without a blow.",
+   "n": 1,
+   "hear": [
+    "creature.status",
+    null
+   ]
+  },
+  "hermit": {
+   "line": "Reach the Great Dunemaw's last floor with no one in your party.",
+   "n": 1,
+   "hear": [
+    "well.floor",
+    null
+   ]
+  },
+  "wheel": {
+   "line": "The Lockheart's wheel lands on a jackpot.",
+   "n": 1,
+   "hear": [
+    "lockheart.outcome",
+    null
+   ]
+  },
+  "justice": {
+   "line": "Turn in a bounty.",
+   "n": 1,
+   "hear": [
+    "sea.rumour.paid",
+    null
+   ]
+  },
+  "hanged": {
+   "line": "Spend a game hour as the god hand.",
+   "n": 150
+  },
+  "death": {
+   "line": "Let a spirit go home from your garden.",
+   "n": 1,
+   "hear": [
+    "spirit.farewell",
+    null
+   ]
+  },
+  "temperance": {
+   "line": "Fire a true firing at the press.",
+   "n": 1,
+   "hear": [
+    "alchemy.fire",
+    null
+   ]
+  },
+  "devil": {
+   "line": "Let your pool overflow 10 times.",
+   "n": 10,
+   "hear": [
+    "mind.brim",
+    null
+   ]
+  },
+  "tower": {
+   "line": "Burst the Great Slip Jelly's crown.",
+   "n": 1,
+   "hear": [
+    "foe.break",
+    null
+   ]
+  },
+  "star": {
+   "line": "Take a fix on the open sea by reading the sky.",
+   "n": 1,
+   "hear": [
+    "sea.fix",
+    null
+   ]
+  },
+  "moon": {
+   "line": "Raise the bell's mirage 5 times.",
+   "n": 5,
+   "hear": [
+    "mirage.raise",
+    null
+   ]
+  },
+  "sun": {
+   "line": "Awaken to Mirth.",
+   "n": 1,
+   "hear": [
+    "feeling.wake",
+    null
+   ]
+  },
+  "judgement": {
+   "line": "Win a puzzle duel against an aberrant and mend its Figment.",
+   "n": 1,
+   "hear": [
+    "duel.end",
+    null
+   ]
+  },
+  "world": {
+   "line": "Awaken to all seven feelings.",
+   "n": 1
+  }
+ }
+}

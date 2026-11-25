@@ -1,0 +1,960 @@
+{
+ "MIMIC": {
+  "half": 6,
+  "cell": 0.5,
+  "pad": 4,
+  "soft": 3,
+  "settle": 4,
+  "dt": 0.03333333333333333,
+  "solve": 0.68,
+  "clean": 0.85,
+  "made": 0.5,
+  "enough": 0.8,
+  "taper": 2,
+  "pay": {
+   "1": 2,
+   "2": 3,
+   "3": 4,
+   "day": 3
+  },
+  "replay": 1.6,
+  "weights": {
+   "firm": 1,
+   "loose": 1,
+   "w": 0.5,
+   "tint": 0.5
+  },
+  "floor": 1.5,
+  "veil": 0.2,
+  "reveal": 2
+ },
+ "MIMIC_LADDER": [
+  "mound",
+  "hollow",
+  "twins",
+  "ditch",
+  "heap",
+  "level",
+  "fill",
+  "flock",
+  "claybed",
+  "order",
+  "unmade",
+  "slab",
+  "swap",
+  "gate",
+  "copy",
+  "moat",
+  "under"
+ ],
+ "MIMIC_LIVE": [
+  "mound",
+  "hollow",
+  "twins",
+  "ditch",
+  "heap",
+  "level",
+  "fill",
+  "flock",
+  "claybed",
+  "order",
+  "unmade",
+  "slab",
+  "swap",
+  "gate",
+  "copy",
+  "moat",
+  "under"
+ ],
+ "MIMIC_OPS": {
+  "raise": "shape",
+  "smooth": "shape",
+  "carve": "carve",
+  "pour": "scoop",
+  "move": "scoop",
+  "transmute": "transmute",
+  "fold": "fold",
+  "stamp": "stamp",
+  "slab": "slab",
+  "sculpt": "sculpt",
+  "herd": "herd"
+ },
+ "MIMIC_PUZZLES": {
+  "mound": {
+   "label": "One Mound",
+   "line": "Raise the ground where it rose.",
+   "mode": "mimic",
+   "tier": 1,
+   "setup": [
+    {
+     "op": "bed",
+     "firm": 1.6
+    }
+   ],
+   "steps": [
+    {
+     "op": "raise",
+     "at": [
+      0,
+      0
+     ],
+     "r": 1.6,
+     "dh": 1
+    }
+   ],
+   "id": "mound",
+   "family": "matter",
+   "powers": [
+    "shape"
+   ],
+   "domains": [
+    "alteration"
+   ],
+   "par": 1
+  },
+  "hollow": {
+   "label": "A Hollow",
+   "line": "Lower the ground where it fell.",
+   "mode": "mimic",
+   "tier": 1,
+   "setup": [
+    "[cycle]"
+   ],
+   "steps": [
+    {
+     "op": "raise",
+     "at": [
+      0,
+      0
+     ],
+     "r": 1.6,
+     "dh": -0.8
+    }
+   ],
+   "id": "hollow",
+   "family": "matter",
+   "powers": [
+    "shape"
+   ],
+   "domains": [
+    "alteration"
+   ],
+   "par": 1
+  },
+  "twins": {
+   "label": "Two Mounds",
+   "line": "Two mounds, side by side.",
+   "mode": "mimic",
+   "tier": 1,
+   "setup": [
+    "[cycle]"
+   ],
+   "steps": [
+    {
+     "op": "raise",
+     "at": [
+      -3,
+      0
+     ],
+     "r": 1.6,
+     "dh": 0.9
+    },
+    {
+     "op": "raise",
+     "at": [
+      3,
+      0
+     ],
+     "r": 1.6,
+     "dh": 0.9
+    }
+   ],
+   "id": "twins",
+   "family": "matter",
+   "powers": [
+    "shape"
+   ],
+   "domains": [
+    "alteration"
+   ],
+   "par": 2
+  },
+  "ditch": {
+   "label": "The Ditch",
+   "line": "A channel cut end to end.",
+   "mode": "mimic",
+   "tier": 1,
+   "setup": [
+    "[cycle]"
+   ],
+   "steps": [
+    {
+     "op": "carve",
+     "a": [
+      -5,
+      0
+     ],
+     "b": [
+      5,
+      0
+     ],
+     "w": 1.4,
+     "depth": 1.2
+    }
+   ],
+   "id": "ditch",
+   "family": "matter",
+   "powers": [
+    "carve"
+   ],
+   "domains": [
+    "alteration"
+   ],
+   "par": 1
+  },
+  "level": {
+   "label": "Level It",
+   "line": "A mound smoothed flat again.",
+   "mode": "mimic",
+   "tier": 2,
+   "setup": [
+    "[cycle]",
+    {
+     "op": "raise",
+     "at": [
+      0,
+      0
+     ],
+     "r": 1.6,
+     "dh": 1
+    }
+   ],
+   "steps": [
+    {
+     "op": "smooth",
+     "a": [
+      -2.5,
+      0
+     ],
+     "b": [
+      2.5,
+      0
+     ],
+     "r": 2.2,
+     "y": 1.6
+    }
+   ],
+   "id": "level",
+   "family": "matter",
+   "powers": [
+    "shape"
+   ],
+   "domains": [
+    "alteration"
+   ],
+   "par": 1
+  },
+  "claybed": {
+   "label": "Sand to Clay",
+   "line": "One patch of sand turned to clay.",
+   "mode": "mimic",
+   "tier": 2,
+   "setup": [
+    {
+     "op": "bed",
+     "firm": 0.4,
+     "loose": 0.6
+    }
+   ],
+   "steps": [
+    {
+     "op": "transmute",
+     "at": [
+      0,
+      0
+     ],
+     "r": 2.5
+    }
+   ],
+   "id": "claybed",
+   "family": "matter",
+   "powers": [
+    "transmute"
+   ],
+   "domains": [
+    "alteration"
+   ],
+   "par": 1
+  },
+  "heap": {
+   "label": "Move the Heap",
+   "line": "The heap carried across.",
+   "mode": "mimic",
+   "tier": 1,
+   "setup": [
+    {
+     "op": "bed",
+     "firm": 0.4
+    },
+    {
+     "op": "pour",
+     "at": [
+      -3,
+      -3
+     ],
+     "r": 1.6,
+     "vol": 6,
+     "kind": "loose"
+    }
+   ],
+   "steps": [
+    {
+     "op": "move",
+     "from": [
+      -3,
+      -3
+     ],
+     "to": [
+      3,
+      3
+     ],
+     "r": 1.6,
+     "vol": 6
+    }
+   ],
+   "id": "heap",
+   "family": "matter",
+   "powers": [
+    "scoop"
+   ],
+   "domains": [
+    "psychokinesis"
+   ],
+   "par": 1
+  },
+  "fill": {
+   "label": "Fill the Hollow",
+   "line": "The pool carried into the hollow.",
+   "mode": "mimic",
+   "tier": 2,
+   "setup": [
+    "[cycle]",
+    {
+     "op": "raise",
+     "at": [
+      2,
+      0
+     ],
+     "r": 1.6,
+     "dh": -0.8
+    },
+    {
+     "op": "pour",
+     "at": [
+      -4,
+      3
+     ],
+     "r": 1.2,
+     "vol": 2.5,
+     "kind": "water"
+    }
+   ],
+   "steps": [
+    {
+     "op": "move",
+     "from": [
+      -4,
+      3
+     ],
+     "to": [
+      2,
+      0
+     ],
+     "r": 1.2,
+     "vol": 2.5
+    }
+   ],
+   "id": "fill",
+   "family": "matter",
+   "powers": [
+    "scoop"
+   ],
+   "domains": [
+    "psychokinesis"
+   ],
+   "par": 1
+  },
+  "slab": {
+   "label": "The Slab",
+   "line": "A square of ground lifted and set down.",
+   "mode": "mimic",
+   "tier": 3,
+   "setup": [
+    {
+     "op": "bed",
+     "firm": 0.6
+    },
+    {
+     "op": "raise",
+     "at": [
+      -3,
+      0
+     ],
+     "r": 1.6,
+     "dh": 1
+    }
+   ],
+   "steps": [
+    {
+     "op": "slab",
+     "from": [
+      -3,
+      0
+     ],
+     "to": [
+      3,
+      0
+     ],
+     "side": 4
+    }
+   ],
+   "id": "slab",
+   "family": "matter",
+   "powers": [
+    "slab"
+   ],
+   "domains": [
+    "psychokinesis"
+   ],
+   "par": 1
+  },
+  "swap": {
+   "label": "Swap",
+   "line": "Two patches trade places.",
+   "mode": "mimic",
+   "tier": 3,
+   "setup": [
+    {
+     "op": "bed",
+     "firm": 0.6
+    },
+    {
+     "op": "raise",
+     "at": [
+      -3,
+      0
+     ],
+     "r": 1.6,
+     "dh": 1.2
+    },
+    {
+     "op": "carve",
+     "a": [
+      2,
+      -2
+     ],
+     "b": [
+      4,
+      2
+     ],
+     "w": 1.4,
+     "depth": 1.2
+    }
+   ],
+   "steps": [
+    {
+     "op": "fold",
+     "a": [
+      -3,
+      0
+     ],
+     "b": [
+      3,
+      0
+     ],
+     "side": 4
+    }
+   ],
+   "id": "swap",
+   "family": "matter",
+   "powers": [
+    "fold"
+   ],
+   "domains": [
+    "ouranurgy"
+   ],
+   "par": 1
+  },
+  "copy": {
+   "label": "Copy",
+   "line": "One patch pressed down twice.",
+   "mode": "mimic",
+   "tier": 3,
+   "setup": [
+    "[cycle]",
+    {
+     "op": "carve",
+     "a": [
+      -4,
+      -1
+     ],
+     "b": [
+      -2,
+      1
+     ],
+     "w": 1.4,
+     "depth": 1.2
+    },
+    {
+     "op": "carve",
+     "a": [
+      -4,
+      1
+     ],
+     "b": [
+      -2,
+      -1
+     ],
+     "w": 1.4,
+     "depth": 1.2
+    }
+   ],
+   "steps": [
+    {
+     "op": "stamp",
+     "a": [
+      -3,
+      0
+     ],
+     "b": [
+      3,
+      0
+     ],
+     "side": 4
+    }
+   ],
+   "id": "copy",
+   "family": "matter",
+   "powers": [
+    "stamp"
+   ],
+   "domains": [
+    "spellscription"
+   ],
+   "par": 1
+  },
+  "order": {
+   "label": "Order of Things",
+   "line": "A channel, and water standing in it.",
+   "mode": "match",
+   "tier": 2,
+   "setup": [
+    "[cycle]",
+    {
+     "op": "pour",
+     "at": [
+      -4,
+      4
+     ],
+     "r": 1.2,
+     "vol": 2,
+     "kind": "water"
+    }
+   ],
+   "steps": [
+    {
+     "op": "carve",
+     "a": [
+      -4,
+      0
+     ],
+     "b": [
+      4,
+      0
+     ],
+     "w": 1.4,
+     "depth": 1.2
+    },
+    {
+     "op": "move",
+     "from": [
+      -4,
+      4
+     ],
+     "to": [
+      0,
+      0
+     ],
+     "r": 1.2,
+     "vol": 2
+    }
+   ],
+   "id": "order",
+   "family": "matter",
+   "powers": [
+    "carve",
+    "scoop"
+   ],
+   "domains": [
+    "alteration",
+    "psychokinesis"
+   ],
+   "par": 2
+  },
+  "moat": {
+   "label": "The Moat",
+   "line": "A mound inside a ditch.",
+   "mode": "match",
+   "tier": 3,
+   "setup": [
+    "[cycle]"
+   ],
+   "steps": [
+    {
+     "op": "raise",
+     "at": [
+      0,
+      0
+     ],
+     "r": 1.6,
+     "dh": 1
+    },
+    {
+     "op": "carve",
+     "a": [
+      -3.5,
+      -3.5
+     ],
+     "b": [
+      3.5,
+      -3.5
+     ],
+     "w": 1.4,
+     "depth": 1.2
+    },
+    {
+     "op": "carve",
+     "a": [
+      3.5,
+      -3.5
+     ],
+     "b": [
+      3.5,
+      3.5
+     ],
+     "w": 1.4,
+     "depth": 1.2
+    }
+   ],
+   "id": "moat",
+   "family": "matter",
+   "powers": [
+    "shape",
+    "carve"
+   ],
+   "domains": [
+    "alteration"
+   ],
+   "par": 3
+  },
+  "unmade": {
+   "label": "Unmade",
+   "line": "Put the ground back as it was.",
+   "mode": "undo",
+   "tier": 2,
+   "setup": [
+    "[cycle]"
+   ],
+   "steps": [
+    {
+     "op": "raise",
+     "at": [
+      -3,
+      2
+     ],
+     "r": 1.6,
+     "dh": 1
+    },
+    {
+     "op": "raise",
+     "at": [
+      3,
+      -2
+     ],
+     "r": 1.6,
+     "dh": -0.8
+    }
+   ],
+   "id": "unmade",
+   "family": "matter",
+   "powers": [
+    "shape"
+   ],
+   "domains": [
+    "alteration"
+   ],
+   "par": 2
+  },
+  "flock": {
+   "label": "The Flock",
+   "line": "Every clapperjar walked into the pen.",
+   "mode": "mimic",
+   "tier": 2,
+   "family": "herd",
+   "setup": [
+    {
+     "op": "bed",
+     "firm": 0.4
+    }
+   ],
+   "flock": [
+    {
+     "at": [
+      -4,
+      -3
+     ],
+     "n": 3,
+     "spread": 1
+    },
+    {
+     "at": [
+      4,
+      -3
+     ],
+     "n": 3,
+     "spread": 1
+    }
+   ],
+   "pen": {
+    "at": [
+     0,
+     3
+    ],
+    "r": 2.4,
+    "sides": 6
+   },
+   "steps": [
+    {
+     "op": "herd",
+     "from": [
+      -4,
+      -3
+     ],
+     "to": [
+      -0.8,
+      3
+     ]
+    },
+    {
+     "op": "herd",
+     "from": [
+      4,
+      -3
+     ],
+     "to": [
+      0.8,
+      3
+     ]
+    }
+   ],
+   "id": "flock",
+   "powers": [
+    "herd"
+   ],
+   "domains": [
+    "possession"
+   ],
+   "par": 2
+  },
+  "gate": {
+   "label": "Pillar and Arch",
+   "line": "A pillar, and an arch beside it.",
+   "mode": "mimic",
+   "tier": 2,
+   "family": "creation",
+   "setup": [
+    {
+     "op": "bed",
+     "firm": 0.4
+    }
+   ],
+   "steps": [
+    {
+     "op": "sculpt",
+     "a": [
+      -3.5,
+      -3
+     ]
+    },
+    {
+     "op": "sculpt",
+     "a": [
+      -3,
+      2
+     ],
+     "b": [
+      3,
+      2
+     ]
+    }
+   ],
+   "id": "gate",
+   "powers": [
+    "sculpt"
+   ],
+   "domains": [
+    "manifestation"
+   ],
+   "par": 2
+  },
+  "under": {
+   "label": "Below the Surface",
+   "line": "A mound, and what was dug where you cannot see.",
+   "mode": "match",
+   "tier": 3,
+   "veil": true,
+   "lend": [
+    "strata"
+   ],
+   "setup": [
+    "[cycle]"
+   ],
+   "steps": [
+    {
+     "op": "raise",
+     "at": [
+      -3,
+      -3
+     ],
+     "r": 1.6,
+     "dh": 1
+    },
+    {
+     "op": "raise",
+     "at": [
+      2.5,
+      -2
+     ],
+     "r": 1.6,
+     "dh": -0.8
+    },
+    {
+     "op": "raise",
+     "at": [
+      -1,
+      3
+     ],
+     "r": 1.6,
+     "dh": -0.8
+    }
+   ],
+   "id": "under",
+   "family": "matter",
+   "powers": [
+    "strata",
+    "shape"
+   ],
+   "domains": [
+    "divination",
+    "alteration"
+   ],
+   "par": 3
+  }
+ },
+ "MIMIC_RUNS": {
+  "matter": true,
+  "creation": true,
+  "herd": true
+ },
+ "MIMIC_SITES": [
+  {
+   "id": "flats",
+   "area": "flats",
+   "r": 200,
+   "bearing": 150,
+   "rungs": [
+    "mound",
+    "hollow",
+    "twins",
+    "ditch",
+    "level",
+    "unmade"
+   ],
+   "day": true
+  },
+  {
+   "id": "shore",
+   "area": "shore",
+   "r": 200,
+   "bearing": 10,
+   "rungs": [
+    "heap",
+    "fill",
+    "flock",
+    "slab"
+   ]
+  },
+  {
+   "id": "ridges",
+   "area": "ridges",
+   "r": 220,
+   "bearing": -60,
+   "rungs": [
+    "claybed",
+    "order",
+    "moat",
+    "under"
+   ]
+  },
+  {
+   "id": "ruins",
+   "area": "ruins",
+   "r": 250,
+   "bearing": 80,
+   "rungs": [
+    "swap",
+    "gate",
+    "copy"
+   ]
+  }
+ ],
+ "MIMIC_TOOL": {
+  "shape": {
+   "r": 1.6,
+   "made": 0.5
+  },
+  "carve": {
+   "w": 1.4,
+   "depth": 1.2,
+   "len": 18
+  },
+  "scoop": {
+   "carry": 20
+  },
+  "fold": {
+   "side": 4
+  },
+  "stamp": {
+   "side": 4
+  },
+  "slab": {
+   "side": 4
+  },
+  "transmute": {
+   "r": 2.5
+  },
+  "sculpt": {
+   "len": 16,
+   "scale": 1,
+   "made": 0.6
+  },
+  "herd": {
+   "r": 6,
+   "n": 4,
+   "dur": 20
+  },
+  "strata": {
+   "len": 12
+  }
+ }
+}

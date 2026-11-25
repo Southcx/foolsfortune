@@ -1,0 +1,74 @@
+{
+ "SHIPS": {
+  "sloop": {
+   "speed": 1.2,
+   "box": 1,
+   "hurtbox": 1,
+   "bears": 6,
+   "locks": 8,
+   "dive": true,
+   "mounts": 2,
+   "sails": "any",
+   "danger": 0,
+   "tank": 7.5,
+   "burn": 1,
+   "guns": 3
+  },
+  "frigate": {
+   "speed": 1.1,
+   "box": 1,
+   "hurtbox": 1.1,
+   "bears": 8,
+   "locks": 8,
+   "dive": true,
+   "mounts": 3,
+   "sails": "any",
+   "danger": 0,
+   "tank": 8.5,
+   "burn": 1.1,
+   "guns": 5
+  },
+  "destroyer": {
+   "speed": 1.3,
+   "box": 1.1,
+   "hurtbox": 0.9,
+   "bears": 5,
+   "locks": 8,
+   "dive": true,
+   "mounts": 2,
+   "sails": "any",
+   "danger": 0.5,
+   "tank": 7,
+   "burn": 0.9,
+   "guns": 4
+  },
+  "galleon": {
+   "speed": 0.8,
+   "box": 0.8,
+   "hurtbox": 1.5,
+   "bears": 12,
+   "locks": 4,
+   "dive": false,
+   "mounts": 1,
+   "sails": "charted",
+   "danger": -1,
+   "tank": 13,
+   "burn": 1.5,
+   "guns": 8
+  },
+  "tanker": {
+   "speed": 0.7,
+   "box": 0.7,
+   "hurtbox": 1.6,
+   "bears": 14,
+   "locks": 4,
+   "dive": false,
+   "mounts": 1,
+   "sails": "charted",
+   "danger": -1,
+   "tank": 14,
+   "burn": 1.8,
+   "guns": 2
+  }
+ }
+}

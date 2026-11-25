@@ -1,0 +1,893 @@
+{
+ "CELLS": {
+  "small": 1,
+  "medium": 4,
+  "large": 9,
+  "centre": 16
+ },
+ "CENTRE_FEATS": {
+  "moonDeck": "gy17",
+  "bandstand": "gy18",
+  "teaHouse": "gy19",
+  "rainPavilion": "gy20",
+  "moonGate": "gy21",
+  "deerScarer": "gy1",
+  "tunnelKiln": "ir2",
+  "constellationPavement": "gy10",
+  "briarThrone": "gy5"
+ },
+ "CLUTTER": {
+  "full": 0.7,
+  "scale": 0.5
+ },
+ "DECOR": {
+  "pathStone": {
+   "name": "Path Stone",
+   "set": "plain",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "steppingStone": {
+   "name": "Stepping Stone",
+   "set": "plain",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "bambooFence": {
+   "name": "Bamboo Fence",
+   "set": "plain",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "visitor"
+   ]
+  },
+  "gardenGate": {
+   "name": "Garden Gate",
+   "set": "plain",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "shop",
+    "visitor"
+   ]
+  },
+  "bench": {
+   "name": "Bench",
+   "set": "plain",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "planterBox": {
+   "name": "Planter Box",
+   "set": "plain",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "flowerPot": {
+   "name": "Flower Pot",
+   "set": "plain",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "waterBasin": {
+   "name": "Water Basin",
+   "set": "plain",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "wish"
+   ]
+  },
+  "rock": {
+   "name": "Rock",
+   "set": "plain",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "boulder": {
+   "name": "Boulder",
+   "set": "plain",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "shop",
+    "visitor"
+   ]
+  },
+  "bridge": {
+   "name": "Bridge",
+   "set": "plain",
+   "size": "large",
+   "tints": 4,
+   "from": [
+    "shop",
+    "wish"
+   ]
+  },
+  "arbor": {
+   "name": "Arbor",
+   "set": "plain",
+   "size": "large",
+   "tints": 4,
+   "from": [
+    "shop",
+    "wish"
+   ]
+  },
+  "stoneLantern": {
+   "name": "Stone Lantern",
+   "set": "wonder",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "mossMound": {
+   "name": "Moss Mound",
+   "set": "wonder",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "gravelBed": {
+   "name": "Raked Gravel",
+   "set": "wonder",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "shop",
+    "wish"
+   ]
+  },
+  "bonsaiStand": {
+   "name": "Bonsai Stand",
+   "set": "wonder",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "gift",
+    "wish"
+   ]
+  },
+  "moonDeck": {
+   "name": "Moon-Viewing Deck",
+   "set": "wonder",
+   "size": "centre",
+   "tints": 4,
+   "from": [
+    "lotus",
+    "wish"
+   ]
+  },
+  "lanternString": {
+   "name": "Lantern String",
+   "set": "mirth",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "festivalDrum": {
+   "name": "Festival Drum",
+   "set": "mirth",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "shop",
+    "visitor"
+   ]
+  },
+  "pinwheel": {
+   "name": "Pinwheel",
+   "set": "mirth",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "streamerPole": {
+   "name": "Streamer Pole",
+   "set": "mirth",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "gift",
+    "wish"
+   ]
+  },
+  "bandstand": {
+   "name": "Bandstand",
+   "set": "mirth",
+   "size": "centre",
+   "tints": 4,
+   "from": [
+    "lotus",
+    "wish"
+   ]
+  },
+  "teaTable": {
+   "name": "Tea Table",
+   "set": "desire",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "floorCushion": {
+   "name": "Floor Cushion",
+   "set": "desire",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "parasol": {
+   "name": "Parasol",
+   "set": "desire",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "shop",
+    "visitor"
+   ]
+  },
+  "teaKettle": {
+   "name": "Tea Kettle",
+   "set": "desire",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "gift",
+    "wish"
+   ]
+  },
+  "teaHouse": {
+   "name": "Tea House",
+   "set": "desire",
+   "size": "centre",
+   "tints": 4,
+   "from": [
+    "lotus",
+    "wish"
+   ]
+  },
+  "rainChain": {
+   "name": "Rain Chain",
+   "set": "grief",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "willow": {
+   "name": "Weeping Willow",
+   "set": "grief",
+   "size": "large",
+   "tints": 4,
+   "from": [
+    "shop",
+    "wish"
+   ]
+  },
+  "rainBarrel": {
+   "name": "Rain Barrel",
+   "set": "grief",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "windBell": {
+   "name": "Wind Bell",
+   "set": "grief",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "gift",
+    "visitor"
+   ]
+  },
+  "rainPavilion": {
+   "name": "Rain Pavilion",
+   "set": "grief",
+   "size": "centre",
+   "tints": 4,
+   "from": [
+    "lotus",
+    "wish"
+   ]
+  },
+  "koiBridge": {
+   "name": "Koi Bridge",
+   "set": "dread",
+   "size": "large",
+   "tints": 4,
+   "from": [
+    "shop",
+    "wish"
+   ]
+  },
+  "mistStone": {
+   "name": "Mist Stone",
+   "set": "dread",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "lilyPads": {
+   "name": "Lily Pads",
+   "set": "dread",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "stoneFrog": {
+   "name": "Stone Frog",
+   "set": "dread",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "gift",
+    "visitor"
+   ]
+  },
+  "moonGate": {
+   "name": "Moon Gate",
+   "set": "dread",
+   "size": "centre",
+   "tints": 4,
+   "from": [
+    "lotus",
+    "wish"
+   ]
+  },
+  "teaPathStones": {
+   "name": "Tea Path Stones",
+   "set": "teapath",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "crouchingBasin": {
+   "name": "Crouching Basin",
+   "set": "teapath",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "snowViewingLantern": {
+   "name": "Snow-Viewing Lantern",
+   "set": "teapath",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "shop",
+    "visitor"
+   ]
+  },
+  "bambooLatticeFence": {
+   "name": "Bamboo Lattice Fence",
+   "set": "teapath",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "slabBridge": {
+   "name": "Slab Bridge",
+   "set": "teapath",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "shop",
+    "wish"
+   ]
+  },
+  "teaBenchParasol": {
+   "name": "Tea Bench",
+   "set": "teapath",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "shop",
+    "visitor"
+   ]
+  },
+  "mossHillock": {
+   "name": "Moss Hillock",
+   "set": "teapath",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "gift",
+    "wish"
+   ]
+  },
+  "deerScarer": {
+   "name": "Deer Scarer",
+   "set": "teapath",
+   "size": "centre",
+   "tints": 4,
+   "from": [
+    "lotus",
+    "wish"
+   ]
+  },
+  "woodPile": {
+   "name": "Wood Pile",
+   "set": "kilnyard",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "saggarStack": {
+   "name": "Saggar Stack",
+   "set": "kilnyard",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "tunnelKiln": {
+   "name": "Tunnel Kiln",
+   "set": "kilnyard",
+   "size": "centre",
+   "tints": 4,
+   "from": [
+    "lotus",
+    "wish"
+   ]
+  },
+  "potDryingRack": {
+   "name": "Drying Rack",
+   "set": "kilnyard",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "shop",
+    "visitor"
+   ]
+  },
+  "clayPit": {
+   "name": "Clay Pit",
+   "set": "kilnyard",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "shop",
+    "wish"
+   ]
+  },
+  "pottersWheel": {
+   "name": "Potter's Wheel",
+   "set": "kilnyard",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "gift",
+    "wish"
+   ]
+  },
+  "potShardHeap": {
+   "name": "Shard Heap",
+   "set": "kilnyard",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "glazeDipBucket": {
+   "name": "Dipping Bucket",
+   "set": "kilnyard",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "visitor"
+   ]
+  },
+  "armillarySphere": {
+   "name": "Armillary Sphere",
+   "set": "stargazer",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "shop",
+    "wish"
+   ]
+  },
+  "brassTelescope": {
+   "name": "Telescope",
+   "set": "stargazer",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "gardenSundial": {
+   "name": "Sundial",
+   "set": "stargazer",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "starChartTable": {
+   "name": "Star-Chart Table",
+   "set": "stargazer",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "shop",
+    "visitor"
+   ]
+  },
+  "crescentMoonGate": {
+   "name": "Crescent Gate",
+   "set": "stargazer",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "gift",
+    "wish"
+   ]
+  },
+  "glassOrbStakes": {
+   "name": "Glass Orbs",
+   "set": "stargazer",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "meteorStone": {
+   "name": "Meteor Stone",
+   "set": "stargazer",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "gift",
+    "visitor"
+   ]
+  },
+  "constellationPavement": {
+   "name": "Constellation Pavement",
+   "set": "stargazer",
+   "size": "centre",
+   "tints": 4,
+   "from": [
+    "lotus",
+    "wish"
+   ]
+  },
+  "windChime": {
+   "name": "Wind Chime",
+   "set": "sound",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "shop",
+    "gift"
+   ]
+  },
+  "musicBox": {
+   "name": "Music Box",
+   "set": "sound",
+   "size": "small",
+   "tints": 4,
+   "from": [
+    "wish",
+    "visitor"
+   ]
+  },
+  "gramophone": {
+   "name": "Gramophone",
+   "set": "sound",
+   "size": "medium",
+   "tints": 4,
+   "from": [
+    "wish",
+    "lotus"
+   ]
+  },
+  "blossomTree": {
+   "name": "Blossom Tree",
+   "set": "season",
+   "size": "large",
+   "tints": 2,
+   "from": [
+    "season",
+    "gift"
+   ],
+   "season": "spring",
+   "color": 14721716
+  },
+  "reedScreen": {
+   "name": "Reed Screen",
+   "set": "season",
+   "size": "medium",
+   "tints": 2,
+   "from": [
+    "season",
+    "gift"
+   ],
+   "season": "summer",
+   "color": 13219706
+  },
+  "pumpkinLantern": {
+   "name": "Pumpkin Lantern",
+   "set": "season",
+   "size": "small",
+   "tints": 2,
+   "from": [
+    "season",
+    "gift"
+   ],
+   "season": "autumn",
+   "color": 14254635
+  },
+  "snowLantern": {
+   "name": "Snow Lantern",
+   "set": "season",
+   "size": "small",
+   "tints": 2,
+   "from": [
+    "season",
+    "gift"
+   ],
+   "season": "winter",
+   "color": 14673646
+  },
+  "statueWonder": {
+   "name": "Wonder Statue",
+   "set": "keepsake",
+   "size": "medium",
+   "tints": 1,
+   "from": [
+    "farewell"
+   ],
+   "color": 9421984
+  },
+  "statueMirth": {
+   "name": "Mirth Statue",
+   "set": "keepsake",
+   "size": "medium",
+   "tints": 1,
+   "from": [
+    "farewell"
+   ],
+   "color": 14715482
+  },
+  "statueDesire": {
+   "name": "Desire Statue",
+   "set": "keepsake",
+   "size": "medium",
+   "tints": 1,
+   "from": [
+    "farewell"
+   ],
+   "color": 14201434
+  },
+  "statueGrief": {
+   "name": "Grief Statue",
+   "set": "keepsake",
+   "size": "medium",
+   "tints": 1,
+   "from": [
+    "farewell"
+   ],
+   "color": 9085120
+  },
+  "statueDread": {
+   "name": "Dread Statue",
+   "set": "keepsake",
+   "size": "medium",
+   "tints": 1,
+   "from": [
+    "farewell"
+   ],
+   "color": 5930906
+  },
+  "statueSeaSerpent": {
+   "name": "Sea Serpent Statue",
+   "set": "keepsake",
+   "size": "medium",
+   "tints": 1,
+   "from": [
+    "capture"
+   ],
+   "color": 7315594
+  },
+  "statueWolfWhale": {
+   "name": "Akhlut Statue",
+   "set": "keepsake",
+   "size": "medium",
+   "tints": 1,
+   "from": [
+    "capture"
+   ],
+   "color": 11553338
+  },
+  "statueSeaMonk": {
+   "name": "Umibozu Statue",
+   "set": "keepsake",
+   "size": "medium",
+   "tints": 1,
+   "from": [
+    "capture"
+   ],
+   "color": 4869994
+  },
+  "brambleHedge": {
+   "name": "Bramble Hedge",
+   "set": "briar",
+   "size": "small",
+   "tints": 2,
+   "from": [
+    "briar",
+    "visitor"
+   ]
+  },
+  "thornArch": {
+   "name": "Thorn Arch",
+   "set": "briar",
+   "size": "medium",
+   "tints": 2,
+   "from": [
+    "briar",
+    "visitor"
+   ]
+  },
+  "briarThrone": {
+   "name": "Briar Throne",
+   "set": "briar",
+   "size": "centre",
+   "tints": 2,
+   "from": [
+    "briar",
+    "wish"
+   ]
+  }
+ },
+ "LOTUSES": [
+  8,
+  20,
+  40,
+  70,
+  110
+ ],
+ "REGION": {
+  "piece": 0.5,
+  "perKind": 3,
+  "kind": 0.75
+ },
+ "SET": {
+  "reach": 8,
+  "bonus": 15
+ },
+ "SETS": {
+  "plain": {
+   "name": "Garden Basics"
+  },
+  "wonder": {
+   "name": "Moss and Stone"
+  },
+  "mirth": {
+   "name": "Festival"
+  },
+  "desire": {
+   "name": "Tea Garden"
+  },
+  "grief": {
+   "name": "Rain Garden"
+  },
+  "dread": {
+   "name": "Koi Pond"
+  },
+  "sound": {
+   "name": "Sound"
+  },
+  "season": {
+   "name": "Seasons"
+  },
+  "briar": {
+   "name": "Briar"
+  },
+  "keepsake": {
+   "name": "Keepsakes"
+  },
+  "teapath": {
+   "name": "Tea Path",
+   "lotus": 1
+  },
+  "kilnyard": {
+   "name": "Kiln Yard",
+   "lotus": 2
+  },
+  "stargazer": {
+   "name": "Stargazer",
+   "lotus": 3
+  }
+ },
+ "SOURCES": [
+  "shop",
+  "gift",
+  "wish",
+  "visitor",
+  "lotus",
+  "season",
+  "briar",
+  "farewell"
+ ]
+}

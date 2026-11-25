@@ -1,0 +1,66 @@
+{
+ "SMALL": {
+  "horno": {
+   "label": "Horno oven",
+   "size": "small",
+   "w": 5,
+   "d": 5
+  },
+  "musgum": {
+   "label": "Shell hut",
+   "size": "small",
+   "w": 7,
+   "d": 7
+  },
+  "wellhouse": {
+   "label": "Well house",
+   "size": "small",
+   "w": 6,
+   "d": 6
+  },
+  "souk": {
+   "label": "Market stall",
+   "size": "small",
+   "w": 7,
+   "d": 6,
+   "whole": true
+  },
+  "shrine": {
+   "label": "Wayside shrine",
+   "size": "small",
+   "w": 5,
+   "d": 5
+  },
+  "granary": {
+   "label": "Raised granary",
+   "size": "small",
+   "w": 6,
+   "d": 6,
+   "whole": true
+  },
+  "kiosk": {
+   "label": "Kiosk",
+   "size": "small",
+   "w": 6,
+   "d": 6
+  },
+  "dovecote": {
+   "label": "Pigeon tower",
+   "size": "small",
+   "w": 10,
+   "d": 10
+  },
+  "gatewall": {
+   "label": "Wall and gate",
+   "size": "small",
+   "w": 10,
+   "d": 3
+  },
+  "jars": {
+   "label": "Water jars",
+   "size": "small",
+   "w": 6,
+   "d": 6
+  }
+ }
+}

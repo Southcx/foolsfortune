@@ -1,0 +1,193 @@
+{
+ "ACTS": [
+  {
+   "id": "launch",
+   "from": 0,
+   "to": 9,
+   "view": "chase",
+   "teaches": "the ship: moving in the box, the two reticles, the barrel roll"
+  },
+  {
+   "id": "schools",
+   "from": 9,
+   "to": 26,
+   "view": "chase",
+   "teaches": "the gun, and the lock-on sweep (a school is eight in a line)"
+  },
+  {
+   "id": "pincer",
+   "from": 26,
+   "to": 36,
+   "view": "above",
+   "teaches": "the forms: shots of your feeling are drunk, the other one hurts"
+  },
+  {
+   "id": "darters",
+   "from": 36,
+   "to": 50,
+   "view": "free",
+   "teaches": "the parry: darters spit outlined shots at the camera; a roll in time sends them home"
+  },
+  {
+   "id": "breather",
+   "from": 50,
+   "to": 62,
+   "view": "chase",
+   "teaches": "the sea itself: flotsam to gather, the reckoning's marks, a breath"
+  },
+  {
+   "id": "setpiece",
+   "from": 62,
+   "to": 96,
+   "view": null,
+   "teaches": "everything at once"
+  },
+  {
+   "id": "arrive",
+   "from": 96,
+   "to": 100,
+   "view": "chase",
+   "teaches": "nothing: the tally, and the island in sight"
+  }
+ ],
+ "BARS": 100,
+ "BAR_S": 1.5,
+ "CONTINUE": {
+  "repair": 2,
+  "double": 2,
+  "rankCap": "C"
+ },
+ "LEG": {
+  "first": 62,
+  "setPiece": 34,
+  "breather": 12,
+  "arrive": 4,
+  "max": 3,
+  "mend": 3,
+  "deeper": 0.5
+ },
+ "SET_PIECES": {
+  "shoal": {
+   "keep": true,
+   "beats": [
+    {
+     "bar": 62,
+     "view": "above",
+     "beat": "boil",
+     "does": "the crude boils under the ship: the shoal rises and balls round you, tightening a bar at a time"
+    },
+    {
+     "bar": 70,
+     "view": "chase",
+     "beat": "frenzy",
+     "does": "the ball strikes in pulses from every side; its caller glows: down the caller and the shoal scatters"
+    },
+    {
+     "bar": 84,
+     "view": "chase",
+     "beat": "heavy",
+     "does": "what the shoal was running from: the heavy and its escort (the authored waves)"
+    }
+   ]
+  },
+  "pirates": {
+   "keep": false,
+   "beats": [
+    {
+     "bar": 62,
+     "view": "astern",
+     "beat": "sails",
+     "does": "a brig astern, closing; its bow chasers lob outlined shot: parry it back into her bow"
+    },
+    {
+     "bar": 70,
+     "view": "side",
+     "beat": "broadside",
+     "does": "alongside: the gunports open a bar before each volley; boarders swing across; cut the rigging with a full lock"
+    },
+    {
+     "bar": 84,
+     "view": "chase",
+     "beat": "ram",
+     "does": "crippled or not, she comes about to ram: hole her hull or out-run her"
+    },
+    {
+     "bar": 92,
+     "view": null,
+     "beat": "colours",
+     "does": "she strikes her colours or limps off; what she carried floats astern"
+    }
+   ]
+  },
+  "leviathan": {
+   "keep": false,
+   "beats": [
+    {
+     "bar": 62,
+     "view": "free",
+     "beat": "heave",
+     "does": "the sea heaves; it breaches across the rail ahead: roll through the spray"
+    },
+    {
+     "bar": 70,
+     "view": "side",
+     "beat": "abreast",
+     "does": "it runs alongside: four gills glow; its fins sweep (roll), it spits outlined globs (parry them into the gills)"
+    },
+    {
+     "bar": 80,
+     "view": "above",
+     "beat": "sound",
+     "does": "it sounds: its shadow grows under the ship; be out of the ring when it breaches"
+    },
+    {
+     "bar": 88,
+     "view": "free",
+     "beat": "maw",
+     "does": "face to face, the maw open: lock its teeth, parry its spit down its throat; at bar 96 it dives away or is felled"
+    }
+   ]
+  }
+ },
+ "SHRINE_ISLAND": {
+  "bisque": "anagami",
+  "lamp": "anagami",
+  "float": "anagami",
+  "pearl": "margarite"
+ },
+ "SWING": {
+  "bars": 1
+ },
+ "VIEWS": {
+  "chase": {
+   "aim": "free",
+   "plane": "screen",
+   "faces": "ahead",
+   "prior": "Star Fox 64"
+  },
+  "above": {
+   "aim": "scroll",
+   "plane": "sea",
+   "faces": "down",
+   "prior": "Ikaruga, Mushihime-sama, DoDonPachi"
+  },
+  "side": {
+   "aim": "scroll",
+   "plane": "wall",
+   "faces": "abeam",
+   "prior": "Einhander, R-Type, Gradius"
+  },
+  "free": {
+   "aim": "free",
+   "plane": "screen",
+   "faces": "ahead",
+   "prior": "Sin & Punishment"
+  },
+  "astern": {
+   "aim": "free",
+   "plane": "screen",
+   "faces": "behind",
+   "prior": "Panzer Dragoon, Star Fox 64 (all-range)"
+  }
+ }
+}

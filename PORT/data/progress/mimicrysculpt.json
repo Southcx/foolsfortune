@@ -1,0 +1,25 @@
+{
+ "SCULPT": {
+  "pillar": 1.5,
+  "w": 2,
+  "t": 0.6,
+  "arch": [
+   1.5,
+   5
+  ],
+  "archK": 0.3,
+  "ramp": 4,
+  "rampK": 0.4,
+  "pillarR": 0.6,
+  "pillarH": 3
+ },
+ "VOX": {
+  "half": 6,
+  "down": 2,
+  "up": 8,
+  "coarse": 2,
+  "soft": 1,
+  "floor": 1,
+  "enough": 0.8
+ }
+}

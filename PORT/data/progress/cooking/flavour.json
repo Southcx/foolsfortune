@@ -1,0 +1,221 @@
+{
+ "ADDIN_OF": {
+  "wonder": "mint",
+  "mirth": "honey",
+  "desire": "butter",
+  "fury": "chilli",
+  "gall": "bitterleaf",
+  "grief": "onion",
+  "dread": "vinegar"
+ },
+ "ADJUST": {
+  "salt": {
+   "taste": {
+    "salt": 0.3
+   },
+   "label": "A PINCH OF SALT"
+  },
+  "acid": {
+   "taste": {
+    "sour": 0.25
+   },
+   "label": "A SQUEEZE OF ACID"
+  },
+  "fat": {
+   "taste": {
+    "rich": 0.3
+   },
+   "label": "A KNOB OF FAT"
+  },
+  "heat": {
+   "taste": {
+    "heat": 0.2
+   },
+   "label": "A LITTLE HEAT"
+  }
+ },
+ "FEELING_TASTE": {
+  "wonder": "cool",
+  "mirth": "sweet",
+  "desire": "rich",
+  "fury": "heat",
+  "gall": "bitter",
+  "grief": "salt",
+  "dread": "sour"
+ },
+ "INGREDIENTS": {
+  "flour": {
+   "taste": {
+    "sweet": 0.15
+   },
+   "pantry": true,
+   "line": "Wheat flour: its gluten is what kneading builds."
+  },
+  "water": {
+   "taste": {},
+   "pantry": true,
+   "line": "Water."
+  },
+  "salt": {
+   "taste": {
+    "salt": 0.4
+   },
+   "pantry": true,
+   "line": "A pinch lifts every other taste; a fistful is all you taste."
+  },
+  "oil": {
+   "taste": {
+    "rich": 0.25
+   },
+   "pantry": true,
+   "line": "A neutral oil."
+  },
+  "starter": {
+   "taste": {
+    "sour": 0.08,
+    "kokumi": 0.1
+   },
+   "pantry": true,
+   "line": "A sourdough starter kept alive at the hearth: wild yeast and lactic bacteria."
+  },
+  "rice": {
+   "taste": {
+    "sweet": 0.1
+   },
+   "pantry": true,
+   "line": "Short-grain rice: wash it until the water runs almost clear."
+  },
+  "egg": {
+   "taste": {
+    "rich": 0.2,
+    "umami": 0.05
+   },
+   "pantry": true,
+   "line": "Egg: its yolk is what makes fresh pasta silky and gold."
+  },
+  "sugar": {
+   "taste": {
+    "sweet": 0.5
+   },
+   "pantry": true,
+   "line": "Sugar: boiled with water it passes thread, ball and crack, each a stage you can read in cold water."
+  },
+  "tealeaf": {
+   "taste": {
+    "bitter": 0.12,
+    "umami": 0.05
+   },
+   "pantry": true,
+   "line": "A tea leaf: green wants gentle water, black wants it boiling, and over-steeped any of them turns bitter."
+  },
+  "kansui": {
+   "taste": {
+    "bitter": 0.04
+   },
+   "pantry": true,
+   "line": "Kansui: alkaline water. It makes noodles springy and yellow (the gluten tightens; the flour's flavones turn gold)."
+  },
+  "mint": {
+   "taste": {
+    "cool": 0.8
+   },
+   "from": "wonder",
+   "line": "Mint: menthol tricks the cold receptor (TRPM8), so it tastes cool without being cold."
+  },
+  "honey": {
+   "taste": {
+    "sweet": 0.8,
+    "kokumi": 0.05
+   },
+   "from": "mirth",
+   "line": "Honey: sweet is the body's \"energy here\"."
+  },
+  "butter": {
+   "taste": {
+    "rich": 0.8
+   },
+   "from": "desire",
+   "line": "Butter: fat may be a sixth taste (oleogustus), the one a craving reaches for."
+  },
+  "chilli": {
+   "taste": {
+    "heat": 0.85
+   },
+   "from": "fury",
+   "line": "A chilli: capsaicin is pain, not taste (TRPV1). You sweat as if angry."
+  },
+  "bitterleaf": {
+   "taste": {
+    "bitter": 0.8
+   },
+   "from": "gall",
+   "line": "A bitter leaf: about 25 receptors watch for bitter, the body's poison alarm."
+  },
+  "onion": {
+   "taste": {
+    "salt": 0.35,
+    "sweet": 0.15,
+    "umami": 0.1
+   },
+   "from": "grief",
+   "line": "An onion: cut it and it makes the lachrymatory factor, the compound that brings tears.",
+   "tears": 0.5
+  },
+  "vinegar": {
+   "taste": {
+    "sour": 0.8
+   },
+   "from": "dread",
+   "line": "Vinegar: sour is the body's \"this may have gone\"."
+  },
+  "kombu": {
+   "taste": {
+    "umami": 0.7,
+    "salt": 0.1
+   },
+   "from": "shore",
+   "line": "Kombu: kelp, its glutamate the first umami Ikeda named (1908). Never boil it."
+  },
+  "miso": {
+   "taste": {
+    "kokumi": 0.6,
+    "salt": 0.3,
+    "umami": 0.3
+   },
+   "from": "koji",
+   "line": "Miso: soybeans fermented with koji (Aspergillus oryzae). It adds body (kokumi)."
+  }
+ },
+ "PANTRY": [
+  "flour",
+  "water",
+  "salt",
+  "oil",
+  "starter",
+  "rice",
+  "egg",
+  "sugar",
+  "tealeaf",
+  "kansui"
+ ],
+ "TASTES": [
+  "cool",
+  "sweet",
+  "rich",
+  "heat",
+  "bitter",
+  "salt",
+  "sour",
+  "umami",
+  "kokumi"
+ ],
+ "TASTE_FEELING": {
+  "cool": "wonder",
+  "sweet": "mirth",
+  "rich": "desire",
+  "heat": "fury",
+  "bitter": "gall",
+  "salt": "grief",
+  "sour": "dread"
+ }
+}

@@ -1,0 +1,44 @@
+{
+ "FOE_SKILLS": {
+  "hurl": {
+   "label": "Hurl",
+   "line": "Throws junk onto your half"
+  },
+  "petrify": {
+   "label": "Petrify",
+   "line": "Gems on your half turn to junk"
+  },
+  "seal": {
+   "label": "Seal",
+   "line": "Locks a column of yours for your next turn: nothing in it can be dragged"
+  },
+  "sap": {
+   "label": "Sap",
+   "line": "Halves the charge of each skill you wear"
+  },
+  "reclaim": {
+   "label": "Reclaim",
+   "line": "Pushes the Line back a column toward you"
+  },
+  "spew": {
+   "label": "Spew",
+   "line": "Throws a heap of slime onto your half"
+  },
+  "harden": {
+   "label": "Harden",
+   "line": "Sets up to 4 slime on your half into plain junk"
+  },
+  "shuffle": {
+   "label": "Shuffle",
+   "line": "Swaps the colours of up to 6 gems on your half"
+  },
+  "syncopate": {
+   "label": "Syncopate",
+   "line": "Moves its clap to the off-beat, or back onto the beat"
+  },
+  "kindle": {
+   "label": "Kindle",
+   "line": "Burns up to 3 Dread gems on your half into embers"
+  }
+ }
+}

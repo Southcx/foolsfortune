@@ -1,0 +1,104 @@
+{
+ "SHOPS": {
+  "raku": {
+   "id": "raku",
+   "keeper": "raku",
+   "name": "RAKU'S TREASURY",
+   "blurb": "Possibilikeys and coffins for the Lockheart. Buys curios, and anything else, cheaply. Everything is negotiable, in his favour.",
+   "sells": {
+    "key.brass": 6,
+    "key.invert": 2,
+    "key.even": 2,
+    "key.loaded": 1,
+    "key.twin": 1,
+    "key.wide": 1,
+    "key.echo": 1,
+    "heart.gambler": 1,
+    "heart.shepherd": 1,
+    "heart.summoning": 1
+   },
+   "trade": [
+    "curio"
+   ],
+   "buys": [
+    "curio",
+    "key",
+    "heart",
+    "map",
+    "crude",
+    "material",
+    "fish",
+    "lure",
+    "shell",
+    "bottle"
+   ],
+   "markup": 1.45,
+   "haggle": true
+  },
+  "saggar": {
+   "id": "saggar",
+   "keeper": "saggar",
+   "name": "SAGGAR'S KILN",
+   "blurb": "Glazes, fired onto you at the kiln. What is bought here is never what is earned.",
+   "sells": {},
+   "glazes": true,
+   "trade": [],
+   "buys": [],
+   "markup": 1,
+   "haggle": false
+  },
+  "grog": {
+   "id": "grog",
+   "keeper": "grog",
+   "name": "OLD GROG'S PIER",
+   "blurb": "Lures if you have lost yours, and casks of crude for the crossing. Buys fish, and pays fair.",
+   "sells": {
+    "lure.bob": 1,
+    "lure.eye": 1,
+    "lure.fly": 1,
+    "lure.tear": 1,
+    "lure.spoon": 1,
+    "lure.bell": 1,
+    "cask.dunemaw": 24,
+    "bottle.small": 2,
+    "bottle.medium": 1,
+    "bottle.large": 1,
+    "whistle.wake": 3
+   },
+   "trade": [
+    "fish"
+   ],
+   "buys": [
+    "fish",
+    "lure",
+    "crude"
+   ],
+   "markup": 1,
+   "haggle": false,
+   "island": "anagami"
+  },
+  "purser": {
+   "id": "purser",
+   "keeper": "purser",
+   "name": "THE PURSER'S COUNTER",
+   "blurb": "Margarite's dock. Buys crude, Cogitomaps, rutters and whatever a Well gives, and pays as the King's island pays: dear, for order.",
+   "sells": {
+    "cask.margarite": 16
+   },
+   "trade": [
+    "crude",
+    "map",
+    "rutter"
+   ],
+   "buys": [
+    "crude",
+    "map",
+    "rutter",
+    "material"
+   ],
+   "markup": 1,
+   "haggle": false,
+   "island": "margarite"
+  }
+ }
+}

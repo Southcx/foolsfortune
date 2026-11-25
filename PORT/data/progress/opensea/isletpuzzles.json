@@ -1,0 +1,78 @@
+{
+ "CACHE": {
+  "kits": {
+   "atoll": 1,
+   "sandbar": 1,
+   "rock": 0.35
+  },
+  "echoFloor": "rare",
+  "dig": 1.6
+ },
+ "ECHO": {
+  "notes": 4,
+  "hear": 7,
+  "listen": 8,
+  "gap": 0.55
+ },
+ "LINEUP": {
+  "dists": [
+   60,
+   100,
+   150,
+   220
+  ],
+  "stand": 1.4,
+  "aim": 0.07,
+  "size": 0.1,
+  "pitch": 0.12
+ },
+ "PAIR": {
+  "tier": "rare",
+  "seen": 6,
+  "shapes": [
+   "urn",
+   "fish",
+   "bell",
+   "wheel",
+   "hand",
+   "moon"
+  ],
+  "colours": [
+   13935932,
+   3116957,
+   14711391,
+   10216298,
+   11836390,
+   4078220
+  ]
+ },
+ "PUZZLE_COUNT": {
+  "pairs": 3,
+  "lineups": 3,
+  "echoes": 2,
+  "riddles": 2
+ },
+ "RIDDLE": {
+  "away": [
+   2,
+   3
+  ],
+  "floor": "rare",
+  "reach": 20,
+  "kits": {
+   "rock": "a bare rock",
+   "atoll": "an atoll",
+   "stack": "a sea stack",
+   "ruin": "a ruin",
+   "lighthouse": "a dead lighthouse",
+   "sandbar": "a sandbar"
+  }
+ },
+ "SIGHT": {
+  "pair": 14,
+  "lineup": 12,
+  "echo": 12,
+  "listen": 12,
+  "bottle": 40
+ }
+}

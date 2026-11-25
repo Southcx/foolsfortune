@@ -1,0 +1,52 @@
+{
+ "MEDIUM": {
+  "courtyard": {
+   "label": "Courtyard house",
+   "size": "medium",
+   "w": 16,
+   "d": 16
+  },
+  "badgir": {
+   "label": "Windcatcher house",
+   "size": "medium",
+   "w": 14,
+   "d": 12
+  },
+  "bazaar": {
+   "label": "Domed bazaar row",
+   "size": "medium",
+   "w": 20,
+   "d": 9
+  },
+  "ghorfa": {
+   "label": "Vaulted granary",
+   "size": "medium",
+   "w": 13,
+   "d": 11
+  },
+  "gate": {
+   "label": "Caravanserai gate",
+   "size": "medium",
+   "w": 18,
+   "d": 10
+  },
+  "hausa": {
+   "label": "Hausa house",
+   "size": "medium",
+   "w": 12,
+   "d": 10
+  },
+  "ksar": {
+   "label": "Ksar gate",
+   "size": "medium",
+   "w": 20,
+   "d": 7
+  },
+  "casa": {
+   "label": "Casa with balcony",
+   "size": "medium",
+   "w": 12,
+   "d": 11
+  }
+ }
+}

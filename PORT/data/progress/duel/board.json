@@ -1,0 +1,69 @@
+{
+ "COLOURS": [
+  "wonder",
+  "mirth",
+  "desire",
+  "fury",
+  "gall",
+  "grief",
+  "dread"
+ ],
+ "DIRS": {
+  "N": [
+   0,
+   -1
+  ],
+  "S": [
+   0,
+   1
+  ],
+  "E": [
+   1,
+   0
+  ],
+  "W": [
+   -1,
+   0
+  ],
+  "NONE": [
+   0,
+   0
+  ]
+ },
+ "KINDS": {
+  "gem": [
+   "falls",
+   "pushable",
+   "matches",
+   "swappable"
+  ],
+  "junk": [
+   "falls",
+   "pushable",
+   "junk",
+   "breakable",
+   "swappable"
+  ],
+  "stone": [
+   "heavy"
+  ],
+  "bomb": [
+   "falls",
+   "pushable",
+   "explosive",
+   "swappable"
+  ],
+  "body": [
+   "body"
+  ],
+  "orb": [
+   "orb"
+  ],
+  "ember": [
+   "falls",
+   "pushable",
+   "swappable",
+   "timer"
+  ]
+ }
+}

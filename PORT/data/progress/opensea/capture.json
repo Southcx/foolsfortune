@@ -1,0 +1,18 @@
+{
+ "CAPTURE": {
+  "beasts": {
+   "seaSerpent": "statueSeaSerpent",
+   "wolfWhale": "statueWolfWhale",
+   "seaMonk": "statueSeaMonk"
+  },
+  "hp": 0.3,
+  "depth": 2,
+  "live": 1.6,
+  "carves": 2,
+  "tow": {
+   "speed": 0.7,
+   "turn": 0.85,
+   "secs": 240
+  }
+ }
+}

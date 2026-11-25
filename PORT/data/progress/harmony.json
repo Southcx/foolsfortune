@@ -1,0 +1,52 @@
+{
+ "BRIAR": {
+  "likes": [
+   "fury",
+   "gall",
+   "dread"
+  ],
+  "bond": 1
+ },
+ "CARRY": {
+  "per": 0.4,
+  "brim": 0.1,
+  "at": "dantian",
+  "where": "lotus"
+ },
+ "HARMONY": {
+  "rest": 0.5,
+  "briar": 0.35,
+  "bloom": 0.75,
+  "drift": 0.02,
+  "catchUp": 7,
+  "look": 1
+ },
+ "INCENSE": {
+  "reach": 4,
+  "k": 2
+ },
+ "NEGLECT": {
+  "grace": 3,
+  "per": 0.06,
+  "max": 0.3,
+  "at": "mulberryGrove",
+  "where": "spirit"
+ },
+ "TEND": {
+  "each": 0.05,
+  "cap": 0.25,
+  "kinds": [
+   "water",
+   "harvest",
+   "plant",
+   "feed",
+   "pet",
+   "wish",
+   "rest"
+  ]
+ },
+ "THORNS": {
+  "max": 6,
+  "prune": 0.03
+ }
+}

@@ -1,0 +1,3804 @@
+{
+ "written": [
+  {
+   "file": "src/core/config.js",
+   "json": "data/core/config.json",
+   "tables": [
+    "DEFAULTS",
+    "DEG",
+    "PALETTE",
+    "T"
+   ],
+   "code": [
+    "loadTuning",
+    "resetTuning",
+    "saveTuning",
+    "shakeOf"
+   ]
+  },
+  {
+   "file": "src/progress/achievements.js",
+   "json": "data/progress/achievements.json",
+   "tables": [
+    "CATS",
+    "RANKS",
+    "TIERS",
+    "TYPES"
+   ],
+   "code": [
+    "Achievements",
+    "buildAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/alchemy.js",
+   "json": "data/progress/alchemy.json",
+   "tables": [
+    "ATTRIBUTES",
+    "FEELING_HUE",
+    "RANK_LINES",
+    "SEASONING"
+   ],
+   "code": [
+    "SoulAlchemy",
+    "aimedFuel",
+    "fuelAt",
+    "heartRadius",
+    "isTrue",
+    "radiusAt",
+    "rankLine",
+    "rankShare",
+    "swatchRadius",
+    "targetOf",
+    "widenAtRank"
+   ]
+  },
+  {
+   "file": "src/progress/aptitude.js",
+   "json": "data/progress/aptitude.json",
+   "tables": [
+    "APT",
+    "APTITUDES"
+   ],
+   "code": [
+    "Aptitude",
+    "readOf"
+   ]
+  },
+  {
+   "file": "src/progress/arcanaways.js",
+   "json": "data/progress/arcanaways.json",
+   "tables": [
+    "SECOND_WAYS"
+   ],
+   "code": [
+    "ArcanaWays",
+    "wayCount"
+   ]
+  },
+  {
+   "file": "src/progress/areachecklist.js",
+   "json": "data/progress/areachecklist.json",
+   "tables": [
+    "AREA_IDS"
+   ],
+   "code": [
+    "AreaChecklist"
+   ]
+  },
+  {
+   "file": "src/progress/areas.js",
+   "json": "data/progress/areas.json",
+   "tables": [
+    "AREA_CONTENTS",
+    "AREA_PAGE",
+    "AREA_TOTALS",
+    "CHECKLIST_KINDS",
+    "CHECKLIST_ROWS",
+    "DUNES_AREAS",
+    "DUNES_FRAME",
+    "RARE_FINDS"
+   ],
+   "code": [
+    "areaAt",
+    "bearingOf",
+    "inBearing"
+   ]
+  },
+  {
+   "file": "src/progress/assaytrials.js",
+   "json": "data/progress/assaytrials.json",
+   "tables": [
+    "TRIALS"
+   ],
+   "code": [
+    "asynchronySd",
+    "dPrime",
+    "reactionMs",
+    "scoreTrial",
+    "staircase",
+    "zScore"
+   ]
+  },
+  {
+   "file": "src/progress/bracelet.js",
+   "json": "data/progress/bracelet.json",
+   "tables": [
+    "CHARMS",
+    "FAMILY",
+    "SOCKETS",
+    "SOCKET_AT"
+   ],
+   "code": [
+    "Bracelet"
+   ]
+  },
+  {
+   "file": "src/progress/brushload.js",
+   "json": "data/progress/brushload.json",
+   "tables": [
+    "BOTTLES",
+    "BRUSH",
+    "CLEAN",
+    "STAINS"
+   ],
+   "code": [
+    "bottleFeed",
+    "crack",
+    "saturateTime",
+    "stainStage"
+   ]
+  },
+  {
+   "file": "src/progress/cardbacks.js",
+   "json": "data/progress/cardbacks.json",
+   "tables": [
+    "CARD_BACKS"
+   ],
+   "code": [
+    "cardBackOpen"
+   ]
+  },
+  {
+   "file": "src/progress/casino/charity.js",
+   "json": "data/progress/casino/charity.json",
+   "tables": [
+    "CHARITY",
+    "CHARITY_RULES"
+   ],
+   "code": [
+    "charityBot",
+    "estimateJar",
+    "lieRates",
+    "lineOf"
+   ]
+  },
+  {
+   "file": "src/progress/casino/chips.js",
+   "json": "data/progress/casino/chips.json",
+   "tables": [
+    "CHIPS"
+   ],
+   "code": [
+    "Chips"
+   ]
+  },
+  {
+   "file": "src/progress/casino/coach/ceremony.js",
+   "json": "data/progress/casino/coach/ceremony.json",
+   "tables": [
+    "SCALE"
+   ],
+   "code": [
+    "ceremonyOf"
+   ]
+  },
+  {
+   "file": "src/progress/casino/coach/index.js",
+   "json": "data/progress/casino/coach/index.json",
+   "tables": [
+    "SCALE"
+   ],
+   "code": [
+    "ceremonyOf",
+    "coach",
+    "hint",
+    "selectable"
+   ]
+  },
+  {
+   "file": "src/progress/casino/coach/nebula.js",
+   "json": "data/progress/casino/coach/nebula.json",
+   "tables": [
+    "CLAIMS_SHOWN"
+   ],
+   "code": [
+    "nebulaCoach"
+   ]
+  },
+  {
+   "file": "src/progress/casino/coach/seats.js",
+   "json": "data/progress/casino/coach/seats.json",
+   "tables": [
+    "PERSON_COLOURS"
+   ],
+   "code": [
+    "colourOf",
+    "seatsOf"
+   ]
+  },
+  {
+   "file": "src/progress/casino/entropy/cards.js",
+   "json": "data/progress/casino/entropy/cards.json",
+   "tables": [
+    "COURT",
+    "RANK_NAMES",
+    "SUITS"
+   ],
+   "code": [
+    "courtRank",
+    "isCourt",
+    "nameOf",
+    "rankOf",
+    "suitOf",
+    "valuesOf"
+   ]
+  },
+  {
+   "file": "src/progress/casino/entropy/classes.js",
+   "json": "data/progress/casino/entropy/classes.json",
+   "tables": [
+    "CLASSES",
+    "CLASS_IDS",
+    "HEALTH"
+   ],
+   "code": []
+  },
+  {
+   "file": "src/progress/casino/entropy/rules.js",
+   "json": "data/progress/casino/entropy/rules.json",
+   "tables": [
+    "ENTROPY",
+    "ENTROPY_RULES"
+   ],
+   "code": [
+    "attunedOf",
+    "back",
+    "beside",
+    "cloneState",
+    "determinize",
+    "dir",
+    "hurt",
+    "legalTiles",
+    "lose",
+    "moveBomb",
+    "other",
+    "ownerAt",
+    "placeMoves",
+    "previewPlay",
+    "reachTokens",
+    "sidesOf",
+    "speedOf",
+    "startOwner",
+    "strengthOf",
+    "tokAt"
+   ]
+  },
+  {
+   "file": "src/progress/casino/entropy/tokens.js",
+   "json": "data/progress/casino/entropy/tokens.json",
+   "tables": [
+    "TOKEN",
+    "TOKEN_HP"
+   ],
+   "code": [
+    "advanceTokens",
+    "contrary",
+    "hitOf",
+    "hitToken",
+    "maxHpOf",
+    "multOf",
+    "speedOf",
+    "strengthOf",
+    "zapAll"
+   ]
+  },
+  {
+   "file": "src/progress/casino/eventhorizon.js",
+   "json": "data/progress/casino/eventhorizon.json",
+   "tables": [
+    "EH",
+    "EVENT_HORIZON"
+   ],
+   "code": [
+    "horizonBot"
+   ]
+  },
+  {
+   "file": "src/progress/casino/folk.js",
+   "json": "data/progress/casino/folk.json",
+   "tables": [
+    "FOLK"
+   ],
+   "code": [
+    "seatOf",
+    "styleOf"
+   ]
+  },
+  {
+   "file": "src/progress/casino/howto.js",
+   "json": "data/progress/casino/howto.json",
+   "tables": [
+    "HOWTO"
+   ],
+   "code": [
+    "howtoSeen"
+   ]
+  },
+  {
+   "file": "src/progress/casino/nebula.js",
+   "json": "data/progress/casino/nebula.json",
+   "tables": [
+    "NEBULA",
+    "NEBULA_RULES"
+   ],
+   "code": [
+    "atLeast",
+    "nebulaBot",
+    "priceOf",
+    "worthOf"
+   ]
+  },
+  {
+   "file": "src/progress/casino/querent/arcana.js",
+   "json": "data/progress/casino/querent/arcana.json",
+   "tables": [
+    "ARCANA"
+   ],
+   "code": [
+    "answer",
+    "enact",
+    "flip"
+   ]
+  },
+  {
+   "file": "src/progress/casino/querent/rules.js",
+   "json": "data/progress/casino/querent/rules.json",
+   "tables": [
+    "QUERENT",
+    "QUERENT_RULES"
+   ],
+   "code": [
+    "discardMoves",
+    "scoreIfWon",
+    "tenpai"
+   ]
+  },
+  {
+   "file": "src/progress/casino/querent/score.js",
+   "json": "data/progress/casino/querent/score.json",
+   "tables": [
+    "SUITS",
+    "TIERS"
+   ],
+   "code": [
+    "best",
+    "isWin",
+    "melds"
+   ]
+  },
+  {
+   "file": "src/progress/casino/supernova.js",
+   "json": "data/progress/casino/supernova.json",
+   "tables": [
+    "SUPERNOVA",
+    "SUPERNOVA_RULES"
+   ],
+   "code": [
+    "fusesOf",
+    "reactHand",
+    "splitsOf",
+    "supernovaBot"
+   ]
+  },
+  {
+   "file": "src/progress/casino/table.js",
+   "json": "data/progress/casino/table.json",
+   "tables": [
+    "DIE_STEPS",
+    "DND_SET",
+    "SEAT_COLOURS",
+    "SUIT_COLOURS"
+   ],
+   "code": [
+    "die",
+    "play",
+    "rngOf",
+    "shuffle",
+    "stepDie",
+    "subsetsSumming"
+   ]
+  },
+  {
+   "file": "src/progress/casino/zodiac.js",
+   "json": "data/progress/casino/zodiac.json",
+   "tables": [
+    "ZODIAC",
+    "ZODIAC_RULES"
+   ],
+   "code": [
+    "zodiacBot"
+   ]
+  },
+  {
+   "file": "src/progress/classarts.js",
+   "json": "data/progress/classarts.json",
+   "tables": [
+    "ACCENT",
+    "ARTS_BY_CLASS",
+    "CLASS_ARTS",
+    "FEATS",
+    "FEAT_WORDS",
+    "OPEN"
+   ],
+   "code": [
+    "ClassArts",
+    "accent",
+    "artOpen",
+    "artsOf",
+    "classWords",
+    "openArts"
+   ]
+  },
+  {
+   "file": "src/progress/collection.js",
+   "json": "data/progress/collection.json",
+   "tables": [
+    "BOUND_AT_START"
+   ],
+   "code": [
+    "Collection"
+   ]
+  },
+  {
+   "file": "src/progress/collectionlog.js",
+   "json": "data/progress/collectionlog.json",
+   "tables": [
+    "ENOUGH",
+    "LOG_SECTIONS"
+   ],
+   "code": [
+    "logOf",
+    "logShare",
+    "worldSections"
+   ]
+  },
+  {
+   "file": "src/progress/combat/castershells.js",
+   "json": "data/progress/combat/castershells.json",
+   "tables": [
+    "CASTER_SHELLS",
+    "FAMILIES",
+    "TIERS"
+   ],
+   "code": [
+    "chamberHolds",
+    "fireCost",
+    "shellById",
+    "shellByNo",
+    "typeLabel",
+    "worthOfShell"
+   ]
+  },
+  {
+   "file": "src/progress/combat/constitution.js",
+   "json": "data/progress/combat/constitution.json",
+   "tables": [
+    "CONSTITUTION"
+   ],
+   "code": [
+    "affinityOf",
+    "constitutionOf",
+    "typeWeaknessOf"
+   ]
+  },
+  {
+   "file": "src/progress/combat/dunemaw.js",
+   "json": "data/progress/combat/dunemaw.json",
+   "tables": [
+    "ARENA",
+    "FINDS",
+    "FOE",
+    "NURSERY",
+    "SOLAR",
+    "STRAWMAN"
+   ],
+   "code": [
+    "bout",
+    "broodAt",
+    "crackOf",
+    "findWorth",
+    "hitMult",
+    "litRing",
+    "medalOf",
+    "phase"
+   ]
+  },
+  {
+   "file": "src/progress/combat/emo.js",
+   "json": "data/progress/combat/emo.json",
+   "tables": [
+    "EMO"
+   ],
+   "code": [
+    "catchFactor",
+    "enraged",
+    "rise",
+    "yieldOf"
+   ]
+  },
+  {
+   "file": "src/progress/combat/figmenttelegraphs.js",
+   "json": "data/progress/combat/figmenttelegraphs.json",
+   "tables": [
+    "FIGMENT_ANSWERS",
+    "FIGMENT_SHAPES",
+    "FIGMENT_TELEGRAPH"
+   ],
+   "code": [
+    "figmentMarkOf",
+    "figmentStepsAt"
+   ]
+  },
+  {
+   "file": "src/progress/combat/friendly.js",
+   "json": "data/progress/combat/friendly.json",
+   "tables": [
+    "FRIENDLY"
+   ],
+   "code": [
+    "friendlyDamage",
+    "tolerance"
+   ]
+  },
+  {
+   "file": "src/progress/combat/greatjelly.js",
+   "json": "data/progress/combat/greatjelly.json",
+   "tables": [
+    "CASTS",
+    "DROPS",
+    "ENRAGE",
+    "HEALTH",
+    "NAMES",
+    "NOVA_AT",
+    "PHASES",
+    "STATES",
+    "SUSTAINED"
+   ],
+   "code": [
+    "castMark",
+    "dropsFor",
+    "phaseOf",
+    "timeline"
+   ]
+  },
+  {
+   "file": "src/progress/combat/mind.js",
+   "json": "data/progress/combat/mind.json",
+   "tables": [
+    "MIND",
+    "STATES"
+   ],
+   "code": [
+    "pushed",
+    "settle",
+    "stateOf"
+   ]
+  },
+  {
+   "file": "src/progress/combat/moves.js",
+   "json": "data/progress/combat/moves.json",
+   "tables": [
+    "HOLDS",
+    "MOVES",
+    "RECORDS"
+   ],
+   "code": [
+    "dps",
+    "unlocked",
+    "way"
+   ]
+  },
+  {
+   "file": "src/progress/combat/strawmanrig.js",
+   "json": "data/progress/combat/strawmanrig.json",
+   "tables": [
+    "OPTIONS",
+    "PRESETS",
+    "RIG",
+    "SCRIPTS"
+   ],
+   "code": [
+    "diffOf",
+    "labelOf",
+    "rigOf",
+    "scriptOf"
+   ]
+  },
+  {
+   "file": "src/progress/combat/temperament.js",
+   "json": "data/progress/combat/temperament.json",
+   "tables": [
+    "SPECIES",
+    "SPREAD",
+    "SWAY_RATE",
+    "TRAITS"
+   ],
+   "code": [
+    "drawGrain",
+    "poles",
+    "susceptibility",
+    "sway",
+    "traitsOf",
+    "weakTo"
+   ]
+  },
+  {
+   "file": "src/progress/combat/throwingroom.js",
+   "json": "data/progress/combat/throwingroom.json",
+   "tables": [
+    "DRILLS",
+    "INDEX",
+    "KEYS",
+    "POTS",
+    "TRAINING_KINDS",
+    "WALL"
+   ],
+   "code": [
+    "group",
+    "isTraining",
+    "medalOf",
+    "score"
+   ]
+  },
+  {
+   "file": "src/progress/combat/types.js",
+   "json": "data/progress/combat/types.json",
+   "tables": [
+    "BONUS",
+    "BUILD",
+    "CAUSE_TYPE",
+    "TRUMPS",
+    "TYPES",
+    "TYPE_IDS"
+   ],
+   "code": [
+    "multiplier",
+    "typeOf"
+   ]
+  },
+  {
+   "file": "src/progress/combat/vessel.js",
+   "json": "data/progress/combat/vessel.json",
+   "tables": [
+    "BREAK_AT",
+    "FORMS",
+    "REGION_BREAK",
+    "SHIELD"
+   ],
+   "code": [
+    "blowOn",
+    "breakLine",
+    "crackSum",
+    "mend",
+    "newVessel",
+    "percentOf",
+    "regionsOf"
+   ]
+  },
+  {
+   "file": "src/progress/combat/worldshells.js",
+   "json": "data/progress/combat/worldshells.json",
+   "tables": [
+    "DRAW",
+    "DUE_EVERY",
+    "WORLD_SHELLS"
+   ],
+   "code": [
+    "WorldShellFinds",
+    "drawOf",
+    "nextFind",
+    "scaledN",
+    "worldDue"
+   ]
+  },
+  {
+   "file": "src/progress/cooking/batch.js",
+   "json": "data/progress/cooking/batch.json",
+   "tables": [
+    "AUTO",
+    "BATCH"
+   ],
+   "code": [
+    "autoCookOf",
+    "batchMax",
+    "batchOpen",
+    "bestIndexOf",
+    "costOf",
+    "serveAt",
+    "servingId",
+    "servingItem",
+    "servingOf"
+   ]
+  },
+  {
+   "file": "src/progress/cooking/dishes.js",
+   "json": "data/progress/cooking/dishes.json",
+   "tables": [
+    "DRINK_HOLD",
+    "FAMILIES",
+    "GRADES"
+   ],
+   "code": [
+    "dishDraught",
+    "dishFor",
+    "gradeById",
+    "gradeOf",
+    "lift",
+    "serve"
+   ]
+  },
+  {
+   "file": "src/progress/cooking/flavour.js",
+   "json": "data/progress/cooking/flavour.json",
+   "tables": [
+    "ADDIN_OF",
+    "ADJUST",
+    "FEELING_TASTE",
+    "INGREDIENTS",
+    "PANTRY",
+    "TASTES",
+    "TASTE_FEELING"
+   ],
+   "code": [
+    "balanceOf",
+    "fishFeeling",
+    "fishTaste",
+    "isFish",
+    "leadOf",
+    "tasteOf"
+   ]
+  },
+  {
+   "file": "src/progress/cooking/moves.js",
+   "json": "data/progress/cooking/moves.json",
+   "tables": [
+    "FISH_TELLS",
+    "MOVES",
+    "WATER_LINE"
+   ],
+   "code": [
+    "heartOf",
+    "moveFor",
+    "practiceFrom",
+    "pullOver",
+    "scoreOf",
+    "tellAt",
+    "widthOf"
+   ]
+  },
+  {
+   "file": "src/progress/cooking/plays.js",
+   "json": "data/progress/cooking/plays.json",
+   "tables": [
+    "PLAYABLE"
+   ],
+   "code": [
+    "fermentValue",
+    "newPlay"
+   ]
+  },
+  {
+   "file": "src/progress/cooking/recipes.js",
+   "json": "data/progress/cooking/recipes.json",
+   "tables": [
+    "GIFTS",
+    "SLABS"
+   ],
+   "code": [
+    "dishOfGift",
+    "mendSlab",
+    "slabChoices",
+    "slabLines",
+    "slabOf",
+    "slabsOpen"
+   ]
+  },
+  {
+   "file": "src/progress/cosmetics.js",
+   "json": "data/progress/cosmetics.json",
+   "tables": [
+    "COSMETICS"
+   ],
+   "code": [
+    "cosmeticOpen"
+   ]
+  },
+  {
+   "file": "src/progress/creaturedrops.js",
+   "json": "data/progress/creaturedrops.json",
+   "tables": [
+    "DROP_CATEGORIES",
+    "DROP_TABLES",
+    "NO_DROPS"
+   ],
+   "code": [
+    "categoryOf",
+    "rollDrops"
+   ]
+  },
+  {
+   "file": "src/progress/decor.js",
+   "json": "data/progress/decor.json",
+   "tables": [
+    "CELLS",
+    "CENTRE_FEATS",
+    "CLUTTER",
+    "DECOR",
+    "LOTUSES",
+    "REGION",
+    "SET",
+    "SETS",
+    "SOURCES"
+   ],
+   "code": [
+    "Decor",
+    "layoutCode",
+    "priceOf",
+    "rating",
+    "readLayout",
+    "regionPoints"
+   ]
+  },
+  {
+   "file": "src/progress/devicewords.js",
+   "json": "data/progress/devicewords.json",
+   "tables": [
+    "KEY_WORDS",
+    "TILE_WORDS"
+   ],
+   "code": [
+    "deviceText",
+    "deviceWord"
+   ]
+  },
+  {
+   "file": "src/progress/dice.js",
+   "json": "data/progress/dice.json",
+   "tables": [
+    "PALM",
+    "PALM_HOLD",
+    "REROLL",
+    "SET"
+   ],
+   "code": [
+    "PalmDie",
+    "Rerolls",
+    "palmCap",
+    "palmSides",
+    "palmThrow",
+    "rerollsOf"
+   ]
+  },
+  {
+   "file": "src/progress/domainarts.js",
+   "json": "data/progress/domainarts.json",
+   "tables": [
+    "DOMAIN_ARTS",
+    "DOWN_AFTER",
+    "FEATS",
+    "FEAT_WORDS",
+    "KATA",
+    "RULE_THEN",
+    "RULE_WHEN",
+    "VOW",
+    "VOWS",
+    "WEAR"
+   ],
+   "code": [
+    "DomainArts",
+    "artsOfDomain",
+    "domainArtOpen",
+    "isDomainArt",
+    "notchesFor",
+    "openDomainArts",
+    "shatterOf"
+   ]
+  },
+  {
+   "file": "src/progress/domainladder.js",
+   "json": "data/progress/domainladder.json",
+   "tables": [
+    "KIND_WORDS",
+    "LADDER",
+    "QUESTIONS",
+    "TENS",
+    "TRAITS"
+   ],
+   "code": [
+    "doesOf",
+    "featTimes",
+    "ladderOf",
+    "milestoneAt",
+    "nextMilestone",
+    "traitOpen",
+    "traitsOf"
+   ]
+  },
+  {
+   "file": "src/progress/domains.js",
+   "json": "data/progress/domains.json",
+   "tables": [
+    "CATCH_UP",
+    "DOMAINS",
+    "DOWN_DOMAIN",
+    "MAX_LEVEL",
+    "PACE",
+    "SKILL",
+    "SOURCES"
+   ],
+   "code": [
+    "catchUpOf",
+    "expAt",
+    "expFor",
+    "levelOf",
+    "scaleOf",
+    "skillWeight",
+    "toNext"
+   ]
+  },
+  {
+   "file": "src/progress/duel/board.js",
+   "json": "data/progress/duel/board.json",
+   "tables": [
+    "COLOURS",
+    "DIRS",
+    "KINDS"
+   ],
+   "code": [
+    "Board",
+    "hasTag",
+    "paletteOf",
+    "piece"
+   ]
+  },
+  {
+   "file": "src/progress/duel/bot.js",
+   "json": "data/progress/duel/bot.json",
+   "tables": [
+    "HINT"
+   ],
+   "code": [
+    "hintOf",
+    "intentOf",
+    "plan",
+    "play",
+    "score"
+   ]
+  },
+  {
+   "file": "src/progress/duel/couriertools.js",
+   "json": "data/progress/duel/couriertools.json",
+   "tables": [
+    "COURIER_ACTIONS",
+    "TOOL_RULES"
+   ],
+   "code": [
+    "fromOf",
+    "groupOf",
+    "runPaths",
+    "shotAt"
+   ]
+  },
+  {
+   "file": "src/progress/duel/drops.js",
+   "json": "data/progress/duel/drops.json",
+   "tables": [
+    "DROPS",
+    "SHINY"
+   ],
+   "code": [
+    "AberrantDrops",
+    "dropsFor",
+    "rollShiny"
+   ]
+  },
+  {
+   "file": "src/progress/duel/duel.js",
+   "json": "data/progress/duel/duel.json",
+   "tables": [
+    "ACTIONS",
+    "CHAIN_CAP",
+    "DIM",
+    "DUEL",
+    "PVE"
+   ],
+   "code": [
+    "act",
+    "cloneState",
+    "costOf",
+    "endTurn",
+    "foeTurn",
+    "junkOf",
+    "legalActions",
+    "marginOf",
+    "newDuel",
+    "oneGesture",
+    "preview",
+    "quietStream",
+    "settle",
+    "undo",
+    "weaknessOf"
+   ]
+  },
+  {
+   "file": "src/progress/duel/duelbreak.js",
+   "json": "data/progress/duel/duelbreak.json",
+   "tables": [
+    "DUEL_BREAK",
+    "FINISHER",
+    "FINISHER_ACTION"
+   ],
+   "code": [
+    "capOf",
+    "endOwnTurn",
+    "onLanding",
+    "startTurn"
+   ]
+  },
+  {
+   "file": "src/progress/duel/flee.js",
+   "json": "data/progress/duel/flee.json",
+   "tables": [
+    "FLEE",
+    "FLEE_ACTION"
+   ],
+   "code": [
+    "fleeOdds"
+   ]
+  },
+  {
+   "file": "src/progress/duel/foeskills.js",
+   "json": "data/progress/duel/foeskills.json",
+   "tables": [
+    "FOE_SKILLS"
+   ],
+   "code": [
+    "awake",
+    "foeIntent",
+    "foeOf",
+    "foeSkillsNow",
+    "stagger"
+   ]
+  },
+  {
+   "file": "src/progress/duel/learned.js",
+   "json": "data/progress/duel/learned.json",
+   "tables": [
+    "LEARNED"
+   ],
+   "code": [
+    "isLearned",
+    "learnProgress",
+    "learnedOf"
+   ]
+  },
+  {
+   "file": "src/progress/duel/lesson.js",
+   "json": "data/progress/duel/lesson.json",
+   "tables": [
+    "LESSON"
+   ],
+   "code": [
+    "lessonAct",
+    "lessonDue",
+    "lessonOf",
+    "lessonTurn",
+    "stepsOf"
+   ]
+  },
+  {
+   "file": "src/progress/duel/movement.js",
+   "json": "data/progress/duel/movement.json",
+   "tables": [
+    "GRABTHROW"
+   ],
+   "code": [
+    "beltStep",
+    "iceSlide",
+    "lane",
+    "layFloors",
+    "magnetGem",
+    "magnetStep"
+   ]
+  },
+  {
+   "file": "src/progress/duel/powers.js",
+   "json": "data/progress/duel/powers.json",
+   "tables": [
+    "DUEL_POWERS",
+    "POWER_ACTION",
+    "POWER_IDS"
+   ],
+   "code": [
+    "cutRests",
+    "powerActions",
+    "powerCost",
+    "powerReach",
+    "powersOf",
+    "tickRests",
+    "underTransmute"
+   ]
+  },
+  {
+   "file": "src/progress/duel/rules.js",
+   "json": "data/progress/duel/rules.json",
+   "tables": [
+    "ACTIONS"
+   ],
+   "code": [
+    "clears",
+    "fall",
+    "pinch",
+    "resolve"
+   ]
+  },
+  {
+   "file": "src/progress/duel/rulesets.js",
+   "json": "data/progress/duel/rulesets.json",
+   "tables": [
+    "KIND_RULESETS",
+    "PRACTICE",
+    "RULESETS"
+   ],
+   "code": [
+    "rulesetOf"
+   ]
+  },
+  {
+   "file": "src/progress/duel/secrets.js",
+   "json": "data/progress/duel/secrets.json",
+   "tables": [
+    "CLAP",
+    "SECRETS"
+   ],
+   "code": [
+    "clapOf",
+    "lightOf",
+    "secretOf",
+    "secretStart",
+    "secretStep"
+   ]
+  },
+  {
+   "file": "src/progress/duel/skills.js",
+   "json": "data/progress/duel/skills.json",
+   "tables": [
+    "SKILLS",
+    "SKILL_ACTION",
+    "SKILL_TOOLS"
+   ],
+   "code": [
+    "canAct",
+    "chargeFrom",
+    "skillActions",
+    "skillsOf"
+   ]
+  },
+  {
+   "file": "src/progress/duel/skyfall.js",
+   "json": "data/progress/duel/skyfall.json",
+   "tables": [
+    "SKYFALL"
+   ],
+   "code": [
+    "deficitOf",
+    "skyOf",
+    "skyfall"
+   ]
+  },
+  {
+   "file": "src/progress/duel/whistle.js",
+   "json": "data/progress/duel/whistle.json",
+   "tables": [
+    "WHISTLE_ACTION"
+   ],
+   "code": []
+  },
+  {
+   "file": "src/progress/econ/emocean.js",
+   "json": "data/progress/econ/emocean.json",
+   "tables": [
+    "CHART",
+    "CLASSES",
+    "LEG",
+    "NODES",
+    "RECKON",
+    "ROLE_CLASS",
+    "STAGE"
+   ],
+   "code": [
+    "barsOf",
+    "hop",
+    "legStart",
+    "legsOf",
+    "opensNode",
+    "reckonLead",
+    "routeId",
+    "stagePlan",
+    "stageQuality"
+   ]
+  },
+  {
+   "file": "src/progress/econ/materials.js",
+   "json": "data/progress/econ/materials.json",
+   "tables": [
+    "KINDS",
+    "KIND_IDS"
+   ],
+   "code": [
+    "distance",
+    "makeMaterial",
+    "press",
+    "pullStep"
+   ]
+  },
+  {
+   "file": "src/progress/econ/passage.js",
+   "json": "data/progress/econ/passage.json",
+   "tables": [
+    "PASSAGE",
+    "PLUME",
+    "STORM"
+   ],
+   "code": [
+    "choke",
+    "classOf",
+    "confidence",
+    "feelOf",
+    "lanes",
+    "next",
+    "portent",
+    "rutterWorth",
+    "seaChart",
+    "sight",
+    "tierOf"
+   ]
+  },
+  {
+   "file": "src/progress/econ/table.js",
+   "json": "data/progress/econ/table.json",
+   "tables": [
+    "ECON"
+   ],
+   "code": [
+    "crudeFieldOf"
+   ]
+  },
+  {
+   "file": "src/progress/econ/wager.js",
+   "json": "data/progress/econ/wager.json",
+   "tables": [
+    "WAGER"
+   ],
+   "code": [
+    "Wager"
+   ]
+  },
+  {
+   "file": "src/progress/familiarity.js",
+   "json": "data/progress/familiarity.json",
+   "tables": [
+    "FAMILIARITY",
+    "READS"
+   ],
+   "code": [
+    "familiarityOf",
+    "readBlow",
+    "readHealth"
+   ]
+  },
+  {
+   "file": "src/progress/feelings.js",
+   "json": "data/progress/feelings.json",
+   "tables": [
+    "FEELING_WAKE",
+    "WAKE_COUNT"
+   ],
+   "code": [
+    "Feelings",
+    "notAwakened",
+    "wakeOf"
+   ]
+  },
+  {
+   "file": "src/progress/fighterkits.js",
+   "json": "data/progress/fighterkits.json",
+   "tables": [
+    "BRAWLER",
+    "BRAWLER_BOXES",
+    "CAP",
+    "PCT",
+    "REACH",
+    "RULE_TOOL",
+    "SLOTS",
+    "SLOT_RULES"
+   ],
+   "code": [
+    "kitFor",
+    "slotMove"
+   ]
+  },
+  {
+   "file": "src/progress/fightertoolkits.js",
+   "json": "data/progress/fightertoolkits.json",
+   "tables": [
+    "ROW_NAMES",
+    "SLOT_ORDER",
+    "TOOL_BOXES",
+    "TOOL_KITS"
+   ],
+   "code": []
+  },
+  {
+   "file": "src/progress/firsttoday.js",
+   "json": "data/progress/firsttoday.json",
+   "tables": [
+    "FIRST_TODAY"
+   ],
+   "code": [
+    "FirstToday"
+   ]
+  },
+  {
+   "file": "src/progress/garden.js",
+   "json": "data/progress/garden.json",
+   "tables": [
+    "ENCOUNTERS"
+   ],
+   "code": [
+    "Garden"
+   ]
+  },
+  {
+   "file": "src/progress/gardenbackdrop.js",
+   "json": "data/progress/gardenbackdrop.json",
+   "tables": [
+    "GARDEN_BACKDROP"
+   ],
+   "code": [
+    "gardenBackdropOf"
+   ]
+  },
+  {
+   "file": "src/progress/gardenfolk.js",
+   "json": "data/progress/gardenfolk.json",
+   "tables": [
+    "FOLK",
+    "GIFT",
+    "OPINIONS"
+   ],
+   "code": [
+    "GardenFolk",
+    "drawn",
+    "giftFor",
+    "opinionOf",
+    "pick"
+   ]
+  },
+  {
+   "file": "src/progress/gardenhowto.js",
+   "json": "data/progress/gardenhowto.json",
+   "tables": [
+    "GARDEN_HOWTO",
+    "GIFT"
+   ],
+   "code": [
+    "gardenHowtoSeen"
+   ]
+  },
+  {
+   "file": "src/progress/gardenseason.js",
+   "json": "data/progress/gardenseason.json",
+   "tables": [
+    "SEASON_MATERIAL"
+   ],
+   "code": [
+    "GardenSeason"
+   ]
+  },
+  {
+   "file": "src/progress/gardenweather.js",
+   "json": "data/progress/gardenweather.json",
+   "tables": [
+    "SPOIL"
+   ],
+   "code": [
+    "fadeK",
+    "scorchStep",
+    "souredBy",
+    "strokeK"
+   ]
+  },
+  {
+   "file": "src/progress/goals.js",
+   "json": "data/progress/goals.json",
+   "tables": [
+    "FIRST",
+    "GOALS",
+    "SLOTS"
+   ],
+   "code": [
+    "Goals",
+    "firstSteps",
+    "pickGoals"
+   ]
+  },
+  {
+   "file": "src/progress/godpowers.js",
+   "json": "data/progress/godpowers.json",
+   "tables": [
+    "DOMAIN_COLOUR",
+    "DOMAIN_GLAZE",
+    "DOMAIN_ORDER",
+    "EPICS",
+    "EPIC_BY_SIGN",
+    "EPIC_EVERY",
+    "GOD_POWERS",
+    "MIRACLES",
+    "MIRACLE_SIGNS",
+    "POWER_EVENTS",
+    "RAMP",
+    "RAMP_CURVE",
+    "SET_FOREVER"
+   ],
+   "code": [
+    "dissonanceScale",
+    "powerOpen",
+    "rampOf",
+    "signOf",
+    "widenOf"
+   ]
+  },
+  {
+   "file": "src/progress/harmony.js",
+   "json": "data/progress/harmony.json",
+   "tables": [
+    "BRIAR",
+    "CARRY",
+    "HARMONY",
+    "INCENSE",
+    "NEGLECT",
+    "TEND",
+    "THORNS"
+   ],
+   "code": [
+    "Harmony",
+    "bandOf",
+    "briarOf",
+    "carriedIn",
+    "dayStep"
+   ]
+  },
+  {
+   "file": "src/progress/jellymount.js",
+   "json": "data/progress/jellymount.json",
+   "tables": [
+    "JELLY_MOUNT"
+   ],
+   "code": [
+    "groundSpeed",
+    "jellyOpen"
+   ]
+  },
+  {
+   "file": "src/progress/knacks.js",
+   "json": "data/progress/knacks.json",
+   "tables": [
+    "KNACKS"
+   ],
+   "code": [
+    "Knacks",
+    "knackOf",
+    "knackWord"
+   ]
+  },
+  {
+   "file": "src/progress/lend.js",
+   "json": "data/progress/lend.json",
+   "tables": [
+    "LENDS"
+   ],
+   "code": [
+    "Lend"
+   ]
+  },
+  {
+   "file": "src/progress/luck.js",
+   "json": "data/progress/luck.json",
+   "tables": [
+    "UNLIKELY"
+   ],
+   "code": [
+    "luckOf"
+   ]
+  },
+  {
+   "file": "src/progress/mechachievements.js",
+   "json": "data/progress/mechachievements.json",
+   "tables": [
+    "MECH_LEGS"
+   ],
+   "code": [
+    "mechAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/mechs/adobe/blueprintkit.js",
+   "json": "data/progress/mechs/adobe/blueprintkit.json",
+   "tables": [
+    "FACE",
+    "FACE_DIR",
+    "M",
+    "ROLE",
+    "ROLE_MAT",
+    "ROLE_NAMES",
+    "SPAN"
+   ],
+   "code": [
+    "Plan",
+    "rng",
+    "settle"
+   ]
+  },
+  {
+   "file": "src/progress/mechs/adobe/blueprints.js",
+   "json": "data/progress/mechs/adobe/blueprints.json",
+   "tables": [
+    "ADOBE",
+    "ADOBE_IDS",
+    "SIZES"
+   ],
+   "code": [
+    "adobePlan"
+   ]
+  },
+  {
+   "file": "src/progress/mechs/adobe/blueprintslarge.js",
+   "json": "data/progress/mechs/adobe/blueprintslarge.json",
+   "tables": [
+    "LARGE"
+   ],
+   "code": []
+  },
+  {
+   "file": "src/progress/mechs/adobe/blueprintsmedium.js",
+   "json": "data/progress/mechs/adobe/blueprintsmedium.json",
+   "tables": [
+    "MEDIUM"
+   ],
+   "code": []
+  },
+  {
+   "file": "src/progress/mechs/adobe/blueprintssmall.js",
+   "json": "data/progress/mechs/adobe/blueprintssmall.json",
+   "tables": [
+    "SMALL"
+   ],
+   "code": []
+  },
+  {
+   "file": "src/progress/mechs/adobe/lots.js",
+   "json": "data/progress/mechs/adobe/lots.json",
+   "tables": [
+    "ADOBE_LOTS",
+    "KEEP"
+   ],
+   "code": [
+    "lotBox",
+    "lotCounts",
+    "lotsClear"
+   ]
+  },
+  {
+   "file": "src/progress/mechs/challenges.js",
+   "json": "data/progress/mechs/challenges.json",
+   "tables": [
+    "CHALLENGES",
+    "CHALLENGE_IDS",
+    "LANE",
+    "MEDAL_NAMES",
+    "PINS",
+    "RINGS"
+   ],
+   "code": [
+    "ball",
+    "brokeCells",
+    "felled",
+    "medalOf",
+    "newChallenge",
+    "over",
+    "pinChain",
+    "pinSpots",
+    "ringOf",
+    "throwLand",
+    "tick"
+   ]
+  },
+  {
+   "file": "src/progress/mechs/destruction.js",
+   "json": "data/progress/mechs/destruction.json",
+   "tables": [
+    "BUILDINGS",
+    "CITY",
+    "FOOT",
+    "FURNISH",
+    "GLASS",
+    "MAT",
+    "MATERIALS",
+    "SCORE",
+    "SOFT",
+    "SPLIT"
+   ],
+   "code": [
+    "at",
+    "carve",
+    "cellsLeft",
+    "chunkMass",
+    "collapse",
+    "fallBlow",
+    "felled",
+    "footLeft",
+    "leavesBeam",
+    "newBuilding",
+    "shatterGlass",
+    "splitChunk"
+   ]
+  },
+  {
+   "file": "src/progress/mechs/fire.js",
+   "json": "data/progress/mechs/fire.json",
+   "tables": [
+    "BURN",
+    "BURNT",
+    "FIRE",
+    "GIANT_FIRE",
+    "HEAT",
+    "STATE",
+    "WHOLE"
+   ],
+   "code": [
+    "burnOf",
+    "burnable",
+    "burningOf",
+    "douse",
+    "heatStep",
+    "ignite",
+    "igniteNear",
+    "igniteRay",
+    "newFire",
+    "stepFire"
+   ]
+  },
+  {
+   "file": "src/progress/mechs/frame.js",
+   "json": "data/progress/mechs/frame.json",
+   "tables": [
+    "DRAG",
+    "FR",
+    "G",
+    "JUMP_V",
+    "P0",
+    "QB"
+   ],
+   "code": [
+    "assemble",
+    "chargeK",
+    "strideOf",
+    "walkTopOf"
+   ]
+  },
+  {
+   "file": "src/progress/mechs/giants.js",
+   "json": "data/progress/mechs/giants.json",
+   "tables": [
+    "GIANTS",
+    "GIANT_IDS",
+    "GRAPPLE"
+   ],
+   "code": [
+    "canLift",
+    "giantMass",
+    "giantOf",
+    "giantOpen"
+   ]
+  },
+  {
+   "file": "src/progress/mechs/joints.js",
+   "json": "data/progress/mechs/joints.json",
+   "tables": [
+    "JOINT",
+    "JOINTS",
+    "JOINT_IDS",
+    "REGION_JOINTS"
+   ],
+   "code": [
+    "armOK",
+    "headOff",
+    "legsLeft",
+    "lockOf",
+    "mendJoints",
+    "newJoints",
+    "past",
+    "strainBlow"
+   ]
+  },
+  {
+   "file": "src/progress/mechs/parts.js",
+   "json": "data/progress/mechs/parts.json",
+   "tables": [
+    "CLAY_FRAME",
+    "LEG_TYPES",
+    "PARTS",
+    "SLOTS"
+   ],
+   "code": [
+    "partOf",
+    "partsIn"
+   ]
+  },
+  {
+   "file": "src/progress/mechs/ring.js",
+   "json": "data/progress/mechs/ring.json",
+   "tables": [
+    "CIRCUIT",
+    "COUNT",
+    "HEARTS",
+    "PUNCH",
+    "RING",
+    "RIVALS",
+    "STAR"
+   ],
+   "code": [
+    "boutStep",
+    "newBout",
+    "rivalOpen"
+   ]
+  },
+  {
+   "file": "src/progress/mechs/rules.js",
+   "json": "data/progress/mechs/rules.json",
+   "tables": [
+    "BARRIER",
+    "BERSERK",
+    "ENERGY",
+    "POOL_KJ",
+    "STAGGER",
+    "SYNC"
+   ],
+   "code": [
+    "barrierStep",
+    "beatOf",
+    "berserkRoll",
+    "blowMult",
+    "energyStep",
+    "feedbackK",
+    "outputK",
+    "staggerStep",
+    "syncCeiling",
+    "syncStep"
+   ]
+  },
+  {
+   "file": "src/progress/mechs/specials.js",
+   "json": "data/progress/mechs/specials.json",
+   "tables": [
+    "PART_SPECIALS",
+    "SPECIAL_AMP",
+    "SPECIAL_KEYS"
+   ],
+   "code": [
+    "specialK",
+    "specialsOf"
+   ]
+  },
+  {
+   "file": "src/progress/mechs/techniques.js",
+   "json": "data/progress/mechs/techniques.json",
+   "tables": [
+    "PROPS",
+    "TECHNIQUES",
+    "TECHNIQUE_IDS"
+   ],
+   "code": [
+    "propBlow",
+    "techniqueOpen",
+    "techniquesOpen",
+    "thrownK"
+   ]
+  },
+  {
+   "file": "src/progress/mimicry.js",
+   "json": "data/progress/mimicry.json",
+   "tables": [
+    "MIMIC",
+    "MIMIC_LADDER",
+    "MIMIC_LIVE",
+    "MIMIC_OPS",
+    "MIMIC_PUZZLES",
+    "MIMIC_RUNS",
+    "MIMIC_SITES",
+    "MIMIC_TOOL"
+   ],
+   "code": [
+    "cloneField",
+    "dayPuzzle",
+    "domainsOf",
+    "eachCell",
+    "framesOf",
+    "framesOn",
+    "gradeOf",
+    "lay",
+    "matchOf",
+    "mimicOpen",
+    "newPatch",
+    "powersOf",
+    "restore",
+    "scoreOf",
+    "settle",
+    "siteAt",
+    "siteOf",
+    "snap",
+    "unveil",
+    "veilOf"
+   ]
+  },
+  {
+   "file": "src/progress/mimicryherd.js",
+   "json": "data/progress/mimicryherd.json",
+   "tables": [
+    "HERD"
+   ],
+   "code": [
+    "edgeDist",
+    "flockOf",
+    "herdMatchOf",
+    "herdSpots",
+    "inPen",
+    "layHerd",
+    "penOf"
+   ]
+  },
+  {
+   "file": "src/progress/mimicrysculpt.js",
+   "json": "data/progress/mimicrysculpt.json",
+   "tables": [
+    "SCULPT",
+    "VOX"
+   ],
+   "code": [
+    "restoreVoxels",
+    "sculptOf",
+    "voxelMatchOf",
+    "voxelSnap"
+   ]
+  },
+  {
+   "file": "src/progress/movementprofiles.js",
+   "json": "data/progress/movementprofiles.json",
+   "tables": [
+    "FIGHTER_BASE",
+    "PROFILES"
+   ],
+   "code": [
+    "MovementProfiles",
+    "PROFILE_IDS",
+    "fighterOf",
+    "profileOf"
+   ]
+  },
+  {
+   "file": "src/progress/mudras.js",
+   "json": "data/progress/mudras.json",
+   "tables": [
+    "DOMAIN_MUDRA",
+    "MUDRAS",
+    "POSE"
+   ],
+   "code": [
+    "HandPose"
+   ]
+  },
+  {
+   "file": "src/progress/mycelium.js",
+   "json": "data/progress/mycelium.json",
+   "tables": [
+    "BEND",
+    "BRANCHES",
+    "CAPS",
+    "FEELING_HUE",
+    "MYCO",
+    "SIGNATURE",
+    "STRAINS",
+    "STRAIN_NAMES",
+    "TREE",
+    "WEEKDAY_FEELING"
+   ],
+   "code": [
+    "bedHours",
+    "bendOf",
+    "bodiesOpen",
+    "digest",
+    "fruit",
+    "graftOf",
+    "kindOfHue",
+    "sapAfter",
+    "signatureOf",
+    "treeGirth"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/capture.js",
+   "json": "data/progress/opensea/capture.json",
+   "tables": [
+    "CAPTURE"
+   ],
+   "code": [
+    "capturable",
+    "livePay",
+    "statueOf",
+    "towLeft",
+    "towMods",
+    "towOk"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/forge.js",
+   "json": "data/progress/opensea/forge.json",
+   "tables": [
+    "FORGE",
+    "FORGE_PARTS"
+   ],
+   "code": [
+    "carvesOf",
+    "forgePrice",
+    "forgeable"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/fragments.js",
+   "json": "data/progress/opensea/fragments.json",
+   "tables": [
+    "FRAGMENTS"
+   ],
+   "code": [
+    "canMake",
+    "fragmentChance",
+    "fragmentOf",
+    "makePrice"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/habits.js",
+   "json": "data/progress/opensea/habits.json",
+   "tables": [
+    "HABIT",
+    "HABITS"
+   ],
+   "code": [
+    "habitFee",
+    "habitNow",
+    "researchOf"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/isletpuzzles.js",
+   "json": "data/progress/opensea/isletpuzzles.json",
+   "tables": [
+    "CACHE",
+    "ECHO",
+    "LINEUP",
+    "PAIR",
+    "PUZZLE_COUNT",
+    "RIDDLE",
+    "SIGHT"
+   ],
+   "code": [
+    "cachePay",
+    "dealPuzzles",
+    "phraseHeard",
+    "riddleText",
+    "steleWords"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/islets.js",
+   "json": "data/progress/opensea/islets.json",
+   "tables": [
+    "ISLET_KITS",
+    "SECRETS"
+   ],
+   "code": [
+    "isletOf"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/migrations.js",
+   "json": "data/progress/opensea/migrations.json",
+   "tables": [
+    "MIGRATION",
+    "RUMOUR"
+   ],
+   "code": [
+    "herdFee",
+    "herdsOf",
+    "rumourOf"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/safari.js",
+   "json": "data/progress/opensea/safari.json",
+   "tables": [
+    "EGREGORES",
+    "NIGHT"
+   ],
+   "code": [
+    "platePay",
+    "plateScore",
+    "sightings"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/salvage.js",
+   "json": "data/progress/opensea/salvage.json",
+   "tables": [
+    "PART_SLOTS",
+    "SALVAGE",
+    "SALVAGE_PARTS",
+    "SHIP_PARTS"
+   ],
+   "code": [
+    "ShipParts",
+    "crateOf",
+    "cratesOf",
+    "multOf",
+    "rigOf"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/salvagenumbers.js",
+   "json": "data/progress/opensea/salvagenumbers.json",
+   "tables": [
+    "SALVAGE"
+   ],
+   "code": []
+  },
+  {
+   "file": "src/progress/opensea/seabeasts.js",
+   "json": "data/progress/opensea/seabeasts.json",
+   "tables": [
+    "ANSWERS",
+    "LAIRS",
+    "SEA_BEASTS"
+   ],
+   "code": [
+    "beastPay",
+    "lairsOf"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/seagrid.js",
+   "json": "data/progress/opensea/seagrid.json",
+   "tables": [
+    "POOL"
+   ],
+   "code": [
+    "classAt",
+    "dangerOf",
+    "neighbours",
+    "seaGrid",
+    "squareAt",
+    "squareId"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/seaserpent.js",
+   "json": "data/progress/opensea/seaserpent.json",
+   "tables": [
+    "SEA_SERPENT"
+   ],
+   "code": [
+    "serpentPay"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/seatrip.js",
+   "json": "data/progress/opensea/seatrip.json",
+   "tables": [
+    "DEMAND"
+   ],
+   "code": [
+    "burnOf",
+    "demandOf",
+    "dock",
+    "frontAt",
+    "newVoyage",
+    "sailTo",
+    "takeFix",
+    "tow"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/squares.js",
+   "json": "data/progress/opensea/squares.json",
+   "tables": [
+    "SQUARE"
+   ],
+   "code": [
+    "counts",
+    "squarePay",
+    "squareState"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/tales.js",
+   "json": "data/progress/opensea/tales.json",
+   "tables": [
+    "TALES",
+    "TALE_LOOKS"
+   ],
+   "code": [
+    "taleDone",
+    "taleOf",
+    "taleSteps"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/wind.js",
+   "json": "data/progress/opensea/wind.json",
+   "tables": [
+    "GUST",
+    "RIP",
+    "WIND"
+   ],
+   "code": [
+    "gustAt",
+    "gusted",
+    "gustsNear",
+    "meanBurnK",
+    "offWind",
+    "pointOf",
+    "polar",
+    "ripPush",
+    "ripsOf",
+    "sailOf",
+    "windAt"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/windsong.js",
+   "json": "data/progress/opensea/windsong.json",
+   "tables": [
+    "SONGS",
+    "WINDSONG"
+   ],
+   "code": [
+    "after",
+    "blowing",
+    "called",
+    "costOf",
+    "ready",
+    "songOf",
+    "songOpen"
+   ]
+  },
+  {
+   "file": "src/progress/ostraca.js",
+   "json": "data/progress/ostraca.json",
+   "tables": [
+    "CRIB",
+    "DUNEMAW_DECK",
+    "OSTRACA",
+    "STELAE"
+   ],
+   "code": [
+    "WORD_SPLIT"
+   ]
+  },
+  {
+   "file": "src/progress/pace.js",
+   "json": "data/progress/pace.json",
+   "tables": [
+    "PACE"
+   ],
+   "code": [
+    "paceOf"
+   ]
+  },
+  {
+   "file": "src/progress/platebeat.js",
+   "json": "data/progress/platebeat.json",
+   "tables": [
+    "PLATE_BEAT"
+   ],
+   "code": [
+    "beatGrade"
+   ]
+  },
+  {
+   "file": "src/progress/platformfighter.js",
+   "json": "data/progress/platformfighter.json",
+   "tables": [
+    "DODGE",
+    "FRAME",
+    "GRAB",
+    "LANDING",
+    "LAUNCH",
+    "LEDGE",
+    "MOVES",
+    "SA",
+    "SDI",
+    "SHIELD",
+    "SMASH",
+    "SNAP",
+    "STALE",
+    "SV",
+    "TECH"
+   ],
+   "code": [
+    "charged",
+    "diAngle",
+    "fillKeys",
+    "grabHold",
+    "hitlag",
+    "hitstun",
+    "knockback",
+    "koPercent",
+    "lCancel",
+    "launchSpeed",
+    "sakurai",
+    "secs",
+    "shieldDamage",
+    "shieldstun",
+    "stale",
+    "tumbles"
+   ]
+  },
+  {
+   "file": "src/progress/poolcaps.js",
+   "json": "data/progress/poolcaps.json",
+   "tables": [
+    "CAP"
+   ],
+   "code": [
+    "PoolCaps",
+    "capOf"
+   ]
+  },
+  {
+   "file": "src/progress/quests.js",
+   "json": "data/progress/quests.json",
+   "tables": [
+    "QUESTS"
+   ],
+   "code": [
+    "Quests",
+    "questOf",
+    "questPoints",
+    "questState",
+    "questsOf"
+   ]
+  },
+  {
+   "file": "src/progress/rail/crossing.js",
+   "json": "data/progress/rail/crossing.json",
+   "tables": [
+    "ACTS",
+    "BARS",
+    "BAR_S",
+    "CONTINUE",
+    "LEG",
+    "SET_PIECES",
+    "SHRINE_ISLAND",
+    "SWING",
+    "VIEWS"
+   ],
+   "code": [
+    "barsOf",
+    "continueCost",
+    "legStart",
+    "legsOf",
+    "script",
+    "setPiecesOf",
+    "shipLaw",
+    "swings",
+    "timeline",
+    "viewAt"
+   ]
+  },
+  {
+   "file": "src/progress/rail/encounters.js",
+   "json": "data/progress/rail/encounters.json",
+   "tables": [
+    "ENCOUNTER",
+    "ENCOUNTERS"
+   ],
+   "code": [
+    "apply",
+    "offered",
+    "pickEncounter",
+    "postedBounty",
+    "raceRank",
+    "strengthOf"
+   ]
+  },
+  {
+   "file": "src/progress/rail/legs.js",
+   "json": "data/progress/rail/legs.json",
+   "tables": [
+    "CARRIER_AT",
+    "FLOORS",
+    "FLOURISH",
+    "HAZARDS",
+    "KILL",
+    "LEGS",
+    "LESSON",
+    "PULL_GAP",
+    "RING_RUN",
+    "STRETCH",
+    "SWING_BREATH",
+    "SWING_CLEAR",
+    "THROW_MIN",
+    "WORLD_BLOCK"
+   ],
+   "code": [
+    "aliveBars",
+    "deadBeats",
+    "flow",
+    "kindFor",
+    "lessonOf",
+    "modeOf",
+    "practiceOf",
+    "schedule"
+   ]
+  },
+  {
+   "file": "src/progress/rail/mounts.js",
+   "json": "data/progress/rail/mounts.json",
+   "tables": [
+    "MOUNTS",
+    "SEA_CREW",
+    "SEA_MOUNTS",
+    "SLOTS"
+   ],
+   "code": [
+    "loadout",
+    "mountable",
+    "slotsOf"
+   ]
+  },
+  {
+   "file": "src/progress/rail/par.js",
+   "json": "data/progress/rail/par.json",
+   "tables": [
+    "MEDAL",
+    "PLAYERS"
+   ],
+   "code": [
+    "legMedal",
+    "legPar",
+    "legResult",
+    "legScore",
+    "tripResult"
+   ]
+  },
+  {
+   "file": "src/progress/rail/patterns.js",
+   "json": "data/progress/rail/patterns.json",
+   "tables": [
+    "FAIR",
+    "GRID",
+    "PATTERNS"
+   ],
+   "code": [
+    "children",
+    "emit",
+    "fair",
+    "frameOf",
+    "leadOf",
+    "orient",
+    "positionAt"
+   ]
+  },
+  {
+   "file": "src/progress/rail/score.js",
+   "json": "data/progress/rail/score.json",
+   "tables": [
+    "PAR",
+    "SCORE"
+   ],
+   "code": [
+    "chain",
+    "chainDown",
+    "chainHit",
+    "chainMult",
+    "downScore",
+    "medalOf",
+    "rankOf",
+    "volleyBonus"
+   ]
+  },
+  {
+   "file": "src/progress/rail/setpieces.js",
+   "json": "data/progress/rail/setpieces.json",
+   "tables": [
+    "BOSS",
+    "CHARYBDIS",
+    "LANCE",
+    "LEVIATHAN",
+    "PIRATES",
+    "SHOAL",
+    "WAVES"
+   ],
+   "code": [
+    "charybdisHurt",
+    "leviathanDeck",
+    "lootField"
+   ]
+  },
+  {
+   "file": "src/progress/rail/ships.js",
+   "json": "data/progress/rail/ships.json",
+   "tables": [
+    "SHIPS"
+   ],
+   "code": [
+    "canSail",
+    "holdOf"
+   ]
+  },
+  {
+   "file": "src/progress/rail/showcase.js",
+   "json": "data/progress/rail/showcase.json",
+   "tables": [
+    "ROSTER",
+    "SHOW",
+    "SHOWCASE"
+   ],
+   "code": [
+    "showLeg",
+    "showcasePassage"
+   ]
+  },
+  {
+   "file": "src/progress/rail/trip.js",
+   "json": "data/progress/rail/trip.json",
+   "tables": [
+    "TRIP"
+   ],
+   "code": [
+    "adrift",
+    "arrive",
+    "better",
+    "boardKey",
+    "burnOf",
+    "cheapestLane",
+    "choose",
+    "draughtTrump",
+    "drift",
+    "formSkew",
+    "havenChoices",
+    "laneBurn",
+    "legScore",
+    "sailable",
+    "spillAt",
+    "start"
+   ]
+  },
+  {
+   "file": "src/progress/realm.js",
+   "json": "data/progress/realm.json",
+   "tables": [
+    "BRIAR_VISITORS",
+    "DRILLS",
+    "FATIGUE",
+    "FEATURES",
+    "GENERATES",
+    "GROUND",
+    "GROWTH",
+    "GUEST",
+    "ORBIT",
+    "OVERCOMES",
+    "PHASE",
+    "PLANETOID_PLOTS",
+    "RACE",
+    "RAIN",
+    "SETTLE",
+    "SPAR",
+    "SPOIL",
+    "STONE_BOOST",
+    "TRIBULATION",
+    "VEIN",
+    "VISITORS",
+    "WATERS"
+   ],
+   "code": [
+    "costOf",
+    "drillGain",
+    "fadeK",
+    "formation",
+    "mixWater",
+    "orbitSlot",
+    "raceSpeed",
+    "rainOf",
+    "scorchStep",
+    "souredBy",
+    "strikesOf",
+    "strokeK",
+    "veinEnd",
+    "wantsMet"
+   ]
+  },
+  {
+   "file": "src/progress/recap.js",
+   "json": "data/progress/recap.json",
+   "tables": [
+    "RECAP"
+   ],
+   "code": [
+    "Recap",
+    "recapOf"
+   ]
+  },
+  {
+   "file": "src/progress/rejection.js",
+   "json": "data/progress/rejection.json",
+   "tables": [
+    "REJECTION"
+   ],
+   "code": [
+    "dissonanceLevelOf",
+    "dissonanceOf"
+   ]
+  },
+  {
+   "file": "src/progress/safari.js",
+   "json": "data/progress/safari.json",
+   "tables": [
+    "AREA_KINDS",
+    "BEHAVIOURS",
+    "FLIGHT",
+    "FRAMING",
+    "HABITUATION",
+    "KIND_FEELING",
+    "LURES",
+    "LURE_FEELINGS",
+    "RARITY_STARS",
+    "RESEARCH",
+    "SAFARI_PAY",
+    "SCENT"
+   ],
+   "code": [
+    "areaKey",
+    "areaOpen",
+    "behaviourFee",
+    "behaviourNow",
+    "flightDistance",
+    "framingOf",
+    "judgeDay",
+    "levelFee",
+    "levelOf",
+    "readout",
+    "researchHeld",
+    "researchLevel",
+    "scentReach"
+   ]
+  },
+  {
+   "file": "src/progress/sandbox.js",
+   "json": "data/progress/sandbox.json",
+   "tables": [
+    "BALL",
+    "GOAL",
+    "IMPACT",
+    "SANDBOX",
+    "STOCK"
+   ],
+   "code": [
+    "impactOf",
+    "inGoal",
+    "panicOf"
+   ]
+  },
+  {
+   "file": "src/progress/scans.js",
+   "json": "data/progress/scans.json",
+   "tables": [
+    "PHOTO_KIND",
+    "ROSTER",
+    "SCAN"
+   ],
+   "code": [
+    "holdOf",
+    "photoKindOf",
+    "readCode",
+    "scanResult"
+   ]
+  },
+  {
+   "file": "src/progress/sealachievements.js",
+   "json": "data/progress/sealachievements.json",
+   "tables": [
+    "SEAL_KINDS"
+   ],
+   "code": [
+    "sealAchievements",
+    "sealBookPages"
+   ]
+  },
+  {
+   "file": "src/progress/seasonlife.js",
+   "json": "data/progress/seasonlife.json",
+   "tables": [
+    "GROUND_SEASON",
+    "OWN",
+    "PLANT_SEASON",
+    "VISITOR_SEASONS"
+   ],
+   "code": [
+    "plantRate",
+    "rollOf",
+    "seasonOpen",
+    "visitorsIn"
+   ]
+  },
+  {
+   "file": "src/progress/seasons.js",
+   "json": "data/progress/seasons.json",
+   "tables": [
+    "SEASON",
+    "SEASONS",
+    "SEASON_MATERIAL"
+   ],
+   "code": [
+    "seasonOf"
+   ]
+  },
+  {
+   "file": "src/progress/seeds.js",
+   "json": "data/progress/seeds.json",
+   "tables": [
+    "MATTER_FEED",
+    "SEEDS",
+    "SHAPES",
+    "SIZES"
+   ],
+   "code": [
+    "feedOf",
+    "seedsEarned",
+    "sizeOf",
+    "tintOf"
+   ]
+  },
+  {
+   "file": "src/progress/shop/catalogue.js",
+   "json": "data/progress/shop/catalogue.json",
+   "tables": [
+    "SHOPS"
+   ],
+   "code": [
+    "crudeField",
+    "demandKey",
+    "glazePrice",
+    "shelfOf",
+    "worthOf"
+   ]
+  },
+  {
+   "file": "src/progress/skiffpaint.js",
+   "json": "data/progress/skiffpaint.json",
+   "tables": [
+    "PAINT",
+    "PAINT_KINDS",
+    "SET_RULES"
+   ],
+   "code": [
+    "SkiffPaint",
+    "setDone"
+   ]
+  },
+  {
+   "file": "src/progress/skiffparts.js",
+   "json": "data/progress/skiffparts.json",
+   "tables": [
+    "PARTS",
+    "SLOTS"
+   ],
+   "code": [
+    "SkiffParts"
+   ]
+  },
+  {
+   "file": "src/progress/skiffruler.js",
+   "json": "data/progress/skiffruler.json",
+   "tables": [
+    "CARVE_REF",
+    "MASS",
+    "RACE_REF"
+   ],
+   "code": [
+    "refLap"
+   ]
+  },
+  {
+   "file": "src/progress/skifftouch.js",
+   "json": "data/progress/skifftouch.json",
+   "tables": [
+    "SKIFF_TOUCH"
+   ],
+   "code": [
+    "skiffTouchKeys"
+   ]
+  },
+  {
+   "file": "src/progress/skifftune.js",
+   "json": "data/progress/skifftune.json",
+   "tables": [
+    "SETUPS",
+    "SLIDE",
+    "STOCK_SHEET",
+    "TUNE"
+   ],
+   "code": [
+    "cleanSheet",
+    "isStock",
+    "piOf",
+    "recordClass",
+    "sliderOpen",
+    "tuneMult"
+   ]
+  },
+  {
+   "file": "src/progress/skills.js",
+   "json": "data/progress/skills.json",
+   "tables": [
+    "ABILITIES",
+    "ALL_ARTS",
+    "BY_ID",
+    "BY_TECH",
+    "EPIC_ARTS",
+    "GOD_ARTS",
+    "POWER_ARTS",
+    "SECOND_WAYS",
+    "UNLOGGED_TECHS"
+   ],
+   "code": [
+    "achOf",
+    "goalFracOf",
+    "goalsFracOf",
+    "led",
+    "ledOf",
+    "loggedTechs"
+   ]
+  },
+  {
+   "file": "src/progress/slabs.js",
+   "json": "data/progress/slabs.json",
+   "tables": [
+    "SLAB",
+    "STRATA",
+    "VERBS"
+   ],
+   "code": [
+    "carve",
+    "exposed",
+    "newSlab",
+    "scoreOf",
+    "secondsOf",
+    "spiritOf"
+   ]
+  },
+  {
+   "file": "src/progress/spiritdiet.js",
+   "json": "data/progress/spiritdiet.json",
+   "tables": [
+    "DIET"
+   ],
+   "code": [
+    "SpiritDiet",
+    "drinkGain",
+    "feelingOfHue",
+    "fruitMeal",
+    "tasteOf"
+   ]
+  },
+  {
+   "file": "src/progress/spiritlife.js",
+   "json": "data/progress/spiritlife.json",
+   "tables": [
+    "FAREWELL",
+    "FAREWELL_LINES",
+    "MAIL",
+    "PLACES",
+    "ROUTINE",
+    "TASTE",
+    "WISH",
+    "WISH_KINDS"
+   ],
+   "code": [
+    "SpiritLife",
+    "routineOf",
+    "tasteOf",
+    "wishFor"
+   ]
+  },
+  {
+   "file": "src/progress/spiritnotice.js",
+   "json": "data/progress/spiritnotice.json",
+   "tables": [
+    "LINES",
+    "NOTICE",
+    "REGISTERS"
+   ],
+   "code": [
+    "SpiritNotice",
+    "keyOf",
+    "leadPole",
+    "lineOf",
+    "nearestPiece",
+    "noticeOf",
+    "topicOf"
+   ]
+  },
+  {
+   "file": "src/progress/spirits.js",
+   "json": "data/progress/spirits.json",
+   "tables": [
+    "ALIGN",
+    "ATTRS",
+    "FEED",
+    "FIRINGS",
+    "FIRING_NAMES",
+    "MATURE",
+    "MAX",
+    "STATS",
+    "STRUGGLE"
+   ],
+   "code": [
+    "feed",
+    "firingOf",
+    "formOf",
+    "fresh",
+    "merge",
+    "ranksOf",
+    "struggleOf"
+   ]
+  },
+  {
+   "file": "src/progress/spiritwork.js",
+   "json": "data/progress/spiritwork.json",
+   "tables": [
+    "WORK"
+   ],
+   "code": [
+    "materialFeeling",
+    "pressExtra",
+    "workersAt"
+   ]
+  },
+  {
+   "file": "src/progress/sporebeds.js",
+   "json": "data/progress/sporebeds.json",
+   "tables": [
+    "SEED",
+    "SPORE"
+   ],
+   "code": [
+    "SporeBeds",
+    "thingOf"
+   ]
+  },
+  {
+   "file": "src/progress/sporeprints.js",
+   "json": "data/progress/sporeprints.json",
+   "tables": [
+    "DAMP",
+    "WILD_PRINTS"
+   ],
+   "code": [
+    "SporePrints",
+    "printsOut"
+   ]
+  },
+  {
+   "file": "src/progress/spreads.js",
+   "json": "data/progress/spreads.json",
+   "tables": [
+    "CLASS",
+    "CLASS_DOMAIN",
+    "COLS",
+    "CONTRARY",
+    "COURT",
+    "COURT_DEPTH",
+    "DAY_CARD",
+    "FOOL_CELL",
+    "FOOTPRINTS",
+    "KINDRED",
+    "KIND_SUIT",
+    "MAJOR_SUIT",
+    "MAJOR_TITLE",
+    "MIRROR",
+    "OPEN_AT",
+    "POSITION_RULES",
+    "RANK_CELLS",
+    "ROWS",
+    "SEASON_K",
+    "SEASON_SUIT",
+    "SPREADS",
+    "SPREAD_ORDER",
+    "SUITS",
+    "TALLY",
+    "TOOL_SUIT",
+    "WILD_K",
+    "ZODIAC"
+   ],
+   "code": [
+    "cellIndex",
+    "checkFootprints",
+    "classLabel",
+    "classOf",
+    "courtOf",
+    "dayCard",
+    "effectOf",
+    "footprintOf",
+    "itemSuit",
+    "light",
+    "strengthOf",
+    "suitOf",
+    "tally"
+   ]
+  },
+  {
+   "file": "src/progress/stealth.js",
+   "json": "data/progress/stealth.json",
+   "tables": [
+    "CANDID",
+    "EXPOSE",
+    "LAND",
+    "STEP",
+    "VIGIL"
+   ],
+   "code": [
+    "Stealth",
+    "candidOf",
+    "exposureOf",
+    "landNoise",
+    "stepNoise",
+    "vigilAt"
+   ]
+  },
+  {
+   "file": "src/progress/stones.js",
+   "json": "data/progress/stones.json",
+   "tables": [
+    "COURIER_MIND",
+    "COURIER_MIND_EFFECT",
+    "DRAUGHT",
+    "PRESSURE",
+    "STONES"
+   ],
+   "code": [
+    "apertureOf",
+    "courierMindEffect",
+    "draughtOf",
+    "modifier",
+    "pressureOf",
+    "stoneOf"
+   ]
+  },
+  {
+   "file": "src/progress/strawmanwell.js",
+   "json": "data/progress/strawmanwell.json",
+   "tables": [
+    "CELL",
+    "FLOAT",
+    "GRAB",
+    "GRID",
+    "GUIDE",
+    "MATTER",
+    "PERCENT",
+    "PIT",
+    "POGO",
+    "PULLEY",
+    "ROPE",
+    "STAGES",
+    "TURRET",
+    "VERB"
+   ],
+   "code": [
+    "launchOf",
+    "percentOf",
+    "rankOf",
+    "stageOf",
+    "starsOf"
+   ]
+  },
+  {
+   "file": "src/progress/toolpairs.js",
+   "json": "data/progress/toolpairs.json",
+   "tables": [
+    "PAIRS",
+    "PAIR_OPEN",
+    "PAIR_SPECIALS",
+    "SPECIALS_BUILT",
+    "SPECIAL_PLAY",
+    "START",
+    "SUB_GIFTS",
+    "TOOL_IDS"
+   ],
+   "code": [
+    "pairKey",
+    "pairOf",
+    "pairSpecialOpen",
+    "pairsOf",
+    "specialVerbs",
+    "swapRefusal"
+   ]
+  },
+  {
+   "file": "src/progress/toucharc.js",
+   "json": "data/progress/toucharc.json",
+   "tables": [
+    "ARC_CELLS",
+    "ARC_FOLD",
+    "ARC_FOLD_TIME",
+    "ARC_GRID",
+    "ARC_SETTING",
+    "TOUCH_ARC"
+   ],
+   "code": [
+    "arcOf",
+    "arcRect",
+    "foldOf"
+   ]
+  },
+  {
+   "file": "src/progress/trackdef.js",
+   "json": "data/progress/trackdef.json",
+   "tables": [
+    "CARRY",
+    "LOT",
+    "MADE",
+    "MEDAL_K",
+    "RULES"
+   ],
+   "code": [
+    "blankTrack",
+    "budgetOf",
+    "buildTrack",
+    "cleanDef",
+    "gatesFor",
+    "hashOf",
+    "hauntOf",
+    "isValidated",
+    "readCode",
+    "shareCode",
+    "toTrackDef",
+    "validate"
+   ]
+  },
+  {
+   "file": "src/progress/trackpaint.js",
+   "json": "data/progress/trackpaint.json",
+   "tables": [
+    "CRUDE_GRIP",
+    "LINE_PAINT"
+   ],
+   "code": [
+    "paintActive",
+    "paintGrip"
+   ]
+  },
+  {
+   "file": "src/progress/trackpieces.js",
+   "json": "data/progress/trackpieces.json",
+   "tables": [
+    "PIECES",
+    "PIECE_KINDS"
+   ],
+   "code": [
+    "featureOf"
+   ]
+  },
+  {
+   "file": "src/progress/trackshelf.js",
+   "json": "data/progress/trackshelf.json",
+   "tables": [
+    "ENDLESS",
+    "SHELF"
+   ],
+   "code": [
+    "endlessCurrent",
+    "endlessStart",
+    "endlessStep",
+    "gradeOf",
+    "shelfAdd",
+    "shelfDrop"
+   ]
+  },
+  {
+   "file": "src/progress/trapbot.js",
+   "json": "data/progress/trapbot.json",
+   "tables": [
+    "HAUNTERS",
+    "READ"
+   ],
+   "code": [
+    "leadOf",
+    "secondsToFire",
+    "wantsFire"
+   ]
+  },
+  {
+   "file": "src/progress/traps.js",
+   "json": "data/progress/traps.json",
+   "tables": [
+    "TRAP",
+    "TRAPS",
+    "TRAP_KINDS",
+    "TRAP_OPEN"
+   ],
+   "code": [
+    "TrapClock",
+    "autoPhase",
+    "trapOpen"
+   ]
+  },
+  {
+   "file": "src/progress/weather.js",
+   "json": "data/progress/weather.json",
+   "tables": [
+    "AGATES",
+    "ASPECTS",
+    "COLOR",
+    "DISPLAY_ORDER",
+    "NAMES",
+    "NATIVE",
+    "OPPOSITE",
+    "TYPE_OF",
+    "VALENCE"
+   ],
+   "code": [
+    "Weather",
+    "agateOf",
+    "clockAt",
+    "fillHours",
+    "lightAt",
+    "phaseAt",
+    "placeOf",
+    "stageWx",
+    "supplyMult",
+    "weatherAt"
+   ]
+  },
+  {
+   "file": "src/progress/wellboard/battle.js",
+   "json": "data/progress/wellboard/battle.json",
+   "tables": [
+    "BATTLE",
+    "FOES",
+    "GEAR",
+    "GEAR_IDS",
+    "SLOT"
+   ],
+   "code": [
+    "battleApply",
+    "battleBest",
+    "battleMoves",
+    "blowOf",
+    "fits",
+    "newBattle"
+   ]
+  },
+  {
+   "file": "src/progress/wellboard/bot.js",
+   "json": "data/progress/wellboard/bot.json",
+   "tables": [
+    "RIVAL_STYLES",
+    "STYLE"
+   ],
+   "code": [
+    "battleChance",
+    "boardBot",
+    "clearChance",
+    "dieWorth",
+    "worthOf",
+    "worthOfReach"
+   ]
+  },
+  {
+   "file": "src/progress/wellboard/items.js",
+   "json": "data/progress/wellboard/items.json",
+   "tables": [
+    "ARCANA",
+    "ITEMS",
+    "ITEM_IDS",
+    "POWERS",
+    "POWER_IDS",
+    "STANCES"
+   ],
+   "code": [
+    "beats"
+   ]
+  },
+  {
+   "file": "src/progress/wellboard/layout.js",
+   "json": "data/progress/wellboard/layout.json",
+   "tables": [
+    "BOARD",
+    "KINDS",
+    "MOUTH"
+   ],
+   "code": [
+    "layOut",
+    "saveAt",
+    "tierAt"
+   ]
+  },
+  {
+   "file": "src/progress/wellboard/pay.js",
+   "json": "data/progress/wellboard/pay.json",
+   "tables": [
+    "MINUTES",
+    "PAY"
+   ],
+   "code": [
+    "cubesFor",
+    "payOf",
+    "scoreOf"
+   ]
+  },
+  {
+   "file": "src/progress/wellboard/rules.js",
+   "json": "data/progress/wellboard/rules.json",
+   "tables": [
+    "WELL_BOARD"
+   ],
+   "code": [
+    "keysAt",
+    "landsFrom",
+    "reach",
+    "readout",
+    "standings",
+    "stockOf"
+   ]
+  },
+  {
+   "file": "src/core/calendar.js",
+   "json": "data/core/calendar.json",
+   "tables": [
+    "DAY_MS"
+   ],
+   "code": [
+    "dayOf",
+    "now",
+    "setClock",
+    "today"
+   ]
+  },
+  {
+   "file": "src/npc/talks.js",
+   "json": "data/npc/talks.json",
+   "tables": [
+    "PLANETOIDS",
+    "RAKU_HAGGLE",
+    "REALM_NAMES",
+    "TALKS"
+   ],
+   "code": [
+    "realmGloss",
+    "realmName"
+   ]
+  },
+  {
+   "file": "src/npc/realmnames.js",
+   "json": "data/npc/realmnames.json",
+   "tables": [
+    "OFFERED",
+    "PLANETOIDS"
+   ],
+   "code": [
+    "gloss",
+    "name"
+   ]
+  },
+  {
+   "file": "src/npc/neuraleseroots.js",
+   "json": "data/npc/neuraleseroots.json",
+   "tables": [
+    "COLOURS",
+    "COMPOUNDS",
+    "FEELINGS",
+    "NUMBERS",
+    "PARTICLES",
+    "PHRASES",
+    "ROOTS",
+    "TITLES"
+   ],
+   "code": [
+    "isParticle",
+    "isRoot",
+    "numberOf"
+   ]
+  }
+ ],
+ "skipped": [
+  {
+   "file": "src/progress/areaachievements.js",
+   "why": "no data exports",
+   "code": [
+    "areaAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/bedgrowth.js",
+   "why": "no data exports",
+   "code": [
+    "growthK"
+   ]
+  },
+  {
+   "file": "src/progress/casino/coach/charity.js",
+   "why": "no data exports",
+   "code": [
+    "charityCoach"
+   ]
+  },
+  {
+   "file": "src/progress/casino/coach/dice.js",
+   "why": "no data exports",
+   "code": [
+    "dieIds",
+    "horizonCoach",
+    "sumOdds",
+    "zodiacCoach"
+   ]
+  },
+  {
+   "file": "src/progress/casino/coach/entropy.js",
+   "why": "no data exports",
+   "code": [
+    "clashOdds",
+    "entropyCoach"
+   ]
+  },
+  {
+   "file": "src/progress/casino/coach/querent.js",
+   "why": "no data exports",
+   "code": [
+    "cardLabel",
+    "handIds",
+    "querentCoach",
+    "shapeOf",
+    "waitsAfter"
+   ]
+  },
+  {
+   "file": "src/progress/casino/coach/supernova.js",
+   "why": "no data exports",
+   "code": [
+    "reactionOdds",
+    "supernovaCoach"
+   ]
+  },
+  {
+   "file": "src/progress/casino/entropy/bot.js",
+   "why": "no data exports",
+   "code": [
+    "entropyBot",
+    "placeScore",
+    "positionScore",
+    "randomEntropyBot",
+    "reachOf"
+   ]
+  },
+  {
+   "file": "src/progress/casino/querent/bots.js",
+   "why": "no data exports",
+   "code": [
+    "linkOf",
+    "querentBot"
+   ]
+  },
+  {
+   "file": "src/progress/cooking/cooking.js",
+   "why": "no data exports",
+   "code": [
+    "Cooking"
+   ]
+  },
+  {
+   "file": "src/progress/cookingachievements.js",
+   "why": "no data exports",
+   "code": [
+    "cookingAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/countachievements.js",
+   "why": "no data exports",
+   "code": [
+    "countAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/domainartachievements.js",
+   "why": "no data exports",
+   "code": [
+    "domainArtAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/duel/clearrules.js",
+   "why": "no data exports",
+   "code": [
+    "launch",
+    "lineClears",
+    "squareClears",
+    "sweepSpan"
+   ]
+  },
+  {
+   "file": "src/progress/duel/dread.js",
+   "why": "no data exports",
+   "code": [
+    "emberKind",
+    "fogShows",
+    "tickEmbers",
+    "visibleTo"
+   ]
+  },
+  {
+   "file": "src/progress/duel/junkrules.js",
+   "why": "no data exports",
+   "code": [
+    "corrodeStep",
+    "crackJunk",
+    "junkProps",
+    "layViruses",
+    "takeCells",
+    "virusStep"
+   ]
+  },
+  {
+   "file": "src/progress/duel/matchrules.js",
+   "why": "no data exports",
+   "code": [
+    "crashGroup",
+    "matchClears",
+    "specialGem"
+   ]
+  },
+  {
+   "file": "src/progress/duel/turnrules.js",
+   "why": "no data exports",
+   "code": [
+    "actionRules",
+    "afterSettle",
+    "gemRules",
+    "startRules",
+    "turnRules"
+   ]
+  },
+  {
+   "file": "src/progress/duelachievements.js",
+   "why": "no data exports",
+   "code": [
+    "duelAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/econ/deck.js",
+   "why": "no data exports",
+   "code": [
+    "deckChance",
+    "deckDraw",
+    "deckHit",
+    "deckMean",
+    "nextOfDeck"
+   ]
+  },
+  {
+   "file": "src/progress/econ/economy.js",
+   "why": "no data exports",
+   "code": [
+    "econLine",
+    "installEconomy",
+    "rates"
+   ]
+  },
+  {
+   "file": "src/progress/econ/islands.js",
+   "why": "no data exports",
+   "code": [
+    "cogitomapWorth",
+    "crudeRun",
+    "demand",
+    "drawWell",
+    "fuel",
+    "haulProfit",
+    "islandRun",
+    "purserPrice",
+    "spillChance",
+    "wellPay",
+    "wellSeed",
+    "wellYield"
+   ]
+  },
+  {
+   "file": "src/progress/econ/livelihoods.js",
+   "why": "no data exports",
+   "code": [
+    "bountyPay",
+    "buskPay"
+   ]
+  },
+  {
+   "file": "src/progress/econ/odds.js",
+   "why": "no data exports",
+   "code": [
+    "consolidated"
+   ]
+  },
+  {
+   "file": "src/progress/econ/wants.js",
+   "why": "no data exports",
+   "code": [
+    "bestMarket",
+    "bountyAt",
+    "cargoRun",
+    "figmentKey",
+    "mapAt",
+    "materialKey",
+    "materialPrice",
+    "mid",
+    "wellKey"
+   ]
+  },
+  {
+   "file": "src/progress/foeseen.js",
+   "why": "no data exports",
+   "code": [
+    "FoeSeen"
+   ]
+  },
+  {
+   "file": "src/progress/gardengrowthachievements.js",
+   "why": "no data exports",
+   "code": [
+    "gardenGrowthAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/grainachievements.js",
+   "why": "no data exports",
+   "code": [
+    "grainAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/keepsakes.js",
+   "why": "no data exports",
+   "code": [
+    "Keepsakes"
+   ]
+  },
+  {
+   "file": "src/progress/laidspread.js",
+   "why": "no data exports",
+   "code": [
+    "LaidSpread"
+   ]
+  },
+  {
+   "file": "src/progress/logachievements.js",
+   "why": "no data exports",
+   "code": [
+    "logAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/mimicryachievements.js",
+   "why": "no data exports",
+   "code": [
+    "mimicryAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/moduleachievements.js",
+   "why": "no data exports",
+   "code": [
+    "moduleAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/myggdrasil.js",
+   "why": "no data exports",
+   "code": [
+    "Myggdrasil"
+   ]
+  },
+  {
+   "file": "src/progress/opensea/discoveries.js",
+   "why": "no data exports",
+   "code": [
+    "discoveryFee",
+    "noticed",
+    "seaTotal"
+   ]
+  },
+  {
+   "file": "src/progress/pairachievements.js",
+   "why": "no data exports",
+   "code": [
+    "pairAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/psyche.js",
+   "why": "no data exports",
+   "code": [
+    "installPsyche"
+   ]
+  },
+  {
+   "file": "src/progress/raceachievements.js",
+   "why": "no data exports",
+   "code": [
+    "racewayAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/safarirun.js",
+   "why": "no data exports",
+   "code": [
+    "Safari"
+   ]
+  },
+  {
+   "file": "src/progress/sandboxachievements.js",
+   "why": "no data exports",
+   "code": [
+    "sandboxAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/seaachievements.js",
+   "why": "no data exports",
+   "code": [
+    "seaAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/shop/haggle.js",
+   "why": "no data exports",
+   "code": [
+    "accept",
+    "clink",
+    "flatter",
+    "moodOf",
+    "offer",
+    "offers",
+    "startHaggle",
+    "walk"
+   ]
+  },
+  {
+   "file": "src/progress/shop/shops.js",
+   "why": "no data exports",
+   "code": [
+    "Shops"
+   ]
+  },
+  {
+   "file": "src/progress/shop/ui.js",
+   "why": "Unknown file extension \".png\" for /home/user/foolsfortune/src/assets/courier/courier_filigree.png"
+  },
+  {
+   "file": "src/progress/sight.js",
+   "why": "no data exports",
+   "code": [
+    "Sight",
+    "sightCommands"
+   ]
+  },
+  {
+   "file": "src/progress/spreadachievements.js",
+   "why": "no data exports",
+   "code": [
+    "spreadAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/stats.js",
+   "why": "no data exports",
+   "code": [
+    "Stats"
+   ]
+  },
+  {
+   "file": "src/progress/stealthachievements.js",
+   "why": "no data exports",
+   "code": [
+    "stealthAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/strawmanwellachievements.js",
+   "why": "no data exports",
+   "code": [
+    "strawmanWellAchievements"
+   ]
+  },
+  {
+   "file": "src/progress/system.js",
+   "why": "no data exports",
+   "code": [
+    "System"
+   ]
+  },
+  {
+   "file": "src/progress/trapzones.js",
+   "why": "no data exports",
+   "code": [
+    "boulderAt",
+    "hitOf",
+    "laneLat",
+    "laneOf",
+    "mawAt",
+    "potAt",
+    "potLands",
+    "stormMarks"
+   ]
+  },
+  {
+   "file": "src/progress/treediary.js",
+   "why": "no data exports",
+   "code": [
+    "TreeDiary",
+    "colourWord",
+    "diaryOf",
+    "movedHow"
+   ]
+  },
+  {
+   "file": "src/progress/voyage.js",
+   "why": "no data exports",
+   "code": [
+    "Voyage"
+   ]
+  },
+  {
+   "file": "src/core/tags.js",
+   "why": "no data exports",
+   "code": [
+    "hasTag",
+    "register",
+    "registered",
+    "tag",
+    "unregister",
+    "untag"
+   ]
+  }
+ ]
+}

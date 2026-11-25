@@ -1,0 +1,511 @@
+{
+ "DOMAIN_ARTS": {
+  "postpone": {
+   "domain": "ouranurgy",
+   "level": 10,
+   "kind": "reaction",
+   "label": "Postpone",
+   "line": "A blow that gets past your shield cracks you 4 seconds late.",
+   "how": "Parry another blow before it lands and it lands at half. It lands on the clay, wherever you are by then.",
+   "does": {
+    "delay": 4,
+    "parried": 0.5
+   },
+   "feat": [
+    "lateParry",
+    10
+   ]
+  },
+  "plating": {
+   "domain": "manifestation",
+   "level": 10,
+   "kind": "action",
+   "label": "Plating",
+   "line": "Set 20 of your pool solid over the part of you facing the nearest foe: it takes most of that part's next crack.",
+   "how": "It holds 20 off your pool's top while it stands. Unspent after 30 seconds, it melts back at 15. It cannot stop a crack that would shatter you.",
+   "does": {
+    "held": 20,
+    "back": 15,
+    "dur": 30,
+    "takes": 0.85
+   },
+   "feat": [
+    "shieldRun",
+    10
+   ],
+   "cooldown": 8
+  },
+  "watch": {
+   "domain": "divination",
+   "level": 10,
+   "kind": "passive",
+   "label": "The Watch",
+   "line": "A Figment's watch shows: while its head is down, how long until it looks up.",
+   "how": "Its bouts are its own and they never lie: move while it is down (STEALTH.md).",
+   "does": {
+    "reach": 30
+   },
+   "feat": [
+    "candid",
+    10
+   ]
+  },
+  "shatter": {
+   "domain": "psychokinesis",
+   "level": 10,
+   "kind": "passive",
+   "label": "Shatter",
+   "line": "A Figment whose shell is near breaking glows; a heavy blow on it then breaks it at once.",
+   "how": "Near: its stun past (1 - shatter) of full. Heavy: a blow of power 2 or more (a charge, a finisher, a heavy throw).",
+   "does": {
+    "minPower": 2
+   },
+   "feat": [
+    "heavyThrow",
+    25
+   ]
+  },
+  "receptivity": {
+   "domain": "possession",
+   "level": 10,
+   "kind": "passive",
+   "label": "Receptivity",
+   "line": "A mind whose agitation is in its best band shows open, and you may reprogram it without stunning it first.",
+   "how": "Open is the band where its Lachryma yields most: agitate it, then catch it there.",
+   "does": {},
+   "feat": [
+    "longRelease",
+    10
+   ]
+  },
+  "retype": {
+   "domain": "alteration",
+   "level": 10,
+   "kind": "action",
+   "label": "Re-type",
+   "line": "For 20 seconds the tool in your hands strikes as another type: the nearest creature's weakness if you know its kind, else the next type in turn.",
+   "how": "Know a kind (photograph it, or down it five times) and Re-type finds its weakness for you.",
+   "does": {
+    "dur": 20,
+    "reach": 20,
+    "knows": 2
+   },
+   "feat": [
+    "weakDown",
+    15
+   ],
+   "cost": 10,
+   "cooldown": 30
+  },
+  "standingRule": {
+   "domain": "spellscription",
+   "level": 10,
+   "kind": "passive",
+   "label": "A Standing Rule",
+   "line": "Write one rule: when you do one thing, another follows, for 5 of your pool.",
+   "how": "/rule lists the choices. Each fires at most once in 3 seconds.",
+   "does": {
+    "every": 3,
+    "cost": 5
+   },
+   "feat": [
+    "cleanMacro",
+    20
+   ]
+  },
+  "recall": {
+   "domain": "ouranurgy",
+   "level": 30,
+   "kind": "action",
+   "label": "Recall",
+   "line": "Blink back to where you stood 3 seconds ago, your pool as it was then if it was fuller.",
+   "how": "Nothing is marked: the last 3 seconds are always kept.",
+   "does": {
+    "back": 3,
+    "max": 24
+   },
+   "feat": [
+    "blinkChain",
+    10
+   ],
+   "cost": 10,
+   "cooldown": 12
+  },
+  "footholds": {
+   "domain": "manifestation",
+   "level": 30,
+   "kind": "action",
+   "label": "Footholds",
+   "line": "Set a step of Lachrymite where you are about to be: under your feet in the air, a stair ahead on the ground.",
+   "how": "Three may stand at once, each for 6 seconds. Not in a race or a timed course.",
+   "does": {
+    "at": 3,
+    "dur": 6,
+    "size": 0.9
+   },
+   "feat": [
+    "sculpt",
+    10
+   ],
+   "cost": 6,
+   "cooldown": 0.4
+  },
+  "makeup": {
+   "domain": "divination",
+   "level": 30,
+   "kind": "passive",
+   "label": "A Body's Make-up",
+   "line": "Lock on to a creature and you read what it is made of, and so the type that bites it.",
+   "how": "A kind read so is known: Re-type finds its weakness from then on.",
+   "does": {},
+   "feat": [
+    "cleanRead",
+    20
+   ]
+  },
+  "vow": {
+   "domain": "spellscription",
+   "level": 30,
+   "kind": "passive",
+   "label": "A Vow",
+   "line": "Swear off one thing and every cost is a quarter less while you keep it. Break it and it cracks you.",
+   "how": "/vow lists the vows. A broken vow waits 30 seconds before another.",
+   "does": {},
+   "feat": [
+    "cleanFight",
+    10
+   ]
+  },
+  "catch": {
+   "domain": "psychokinesis",
+   "level": 30,
+   "kind": "reaction",
+   "label": "The Catch",
+   "line": "Parry a shot and keep holding the parry: you catch it, and let go to throw it where you aim, half again as hard.",
+   "how": "Held at most 1.5 seconds, then thrown. Let go of the parry at once and it is sent back as ever.",
+   "does": {
+    "hold": 1.5,
+    "mult": 1.5
+   },
+   "feat": [
+    "parryReturn",
+    15
+   ]
+  },
+  "link": {
+   "domain": "possession",
+   "level": 30,
+   "kind": "passive",
+   "label": "The Link",
+   "line": "The last creature you reprogrammed is bound to you: a crack meant for you is split, half on it.",
+   "how": "Bound while it lives and stands within 30 metres. The half is struck on it as an Influence blow, by you.",
+   "does": {
+    "share": 0.5,
+    "reach": 30,
+    "power": 4
+   },
+   "feat": [
+    "macroWorn",
+    15
+   ]
+  },
+  "reactions": {
+   "domain": "alteration",
+   "level": 30,
+   "kind": "passive",
+   "label": "Reactions",
+   "line": "Paint one feeling over another and they react: opposites cancel to bare ground and calm what stands there; two that wedge flare as the old paint's blow.",
+   "how": "A reaction a stamp, not a cell. Creatures standing in it take it; you never do.",
+   "does": {
+    "calm": 3,
+    "flare": 1,
+    "radius": 1.5,
+    "every": 0.25
+   },
+   "feat": [
+    "awakened",
+    4
+   ]
+  },
+  "fuse": {
+   "domain": "ouranurgy",
+   "level": 60,
+   "kind": "action",
+   "label": "The Fuse",
+   "line": "Fuse the nearest foe. For 8 seconds, every affliction you put on it is delayed. Press again and they all go off at once, each lasting half again as long.",
+   "how": "Let the 8 seconds run out and they go off as normal. Hint: set them off on a stunned foe for the most effect.",
+   "does": {
+    "window": 8,
+    "mult": 1.5,
+    "reach": 20
+   },
+   "feat": [
+    "twoAtOnce",
+    15
+   ],
+   "cost": 10,
+   "cooldown": 20
+  },
+  "catchWeather": {
+   "domain": "manifestation",
+   "level": 60,
+   "kind": "passive",
+   "label": "Catch the Weather",
+   "line": "Stand in a feeling's weather, out under the sky, with a Bottle on, and the Bottle fills with that feeling.",
+   "how": "Only feelings you have awakened to, and only if the Bottle's empty or already holds that one. Stronger weather fills it faster.",
+   "does": {
+    "rate": 3,
+    "min": 0.2,
+    "say": 20
+   },
+   "feat": [
+    "bigMop",
+    15
+   ]
+  },
+  "relay": {
+   "domain": "psychokinesis",
+   "level": 60,
+   "kind": "passive",
+   "label": "Relay",
+   "line": "Hit a creature hard and the force carries on to the one behind it, up to three in a row.",
+   "how": "\"Hard\" means a thrown hit, or a blow of power 2 or more. Each link keeps three quarters of the force, and the next body has to be within 3 m, in line.",
+   "does": {
+    "minPower": 2,
+    "reach": 3,
+    "cone": 0.7,
+    "keep": 0.75,
+    "links": 3
+   },
+   "feat": [
+    "twoStrike",
+    10
+   ]
+  },
+  "trueOdds": {
+   "domain": "divination",
+   "level": 60,
+   "kind": "passive",
+   "label": "True Odds",
+   "line": "See chance as real numbers. Near the Tithe's console you get the next pull's odds for each tier, pity included. Near a crystal you see what it might give.",
+   "how": "These are the game's real odds, never rounded in your favour. More of the world's chances show up as you learn to read them.",
+   "does": {
+    "reach": 4
+   },
+   "feat": [
+    "titheRare",
+    10
+   ]
+  },
+  "borrowVerb": {
+   "domain": "possession",
+   "level": 60,
+   "kind": "passive",
+   "label": "Borrow a Verb",
+   "line": "Reprogram a creature and you can use its move on R for 20 seconds, in place of your sub's.",
+   "how": "A slip jelly lends its spit glob, a Lantern Wisp its flame ball. Each throw costs 4 pool, and the loan ends if the lender goes down.",
+   "does": {
+    "dur": 20,
+    "cost": 4,
+    "every": 1.2
+   },
+   "feat": [
+    "mindRewritten",
+    30
+   ]
+  },
+  "walkCycle": {
+   "domain": "alteration",
+   "level": 60,
+   "kind": "action",
+   "label": "Walk the Cycle",
+   "line": "Turn every affliction on the nearest foe into the one it beats: doubt into charm, charm into confusion, confusion into a stun, blindness into doubt.",
+   "how": "Each keeps the time it had left, never more than the new one would last. A foe with no afflictions can't be walked.",
+   "does": {
+    "reach": 20
+   },
+   "feat": [
+    "annihilate",
+    15
+   ],
+   "cost": 8,
+   "cooldown": 10
+  },
+  "sealCreature": {
+   "domain": "spellscription",
+   "level": 60,
+   "kind": "action",
+   "label": "A Seal on a Creature",
+   "line": "Seal a creature as it winds up a blow. The blow breaks off, and it can't use that kind of blow for 20 seconds.",
+   "how": "Only works mid-windup. A FOE follows its own rules and shrugs the seal off.",
+   "does": {
+    "dur": 20,
+    "reach": 20
+   },
+   "feat": [
+    "sealSet",
+    20
+   ],
+   "cost": 12,
+   "cooldown": 15
+  }
+ },
+ "DOWN_AFTER": {
+  "blink": 2,
+  "write": 4
+ },
+ "FEATS": {
+  "lateParry": {
+   "event": "move.parry"
+  },
+  "shieldRun": {
+   "event": "vessel.shield",
+   "reset": [
+    "vessel.shieldbreak",
+    "vessel.crack"
+   ],
+   "anyBy": true
+  },
+  "candid": {
+   "event": "photo.take"
+  },
+  "heavyThrow": {
+   "event": "impact.hit"
+  },
+  "longRelease": {
+   "event": "angle.release"
+  },
+  "weakDown": {
+   "event": "creature.struck"
+  },
+  "cleanMacro": {
+   "event": "reprogram.run"
+  },
+  "blinkChain": {
+   "event": "move.blink"
+  },
+  "cleanFight": {
+   "event": "combat.end",
+   "mark": [
+    "vessel.crack"
+   ],
+   "start": [
+    "combat.start"
+   ],
+   "anyBy": true
+  },
+  "sculpt": {
+   "event": "god.sculpt"
+  },
+  "parryReturn": {
+   "event": "parry.return"
+  },
+  "macroWorn": {
+   "event": "reprogram.wear",
+   "anyBy": true
+  },
+  "awakened": {
+   "event": "feeling.wake"
+  },
+  "twoAtOnce": {
+   "event": "creature.status"
+  },
+  "bigMop": {
+   "event": "brush.mop"
+  },
+  "twoStrike": {
+   "event": "impact.strike"
+  },
+  "annihilate": {
+   "event": "combat.annihilate"
+  },
+  "mindRewritten": {
+   "event": "reprogram.run"
+  },
+  "titheRare": {
+   "event": "tithe.pull"
+  },
+  "sealSet": {
+   "event": "seal.set"
+  },
+  "cleanRead": {
+   "event": "windup.read",
+   "mark": [
+    "vessel.crack"
+   ]
+  }
+ },
+ "FEAT_WORDS": {
+  "lateParry": "blows parried at the last moment",
+  "shieldRun": "runs of six blows on your shield unbroken",
+  "candid": "candid photographs",
+  "heavyThrow": "thrown hits over 300 joules",
+  "longRelease": "fish let go after a long fight",
+  "weakDown": "creatures downed by their weakness",
+  "cleanMacro": "macros typed clean",
+  "blinkChain": "three blinks inside two seconds",
+  "sculpt": "creations raised",
+  "cleanFight": "fights ended without a crack",
+  "cleanRead": "windups read without a crack",
+  "twoAtOnce": "two afflictions on one creature inside a second",
+  "bigMop": "mops of 40 Lachryma or more",
+  "twoStrike": "throws that struck two creatures",
+  "annihilate": "annihilations",
+  "mindRewritten": "minds rewritten",
+  "titheRare": "Tithe pulls of rare or better",
+  "sealSet": "seals set in cradles",
+  "parryReturn": "shots parried back into their thrower",
+  "macroWorn": "macros worn to their end",
+  "awakened": "feelings awakened"
+ },
+ "KATA": 5,
+ "RULE_THEN": {
+  "lend": {
+   "label": "your sub lends its verb"
+  },
+  "swap": {
+   "label": "your main and sub change places"
+  }
+ },
+ "RULE_WHEN": {
+  "parry": {
+   "label": "you parry",
+   "event": "move.parry"
+  },
+  "stun": {
+   "label": "you stun a creature",
+   "event": "creature.stun"
+  },
+  "down": {
+   "label": "you down a creature",
+   "event": "creature.struck"
+  },
+  "blink": {
+   "label": "you blink",
+   "event": "move.blink"
+  }
+ },
+ "VOW": {
+  "costMult": 0.75,
+  "again": 30,
+  "keptEvery": 60
+ },
+ "VOWS": {
+  "noBlink": {
+   "label": "never blink",
+   "event": "move.blink"
+  },
+  "noJump": {
+   "label": "never leave the ground by a jump",
+   "event": "move.jump"
+  },
+  "noLend": {
+   "label": "never lend your sub",
+   "event": "tool.lend"
+  },
+  "noSprint": {
+   "label": "never sprint"
+  }
+ },
+ "WEAR": 20
+}

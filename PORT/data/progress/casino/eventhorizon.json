@@ -1,0 +1,23 @@
+{
+ "EH": {
+  "ante": 10,
+  "dealer": [
+   0.15,
+   0.35,
+   0.35,
+   0.15
+  ],
+  "bonus": {
+   "hit": 1,
+   "par": 3,
+   "exact": 5
+  }
+ },
+ "EVENT_HORIZON": {
+  "id": "eventhorizon",
+  "seats": [
+   1,
+   4
+  ]
+ }
+}

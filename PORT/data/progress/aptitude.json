@@ -1,0 +1,99 @@
+{
+ "APT": {
+  "keep": 60,
+  "shown": 5,
+  "curve": 20,
+  "trend": 5
+ },
+ "APTITUDES": {
+  "parry": {
+   "label": "Parry timing",
+   "unit": "ms before the strike",
+   "better": "low",
+   "event": "move.parry",
+   "line": "How late you dare to answer a blow."
+  },
+  "pitch": {
+   "label": "Pitch by ear",
+   "unit": "beats a second",
+   "better": "low",
+   "event": "crystal.strike",
+   "line": "How close your ear brings a crystal to its note."
+  },
+  "timing": {
+   "label": "Timing",
+   "unit": "ms of spread",
+   "better": "low",
+   "event": "rhythm.score",
+   "line": "How tightly you keep to a beat."
+  },
+  "colour": {
+   "label": "Colour",
+   "unit": "% of a tile from its heart",
+   "better": "low",
+   "event": "alchemy.fire",
+   "line": "How near your eye brings a soul colour to its heart."
+  },
+  "aim": {
+   "label": "Aim",
+   "unit": "% of shots",
+   "better": "high",
+   "event": "drill.end",
+   "line": "How much of what you fire lands."
+  },
+  "pull": {
+   "label": "Reading a pull",
+   "unit": "% of pulls answered",
+   "better": "high",
+   "event": "angle.catch",
+   "line": "How well you read a fish by its line."
+  },
+  "inhibition": {
+   "label": "Holding back",
+   "unit": "% of outlined shots answered",
+   "better": "high",
+   "line": "How well you hold back for the one answer that works.",
+   "tally": {
+    "marks": {},
+    "flush": "rail.leg.end",
+    "min": 3
+   }
+  },
+  "tracking": {
+   "label": "Tracking",
+   "unit": "targets held",
+   "better": "high",
+   "event": "rail.volley",
+   "line": "How many moving things your eye can keep at once."
+  },
+  "planning": {
+   "label": "Planning",
+   "unit": "% of the ideal macro",
+   "better": "high",
+   "event": "reprogram.run",
+   "line": "How well you compose a change before you make it."
+  },
+  "risk": {
+   "label": "Pushing your luck",
+   "unit": "% past the measure",
+   "better": "high",
+   "style": [
+    "bolder",
+    "more careful"
+   ],
+   "event": "lockheart.open",
+   "line": "How long you hold on before you cash in."
+  },
+  "others": {
+   "label": "Reading others",
+   "unit": "% of callouts that caught a bluff",
+   "better": "high",
+   "line": "How well you read a bluff.",
+   "tally": {
+    "marks": {},
+    "every": 6,
+    "min": 6
+   }
+  }
+ }
+}

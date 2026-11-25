@@ -1,0 +1,583 @@
+{
+ "ECON": {
+  "perMinute": 8,
+  "jelly": {
+   "burst": 6,
+   "core": 3
+  },
+  "wisp": {
+   "burst": 5
+  },
+  "crystal": {
+   "base": 2,
+   "perSize": 4.5,
+   "kind": {
+    "dense": 0.6,
+    "fragile": 0.5
+   },
+   "sweet": {
+    "dense": 2,
+    "fragile": 6
+   },
+   "shed": 1
+  },
+  "condense": {
+   "SS": 320,
+   "S": 180,
+   "A": 100,
+   "B": 60,
+   "C": 40,
+   "D": 28,
+   "E": 20,
+   "F": 14,
+   "G": 9,
+   "H": 5
+  },
+  "dupe": [
+   4,
+   12,
+   30,
+   80,
+   240
+  ],
+  "chest": [
+   [
+    4,
+    9
+   ],
+   [
+    14,
+    26
+   ],
+   [
+    40,
+    70
+   ],
+   [
+    120,
+    200
+   ],
+   [
+    400,
+    700
+   ]
+  ],
+  "curioDeck": [
+   5,
+   4,
+   5,
+   2,
+   1
+  ],
+  "treasury": {
+   "respawn": [
+    240,
+    900,
+    2400,
+    4800,
+    9600
+   ],
+   "debug": 30
+  },
+  "lockheart": {
+   "cubes": 12,
+   "jackpotCap": 0.25,
+   "keyWear": {
+    "start": 0.2,
+    "perUse": 0.15
+   }
+  },
+  "fish": [
+   0,
+   10,
+   18,
+   40,
+   90,
+   400
+  ],
+  "curio": [
+   16,
+   32,
+   70,
+   120,
+   220
+  ],
+  "tithe": {
+   "cost": 48,
+   "nearMiss": 0.15
+  },
+  "firing": 2,
+  "refire": 1.5,
+  "goods": {
+   "lure": 5,
+   "key.brass": 2,
+   "key.invert": 6,
+   "key.even": 6,
+   "key.loaded": 6,
+   "key.twin": 10,
+   "key.wide": 8,
+   "key.echo": 6,
+   "heart.gambler": 20,
+   "heart.shepherd": 20,
+   "heart.summoning": 30,
+   "bottle.small": 10,
+   "bottle.medium": 25,
+   "bottle.large": 50,
+   "whistle.wake": 8
+  },
+  "looks": {
+   "minutes": {
+    "earthenware": 0,
+    "stoneware": 10,
+    "porcelain": 25,
+    "court": 60
+   },
+   "sold": [
+    "stoneware",
+    "porcelain",
+    "court"
+   ]
+  },
+  "shop": {
+   "dear": 0.1,
+   "glut": 0.07,
+   "floor": 0.25,
+   "restock": 90,
+   "buys": 0.5
+  },
+  "haggle": {
+   "list": 1.45,
+   "floor": 1.02
+  },
+  "busk": {
+   "floor": 0.3,
+   "ceil": 1.5,
+   "power": 2,
+   "tire": 0.7,
+   "match": 0.5
+  },
+  "hunt": {
+   "minutes": [
+    3,
+    8,
+    20,
+    60,
+    180
+   ]
+  },
+  "bounty": {
+   "mult": 2.5,
+   "cut": 0.2
+  },
+  "well": {
+   "perFloor": 2.5,
+   "deeper": 1.25,
+   "foe": 2
+  },
+  "escape": {
+   "item": "whistle.wake",
+   "keep": 0.75,
+   "carry": 1,
+   "channel": 1.5
+  },
+  "cogitomap": {
+   "share": 0.3
+  },
+  "island": {
+   "lo": 0.75,
+   "hi": 1.35,
+   "periodDays": [
+    3,
+    7
+   ],
+   "glut": 0.03,
+   "recoverMin": 6
+  },
+  "emocean": {
+   "fuelMin": 1.5,
+   "lose": 0.25
+  },
+  "openSea": {
+   "grid": {
+    "cols": 9,
+    "rows": 7,
+    "lane": 3
+   },
+   "squareS": 40,
+   "burn": 0.35,
+   "full": 1.5,
+   "measureMin": 0.8,
+   "towMin": 6,
+   "discovery": {
+    "common": 0.75,
+    "uncommon": 1.5,
+    "rare": 3.5,
+    "legend": 12,
+    "halfLife": 6
+   },
+   "plate": [
+    0.05,
+    0.1,
+    0.2,
+    0.35
+   ],
+   "fix": {
+    "drift": 0.35,
+    "max": 2
+   },
+   "cache": {
+    "common": 2,
+    "uncommon": 4,
+    "rare": 8,
+    "legend": 12
+   }
+  },
+  "crude": {
+   "spill": 0.35,
+   "glut": 0.004,
+   "fields": {
+    "margarite": {
+     "worth": 0.5,
+     "volatility": 0.5,
+     "island": "margarite",
+     "name": "Margarite crude"
+    },
+    "dunemaw": {
+     "worth": 0.85,
+     "volatility": 1.1,
+     "island": "anagami",
+     "name": "Dunemaw crude"
+    },
+    "entra": {
+     "worth": 1.25,
+     "volatility": 1.6,
+     "island": "entra",
+     "name": "Entropolis crude"
+    }
+   }
+  },
+  "ships": {
+   "sloop": {
+    "hold": 8,
+    "carries": [
+     "crude",
+     "goods"
+    ],
+    "slow": 0.8,
+    "fill": 0.3
+   },
+   "frigate": {
+    "hold": 6,
+    "carries": [
+     "goods"
+    ],
+    "slow": 0.9
+   },
+   "galleon": {
+    "hold": 40,
+    "carries": [
+     "cubes",
+     "goods"
+    ],
+    "slow": 1.3
+   },
+   "destroyer": {
+    "hold": 2,
+    "carries": [
+     "goods"
+    ],
+    "slow": 0.7
+   },
+   "tanker": {
+    "hold": 60,
+    "carries": [
+     "crude"
+    ],
+    "slow": 1.6,
+    "hull": 0.35
+   }
+  },
+  "islands": {
+   "margarite": {
+    "name": "Margarite",
+    "law": -2,
+    "deeper": 1.2,
+    "floors": 5,
+    "risk": 0.02,
+    "foes": 0,
+    "crude": 0.8,
+    "maps": 0.95,
+    "field": "margarite",
+    "classes": [
+     0,
+     1
+    ],
+    "wants": {
+     "material": {
+      "finery": 0.9,
+      "art": 0.85,
+      "provision": 0.6,
+      "arcane": 0.4,
+      "mechanism": 0.3,
+      "edge": 0.15,
+      "eldritch": 0.1
+     },
+     "figment": {
+      "0": 0.8,
+      "1": 0.8,
+      "2": 0.4,
+      "3": 0.2,
+      "4": 0.1
+     },
+     "well": {
+      "dunemaw": 0.95
+     }
+    }
+   },
+   "anagami": {
+    "name": "Anagami Island",
+    "law": 0,
+    "deeper": 1.25,
+    "floors": 5,
+    "risk": 0.05,
+    "foes": 1,
+    "crude": 0.5,
+    "maps": 0.25,
+    "field": "dunemaw",
+    "classes": [
+     0,
+     1,
+     2
+    ],
+    "wants": {
+     "material": {
+      "mechanism": 0.85,
+      "provision": 0.8,
+      "art": 0.5,
+      "edge": 0.5,
+      "finery": 0.4,
+      "arcane": 0.3,
+      "eldritch": 0.25
+     },
+     "figment": {
+      "0": 0.4,
+      "1": 0.6,
+      "2": 0.8,
+      "3": 0.5,
+      "4": 0.3
+     },
+     "well": {
+      "dunemaw": 0.25
+     }
+    }
+   },
+   "entra": {
+    "name": "Entropolis",
+    "law": 2,
+    "deeper": 1.3,
+    "floors": 6,
+    "risk": 0.12,
+    "foes": 2,
+    "crude": 0.2,
+    "maps": 0.15,
+    "field": "entra",
+    "classes": [
+     1,
+     2,
+     3
+    ],
+    "wants": {
+     "material": {
+      "eldritch": 0.9,
+      "arcane": 0.85,
+      "edge": 0.7,
+      "mechanism": 0.4,
+      "provision": 0.3,
+      "art": 0.2,
+      "finery": 0.1
+     },
+     "figment": {
+      "0": 0.2,
+      "1": 0.3,
+      "2": 0.7,
+      "3": 0.9,
+      "4": 0.9
+     },
+     "well": {
+      "dunemaw": 0.55
+     }
+    }
+   }
+  },
+  "wellFill": {
+   "perRun": 0.12,
+   "floor": 0.15,
+   "refillPerH": 0.03
+  },
+  "dividend": {
+   "share": 0.05,
+   "capDays": 8,
+   "slots": 3
+  },
+  "garden": {
+   "farmRate": 480,
+   "beds": 2,
+   "growHours": 6,
+   "yield": 2,
+   "upgrade": {
+    "slot": [
+     180,
+     360,
+     720
+    ],
+    "bed": [
+     60,
+     120,
+     240,
+     480
+    ]
+   }
+  },
+  "myggdrasil": {
+   "firing": 0,
+   "radius": 26,
+   "treeHeight": 48
+  },
+  "place": {
+   "features": {
+    "small": 5,
+    "medium": 12,
+    "large": 30
+   },
+   "work": 0.25,
+   "formation": 0.1,
+   "vein": 2
+  },
+  "decor": {
+   "small": 1,
+   "medium": 3,
+   "large": 8,
+   "centre": 20
+  },
+  "alchemy": {
+   "ranks": 10,
+   "fuel": [
+    4,
+    2
+   ],
+   "radius": [
+    0.12,
+    0.04
+   ],
+   "sat": 0.65,
+   "seasonMax": 100,
+   "seasonCeiling": 0.13,
+   "seasonPerHour": 10,
+   "aim": [
+    0.5,
+    0.5
+   ],
+   "trueShare": 0.25,
+   "formationClamp": [
+    0.5,
+    2
+   ],
+   "pull": {
+    "share": [
+     0.3,
+     0.12
+    ],
+    "sat": [
+     0.3,
+     0.95
+    ],
+    "wind": 0.35
+   },
+   "draughtPull": 0.08,
+   "memory": 0.3
+  },
+  "passage": {
+   "share": 0.8,
+   "rank": {
+    "S": 1.5,
+    "A": 1.2,
+    "B": 1,
+    "C": 0.8,
+    "D": 0.6
+   },
+   "stale": 0.5,
+   "list": 1.3
+  },
+  "weather": {
+   "lean": 0.5,
+   "swing": [
+    1.7,
+    0.9
+   ],
+   "periods": [
+    29,
+    11,
+    17
+   ],
+   "block": 3,
+   "calm": 0.35,
+   "forecast": 3,
+   "wells": {
+    "dunemaw": 2
+   },
+   "reach": {
+    "well:dunemaw": 4
+   },
+   "under": {
+    "swing": 1.8,
+    "periods": [
+     23,
+     13
+    ],
+    "above": 0.88
+   },
+   "build": 0.5,
+   "supply": 0.25,
+   "mood": {
+    "by": {
+     "mirth": -0.5,
+     "wonder": -0.2,
+     "desire": 0,
+     "grief": 0.25,
+     "dread": 0.5,
+     "gall": 0.4,
+     "fury": 0.6
+    }
+   },
+   "bite": 1,
+   "sense": 1.5,
+   "danger": {
+    "mirth": -0.5,
+    "wonder": 0,
+    "desire": 0,
+    "grief": 0.25,
+    "dread": 0.5,
+    "gall": 0.35,
+    "fury": 0.6
+   },
+   "lead": {
+    "mirth": 1,
+    "wonder": 1.25,
+    "desire": 1,
+    "grief": 0.75,
+    "dread": 0.6,
+    "gall": 0.6,
+    "fury": 0.7
+   },
+   "fill": {
+    "mirth": 0.5,
+    "wonder": 1,
+    "desire": 1.5,
+    "grief": 2,
+    "dread": 2,
+    "gall": 2,
+    "fury": 2
+   }
+  }
+ }
+}

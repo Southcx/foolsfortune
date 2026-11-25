@@ -1,0 +1,67 @@
+{
+ "PAR": {
+  "shoal": 103400,
+  "pirates": 37100,
+  "leviathan": 60200
+ },
+ "SCORE": {
+  "cls": [
+   100,
+   300,
+   1000,
+   3000,
+   10000
+  ],
+  "pointBlank": {
+   "within": 4,
+   "mult": 2
+  },
+  "returned": 3,
+  "windup": 1.5,
+  "chain": {
+   "of": 3,
+   "base": 100,
+   "step": 0.25,
+   "max": 8
+  },
+  "volley": {
+   "base": 50,
+   "max": 8
+  },
+  "absorb": 10,
+  "bears": 1000,
+  "end": {
+   "sunk": 5000,
+   "struck": 3000,
+   "driven": 8000,
+   "felled": 20000,
+   "scattered": 1500
+  },
+  "part": {
+   "port": 500,
+   "rigging": 800,
+   "boarder": 300,
+   "gill": 2000,
+   "tooth": 500
+  },
+  "rank": [
+   [
+    "S",
+    1
+   ],
+   [
+    "A",
+    0.5
+   ],
+   [
+    "B",
+    0.25
+   ],
+   [
+    "C",
+    0.12
+   ]
+  ],
+  "medal": 0.8
+ }
+}

@@ -1,0 +1,17 @@
+{
+ "QUERENT": {
+  "id": "querent",
+  "seats": [
+   2,
+   4
+  ]
+ },
+ "QUERENT_RULES": {
+  "rounds": 4,
+  "deal": 8,
+  "steals": 2,
+  "cap": 40,
+  "shortTable": 1,
+  "afterDeath": 2
+ }
+}

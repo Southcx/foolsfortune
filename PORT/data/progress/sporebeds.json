@@ -1,0 +1,14 @@
+{
+ "SEED": {
+  "days": 3,
+  "bond": 30
+ },
+ "SPORE": {
+  "first": [
+   "grief",
+   "desire"
+  ],
+  "takeBack": 1,
+  "tend": 0.25
+ }
+}

@@ -1,0 +1,101 @@
+{
+ "DRILLS": {
+  "flick": {
+   "name": "Flick",
+   "targets": 20,
+   "window": 1.5,
+   "arc": 120,
+   "range": [
+    4,
+    14
+   ],
+   "unit": "ms",
+   "better": "lo",
+   "medals": {
+    "gold": 450,
+    "silver": 600,
+    "bronze": 800
+   }
+  },
+  "track": {
+   "name": "Track",
+   "seconds": 15,
+   "speed": [
+    3,
+    6
+   ],
+   "range": [
+    6,
+    12
+   ],
+   "unit": "%",
+   "better": "hi",
+   "medals": {
+    "gold": 80,
+    "silver": 65,
+    "bronze": 50
+   }
+  },
+  "spray": {
+   "name": "Spray",
+   "shots": 20,
+   "range": [
+    10,
+    10
+   ],
+   "unit": "cm",
+   "better": "lo",
+   "medals": {
+    "gold": 18,
+    "silver": 28,
+    "bronze": 40
+   }
+  },
+  "recover": {
+   "name": "Recover",
+   "bursts": 3,
+   "shots": 5,
+   "range": [
+    8,
+    8
+   ],
+   "unit": "%",
+   "better": "hi",
+   "medals": {
+    "gold": 87,
+    "silver": 73,
+    "bronze": 60
+   }
+  }
+ },
+ "INDEX": {
+  "page": "Testing",
+  "shows": [
+   "drills",
+   "bests",
+   "tuned",
+   "strawman",
+   "calibration"
+  ]
+ },
+ "KEYS": {},
+ "POTS": {
+  "count": 12,
+  "respawn": 8,
+  "cubes": 0,
+  "finds": 0,
+  "baubles": 2,
+  "training": true
+ },
+ "TRAINING_KINDS": [
+  "strawman",
+  "rolypoly"
+ ],
+ "WALL": {
+  "distance": 10,
+  "width": 4,
+  "height": 3,
+  "keep": 30,
+  "maxDents": 60
+ }
+}

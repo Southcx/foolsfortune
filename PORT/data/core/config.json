@@ -1,0 +1,1797 @@
+{
+ "DEFAULTS": {
+  "movement": {
+   "walkSpeed": 4.2,
+   "sprintSpeed": 6.8,
+   "walkSlowSpeed": 1.8,
+   "adsSpeedMult": 0.55,
+   "groundAccel": 55,
+   "groundDecel": 40,
+   "airAccel": 10,
+   "jumpVelocity": 6.4,
+   "gravity": 21,
+   "coyoteTime": 0.1,
+   "jumpBuffer": 0.12,
+   "stepHeight": 0.4,
+   "maxSlope": 46,
+   "tpTurnSpeed": 11,
+   "tpMaxTurn": 540,
+   "combatStanceTime": 1.6,
+   "strafeSprintMult": 0.9,
+   "maxSpeed": 14,
+   "airDrag": 2.5,
+   "overspeedDecel": 10,
+   "groundSteer": 6,
+   "crouchSpeed": 2.2,
+   "proneSpeed": 0.6,
+   "slideSpeed": 9.5,
+   "slideBoost": 2,
+   "slideBoostCooldown": 1.6,
+   "slideMinSpeed": 5,
+   "slideBuffer": 0.2,
+   "slideFriction": 5.5,
+   "slideSlopeAccel": 30,
+   "slideSteer": 2.5,
+   "slideMaxTime": 1.2,
+   "slideCooldown": 0.25,
+   "slideJumpBoost": 1.08,
+   "airJumps": 1,
+   "airJumpMult": 0.9,
+   "wallrunMinSpeed": 4.2,
+   "wallrunSpeed": 9.5,
+   "wallrunAccel": 7,
+   "wallrunHold": 0.5,
+   "wallrunGravity": 3,
+   "wallrunMaxFall": 3,
+   "wallrunMaxTime": 1.8,
+   "wallrunStartUp": 1.2,
+   "wallrunMinHeight": 0.6,
+   "wallrunReach": 0.9,
+   "wallrunTilt": 12,
+   "wallJumpOut": 5.5,
+   "wallJumpUp": 6.2,
+   "wallJumpKeep": 1,
+   "critterPush": 0.2,
+   "mantleMin": 0.45,
+   "stepOverMax": 0.55,
+   "mantleJumpMin": 0.75,
+   "mantleMax": 1.9,
+   "mantleReach": 0.55,
+   "mantleTime": 0.34,
+   "mantleRiseMax": 3.5,
+   "dashSpeed": 13,
+   "dashTime": 0.17,
+   "dashUp": 1.2,
+   "dashCost": 12,
+   "dashCharges": 1
+  },
+  "camera": {
+   "sensitivity": 1,
+   "follow": 0.5,
+   "lockAuto": true,
+   "adsSensMult": 0.65,
+   "fpFov": 78,
+   "fpAdsFov": 54,
+   "tpFov": 70,
+   "tpAdsFov": 50,
+   "eyeHeight": 1.6,
+   "tpPivotHeight": 1.5,
+   "tpDistance": 3,
+   "tpAdsDistance": 1.5,
+   "tpShoulder": 0.7,
+   "tpAdsShoulder": 0.6,
+   "speedFov": 8,
+   "tpLift": 0.18,
+   "viewBlendTime": 0.22,
+   "fpHeadBob": 0.5,
+   "collisionRadius": 0.2
+  },
+  "weapon": {
+   "fireInterval": 0.16,
+   "inputBuffer": 0.09,
+   "damage": 100,
+   "impulse": 6,
+   "range": 150,
+   "hipSpread": 1.6,
+   "adsSpread": 0.1,
+   "moveSpread": 1.4,
+   "airSpread": 3,
+   "bloomPerShot": 1.1,
+   "bloomMax": 4,
+   "bloomRecovery": 6.5,
+   "adsTime": 0.15,
+   "gunScale": 0.85,
+   "adsDistance": 0.55,
+   "adsHeight": 0,
+   "drawTime": 0.26,
+   "holsterTime": 0.34,
+   "drawGrab": 0.4,
+   "swapOnWallrun": true,
+   "swapTime": 0.22,
+   "drawTwist": 38,
+   "holster": {
+    "x": -0.2,
+    "y": 0.98,
+    "z": -0.21,
+    "tilt": 14,
+    "wrap": 12
+   },
+   "autoHolster": true,
+   "holsterDelay": 5
+  },
+  "charge": {
+   "mode": "release",
+   "tapWindow": 0.13,
+   "delay": 0.22,
+   "time": 0.85,
+   "min": 0.25,
+   "cost": 24,
+   "damage": 450,
+   "pierce": 6,
+   "impulse": 30,
+   "blastRadius": 2.4,
+   "kick": 2.4,
+   "shake": 1,
+   "fovPunch": 7,
+   "moveMult": 0.75
+  },
+  "lachryma": {
+   "max": 100,
+   "regenRate": 3.5,
+   "regenDelay": 2.2,
+   "shotCost": 4,
+   "baubleValue": 6,
+   "baubleRadius": 0.075,
+   "bounce": 0.6,
+   "magnetRadius": 3.2,
+   "magnetDelay": 0.6,
+   "clapperDrop": 6,
+   "markedDrop": 2
+  },
+  "explored": {
+   "tiers": [
+    0.08,
+    0.45,
+    0.85
+   ],
+   "baseRadius": 6,
+   "baseTier": 2,
+   "passiveCap": 0.5,
+   "passiveRate": 0.5,
+   "pulseRadius": 14,
+   "godPulseRadius": 20,
+   "pulseCost": 12,
+   "pulseCooldown": 3,
+   "roomRadius": 14,
+   "roomCells": 70
+  },
+  "arts": {
+   "telekinesis": {
+    "drain": 3,
+    "massDrain": 0.12
+   },
+   "sunder": {
+    "cost": 8,
+    "perCut": 2,
+    "maxLen": 12,
+    "height": 3.2
+   },
+   "swell": {
+    "cost": 4,
+    "drain": 5,
+    "min": 0.4,
+    "max": 2.6
+   },
+   "wring": {
+    "cost": 6,
+    "drain": 6,
+    "twist": 3.6,
+    "lobe": 0.35
+   },
+   "manifest": {
+    "cost": 8,
+    "perVol": 0.6,
+    "maxLen": 9,
+    "maxH": 4,
+    "width": 1.1,
+    "life": 40,
+    "max": 6
+   }
+  },
+  "god": {
+   "firstWave": 22,
+   "waveEvery": 34,
+   "waveBase": 2,
+   "waveGrow": 1,
+   "jarHp": 100,
+   "range": 36,
+   "dist": 17,
+   "minDist": 8,
+   "maxDist": 46,
+   "pitchDeg": 36,
+   "fov": 24,
+   "clipAbove": 3.9,
+   "hoverH": 1.7,
+   "grabSpeed": 14,
+   "throwBoost": 1.15,
+   "throwMax": 30,
+   "panSpeed": 1,
+   "edgeScroll": 16,
+   "castHeight": 7,
+   "castCooldown": 0.35,
+   "pushRadius": 5.5,
+   "pushForce": 11,
+   "regenEvery": 9,
+   "regenMax": 6,
+   "raidDamage": 20,
+   "ballDamage": 14,
+   "blastDamage": 22,
+   "thrownDamage": 4,
+   "reforge": 7
+  },
+  "shells": {
+   "start": 4,
+   "max": 8,
+   "refill": 3,
+   "reliquaryCooldown": 20,
+   "rackTime": 0.6,
+   "kick": 1.8,
+   "buff": {
+    "power": 1.75,
+    "reach": 1.35,
+    "dur": 1.4,
+    "count": 1.5
+   },
+   "weight": {
+    "meteor": {
+     "frames": 4,
+     "shake": 0.55,
+     "punch": 3
+    },
+    "meteor.mega": {
+     "frames": 8,
+     "shake": 1.3,
+     "punch": 9
+    },
+    "mallet": {
+     "frames": 6,
+     "shake": 0.8,
+     "punch": 5
+    },
+    "hailstorm": {
+     "frames": 3,
+     "shake": 0.3,
+     "punch": 2
+    },
+    "thunderhead": {
+     "frames": 4,
+     "shake": 0.45,
+     "punch": 3
+    },
+    "slingshot": {
+     "frames": 6,
+     "shake": 0.75,
+     "punch": 6
+    },
+    "volcano": {
+     "frames": 5,
+     "shake": 0.7,
+     "punch": 4
+    },
+    "volcano.bomb": {
+     "frames": 3,
+     "shake": 0.3,
+     "punch": 1.5
+    },
+    "zodiac": {
+     "frames": 4,
+     "shake": 0.5,
+     "punch": 3
+    },
+    "ryno": {
+     "frames": 3,
+     "shake": 0.35,
+     "punch": 2
+    },
+    "insideOut": {
+     "frames": 8,
+     "shake": 0.9,
+     "punch": 7
+    },
+    "thirteen": {
+     "frames": 8,
+     "shake": 1.3,
+     "punch": 10
+    }
+   },
+   "groove": {
+    "speed": 16,
+    "lift": 2.4,
+    "radius": 9,
+    "duration": 12,
+    "hop": 3.4
+   },
+   "anchor": {
+    "duration": 18
+   },
+   "hatch": {
+    "maxAllies": 7
+   },
+   "slicer": {
+    "pierce": 10,
+    "separate": 1.4,
+    "carry": 1.5,
+    "pieceLife": 25,
+    "maxPieces": 160,
+    "width": 6,
+    "speed": 52,
+    "range": 60,
+    "creaturePower": 6
+   },
+   "push": {
+    "range": 13,
+    "angle": 36,
+    "velocity": 20,
+    "selfKnock": 3,
+    "creaturePower": 1.5,
+    "creatureKnock": 14
+   },
+   "well": {
+    "speed": 20,
+    "gravity": 3,
+    "maxFlight": 1.6,
+    "duration": 4.5,
+    "radius": 9,
+    "pull": 36,
+    "swirl": 9,
+    "playerPull": 5,
+    "popRadius": 5,
+    "popVelocity": 14,
+    "creaturePull": 30,
+    "creaturePower": 4,
+    "compressRadius": 0.8,
+    "compressGrow": 1.5,
+    "compressMax": 6,
+    "compressPer": 5,
+    "compressDrops": 8
+   },
+   "mark": {
+    "radius": 3.6,
+    "stun": 7,
+    "duration": 15,
+    "damageMult": 2
+   },
+   "bomb": {
+    "speed": 13,
+    "lift": 4,
+    "fuse": 1.8,
+    "bounces": 2,
+    "radius": 5,
+    "damage": 420,
+    "velocity": 13,
+    "droplets": 110,
+    "dropletDamage": 10,
+    "creaturePower": 5,
+    "splatLife": 11,
+    "poolRadius": 1.6,
+    "poolLife": 12,
+    "poolDps": 45
+   },
+   "ricochet": {
+    "bounces": 7,
+    "damage": 150,
+    "bounceMult": 1.35,
+    "seekAngle": 30,
+    "seekRange": 16,
+    "range": 55
+   },
+   "slip": {
+    "speed": 15,
+    "lift": 3,
+    "droplets": 90,
+    "spread": 6,
+    "patch": 1.6
+   },
+   "homing": {
+    "maxLocks": 8,
+    "lockTime": 0.18,
+    "cone": 12,
+    "range": 40,
+    "launchSpeed": 7,
+    "speed": 19,
+    "fan": 5,
+    "stagger": 0.06,
+    "turn": 5,
+    "turnGrow": 14,
+    "maxFlight": 4,
+    "damage": 240,
+    "splash": 0.9
+   }
+  },
+  "recoil": {
+   "kickPitch": 3.4,
+   "kickYaw": 0.9,
+   "permanent": 0.3,
+   "recoverSpeed": 14,
+   "adsMult": 0.7,
+   "gunKickBack": 0.08,
+   "gunKickRot": 16,
+   "gunRecoverSpeed": 16,
+   "shake": 0.35,
+   "fovPunch": 2.5
+  },
+  "tracer": {
+   "speed": 320,
+   "length": 3.5,
+   "width": 0.028,
+   "trailLife": 0.22,
+   "trailOpacity": 0.28
+  },
+  "shatter": {
+   "breakSpeed": 4.2,
+   "radialBurst": 2.4,
+   "bulletPush": 4.5,
+   "upBias": 1.4,
+   "spin": 14,
+   "maxChunk": 3,
+   "shardLife": 14,
+   "maxShards": 420,
+   "flyR": 0.075,
+   "maxFlyers": 600,
+   "chips": 18,
+   "dust": 1,
+   "shardOutlines": false,
+   "ropeKick": 0.45
+  },
+  "explosion": {
+   "radius": 4.5,
+   "velocity": 13,
+   "chainDelay": 0.09,
+   "playerKnock": 6,
+   "shake": 1.4
+  },
+  "clappers": {
+   "count": 4,
+   "upstairs": 2,
+   "runSpeed": 3,
+   "fleeSpeed": 4.6,
+   "respawn": 3.5,
+   "spookRadius": 1.8,
+   "scale": 1.15,
+   "hideChance": 0.55,
+   "tauntChance": 0.3,
+   "napChance": 0.12,
+   "fallShatter": 2.4,
+   "mendChance": 0.55,
+   "mendTime": 4.5,
+   "mendShy": 3.5,
+   "mendRange": 14,
+   "wreckDelay": 2.5,
+   "kintsugiHp": 1.6,
+   "kintsugiDrop": 3
+  },
+  "stun": {
+   "depths": [
+    {
+     "name": "dazed",
+     "len": 7,
+     "bonus": 1.5,
+     "immune": 6
+    },
+    {
+     "name": "stunned",
+     "len": 8,
+     "bonus": 1.5,
+     "immune": 8
+    },
+    {
+     "name": "out cold",
+     "len": 10,
+     "bonus": 2,
+     "immune": 10
+    }
+   ],
+   "downFill": 1.5,
+   "drainAfter": 1.4,
+   "drain": 0.32,
+   "immuneFill": 0.25
+  },
+  "physics": {
+   "gravity": 14
+  },
+  "trial": {
+   "gold": 90,
+   "silver": 150,
+   "bronze": 240,
+   "quickWindow": 1.5,
+   "quickBonus": 1
+  },
+  "tech": {
+   "hover": {
+    "enabled": false,
+    "cost": 8,
+    "time": 1.6,
+    "lift": 1.2,
+    "speed": 6,
+    "steer": 4
+   },
+   "rocket": {
+    "enabled": false,
+    "cost": 20,
+    "charge": 0.55,
+    "speed": 17
+   },
+   "skim": {
+    "enabled": false,
+    "cost": 5,
+    "speed": 11,
+    "minSpeed": 6
+   },
+   "blink": {
+    "enabled": true,
+    "distance": 5.5,
+    "time": 0.09,
+    "charges": 2,
+    "recharge": 1.8,
+    "exitSpeed": 7,
+    "airLift": 1.5,
+    "ghostLife": 0.45
+   },
+   "slam": {
+    "enabled": true,
+    "lookDown": 30,
+    "minHeight": 1.8,
+    "speed": 24,
+    "steer": 3,
+    "radius": 3.2,
+    "breakFrac": 0.45,
+    "velocity": 9,
+    "window": 0.3,
+    "jumpMult": 1.15,
+    "jumpPerMetre": 0.06,
+    "jumpMax": 1.9,
+    "slidePerMetre": 0.35
+   },
+   "stomp": {
+    "enabled": true,
+    "minSpeed": 2,
+    "bounce": 8.5
+   },
+   "roll": {
+    "enabled": true,
+    "minDrop": 20,
+    "time": 0.5,
+    "speed": 8.5,
+    "speedPerFall": 0.25,
+    "iframes": 0.32,
+    "cooldown": 0.7,
+    "clipFrom": 0.3,
+    "clipTo": 1
+   },
+   "slip": {
+    "enabled": true,
+    "speed": 10,
+    "accel": 45,
+    "dryCrawl": 1.4,
+    "climbSpeed": 6,
+    "jump": 8.4,
+    "keepSpeed": 10,
+    "regen": 12,
+    "coverLife": 30,
+    "wet": 0.3,
+    "wetStay": 0.12,
+    "grace": 0.25
+   },
+   "swim": {
+    "enabled": true,
+    "speed": 3.2,
+    "sprint": 5.2,
+    "underwater": 3.6,
+    "accel": 8,
+    "drag": 2.5,
+    "buoyancy": 9,
+    "rise": 0,
+    "exitJump": 7.4,
+    "exitPush": 2.2
+   },
+   "ladder": {
+    "enabled": true,
+    "speed": 1.1,
+    "fast": 2.2,
+    "slide": 6,
+    "kickOut": 4.5,
+    "kickUp": 4.5,
+    "rung": 0.3
+   },
+   "hang": {
+    "enabled": true,
+    "reach": 0.5,
+    "minTop": 1.92,
+    "maxTop": 2.95,
+    "handTol": 0.5,
+    "maxRise": 8,
+    "maxFall": 9,
+    "grace": 0.5,
+    "shimmy": 1.8,
+    "brachiate": 2.6,
+    "kickOut": 4.5,
+    "kickUp": 5,
+    "barReach": 0.45,
+    "barKick": 3.5,
+    "zipSpeed": 9,
+    "zipAccel": 5
+   },
+   "latch": {
+    "enabled": true,
+    "reach": 0.55,
+    "budget": 2.2,
+    "speed": 2.4,
+    "kickOut": 5,
+    "kickUp": 5.5,
+    "slide": 1.6
+   },
+   "pole": {
+    "enabled": true,
+    "speed": 2.6,
+    "ropeSpeed": 1.9,
+    "slide": 7,
+    "spin": 2.2,
+    "kickOut": 4.5,
+    "kickUp": 5
+   },
+   "grate": {
+    "enabled": true,
+    "speed": 2.4,
+    "fast": 1.6,
+    "kickOut": 5,
+    "kickUp": 5.5
+   },
+   "balance": {
+    "enabled": true,
+    "speed": 1.9,
+    "trot": 3.4,
+    "step": 0.8,
+    "drift": 0.12,
+    "trotDrift": 0.5
+   },
+   "carry": {
+    "enabled": true,
+    "reach": 1.15,
+    "slow": 0.72,
+    "maxSize": 1.35,
+    "maxMass": 30,
+    "speed": 14
+   },
+   "push": {
+    "enabled": true,
+    "speed": 1.5,
+    "pullSpeed": 1.3
+   },
+   "sondelass": {
+    "enabled": true
+   },
+   "veritome": {
+    "enabled": true
+   },
+   "soulbrush": {
+    "enabled": true
+   },
+   "dreamvane": {
+    "enabled": true
+   },
+   "crucibelle": {
+    "enabled": true
+   },
+   "lockheart": {
+    "enabled": true,
+    "openHold": 0.5
+   },
+   "grapple": {
+    "reelMax": 26,
+    "reelAccel": 70,
+    "payV": 6,
+    "pump": 9,
+    "drag": 0.05,
+    "stop": 1.6,
+    "maxSpeed": 30,
+    "maxLen": 46,
+    "reelCost": 2
+   },
+   "kick": {
+    "enabled": true,
+    "radius": 0.85,
+    "damage": 60,
+    "launch": 6,
+    "heavyCap": 60,
+    "knock": 9,
+    "cooldown": 0.25,
+    "parrySpeed": 4.5,
+    "parryRadius": 2,
+    "parryOut": 12,
+    "parryIframes": 0.35,
+    "parryAssist": 0.45
+   },
+   "jellymount": {
+    "enabled": true
+   },
+   "skiff": {
+    "enabled": true,
+    "hover": 0.5,
+    "cruise": 24,
+    "accel": 7,
+    "coast": 1.6,
+    "brake": 16,
+    "hoistTime": 1,
+    "furlTime": 0.6,
+    "pump": 3.2,
+    "turn": 2,
+    "grip": 5,
+    "maxSpeed": 42,
+    "slopeGain": 1.6,
+    "follow": 12,
+    "gravity": 24,
+    "boostMult": 1.45,
+    "boostAccel": 26,
+    "boostCost": 20,
+    "hop": 7.6,
+    "hopCharge": 6,
+    "hopTime": 0.3,
+    "gyro": false
+   },
+   "recoil": {
+    "enabled": true,
+    "charges": 3,
+    "kick": 5.4,
+    "chargedKick": 11,
+    "minDown": 0.35,
+    "horizontal": 0.6
+   }
+  },
+  "anim": {
+   "walkIn": 0.5,
+   "walkMax": 2.4,
+   "jogIn": 3.4,
+   "strideShare": 0.5,
+   "walkStride": 1.65,
+   "maxStride": 1.3,
+   "footLock": true,
+   "crouchDepth": 0.8,
+   "aimRange": 50,
+   "jumpFrom": 0.15,
+   "flipFrom": 0.12,
+   "landFrom": 0.1,
+   "slideFrom": 0.15,
+   "dashFrame": 0.19,
+   "dashLean": 38,
+   "climbFrom": 0.15,
+   "climbTo": 0.62,
+   "wallLean": 24,
+   "landDip": 0.09
+  },
+  "visual": {
+   "outline": 0.006,
+   "exposure": 1.2,
+   "sun": 3.2,
+   "fog": 0.018,
+   "shadows": true,
+   "graphics": "auto",
+   "dynamicResolution": true,
+   "resolution": "ps2",
+   "upscale": "bilinear",
+   "smooth": true,
+   "shadowRes": 1024,
+   "shadowFilter": "pcf",
+   "shadowEvery": 1,
+   "msaa": 4,
+   "antialias": true,
+   "outlineReach": 0,
+   "lightSlots": 8,
+   "labelScale": 0.75,
+   "outlines": true,
+   "debris": 1,
+   "textureScale": 1,
+   "toon": 1,
+   "glow": 0.45,
+   "grade": 1,
+   "glitch": true,
+   "lensDrops": true,
+   "warp": 1,
+   "compassContrast": 1,
+   "creatureTags": "scan",
+   "arrowCamera": true,
+   "creatureTagsMinimal": false,
+   "perfReadout": false,
+   "shake": "full"
+  },
+  "touch": {
+   "controls": "folded",
+   "collapsed": false
+  },
+  "alchemy": {
+   "spokes": false,
+   "seals2x": false
+  },
+  "audio": {
+   "volume": 0.7,
+   "haptics": true
+  },
+  "ship": {
+   "speed": 26,
+   "box": {
+    "x": 7,
+    "yLo": 1.2,
+    "yHi": 7,
+    "z": 7
+   },
+   "top": 14,
+   "spring": 12,
+   "bank": 3.5,
+   "bankMax": 50,
+   "pitch": 2.5,
+   "pitchMax": 25,
+   "cam": {
+    "up": 2.2,
+    "back": 7.5,
+    "follow": 0.35,
+    "lag": 6
+   },
+   "reticles": [
+    12,
+    36
+   ],
+   "graze": {
+    "pay": 1,
+    "cap": 8
+   },
+   "shot": {
+    "speed": 70,
+    "life": 0.9,
+    "radius": 0.35
+   },
+   "lock": {
+    "max": 8,
+    "reach": 0.14,
+    "cost": 3,
+    "lance": 4
+   },
+   "roll": {
+    "time": 0.35,
+    "turns": 0.25,
+    "charges": 2,
+    "recharge": 3
+   },
+   "hurt": 0.35,
+   "mercy": 1,
+   "boost": {
+    "ahead": 6,
+    "behind": 4,
+    "rate": 10
+   },
+   "hitstop": {
+    "heavy": 0.08,
+    "mid": 0.04,
+    "part": 0.06,
+    "hit": 0.05,
+    "fall": {
+     "freeze": 0.25,
+     "slow": 0.8,
+     "at": 0.35
+    }
+   },
+   "trauma": {
+    "hit": 0.5,
+    "heavy": 0.3,
+    "part": 0.25,
+    "fall": 0.8,
+    "decay": 1.5
+   },
+   "absorb": 2
+  }
+ },
+ "DEG": 0.017453292519943295,
+ "PALETTE": {
+  "outline": 1838344,
+  "deep": 3873811,
+  "dark": 5909277,
+  "wall": 9194035,
+  "floor": 7288614,
+  "wood": 10244662,
+  "mid": 11821119,
+  "pot": 12872261,
+  "potLight": 14256738,
+  "pale": 15248262,
+  "cream": 15976872,
+  "glow": 16757370,
+  "hot": 16769216,
+  "fracture": 15178613
+ },
+ "T": {
+  "movement": {
+   "walkSpeed": 4.2,
+   "sprintSpeed": 6.8,
+   "walkSlowSpeed": 1.8,
+   "adsSpeedMult": 0.55,
+   "groundAccel": 55,
+   "groundDecel": 40,
+   "airAccel": 10,
+   "jumpVelocity": 6.4,
+   "gravity": 21,
+   "coyoteTime": 0.1,
+   "jumpBuffer": 0.12,
+   "stepHeight": 0.4,
+   "maxSlope": 46,
+   "tpTurnSpeed": 11,
+   "tpMaxTurn": 540,
+   "combatStanceTime": 1.6,
+   "strafeSprintMult": 0.9,
+   "maxSpeed": 14,
+   "airDrag": 2.5,
+   "overspeedDecel": 10,
+   "groundSteer": 6,
+   "crouchSpeed": 2.2,
+   "proneSpeed": 0.6,
+   "slideSpeed": 9.5,
+   "slideBoost": 2,
+   "slideBoostCooldown": 1.6,
+   "slideMinSpeed": 5,
+   "slideBuffer": 0.2,
+   "slideFriction": 5.5,
+   "slideSlopeAccel": 30,
+   "slideSteer": 2.5,
+   "slideMaxTime": 1.2,
+   "slideCooldown": 0.25,
+   "slideJumpBoost": 1.08,
+   "airJumps": 1,
+   "airJumpMult": 0.9,
+   "wallrunMinSpeed": 4.2,
+   "wallrunSpeed": 9.5,
+   "wallrunAccel": 7,
+   "wallrunHold": 0.5,
+   "wallrunGravity": 3,
+   "wallrunMaxFall": 3,
+   "wallrunMaxTime": 1.8,
+   "wallrunStartUp": 1.2,
+   "wallrunMinHeight": 0.6,
+   "wallrunReach": 0.9,
+   "wallrunTilt": 12,
+   "wallJumpOut": 5.5,
+   "wallJumpUp": 6.2,
+   "wallJumpKeep": 1,
+   "critterPush": 0.2,
+   "mantleMin": 0.45,
+   "stepOverMax": 0.55,
+   "mantleJumpMin": 0.75,
+   "mantleMax": 1.9,
+   "mantleReach": 0.55,
+   "mantleTime": 0.34,
+   "mantleRiseMax": 3.5,
+   "dashSpeed": 13,
+   "dashTime": 0.17,
+   "dashUp": 1.2,
+   "dashCost": 12,
+   "dashCharges": 1
+  },
+  "camera": {
+   "sensitivity": 1,
+   "follow": 0.5,
+   "lockAuto": true,
+   "adsSensMult": 0.65,
+   "fpFov": 78,
+   "fpAdsFov": 54,
+   "tpFov": 70,
+   "tpAdsFov": 50,
+   "eyeHeight": 1.6,
+   "tpPivotHeight": 1.5,
+   "tpDistance": 3,
+   "tpAdsDistance": 1.5,
+   "tpShoulder": 0.7,
+   "tpAdsShoulder": 0.6,
+   "speedFov": 8,
+   "tpLift": 0.18,
+   "viewBlendTime": 0.22,
+   "fpHeadBob": 0.5,
+   "collisionRadius": 0.2
+  },
+  "weapon": {
+   "fireInterval": 0.16,
+   "inputBuffer": 0.09,
+   "damage": 100,
+   "impulse": 6,
+   "range": 150,
+   "hipSpread": 1.6,
+   "adsSpread": 0.1,
+   "moveSpread": 1.4,
+   "airSpread": 3,
+   "bloomPerShot": 1.1,
+   "bloomMax": 4,
+   "bloomRecovery": 6.5,
+   "adsTime": 0.15,
+   "gunScale": 0.85,
+   "adsDistance": 0.55,
+   "adsHeight": 0,
+   "drawTime": 0.26,
+   "holsterTime": 0.34,
+   "drawGrab": 0.4,
+   "swapOnWallrun": true,
+   "swapTime": 0.22,
+   "drawTwist": 38,
+   "holster": {
+    "x": -0.2,
+    "y": 0.98,
+    "z": -0.21,
+    "tilt": 14,
+    "wrap": 12
+   },
+   "autoHolster": true,
+   "holsterDelay": 5
+  },
+  "charge": {
+   "mode": "release",
+   "tapWindow": 0.13,
+   "delay": 0.22,
+   "time": 0.85,
+   "min": 0.25,
+   "cost": 24,
+   "damage": 450,
+   "pierce": 6,
+   "impulse": 30,
+   "blastRadius": 2.4,
+   "kick": 2.4,
+   "shake": 1,
+   "fovPunch": 7,
+   "moveMult": 0.75
+  },
+  "lachryma": {
+   "max": 100,
+   "regenRate": 3.5,
+   "regenDelay": 2.2,
+   "shotCost": 4,
+   "baubleValue": 6,
+   "baubleRadius": 0.075,
+   "bounce": 0.6,
+   "magnetRadius": 3.2,
+   "magnetDelay": 0.6,
+   "clapperDrop": 6,
+   "markedDrop": 2
+  },
+  "explored": {
+   "tiers": [
+    0.08,
+    0.45,
+    0.85
+   ],
+   "baseRadius": 6,
+   "baseTier": 2,
+   "passiveCap": 0.5,
+   "passiveRate": 0.5,
+   "pulseRadius": 14,
+   "godPulseRadius": 20,
+   "pulseCost": 12,
+   "pulseCooldown": 3,
+   "roomRadius": 14,
+   "roomCells": 70
+  },
+  "arts": {
+   "telekinesis": {
+    "drain": 3,
+    "massDrain": 0.12
+   },
+   "sunder": {
+    "cost": 8,
+    "perCut": 2,
+    "maxLen": 12,
+    "height": 3.2
+   },
+   "swell": {
+    "cost": 4,
+    "drain": 5,
+    "min": 0.4,
+    "max": 2.6
+   },
+   "wring": {
+    "cost": 6,
+    "drain": 6,
+    "twist": 3.6,
+    "lobe": 0.35
+   },
+   "manifest": {
+    "cost": 8,
+    "perVol": 0.6,
+    "maxLen": 9,
+    "maxH": 4,
+    "width": 1.1,
+    "life": 40,
+    "max": 6
+   }
+  },
+  "god": {
+   "firstWave": 22,
+   "waveEvery": 34,
+   "waveBase": 2,
+   "waveGrow": 1,
+   "jarHp": 100,
+   "range": 36,
+   "dist": 17,
+   "minDist": 8,
+   "maxDist": 46,
+   "pitchDeg": 36,
+   "fov": 24,
+   "clipAbove": 3.9,
+   "hoverH": 1.7,
+   "grabSpeed": 14,
+   "throwBoost": 1.15,
+   "throwMax": 30,
+   "panSpeed": 1,
+   "edgeScroll": 16,
+   "castHeight": 7,
+   "castCooldown": 0.35,
+   "pushRadius": 5.5,
+   "pushForce": 11,
+   "regenEvery": 9,
+   "regenMax": 6,
+   "raidDamage": 20,
+   "ballDamage": 14,
+   "blastDamage": 22,
+   "thrownDamage": 4,
+   "reforge": 7
+  },
+  "shells": {
+   "start": 4,
+   "max": 8,
+   "refill": 3,
+   "reliquaryCooldown": 20,
+   "rackTime": 0.6,
+   "kick": 1.8,
+   "buff": {
+    "power": 1.75,
+    "reach": 1.35,
+    "dur": 1.4,
+    "count": 1.5
+   },
+   "weight": {
+    "meteor": {
+     "frames": 4,
+     "shake": 0.55,
+     "punch": 3
+    },
+    "meteor.mega": {
+     "frames": 8,
+     "shake": 1.3,
+     "punch": 9
+    },
+    "mallet": {
+     "frames": 6,
+     "shake": 0.8,
+     "punch": 5
+    },
+    "hailstorm": {
+     "frames": 3,
+     "shake": 0.3,
+     "punch": 2
+    },
+    "thunderhead": {
+     "frames": 4,
+     "shake": 0.45,
+     "punch": 3
+    },
+    "slingshot": {
+     "frames": 6,
+     "shake": 0.75,
+     "punch": 6
+    },
+    "volcano": {
+     "frames": 5,
+     "shake": 0.7,
+     "punch": 4
+    },
+    "volcano.bomb": {
+     "frames": 3,
+     "shake": 0.3,
+     "punch": 1.5
+    },
+    "zodiac": {
+     "frames": 4,
+     "shake": 0.5,
+     "punch": 3
+    },
+    "ryno": {
+     "frames": 3,
+     "shake": 0.35,
+     "punch": 2
+    },
+    "insideOut": {
+     "frames": 8,
+     "shake": 0.9,
+     "punch": 7
+    },
+    "thirteen": {
+     "frames": 8,
+     "shake": 1.3,
+     "punch": 10
+    }
+   },
+   "groove": {
+    "speed": 16,
+    "lift": 2.4,
+    "radius": 9,
+    "duration": 12,
+    "hop": 3.4
+   },
+   "anchor": {
+    "duration": 18
+   },
+   "hatch": {
+    "maxAllies": 7
+   },
+   "slicer": {
+    "pierce": 10,
+    "separate": 1.4,
+    "carry": 1.5,
+    "pieceLife": 25,
+    "maxPieces": 160,
+    "width": 6,
+    "speed": 52,
+    "range": 60,
+    "creaturePower": 6
+   },
+   "push": {
+    "range": 13,
+    "angle": 36,
+    "velocity": 20,
+    "selfKnock": 3,
+    "creaturePower": 1.5,
+    "creatureKnock": 14
+   },
+   "well": {
+    "speed": 20,
+    "gravity": 3,
+    "maxFlight": 1.6,
+    "duration": 4.5,
+    "radius": 9,
+    "pull": 36,
+    "swirl": 9,
+    "playerPull": 5,
+    "popRadius": 5,
+    "popVelocity": 14,
+    "creaturePull": 30,
+    "creaturePower": 4,
+    "compressRadius": 0.8,
+    "compressGrow": 1.5,
+    "compressMax": 6,
+    "compressPer": 5,
+    "compressDrops": 8
+   },
+   "mark": {
+    "radius": 3.6,
+    "stun": 7,
+    "duration": 15,
+    "damageMult": 2
+   },
+   "bomb": {
+    "speed": 13,
+    "lift": 4,
+    "fuse": 1.8,
+    "bounces": 2,
+    "radius": 5,
+    "damage": 420,
+    "velocity": 13,
+    "droplets": 110,
+    "dropletDamage": 10,
+    "creaturePower": 5,
+    "splatLife": 11,
+    "poolRadius": 1.6,
+    "poolLife": 12,
+    "poolDps": 45
+   },
+   "ricochet": {
+    "bounces": 7,
+    "damage": 150,
+    "bounceMult": 1.35,
+    "seekAngle": 30,
+    "seekRange": 16,
+    "range": 55
+   },
+   "slip": {
+    "speed": 15,
+    "lift": 3,
+    "droplets": 90,
+    "spread": 6,
+    "patch": 1.6
+   },
+   "homing": {
+    "maxLocks": 8,
+    "lockTime": 0.18,
+    "cone": 12,
+    "range": 40,
+    "launchSpeed": 7,
+    "speed": 19,
+    "fan": 5,
+    "stagger": 0.06,
+    "turn": 5,
+    "turnGrow": 14,
+    "maxFlight": 4,
+    "damage": 240,
+    "splash": 0.9
+   }
+  },
+  "recoil": {
+   "kickPitch": 3.4,
+   "kickYaw": 0.9,
+   "permanent": 0.3,
+   "recoverSpeed": 14,
+   "adsMult": 0.7,
+   "gunKickBack": 0.08,
+   "gunKickRot": 16,
+   "gunRecoverSpeed": 16,
+   "shake": 0.35,
+   "fovPunch": 2.5
+  },
+  "tracer": {
+   "speed": 320,
+   "length": 3.5,
+   "width": 0.028,
+   "trailLife": 0.22,
+   "trailOpacity": 0.28
+  },
+  "shatter": {
+   "breakSpeed": 4.2,
+   "radialBurst": 2.4,
+   "bulletPush": 4.5,
+   "upBias": 1.4,
+   "spin": 14,
+   "maxChunk": 3,
+   "shardLife": 14,
+   "maxShards": 420,
+   "flyR": 0.075,
+   "maxFlyers": 600,
+   "chips": 18,
+   "dust": 1,
+   "shardOutlines": false,
+   "ropeKick": 0.45
+  },
+  "explosion": {
+   "radius": 4.5,
+   "velocity": 13,
+   "chainDelay": 0.09,
+   "playerKnock": 6,
+   "shake": 1.4
+  },
+  "clappers": {
+   "count": 4,
+   "upstairs": 2,
+   "runSpeed": 3,
+   "fleeSpeed": 4.6,
+   "respawn": 3.5,
+   "spookRadius": 1.8,
+   "scale": 1.15,
+   "hideChance": 0.55,
+   "tauntChance": 0.3,
+   "napChance": 0.12,
+   "fallShatter": 2.4,
+   "mendChance": 0.55,
+   "mendTime": 4.5,
+   "mendShy": 3.5,
+   "mendRange": 14,
+   "wreckDelay": 2.5,
+   "kintsugiHp": 1.6,
+   "kintsugiDrop": 3
+  },
+  "stun": {
+   "depths": [
+    {
+     "name": "dazed",
+     "len": 7,
+     "bonus": 1.5,
+     "immune": 6
+    },
+    {
+     "name": "stunned",
+     "len": 8,
+     "bonus": 1.5,
+     "immune": 8
+    },
+    {
+     "name": "out cold",
+     "len": 10,
+     "bonus": 2,
+     "immune": 10
+    }
+   ],
+   "downFill": 1.5,
+   "drainAfter": 1.4,
+   "drain": 0.32,
+   "immuneFill": 0.25
+  },
+  "physics": {
+   "gravity": 14
+  },
+  "trial": {
+   "gold": 90,
+   "silver": 150,
+   "bronze": 240,
+   "quickWindow": 1.5,
+   "quickBonus": 1
+  },
+  "tech": {
+   "hover": {
+    "enabled": false,
+    "cost": 8,
+    "time": 1.6,
+    "lift": 1.2,
+    "speed": 6,
+    "steer": 4
+   },
+   "rocket": {
+    "enabled": false,
+    "cost": 20,
+    "charge": 0.55,
+    "speed": 17
+   },
+   "skim": {
+    "enabled": false,
+    "cost": 5,
+    "speed": 11,
+    "minSpeed": 6
+   },
+   "blink": {
+    "enabled": true,
+    "distance": 5.5,
+    "time": 0.09,
+    "charges": 2,
+    "recharge": 1.8,
+    "exitSpeed": 7,
+    "airLift": 1.5,
+    "ghostLife": 0.45
+   },
+   "slam": {
+    "enabled": true,
+    "lookDown": 30,
+    "minHeight": 1.8,
+    "speed": 24,
+    "steer": 3,
+    "radius": 3.2,
+    "breakFrac": 0.45,
+    "velocity": 9,
+    "window": 0.3,
+    "jumpMult": 1.15,
+    "jumpPerMetre": 0.06,
+    "jumpMax": 1.9,
+    "slidePerMetre": 0.35
+   },
+   "stomp": {
+    "enabled": true,
+    "minSpeed": 2,
+    "bounce": 8.5
+   },
+   "roll": {
+    "enabled": true,
+    "minDrop": 20,
+    "time": 0.5,
+    "speed": 8.5,
+    "speedPerFall": 0.25,
+    "iframes": 0.32,
+    "cooldown": 0.7,
+    "clipFrom": 0.3,
+    "clipTo": 1
+   },
+   "slip": {
+    "enabled": true,
+    "speed": 10,
+    "accel": 45,
+    "dryCrawl": 1.4,
+    "climbSpeed": 6,
+    "jump": 8.4,
+    "keepSpeed": 10,
+    "regen": 12,
+    "coverLife": 30,
+    "wet": 0.3,
+    "wetStay": 0.12,
+    "grace": 0.25
+   },
+   "swim": {
+    "enabled": true,
+    "speed": 3.2,
+    "sprint": 5.2,
+    "underwater": 3.6,
+    "accel": 8,
+    "drag": 2.5,
+    "buoyancy": 9,
+    "rise": 0,
+    "exitJump": 7.4,
+    "exitPush": 2.2
+   },
+   "ladder": {
+    "enabled": true,
+    "speed": 1.1,
+    "fast": 2.2,
+    "slide": 6,
+    "kickOut": 4.5,
+    "kickUp": 4.5,
+    "rung": 0.3
+   },
+   "hang": {
+    "enabled": true,
+    "reach": 0.5,
+    "minTop": 1.92,
+    "maxTop": 2.95,
+    "handTol": 0.5,
+    "maxRise": 8,
+    "maxFall": 9,
+    "grace": 0.5,
+    "shimmy": 1.8,
+    "brachiate": 2.6,
+    "kickOut": 4.5,
+    "kickUp": 5,
+    "barReach": 0.45,
+    "barKick": 3.5,
+    "zipSpeed": 9,
+    "zipAccel": 5
+   },
+   "latch": {
+    "enabled": true,
+    "reach": 0.55,
+    "budget": 2.2,
+    "speed": 2.4,
+    "kickOut": 5,
+    "kickUp": 5.5,
+    "slide": 1.6
+   },
+   "pole": {
+    "enabled": true,
+    "speed": 2.6,
+    "ropeSpeed": 1.9,
+    "slide": 7,
+    "spin": 2.2,
+    "kickOut": 4.5,
+    "kickUp": 5
+   },
+   "grate": {
+    "enabled": true,
+    "speed": 2.4,
+    "fast": 1.6,
+    "kickOut": 5,
+    "kickUp": 5.5
+   },
+   "balance": {
+    "enabled": true,
+    "speed": 1.9,
+    "trot": 3.4,
+    "step": 0.8,
+    "drift": 0.12,
+    "trotDrift": 0.5
+   },
+   "carry": {
+    "enabled": true,
+    "reach": 1.15,
+    "slow": 0.72,
+    "maxSize": 1.35,
+    "maxMass": 30,
+    "speed": 14
+   },
+   "push": {
+    "enabled": true,
+    "speed": 1.5,
+    "pullSpeed": 1.3
+   },
+   "sondelass": {
+    "enabled": true
+   },
+   "veritome": {
+    "enabled": true
+   },
+   "soulbrush": {
+    "enabled": true
+   },
+   "dreamvane": {
+    "enabled": true
+   },
+   "crucibelle": {
+    "enabled": true
+   },
+   "lockheart": {
+    "enabled": true,
+    "openHold": 0.5
+   },
+   "grapple": {
+    "reelMax": 26,
+    "reelAccel": 70,
+    "payV": 6,
+    "pump": 9,
+    "drag": 0.05,
+    "stop": 1.6,
+    "maxSpeed": 30,
+    "maxLen": 46,
+    "reelCost": 2
+   },
+   "kick": {
+    "enabled": true,
+    "radius": 0.85,
+    "damage": 60,
+    "launch": 6,
+    "heavyCap": 60,
+    "knock": 9,
+    "cooldown": 0.25,
+    "parrySpeed": 4.5,
+    "parryRadius": 2,
+    "parryOut": 12,
+    "parryIframes": 0.35,
+    "parryAssist": 0.45
+   },
+   "jellymount": {
+    "enabled": true
+   },
+   "skiff": {
+    "enabled": true,
+    "hover": 0.5,
+    "cruise": 24,
+    "accel": 7,
+    "coast": 1.6,
+    "brake": 16,
+    "hoistTime": 1,
+    "furlTime": 0.6,
+    "pump": 3.2,
+    "turn": 2,
+    "grip": 5,
+    "maxSpeed": 42,
+    "slopeGain": 1.6,
+    "follow": 12,
+    "gravity": 24,
+    "boostMult": 1.45,
+    "boostAccel": 26,
+    "boostCost": 20,
+    "hop": 7.6,
+    "hopCharge": 6,
+    "hopTime": 0.3,
+    "gyro": false
+   },
+   "recoil": {
+    "enabled": true,
+    "charges": 3,
+    "kick": 5.4,
+    "chargedKick": 11,
+    "minDown": 0.35,
+    "horizontal": 0.6
+   }
+  },
+  "anim": {
+   "walkIn": 0.5,
+   "walkMax": 2.4,
+   "jogIn": 3.4,
+   "strideShare": 0.5,
+   "walkStride": 1.65,
+   "maxStride": 1.3,
+   "footLock": true,
+   "crouchDepth": 0.8,
+   "aimRange": 50,
+   "jumpFrom": 0.15,
+   "flipFrom": 0.12,
+   "landFrom": 0.1,
+   "slideFrom": 0.15,
+   "dashFrame": 0.19,
+   "dashLean": 38,
+   "climbFrom": 0.15,
+   "climbTo": 0.62,
+   "wallLean": 24,
+   "landDip": 0.09
+  },
+  "visual": {
+   "outline": 0.006,
+   "exposure": 1.2,
+   "sun": 3.2,
+   "fog": 0.018,
+   "shadows": true,
+   "graphics": "auto",
+   "dynamicResolution": true,
+   "resolution": "ps2",
+   "upscale": "bilinear",
+   "smooth": true,
+   "shadowRes": 1024,
+   "shadowFilter": "pcf",
+   "shadowEvery": 1,
+   "msaa": 4,
+   "antialias": true,
+   "outlineReach": 0,
+   "lightSlots": 8,
+   "labelScale": 0.75,
+   "outlines": true,
+   "debris": 1,
+   "textureScale": 1,
+   "toon": 1,
+   "glow": 0.45,
+   "grade": 1,
+   "glitch": true,
+   "lensDrops": true,
+   "warp": 1,
+   "compassContrast": 1,
+   "creatureTags": "scan",
+   "arrowCamera": true,
+   "creatureTagsMinimal": false,
+   "perfReadout": false,
+   "shake": "full"
+  },
+  "touch": {
+   "controls": "folded",
+   "collapsed": false
+  },
+  "alchemy": {
+   "spokes": false,
+   "seals2x": false
+  },
+  "audio": {
+   "volume": 0.7,
+   "haptics": true
+  },
+  "ship": {
+   "speed": 26,
+   "box": {
+    "x": 7,
+    "yLo": 1.2,
+    "yHi": 7,
+    "z": 7
+   },
+   "top": 14,
+   "spring": 12,
+   "bank": 3.5,
+   "bankMax": 50,
+   "pitch": 2.5,
+   "pitchMax": 25,
+   "cam": {
+    "up": 2.2,
+    "back": 7.5,
+    "follow": 0.35,
+    "lag": 6
+   },
+   "reticles": [
+    12,
+    36
+   ],
+   "graze": {
+    "pay": 1,
+    "cap": 8
+   },
+   "shot": {
+    "speed": 70,
+    "life": 0.9,
+    "radius": 0.35
+   },
+   "lock": {
+    "max": 8,
+    "reach": 0.14,
+    "cost": 3,
+    "lance": 4
+   },
+   "roll": {
+    "time": 0.35,
+    "turns": 0.25,
+    "charges": 2,
+    "recharge": 3
+   },
+   "hurt": 0.35,
+   "mercy": 1,
+   "boost": {
+    "ahead": 6,
+    "behind": 4,
+    "rate": 10
+   },
+   "hitstop": {
+    "heavy": 0.08,
+    "mid": 0.04,
+    "part": 0.06,
+    "hit": 0.05,
+    "fall": {
+     "freeze": 0.25,
+     "slow": 0.8,
+     "at": 0.35
+    }
+   },
+   "trauma": {
+    "hit": 0.5,
+    "heavy": 0.3,
+    "part": 0.25,
+    "fall": 0.8,
+    "decay": 1.5
+   },
+   "absorb": 2
+  }
+ }
+}

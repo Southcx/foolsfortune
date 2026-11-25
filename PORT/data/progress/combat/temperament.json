@@ -1,0 +1,72 @@
+{
+ "SPECIES": {
+  "slipjelly": {
+   "o": 0.2,
+   "c": -0.6,
+   "e": 0.7,
+   "a": -0.2,
+   "n": 0.3
+  },
+  "wisp": {
+   "o": 0.5,
+   "c": 0.2,
+   "e": -0.3,
+   "a": 0.4,
+   "n": 0.4
+  },
+  "clapper": {
+   "o": 0.4,
+   "c": -0.2,
+   "e": 0.3,
+   "a": 0.5,
+   "n": 0.5
+  }
+ },
+ "SPREAD": {
+  "figment": 0.35,
+  "egregore": 0.7
+ },
+ "SWAY_RATE": 0.01,
+ "TRAITS": [
+  {
+   "id": "o",
+   "name": "openness",
+   "high": "curious",
+   "low": "wary",
+   "opens": "blind",
+   "type": "illusion"
+  },
+  {
+   "id": "c",
+   "name": "conscientiousness",
+   "high": "orderly",
+   "low": "erratic",
+   "opens": "confusion",
+   "type": "delirium"
+  },
+  {
+   "id": "e",
+   "name": "extraversion",
+   "high": "bold",
+   "low": "shy",
+   "opens": "stun",
+   "type": "impact"
+  },
+  {
+   "id": "a",
+   "name": "agreeableness",
+   "high": "gentle",
+   "low": "hostile",
+   "opens": "charm",
+   "type": "influence"
+  },
+  {
+   "id": "n",
+   "name": "neuroticism",
+   "high": "skittish",
+   "low": "steady",
+   "opens": "doubt",
+   "type": "ego"
+  }
+ ]
+}

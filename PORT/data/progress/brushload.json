@@ -1,0 +1,57 @@
+{
+ "BOTTLES": {
+  "bottle.small": {
+   "capacity": 80,
+   "feed": 6,
+   "crack": 0.1,
+   "spill": 0.3
+  },
+  "bottle.medium": {
+   "capacity": 160,
+   "feed": 8,
+   "crack": 0.2,
+   "spill": 0.4
+  },
+  "bottle.large": {
+   "capacity": 240,
+   "feed": 10,
+   "crack": 0.35,
+   "spill": 0.5
+  }
+ },
+ "BRUSH": {
+  "modes": [
+   "paint",
+   "mop"
+  ],
+  "spray": {
+   "cost": 6,
+   "reach": 7,
+   "width": 1.2
+  },
+  "mop": {
+   "rate": 12,
+   "reach": 2.4
+  }
+ },
+ "CLEAN": {
+  "findChance": 0.25,
+  "aim": 0.5
+ },
+ "STAINS": {
+  "stages": 3,
+  "perDay": 1,
+  "crude": [
+   10,
+   20,
+   35,
+   50
+  ],
+  "spawn": {
+   "at": 3,
+   "kind": "slipjelly",
+   "aberrant": true
+  },
+  "shore": 2
+ }
+}

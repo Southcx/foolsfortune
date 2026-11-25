@@ -1,0 +1,60 @@
+{
+ "SKILLS": {
+  "psygun": {
+   "need": 9,
+   "label": "Shot",
+   "line": "Clears the three rows through a cell: gems, junk and embers",
+   "target": "cell"
+  },
+  "dreamvane": {
+   "need": 10,
+   "label": "Vein",
+   "line": "Clears every gem of one colour on your half",
+   "target": "cell"
+  },
+  "soulbrush": {
+   "need": 8,
+   "label": "Paint",
+   "line": "Turns the 3 x 3 round a gem to that gem's colour",
+   "target": "cell"
+  },
+  "sondelass": {
+   "need": 6,
+   "label": "Grab",
+   "line": "Hooks the junk out of a 5 x 5 and throws it across",
+   "target": "cell"
+  },
+  "crucibelle": {
+   "need": 7,
+   "label": "Tune",
+   "line": "One colour clears at any 3 touching, this turn and your next",
+   "target": "cell"
+  },
+  "lockheart": {
+   "need": 8,
+   "label": "Hold",
+   "line": "Throws the junk about to land on you straight back",
+   "target": null,
+   "max": 9
+  },
+  "veritome": {
+   "need": 7,
+   "label": "Read",
+   "line": "Two action points back, and the fog lifts for three turns",
+   "target": null
+  }
+ },
+ "SKILL_ACTION": {
+  "form": null,
+  "cost": 0
+ },
+ "SKILL_TOOLS": [
+  "psygun",
+  "dreamvane",
+  "soulbrush",
+  "sondelass",
+  "crucibelle",
+  "lockheart",
+  "veritome"
+ ]
+}

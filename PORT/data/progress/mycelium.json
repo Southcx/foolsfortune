@@ -1,0 +1,274 @@
+{
+ "BEND": {
+  "at": 0.3,
+  "odds": 0.34
+ },
+ "BRANCHES": {
+  "fool": {
+   "adds": "fruit"
+  },
+  "magician": {
+   "adds": "sharp"
+  },
+  "priestess": {
+   "adds": "sharp"
+  },
+  "empress": {
+   "adds": "sharp"
+  },
+  "emperor": {
+   "adds": "fruit"
+  },
+  "hierophant": {
+   "adds": "fruit"
+  },
+  "lovers": {
+   "adds": "seed",
+   "strain": "wonder"
+  },
+  "chariot": {
+   "adds": "fruit"
+  },
+  "strength": {
+   "adds": "fruit"
+  },
+  "hermit": {
+   "adds": "sharp"
+  },
+  "wheel": {
+   "adds": "fruit"
+  },
+  "justice": {
+   "adds": "sharp"
+  },
+  "hanged": {
+   "adds": "seed",
+   "strain": "dread"
+  },
+  "death": {
+   "adds": "seed",
+   "strain": "grief"
+  },
+  "temperance": {
+   "adds": "sharp"
+  },
+  "devil": {
+   "adds": "fruit"
+  },
+  "tower": {
+   "adds": "fruit"
+  },
+  "star": {
+   "adds": "sharp"
+  },
+  "moon": {
+   "adds": "fruit"
+  },
+  "sun": {
+   "adds": "fruit"
+  },
+  "judgement": {
+   "adds": "seed",
+   "strain": "mirth"
+  },
+  "world": {
+   "adds": "seed",
+   "strain": "desire"
+  }
+ },
+ "CAPS": [
+  "the Kingdom",
+  "the Foundation",
+  "Splendour",
+  "Victory",
+  "Beauty",
+  "Severity",
+  "Mercy",
+  "Understanding",
+  "Wisdom",
+  "the Crown"
+ ],
+ "FEELING_HUE": {
+  "wonder": 191,
+  "mirth": 45,
+  "desire": 16,
+  "grief": 222,
+  "dread": 135
+ },
+ "MYCO": {
+  "rot": 0.6,
+  "ferment": 0.25,
+  "dissolve": 0.3,
+  "marry": 0.55,
+  "generating": 1.25,
+  "overcoming": 0.75,
+  "printTier": -1
+ },
+ "SIGNATURE": {
+  "whelk": {
+   "h": 195,
+   "s": 0.45
+  },
+  "shaker": {
+   "h": 40,
+   "s": 0.25
+  },
+  "keepsake": {
+   "h": 20,
+   "s": 0.5
+  },
+  "barnacle": {
+   "h": 90,
+   "s": 0.3
+  },
+  "gull": {
+   "h": 185,
+   "s": 0.35
+  },
+  "compass": {
+   "h": 215,
+   "s": 0.6
+  },
+  "bell": {
+   "h": 48,
+   "s": 0.75
+  },
+  "sconce": {
+   "h": 160,
+   "s": 0.55
+  },
+  "pearl": {
+   "h": 320,
+   "s": 0.2
+  },
+  "astrolabe": {
+   "h": 240,
+   "s": 0.65
+  },
+  "ammonite": {
+   "h": 30,
+   "s": 0.4
+  },
+  "amulet": {
+   "h": 0,
+   "s": 0.55
+  },
+  "skull": {
+   "h": 50,
+   "s": 0.85
+  },
+  "regalia": {
+   "h": 110,
+   "s": 0.6
+  },
+  "hourglass": {
+   "h": 35,
+   "s": 0.65
+  },
+  "storm": {
+   "h": 265,
+   "s": 0.8
+  },
+  "lodestone": {
+   "h": 300,
+   "s": 0.9
+  },
+  "orb": {
+   "h": 280,
+   "s": 0.95
+  },
+  "bloom": {
+   "h": 275,
+   "s": 1
+  },
+  "koi": {
+   "h": 10,
+   "s": 0.9
+  },
+  "crown": {
+   "h": 70,
+   "s": 0.7
+  },
+  "fulgurite": {
+   "h": 28,
+   "s": 0.35
+  }
+ },
+ "STRAINS": {
+  "wonder": {
+   "verb": "graft",
+   "hours": 12,
+   "eats": [
+    "curio"
+   ],
+   "pair": true
+  },
+  "mirth": {
+   "verb": "ferment",
+   "hours": 8,
+   "eats": [
+    "material"
+   ]
+  },
+  "desire": {
+   "verb": "print",
+   "hours": 4,
+   "eats": [
+    "material",
+    "curio",
+    "fish"
+   ]
+  },
+  "grief": {
+   "verb": "rot",
+   "hours": 6,
+   "eats": [
+    "material",
+    "curio",
+    "fish"
+   ]
+  },
+  "dread": {
+   "verb": "dissolve",
+   "hours": 6,
+   "eats": [
+    "material"
+   ]
+  }
+ },
+ "STRAIN_NAMES": {
+  "wonder": "the lichen",
+  "mirth": "koji",
+  "desire": "the inkcap",
+  "grief": "the oyster",
+  "dread": "witches' butter"
+ },
+ "TREE": {
+  "lean": 0.25,
+  "girthWorth": 64,
+  "bodies": 10,
+  "branches": 22,
+  "sapPerFruit": 0.12,
+  "fruitTier": [
+   0,
+   0,
+   1,
+   1,
+   2,
+   2,
+   3,
+   3,
+   4,
+   4
+  ]
+ },
+ "WEEKDAY_FEELING": [
+  "wonder",
+  "mirth",
+  "desire",
+  "grief",
+  "dread",
+  "fair",
+  "prismatic"
+ ]
+}

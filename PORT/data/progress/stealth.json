@@ -1,0 +1,98 @@
+{
+ "CANDID": [
+  {
+   "below": 0.35,
+   "k": 1.5,
+   "word": "candid"
+  },
+  {
+   "below": 1,
+   "k": 1.1,
+   "word": "curious"
+  },
+  {
+   "below": "Infinity",
+   "k": 0.8,
+   "word": "aware"
+  }
+ ],
+ "EXPOSE": {
+  "posture": {
+   "stand": 1,
+   "crouch": 0.6,
+   "prone": 0.3
+  },
+  "pace": {
+   "still": 0.4,
+   "walk": 0.85,
+   "run": 1.15,
+   "sprint": 1.35
+  },
+  "paceAt": {
+   "walk": 0.5,
+   "run": 4,
+   "sprint": 6.5
+  },
+  "light": {
+   "floor": 0.45,
+   "roofed": 0.8
+  },
+  "weather": {
+   "grief": 0.25,
+   "dread": 0.4,
+   "gall": 0.1
+  },
+  "inHand": 1.15
+ },
+ "LAND": {
+  "quiet": 5,
+  "perMs": 1.4,
+  "max": 18
+ },
+ "STEP": {
+  "surface": {
+   "sand": 0.55,
+   "grass": 0.6,
+   "moss": 0.5,
+   "clay": 0.8,
+   "stone": 1,
+   "lachrymite": 1.1,
+   "wood": 1.2,
+   "water": 1.3,
+   "paint": 1.4,
+   "crude": 1.4,
+   "metal": 1.6,
+   "grate": 1.6
+  },
+  "gait": {
+   "walk": 3,
+   "run": 7,
+   "sprint": 11
+  },
+  "posture": {
+   "stand": 1,
+   "crouch": 0.5,
+   "prone": 0
+  },
+  "cover": {
+   "grief": 0.45,
+   "fury": 0.35,
+   "dread": 0.15
+  }
+ },
+ "VIGIL": {
+  "up": 1,
+  "down": 0.3,
+  "scanEvery": [
+   4,
+   9
+  ],
+  "scanFor": [
+   1.2,
+   2.4
+  ],
+  "caution": 60,
+  "cautionDown": 0.65,
+  "cautionEvery": 0.5
+ }
+}

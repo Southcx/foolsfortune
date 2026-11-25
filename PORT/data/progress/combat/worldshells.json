@@ -1,0 +1,225 @@
+{
+ "DRAW": {
+  "r": 12,
+  "cap": 1.5,
+  "floor": 0.25,
+  "thinFor": 1,
+  "units": {
+   "paint": 0.25,
+   "crude": 0.25,
+   "blot": 1.5,
+   "slick": 0.25,
+   "bauble": 0.1,
+   "weather": 2,
+   "liquid": "Infinity"
+  },
+  "scales": [
+   "power",
+   "r",
+   "size",
+   "h",
+   "count",
+   "drop"
+  ]
+ },
+ "DUE_EVERY": 3,
+ "WORLD_SHELLS": [
+  {
+   "no": 26,
+   "id": "glassmaker",
+   "label": "Glassmaker",
+   "tier": 5,
+   "family": "ember",
+   "carrier": "lob",
+   "payloads": [
+    "world"
+   ],
+   "field": null,
+   "needs": [
+    "M12"
+   ],
+   "n": {
+    "size": 4,
+    "breaks": 3,
+    "need": 1
+   },
+   "from": "sand and heat"
+  },
+  {
+   "no": 29,
+   "id": "volcano",
+   "label": "Volcano",
+   "tier": 5,
+   "family": "ember",
+   "carrier": "deploy",
+   "payloads": [
+    "blast"
+   ],
+   "field": "pool",
+   "needs": [
+    "M4",
+    "S1",
+    "S9"
+   ],
+   "n": {
+    "power": 3,
+    "dur": 8,
+    "every": 1,
+    "r": 2,
+    "need": 2
+   },
+   "from": "the Lava Gun's ground"
+  },
+  {
+   "no": 34,
+   "id": "thunderhead",
+   "label": "Thunderhead",
+   "tier": 5,
+   "family": "storm",
+   "carrier": "call",
+   "payloads": [
+    "chain"
+   ],
+   "field": "cloud",
+   "needs": [
+    "S3",
+    "M10"
+   ],
+   "n": {
+    "power": 4,
+    "every": 1.5,
+    "dur": 9,
+    "need": 1.5
+   },
+   "from": "Plasma Storm, Zodiac"
+  },
+  {
+   "no": 43,
+   "id": "rift",
+   "label": "Rift",
+   "tier": 5,
+   "family": "pull",
+   "carrier": "lob",
+   "payloads": [
+    "space"
+   ],
+   "field": "rift",
+   "needs": [
+    "S5",
+    "M5"
+   ],
+   "n": {
+    "dur": 6,
+    "drop": 8,
+    "need": 1
+   },
+   "from": "Rift Inducer"
+  },
+  {
+   "no": 45,
+   "id": "upfall",
+   "label": "Upfall",
+   "tier": 5,
+   "family": "pull",
+   "carrier": "lob",
+   "payloads": [
+    "mass"
+   ],
+   "field": "column",
+   "needs": [
+    "M8"
+   ],
+   "n": {
+    "r": 6,
+    "dur": 5,
+    "need": 1
+   },
+   "from": "gravity flip"
+  },
+  {
+   "no": 56,
+   "id": "weatherAway",
+   "label": "Weather Away",
+   "tier": 5,
+   "family": "clock",
+   "carrier": "bolt",
+   "payloads": [
+    "status",
+    "world"
+   ],
+   "field": null,
+   "needs": [
+    "S4"
+   ],
+   "n": {
+    "dur": 4,
+    "status": "soft",
+    "need": 1
+   },
+   "from": "entropy"
+  },
+  {
+   "no": 57,
+   "id": "bloom",
+   "label": "Bloom",
+   "tier": 5,
+   "family": "clock",
+   "carrier": "lob",
+   "payloads": [
+    "world",
+    "dispel"
+   ],
+   "field": null,
+   "needs": [
+    "M12"
+   ],
+   "n": {
+    "r": 5,
+    "need": 0.75
+   },
+   "from": "youth"
+  },
+  {
+   "no": 78,
+   "id": "golem",
+   "label": "Golem",
+   "tier": 5,
+   "family": "company",
+   "carrier": "lob",
+   "payloads": [
+    "summon",
+    "world"
+   ],
+   "field": null,
+   "needs": [
+    "M12"
+   ],
+   "n": {
+    "dur": 30,
+    "power": 3,
+    "h": 3,
+    "need": 2
+   },
+   "from": "the golem"
+  },
+  {
+   "no": 89,
+   "id": "calm",
+   "label": "Calm",
+   "tier": 5,
+   "family": "feelings",
+   "carrier": "beam",
+   "payloads": [
+    "dispel"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "r": 8,
+    "fair": 1,
+    "need": 1
+   },
+   "from": "Outlaw Star #3 and #5"
+  }
+ ]
+}

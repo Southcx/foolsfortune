@@ -1,0 +1,20 @@
+{
+ "SCALE": {
+  "querent": {
+   "median": 16000,
+   "p90": 56000
+  },
+  "supernova": {
+   "median": 17,
+   "p90": 37
+  },
+  "nebula": {
+   "median": 39,
+   "p90": 59
+  },
+  "eventhorizon": {
+   "median": 1,
+   "p90": 3
+  }
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "DOMAIN_MUDRA": {
+  "ouranurgy": "gyan",
+  "alteration": "shuni",
+  "divination": "surya",
+  "spellscription": "buddhi",
+  "possession": "prana",
+  "manifestation": "bhumisparsha",
+  "psychokinesis": "karana"
+ },
+ "MUDRAS": {
+  "gyan": {
+   "label": "index touch",
+   "domain": "ouranurgy"
+  },
+  "shuni": {
+   "label": "middle touch",
+   "domain": "alteration"
+  },
+  "surya": {
+   "label": "ring touch",
+   "domain": "divination"
+  },
+  "buddhi": {
+   "label": "little touch",
+   "domain": "spellscription"
+  },
+  "prana": {
+   "label": "breath",
+   "domain": "possession"
+  },
+  "bhumisparsha": {
+   "label": "earth touch",
+   "domain": "manifestation"
+  },
+  "karana": {
+   "label": "horns",
+   "domain": "psychokinesis"
+  },
+  "abhaya": {
+   "label": "open palm",
+   "moment": "the palm die shown"
+  },
+  "varada": {
+   "label": "giving hand",
+   "moment": "a miracle let go"
+  },
+  "dhyana": {
+   "label": "rest",
+   "moment": "the quiet that lets the Dissonance Level ebb"
+  }
+ },
+ "POSE": {
+  "castHold": 0.8,
+  "varada": 1.6,
+  "abhaya": 2,
+  "abhayaGlint": 0.6,
+  "restAfter": 4,
+  "readyStrength": 0.4
+ }
+}

@@ -1,0 +1,105 @@
+{
+ "ISLET_KITS": {
+  "rock": {
+   "across": [
+    15,
+    30
+   ],
+   "secrets": [
+    "chest",
+    "fishing",
+    "ostracon"
+   ],
+   "weight": 3
+  },
+  "atoll": {
+   "across": [
+    40,
+    70
+   ],
+   "secrets": [
+    "fishing",
+    "nest",
+    "fuel",
+    "chest"
+   ],
+   "weight": 2
+  },
+  "stack": {
+   "across": [
+    10,
+    20
+   ],
+   "secrets": [
+    "vantage",
+    "crystal",
+    "stele"
+   ],
+   "weight": 2
+  },
+  "ruin": {
+   "across": [
+    25,
+    50
+   ],
+   "secrets": [
+    "stele",
+    "ostracon",
+    "nest",
+    "chest"
+   ],
+   "weight": 2
+  },
+  "lighthouse": {
+   "across": [
+    20,
+    35
+   ],
+   "secrets": [
+    "vantage",
+    "fuel",
+    "chest"
+   ],
+   "weight": 1
+  },
+  "sandbar": {
+   "across": [
+    30,
+    60
+   ],
+   "secrets": [
+    "chest",
+    "crystal"
+   ],
+   "weight": 1,
+   "tide": "low"
+  }
+ },
+ "SECRETS": {
+  "chest": {
+   "pays": "chest"
+  },
+  "ostracon": {
+   "pays": "ostracon"
+  },
+  "vantage": {
+   "pays": "vantage"
+  },
+  "nest": {
+   "pays": "fight"
+  },
+  "fuel": {
+   "pays": "fuel",
+   "measures": 3
+  },
+  "stele": {
+   "pays": "stele"
+  },
+  "fishing": {
+   "pays": "fishing"
+  },
+  "crystal": {
+   "pays": "crystal"
+  }
+ }
+}

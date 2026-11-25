@@ -1,0 +1,1969 @@
+{
+ "CARRIER_AT": {
+  "chase": {
+   "at": [
+    0,
+    5,
+    55
+   ],
+   "from": [
+    0,
+    2,
+    50
+   ],
+   "box": {
+    "x": 24,
+    "y": [
+     0,
+     14
+    ],
+    "z": [
+     12,
+     70
+    ]
+   }
+  },
+  "free": {
+   "at": [
+    0,
+    5,
+    55
+   ],
+   "from": [
+    0,
+    2,
+    50
+   ],
+   "box": {
+    "x": 26,
+    "y": [
+     0,
+     15
+    ],
+    "z": [
+     12,
+     70
+    ]
+   }
+  },
+  "above": {
+   "at": [
+    0,
+    4,
+    15
+   ],
+   "from": [
+    0,
+    0,
+    12
+   ],
+   "box": {
+    "x": 14,
+    "y": [
+     -5,
+     20
+    ],
+    "z": [
+     -5,
+     20
+    ]
+   }
+  },
+  "side": {
+   "at": [
+    0,
+    5,
+    15
+   ],
+   "from": [
+    0,
+    0,
+    12
+   ],
+   "box": {
+    "x": 6,
+    "y": [
+     -2,
+     12.5
+    ],
+    "z": [
+     -14,
+     19.5
+    ]
+   }
+  },
+  "astern": {
+   "at": [
+    0,
+    5,
+    -30
+   ],
+   "from": [
+    0,
+    2,
+    -40
+   ],
+   "box": {
+    "x": 24,
+    "y": [
+     0,
+     14
+    ],
+    "z": [
+     -60,
+     -10
+    ]
+   }
+  }
+ },
+ "FLOORS": {
+  "open": 6,
+  "build": 10,
+  "peak": 8,
+  "release": 12
+ },
+ "FLOURISH": 6,
+ "HAZARDS": {
+  "pillar": {
+   "radius": 2.2,
+   "hits": 1
+  },
+  "arch": {
+   "span": 6,
+   "pays": 500,
+   "all": 2000
+  },
+  "gate": {
+   "gap": 5,
+   "hits": 1
+  }
+ },
+ "KILL": {
+  "good": 24,
+  "each": 0.16666666666666666,
+  "flock": 0.08333333333333333,
+  "enter": 0.5,
+  "path": 6,
+  "lights": 0.3333333333333333
+ },
+ "LEGS": {
+  "shoal": {
+   "bars": 96,
+   "phases": {
+    "open": 16,
+    "build": 36,
+    "peak": 36,
+    "release": 8
+   },
+   "views": {
+    "open": "chase",
+    "build": "above",
+    "peak": "free",
+    "release": "chase"
+   },
+   "cues": [
+    {
+     "phase": "open",
+     "at": 0,
+     "every": 1,
+     "cycle": [
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      },
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 7
+      },
+      {
+       "role": "rammer",
+       "formation": "dash",
+       "count": 1
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      },
+      {
+       "role": "darter",
+       "formation": "dash",
+       "count": 2
+      }
+     ]
+    },
+    {
+     "phase": "open",
+     "at": 6,
+     "wave": {
+      "role": "swarm",
+      "formation": "river",
+      "count": 24
+     }
+    },
+    {
+     "phase": "open",
+     "at": 1,
+     "every": 4,
+     "pattern": {
+      "name": "offsetTwins",
+      "from": "ahead",
+      "kind": "feel",
+      "params": {
+       "volleys": 4
+      }
+     }
+    },
+    {
+     "phase": "build",
+     "at": 0,
+     "every": 1,
+     "cycle": [
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 7
+      },
+      {
+       "role": "swooper",
+       "formation": "pincer",
+       "count": 2
+      },
+      {
+       "role": "school",
+       "formation": "ring",
+       "count": 8
+      },
+      {
+       "role": "mine-layer",
+       "formation": "line",
+       "count": 1
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      },
+      {
+       "role": "turret",
+       "formation": "hold",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "phase": "build",
+     "at": 4,
+     "wave": {
+      "role": "heavy",
+      "formation": "hold",
+      "count": 1,
+      "cls": 2
+     }
+    },
+    {
+     "phase": "build",
+     "at": 18,
+     "wave": {
+      "role": "spawner",
+      "formation": "hold",
+      "count": 1
+     }
+    },
+    {
+     "phase": "build",
+     "at": 10,
+     "every": 16,
+     "wave": {
+      "role": "swarm",
+      "formation": "ribbon",
+      "count": 32
+     }
+    },
+    {
+     "phase": "build",
+     "at": 5,
+     "every": 4,
+     "until": 34,
+     "pattern": {
+      "name": "rotatingRing",
+      "from": "heavy",
+      "kind": "feel"
+     }
+    },
+    {
+     "phase": "build",
+     "at": 1,
+     "every": 6,
+     "pattern": {
+      "name": "sineCurtain",
+      "from": "ahead",
+      "kind": "feel"
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 0,
+     "director": "shoal"
+    },
+    {
+     "phase": "peak",
+     "at": 2,
+     "every": 3,
+     "cycle": [
+      {
+       "role": "darter",
+       "formation": "dash",
+       "count": 2
+      },
+      {
+       "role": "rammer",
+       "formation": "dash",
+       "count": 1
+      },
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 6
+      }
+     ]
+    },
+    {
+     "phase": "peak",
+     "at": 2,
+     "every": 4,
+     "pattern": {
+      "name": "cageRing",
+      "from": "glint",
+      "kind": "feel"
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 1,
+     "every": 3,
+     "pattern": {
+      "name": "frenzyDash",
+      "from": "glint",
+      "kind": "feel"
+     }
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 1,
+     "targets": 8
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 2,
+     "cycle": [
+      {
+       "role": "swarm",
+       "formation": "river",
+       "count": 24
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      },
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 7
+      }
+     ]
+    },
+    {
+     "phase": "open",
+     "at": 4,
+     "every": 4,
+     "hazard": "pillar"
+    }
+   ]
+  },
+  "wreckers": {
+   "bars": 112,
+   "phases": {
+    "open": 16,
+    "build": 40,
+    "peak": 48,
+    "release": 8
+   },
+   "views": {
+    "open": "chase",
+    "build": "side",
+    "peak": "side",
+    "release": "astern"
+   },
+   "cues": [
+    {
+     "phase": "open",
+     "at": 0,
+     "every": 1,
+     "cycle": [
+      {
+       "role": "darter",
+       "formation": "dash",
+       "count": 2
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      },
+      {
+       "role": "ambusher",
+       "formation": "dash",
+       "count": 2
+      },
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 6
+      }
+     ]
+    },
+    {
+     "phase": "open",
+     "at": 8,
+     "wave": {
+      "role": "swarm",
+      "formation": "river",
+      "count": 24
+     }
+    },
+    {
+     "phase": "open",
+     "at": 1,
+     "every": 2,
+     "pattern": {
+      "name": "aimedBurst",
+      "from": "darter",
+      "kind": "feel",
+      "params": {
+       "volleys": 2
+      }
+     }
+    },
+    {
+     "phase": "build",
+     "at": 0,
+     "every": 1,
+     "cycle": [
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 6
+      },
+      {
+       "role": "darter",
+       "formation": "dash",
+       "count": 2
+      },
+      {
+       "role": "sniper",
+       "formation": "hold",
+       "count": 1
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      },
+      {
+       "role": "swooper",
+       "formation": "pincer",
+       "count": 2
+      },
+      {
+       "role": "grappler",
+       "formation": "dash",
+       "count": 1
+      },
+      {
+       "role": "school",
+       "formation": "ring",
+       "count": 8
+      },
+      {
+       "role": "sweeper",
+       "formation": "hold",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "phase": "build",
+     "at": 14,
+     "every": 16,
+     "wave": {
+      "role": "swarm",
+      "formation": "ribbon",
+      "count": 32
+     }
+    },
+    {
+     "phase": "build",
+     "at": 1,
+     "every": 5,
+     "pattern": {
+      "name": "gapWall",
+      "from": "ahead",
+      "kind": "feel"
+     }
+    },
+    {
+     "phase": "build",
+     "at": 3,
+     "every": 5,
+     "pattern": {
+      "name": "homingSalvo",
+      "from": "darter",
+      "kind": "umbral"
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 0,
+     "director": "pirates"
+    },
+    {
+     "phase": "peak",
+     "at": 2,
+     "every": 3,
+     "cycle": [
+      {
+       "role": "ambusher",
+       "formation": "dash",
+       "count": 2
+      },
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 6
+      },
+      {
+       "role": "swooper",
+       "formation": "pincer",
+       "count": 2
+      },
+      {
+       "role": "grappler",
+       "formation": "dash",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "phase": "peak",
+     "at": 2,
+     "every": 4,
+     "pattern": {
+      "name": "stackFan",
+      "from": "object",
+      "kind": "feel"
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 4,
+     "every": 6,
+     "pattern": {
+      "name": "splitShell",
+      "from": "object",
+      "kind": "umbral",
+      "params": {
+       "T": 0.5
+      }
+     }
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 1,
+     "targets": 8
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 2,
+     "cycle": [
+      {
+       "role": "swarm",
+       "formation": "river",
+       "count": 24
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      },
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 7
+      }
+     ]
+    },
+    {
+     "phase": "open",
+     "at": 4,
+     "every": 4,
+     "hazard": "pillar"
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 3,
+     "hazard": "arch"
+    }
+   ]
+  },
+  "leviathan": {
+   "bars": 128,
+   "phases": {
+    "open": 16,
+    "build": 48,
+    "peak": 56,
+    "release": 8
+   },
+   "views": {
+    "open": "chase",
+    "build": "above",
+    "peak": "side",
+    "release": "astern"
+   },
+   "cues": [
+    {
+     "phase": "open",
+     "at": 0,
+     "every": 1,
+     "cycle": [
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      },
+      {
+       "role": "rammer",
+       "formation": "dash",
+       "count": 1
+      },
+      {
+       "role": "school",
+       "formation": "ring",
+       "count": 8
+      },
+      {
+       "role": "darter",
+       "formation": "dash",
+       "count": 2
+      }
+     ]
+    },
+    {
+     "phase": "open",
+     "at": 6,
+     "wave": {
+      "role": "swarm",
+      "formation": "river",
+      "count": 24
+     }
+    },
+    {
+     "phase": "open",
+     "at": 1,
+     "every": 4,
+     "pattern": {
+      "name": "accelRain",
+      "from": "ahead",
+      "kind": "feel",
+      "params": {
+       "volleys": 5
+      }
+     }
+    },
+    {
+     "phase": "build",
+     "at": 0,
+     "every": 1,
+     "cycle": [
+      {
+       "role": "school",
+       "formation": "ring",
+       "count": 8
+      },
+      {
+       "role": "swooper",
+       "formation": "pincer",
+       "count": 2
+      },
+      {
+       "role": "turret",
+       "formation": "hold",
+       "count": 1
+      },
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 7
+      },
+      {
+       "role": "blocker",
+       "formation": "hold",
+       "count": 1
+      },
+      {
+       "role": "mine-layer",
+       "formation": "line",
+       "count": 1
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      }
+     ]
+    },
+    {
+     "phase": "build",
+     "at": 2,
+     "wave": {
+      "role": "heavy",
+      "formation": "hold",
+      "count": 1,
+      "cls": 2
+     }
+    },
+    {
+     "phase": "build",
+     "at": 20,
+     "wave": {
+      "role": "spawner",
+      "formation": "hold",
+      "count": 1
+     }
+    },
+    {
+     "phase": "build",
+     "at": 12,
+     "every": 24,
+     "wave": {
+      "role": "swarm",
+      "formation": "bloom",
+      "count": 32
+     }
+    },
+    {
+     "phase": "build",
+     "at": 3,
+     "every": 4,
+     "until": 32,
+     "pattern": {
+      "name": "multiSpiral",
+      "from": "heavy",
+      "kind": "feel"
+     }
+    },
+    {
+     "phase": "build",
+     "at": 32,
+     "every": 3,
+     "pattern": {
+      "name": "doubleHelix",
+      "from": "ahead",
+      "kind": "feel"
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 0,
+     "director": "leviathan"
+    },
+    {
+     "phase": "peak",
+     "at": 2,
+     "every": 3,
+     "cycle": [
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 6
+      },
+      {
+       "role": "swooper",
+       "formation": "pincer",
+       "count": 2
+      },
+      {
+       "role": "sniper",
+       "formation": "hold",
+       "count": 1
+      },
+      {
+       "role": "darter",
+       "formation": "dash",
+       "count": 2
+      }
+     ]
+    },
+    {
+     "phase": "peak",
+     "at": 20,
+     "wave": {
+      "role": "swarm",
+      "formation": "ribbon",
+      "count": 48
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 2,
+     "every": 5,
+     "pattern": {
+      "name": "rose",
+      "from": "object",
+      "kind": "feel",
+      "params": {
+       "n": 30,
+       "speed": 7,
+       "swell": 7
+      }
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 4,
+     "every": 7,
+     "pattern": {
+      "name": "sweepBeam",
+      "from": "object",
+      "kind": "umbral"
+     }
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 1,
+     "targets": 8
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 2,
+     "cycle": [
+      {
+       "role": "swarm",
+       "formation": "river",
+       "count": 24
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      },
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 7
+      }
+     ]
+    },
+    {
+     "phase": "open",
+     "at": 3,
+     "every": 4,
+     "hazard": "arch"
+    },
+    {
+     "phase": "release",
+     "at": 1,
+     "every": 3,
+     "hazard": "arch"
+    }
+   ]
+  },
+  "eyewall": {
+   "bars": 80,
+   "phases": {
+    "open": 16,
+    "build": 24,
+    "peak": 32,
+    "release": 8
+   },
+   "views": {
+    "open": "chase",
+    "build": "free",
+    "peak": "chase",
+    "release": "chase"
+   },
+   "floors": {
+    "open": 6,
+    "build": 6,
+    "peak": 8,
+    "release": 10
+   },
+   "cues": [
+    {
+     "phase": "open",
+     "at": 0,
+     "every": 4,
+     "pattern": {
+      "name": "sweepBeam",
+      "from": "ahead",
+      "kind": "feel",
+      "params": {
+       "volleys": 1
+      }
+     }
+    },
+    {
+     "phase": "open",
+     "at": 1,
+     "every": 1.5,
+     "cycle": [
+      {
+       "role": "darter",
+       "formation": "dash",
+       "count": 2
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 6
+      }
+     ]
+    },
+    {
+     "phase": "build",
+     "at": 0,
+     "every": 3,
+     "pattern": {
+      "name": "gapWall",
+      "from": "ahead",
+      "kind": "feel"
+     }
+    },
+    {
+     "phase": "build",
+     "at": 1,
+     "every": 4,
+     "pattern": {
+      "name": "snakeLaser",
+      "from": "ahead",
+      "kind": "umbral"
+     }
+    },
+    {
+     "phase": "build",
+     "at": 0,
+     "every": 1.5,
+     "cycle": [
+      {
+       "role": "darter",
+       "formation": "dash",
+       "count": 2
+      },
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 6
+      },
+      {
+       "role": "rammer",
+       "formation": "dash",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "phase": "peak",
+     "at": 0,
+     "every": 4,
+     "pattern": {
+      "name": "crossGate",
+      "from": "ahead",
+      "kind": "feel"
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 2,
+     "every": 4,
+     "pattern": {
+      "name": "itano",
+      "from": "ahead",
+      "kind": "astral"
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 1,
+     "every": 5,
+     "pattern": {
+      "name": "sweepBeam",
+      "from": "ahead",
+      "kind": "umbral"
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 0,
+     "every": 1.5,
+     "cycle": [
+      {
+       "role": "school",
+       "formation": "ring",
+       "count": 6
+      },
+      {
+       "role": "ambusher",
+       "formation": "dash",
+       "count": 2
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      }
+     ]
+    },
+    {
+     "phase": "peak",
+     "at": 10,
+     "wave": {
+      "role": "swarm",
+      "formation": "ribbon",
+      "count": 32
+     }
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 1,
+     "targets": 6
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 2,
+     "cycle": [
+      {
+       "role": "swarm",
+       "formation": "river",
+       "count": 24
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      },
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 7
+      }
+     ]
+    },
+    {
+     "phase": "open",
+     "at": 3,
+     "every": 4,
+     "hazard": "gate"
+    },
+    {
+     "phase": "build",
+     "at": 2,
+     "every": 3,
+     "hazard": "pillar"
+    },
+    {
+     "phase": "peak",
+     "at": 2,
+     "every": 4,
+     "hazard": "gate"
+    }
+   ]
+  },
+  "graveyard": {
+   "bars": 96,
+   "phases": {
+    "open": 16,
+    "build": 36,
+    "peak": 36,
+    "release": 8
+   },
+   "views": {
+    "open": "chase",
+    "build": "side",
+    "peak": "free",
+    "release": "chase"
+   },
+   "cues": [
+    {
+     "phase": "open",
+     "at": 0,
+     "every": 1,
+     "cycle": [
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 6
+      },
+      {
+       "role": "darter",
+       "formation": "dash",
+       "count": 2
+      },
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 6
+      },
+      {
+       "role": "rammer",
+       "formation": "dash",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "phase": "open",
+     "at": 8,
+     "wave": {
+      "role": "swarm",
+      "formation": "river",
+      "count": 24
+     }
+    },
+    {
+     "phase": "open",
+     "at": 1,
+     "every": 4,
+     "pattern": {
+      "name": "decelBurst",
+      "from": "ahead",
+      "kind": "umbral",
+      "params": {
+       "volleys": 2
+      }
+     }
+    },
+    {
+     "phase": "build",
+     "at": 0,
+     "every": 1,
+     "cycle": [
+      {
+       "role": "school",
+       "formation": "ring",
+       "count": 8
+      },
+      {
+       "role": "sniper",
+       "formation": "hold",
+       "count": 1
+      },
+      {
+       "role": "darter",
+       "formation": "dash",
+       "count": 2
+      },
+      {
+       "role": "swooper",
+       "formation": "pincer",
+       "count": 2
+      },
+      {
+       "role": "mine-layer",
+       "formation": "line",
+       "count": 1
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      }
+     ]
+    },
+    {
+     "phase": "build",
+     "at": 18,
+     "wave": {
+      "role": "swarm",
+      "formation": "ribbon",
+      "count": 32
+     }
+    },
+    {
+     "phase": "build",
+     "at": 1,
+     "every": 4,
+     "pattern": {
+      "name": "fragmentRing",
+      "from": "ahead",
+      "kind": "astral"
+     }
+    },
+    {
+     "phase": "build",
+     "at": 3,
+     "every": 4,
+     "pattern": {
+      "name": "curving",
+      "from": "ahead",
+      "kind": "umbral"
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 0,
+     "wave": {
+      "role": "heavy",
+      "formation": "hold",
+      "count": 1,
+      "cls": 3
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 1,
+     "every": 2,
+     "cycle": [
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 6
+      },
+      {
+       "role": "escort",
+       "formation": "hold",
+       "count": 2
+      },
+      {
+       "role": "ambusher",
+       "formation": "dash",
+       "count": 2
+      },
+      {
+       "role": "grappler",
+       "formation": "dash",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "phase": "peak",
+     "at": 16,
+     "wave": {
+      "role": "swarm",
+      "formation": "bloom",
+      "count": 48
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 1,
+     "every": 4,
+     "pattern": {
+      "name": "rose",
+      "from": "heavy",
+      "kind": "feel"
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 3,
+     "every": 4,
+     "pattern": {
+      "name": "mixed",
+      "from": "heavy",
+      "kind": "umbral",
+      "params": {
+       "of": "oddFan",
+       "share": 0.3
+      }
+     }
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 1,
+     "targets": 8
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 2,
+     "cycle": [
+      {
+       "role": "swarm",
+       "formation": "river",
+       "count": 24
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      },
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 7
+      }
+     ]
+    },
+    {
+     "phase": "open",
+     "at": 4,
+     "every": 4,
+     "hazard": "pillar"
+    },
+    {
+     "phase": "peak",
+     "at": 3,
+     "every": 4,
+     "hazard": "pillar"
+    }
+   ]
+  },
+  "maelstrom": {
+   "bars": 96,
+   "phases": {
+    "open": 16,
+    "build": 24,
+    "peak": 48,
+    "release": 8
+   },
+   "views": {
+    "open": "chase",
+    "build": "free",
+    "peak": "free",
+    "release": "chase"
+   },
+   "cues": [
+    {
+     "phase": "open",
+     "at": 0,
+     "every": 1,
+     "cycle": [
+      {
+       "role": "school",
+       "formation": "ring",
+       "count": 8
+      },
+      {
+       "role": "darter",
+       "formation": "dash",
+       "count": 2
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      },
+      {
+       "role": "rammer",
+       "formation": "dash",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "phase": "open",
+     "at": 6,
+     "wave": {
+      "role": "swarm",
+      "formation": "river",
+      "count": 24
+     }
+    },
+    {
+     "phase": "open",
+     "at": 1,
+     "every": 3,
+     "pattern": {
+      "name": "curving",
+      "from": "ahead",
+      "kind": "feel"
+     }
+    },
+    {
+     "phase": "build",
+     "at": 0,
+     "wave": {
+      "role": "heavy",
+      "formation": "hold",
+      "count": 1,
+      "cls": 3
+     }
+    },
+    {
+     "phase": "build",
+     "at": 1,
+     "every": 1.5,
+     "cycle": [
+      {
+       "role": "school",
+       "formation": "pincer",
+       "count": 8
+      },
+      {
+       "role": "ambusher",
+       "formation": "dash",
+       "count": 2
+      },
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 7
+      }
+     ]
+    },
+    {
+     "phase": "build",
+     "at": 12,
+     "wave": {
+      "role": "swarm",
+      "formation": "ribbon",
+      "count": 32
+     }
+    },
+    {
+     "phase": "build",
+     "at": 1,
+     "every": 3,
+     "pattern": {
+      "name": "accelSpiral",
+      "from": "heavy",
+      "kind": "feel"
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 0,
+     "wave": {
+      "role": "heavy",
+      "formation": "hold",
+      "count": 1,
+      "cls": 4
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 1,
+     "every": 2,
+     "cycle": [
+      {
+       "role": "darter",
+       "formation": "dash",
+       "count": 2
+      },
+      {
+       "role": "school",
+       "formation": "ring",
+       "count": 8
+      },
+      {
+       "role": "rammer",
+       "formation": "dash",
+       "count": 1
+      },
+      {
+       "role": "grappler",
+       "formation": "dash",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "phase": "peak",
+     "at": 24,
+     "wave": {
+      "role": "swarm",
+      "formation": "bloom",
+      "count": 48
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 1,
+     "every": 4,
+     "pattern": {
+      "name": "doubleHelix",
+      "from": "heavy",
+      "kind": "feel"
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 3,
+     "every": 6,
+     "pattern": {
+      "name": "itano",
+      "from": "heavy",
+      "kind": "umbral"
+     }
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 1,
+     "targets": 8
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 2,
+     "cycle": [
+      {
+       "role": "swarm",
+       "formation": "river",
+       "count": 24
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      },
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 7
+      }
+     ]
+    },
+    {
+     "phase": "open",
+     "at": 4,
+     "every": 4,
+     "hazard": "arch"
+    },
+    {
+     "phase": "build",
+     "at": 3,
+     "every": 5,
+     "hazard": "pillar"
+    }
+   ]
+  },
+  "bounty": {
+   "bars": 112,
+   "phases": {
+    "open": 16,
+    "build": 40,
+    "peak": 48,
+    "release": 8
+   },
+   "views": {
+    "open": "chase",
+    "build": "above",
+    "peak": "free",
+    "release": "chase"
+   },
+   "cues": [
+    {
+     "phase": "open",
+     "at": 0,
+     "every": 1,
+     "cycle": [
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 7
+      },
+      {
+       "role": "darter",
+       "formation": "dash",
+       "count": 2
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      },
+      {
+       "role": "rammer",
+       "formation": "dash",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "phase": "open",
+     "at": 8,
+     "wave": {
+      "role": "swarm",
+      "formation": "river",
+      "count": 24
+     }
+    },
+    {
+     "phase": "open",
+     "at": 1,
+     "every": 4,
+     "pattern": {
+      "name": "oddFan",
+      "from": "ahead",
+      "kind": "feel"
+     }
+    },
+    {
+     "phase": "build",
+     "at": 0,
+     "every": 1,
+     "cycle": [
+      {
+       "role": "swooper",
+       "formation": "pincer",
+       "count": 2
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      },
+      {
+       "role": "turret",
+       "formation": "hold",
+       "count": 1
+      },
+      {
+       "role": "school",
+       "formation": "ring",
+       "count": 8
+      },
+      {
+       "role": "mine-layer",
+       "formation": "line",
+       "count": 1
+      },
+      {
+       "role": "blocker",
+       "formation": "hold",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "phase": "build",
+     "at": 16,
+     "wave": {
+      "role": "spawner",
+      "formation": "hold",
+      "count": 1
+     }
+    },
+    {
+     "phase": "build",
+     "at": 24,
+     "wave": {
+      "role": "swarm",
+      "formation": "ribbon",
+      "count": 32
+     }
+    },
+    {
+     "phase": "build",
+     "at": 1,
+     "every": 4,
+     "pattern": {
+      "name": "stratRain",
+      "from": "ahead",
+      "kind": "feel"
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 0,
+     "wave": {
+      "role": "heavy",
+      "formation": "hold",
+      "count": 1,
+      "cls": 3
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 8,
+     "wave": {
+      "role": "gunship",
+      "formation": "hold",
+      "count": 1
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 8,
+     "wave": {
+      "role": "escort",
+      "formation": "hold",
+      "count": 2
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 2,
+     "every": 2,
+     "cycle": [
+      {
+       "role": "school",
+       "formation": "ring",
+       "count": 6
+      },
+      {
+       "role": "ambusher",
+       "formation": "dash",
+       "count": 2
+      },
+      {
+       "role": "darter",
+       "formation": "dash",
+       "count": 2
+      },
+      {
+       "role": "sniper",
+       "formation": "hold",
+       "count": 1
+      }
+     ]
+    },
+    {
+     "phase": "peak",
+     "at": 28,
+     "wave": {
+      "role": "swarm",
+      "formation": "bloom",
+      "count": 48
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 1,
+     "every": 4,
+     "pattern": {
+      "name": "multiSpiral",
+      "from": "heavy",
+      "kind": "feel"
+     }
+    },
+    {
+     "phase": "peak",
+     "at": 3,
+     "every": 4,
+     "pattern": {
+      "name": "splitShell",
+      "from": "heavy",
+      "kind": "umbral"
+     }
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 1,
+     "targets": 8
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 2,
+     "cycle": [
+      {
+       "role": "swarm",
+       "formation": "river",
+       "count": 24
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      },
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 7
+      }
+     ]
+    },
+    {
+     "phase": "open",
+     "at": 4,
+     "every": 4,
+     "hazard": "gate"
+    }
+   ]
+  },
+  "calm": {
+   "bars": 48,
+   "phases": {
+    "open": 16,
+    "build": 24,
+    "peak": 0,
+    "release": 8
+   },
+   "views": {
+    "open": "chase",
+    "build": "above",
+    "peak": "above",
+    "release": "chase"
+   },
+   "floors": {
+    "open": 6,
+    "build": 6,
+    "peak": 0,
+    "release": 8
+   },
+   "cues": [
+    {
+     "phase": "open",
+     "at": 0,
+     "every": 1,
+     "targets": 6
+    },
+    {
+     "phase": "open",
+     "at": 0.5,
+     "every": 4,
+     "cycle": [
+      {
+       "role": "swarm",
+       "formation": "river",
+       "count": 24
+      },
+      {
+       "role": "swarm",
+       "formation": "ribbon",
+       "count": 24
+      },
+      {
+       "role": "swarm",
+       "formation": "bloom",
+       "count": 24
+      }
+     ]
+    },
+    {
+     "phase": "open",
+     "at": 1,
+     "every": 4,
+     "pattern": {
+      "name": "ring",
+      "from": "ahead",
+      "kind": "gift",
+      "params": {
+       "volleys": 1,
+       "speed": 9
+      }
+     }
+    },
+    {
+     "phase": "build",
+     "at": 0,
+     "every": 1,
+     "targets": 6
+    },
+    {
+     "phase": "build",
+     "at": 0.5,
+     "every": 4,
+     "cycle": [
+      {
+       "role": "swarm",
+       "formation": "ribbon",
+       "count": 32
+      },
+      {
+       "role": "swarm",
+       "formation": "bloom",
+       "count": 24
+      },
+      {
+       "role": "swarm",
+       "formation": "river",
+       "count": 32
+      }
+     ]
+    },
+    {
+     "phase": "build",
+     "at": 2,
+     "every": 4,
+     "pattern": {
+      "name": "rose",
+      "from": "ahead",
+      "kind": "gift",
+      "params": {
+       "volleys": 1,
+       "n": 18,
+       "speed": 7,
+       "swell": 7
+      }
+     }
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 1,
+     "targets": 6
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 2,
+     "cycle": [
+      {
+       "role": "swarm",
+       "formation": "river",
+       "count": 24
+      },
+      {
+       "role": "school",
+       "formation": "line",
+       "count": 8
+      },
+      {
+       "role": "school",
+       "formation": "vee",
+       "count": 7
+      }
+     ]
+    },
+    {
+     "phase": "open",
+     "at": 2,
+     "every": 3,
+     "hazard": "arch"
+    },
+    {
+     "phase": "release",
+     "at": 0,
+     "every": 3,
+     "hazard": "arch"
+    }
+   ]
+  }
+ },
+ "LESSON": {
+  "every": 1.5,
+  "floor": 3
+ },
+ "PULL_GAP": 0.5,
+ "RING_RUN": {
+  "pays": 100,
+  "pool": 4,
+  "all": {
+   "mend": 1,
+   "pays": 1000
+  }
+ },
+ "STRETCH": 2,
+ "SWING_BREATH": 1,
+ "SWING_CLEAR": 3,
+ "THROW_MIN": 15,
+ "WORLD_BLOCK": 8
+}

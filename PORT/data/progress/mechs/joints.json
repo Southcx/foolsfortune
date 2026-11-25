@@ -1,0 +1,146 @@
+{
+ "JOINT": {
+  "min": 0.8,
+  "fracture": 1.4,
+  "snap": 2.6,
+  "heavy": 0.9,
+  "locked": 0.6,
+  "legLocked": 0.7
+ },
+ "JOINTS": {
+  "neck": {
+   "region": "head",
+   "limb": [
+    "head"
+   ],
+   "tough": 3
+  },
+  "shoulderL": {
+   "region": "armL",
+   "limb": [
+    "armL",
+    "weaponL",
+    "elbowL"
+   ],
+   "tough": 1.5
+  },
+  "shoulderR": {
+   "region": "armR",
+   "limb": [
+    "armR",
+    "weaponR",
+    "elbowR"
+   ],
+   "tough": 1.5
+  },
+  "elbowL": {
+   "region": "armL",
+   "limb": [
+    "weaponL"
+   ],
+   "tough": 1,
+   "toward": "shoulderL"
+  },
+  "elbowR": {
+   "region": "armR",
+   "limb": [
+    "weaponR"
+   ],
+   "tough": 1,
+   "toward": "shoulderR"
+  },
+  "waist": {
+   "region": "core",
+   "limb": [],
+   "tough": 2.4
+  },
+  "hipL": {
+   "region": "legs",
+   "limb": [
+    "legL"
+   ],
+   "tough": 1.8
+  },
+  "hipR": {
+   "region": "legs",
+   "limb": [
+    "legR"
+   ],
+   "tough": 1.8
+  },
+  "backMount": {
+   "region": "back",
+   "limb": [
+    "back"
+   ],
+   "tough": 1.2
+  }
+ },
+ "JOINT_IDS": [
+  "neck",
+  "shoulderL",
+  "shoulderR",
+  "elbowL",
+  "elbowR",
+  "waist",
+  "hipL",
+  "hipR",
+  "backMount"
+ ],
+ "REGION_JOINTS": {
+  "head": [
+   [
+    "neck",
+    1
+   ]
+  ],
+  "core": [
+   [
+    "waist",
+    1
+   ]
+  ],
+  "back": [
+   [
+    "backMount",
+    1
+   ]
+  ],
+  "armL": [
+   [
+    "elbowL",
+    0.6
+   ],
+   [
+    "shoulderL",
+    0.4
+   ]
+  ],
+  "armR": [
+   [
+    "elbowR",
+    0.6
+   ],
+   [
+    "shoulderR",
+    0.4
+   ]
+  ],
+  "legs": [
+   [
+    "hipL",
+    0.5
+   ],
+   [
+    "hipR",
+    0.5
+   ]
+  ],
+  "body": [
+   [
+    "waist",
+    1
+   ]
+  ]
+ }
+}

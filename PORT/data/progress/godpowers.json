@@ -1,0 +1,856 @@
+{
+ "DOMAIN_COLOUR": {
+  "ouranurgy": 10273720,
+  "manifestation": 14254410,
+  "divination": 12170472,
+  "psychokinesis": 9314079,
+  "possession": 8229828,
+  "alteration": 11022922,
+  "spellscription": 2772896
+ },
+ "DOMAIN_GLAZE": {
+  "ouranurgy": {
+   "mark": 10273720,
+   "glyph": "☁"
+  },
+  "manifestation": {
+   "mark": 14254410,
+   "glyph": "✍"
+  },
+  "divination": {
+   "mark": 12170472,
+   "glyph": "◉"
+  },
+  "psychokinesis": {
+   "mark": 9314079,
+   "glyph": "⟫"
+  },
+  "possession": {
+   "mark": 8229828,
+   "glyph": "◐"
+  },
+  "alteration": {
+   "mark": 11022922,
+   "glyph": "↻"
+  },
+  "spellscription": {
+   "mark": 2772896,
+   "glyph": "✎"
+  }
+ },
+ "DOMAIN_ORDER": [
+  "ouranurgy",
+  "manifestation",
+  "divination",
+  "psychokinesis",
+  "possession",
+  "alteration",
+  "spellscription"
+ ],
+ "EPICS": {
+  "stoppedHour": {
+   "domain": "ouranurgy",
+   "label": "Stopped Hour",
+   "sign": "dread",
+   "r": 40,
+   "dur": 10,
+   "release": 40,
+   "at": 80
+  },
+  "volcano": {
+   "domain": "manifestation",
+   "label": "Volcano",
+   "sign": "fury",
+   "r": 12,
+   "dur": 30,
+   "release": 40,
+   "at": 80,
+   "cone": 5,
+   "lava": 0.7
+  },
+  "prophecy": {
+   "domain": "divination",
+   "label": "Prophecy",
+   "sign": "wonder",
+   "r": 60,
+   "dur": 4,
+   "release": 40,
+   "at": 80
+  },
+  "maelstrom": {
+   "domain": "psychokinesis",
+   "label": "Maelstrom",
+   "sign": "desire",
+   "r": 25,
+   "dur": 12,
+   "release": 40,
+   "at": 80,
+   "lift": 9,
+   "swirl": 14
+  },
+  "stampede": {
+   "domain": "possession",
+   "label": "Stampede",
+   "sign": "mirth",
+   "r": 40,
+   "dur": 15,
+   "release": 40,
+   "at": 80
+  },
+  "earthquake": {
+   "domain": "alteration",
+   "label": "Earthquake",
+   "sign": "gall",
+   "r": 30,
+   "dur": 8,
+   "release": 40,
+   "at": 80,
+   "heave": 0.6
+  },
+  "deluge": {
+   "domain": "spellscription",
+   "label": "Deluge",
+   "sign": "grief",
+   "r": 30,
+   "dur": 20,
+   "release": 40,
+   "at": 80,
+   "rate": 0.05
+  }
+ },
+ "EPIC_BY_SIGN": {
+  "dread": "stoppedHour",
+  "fury": "volcano",
+  "wonder": "prophecy",
+  "desire": "maelstrom",
+  "mirth": "stampede",
+  "gall": "earthquake",
+  "grief": "deluge"
+ },
+ "EPIC_EVERY": 150,
+ "GOD_POWERS": {
+  "telekinesis": {
+   "domain": "psychokinesis",
+   "label": "Telekinesis",
+   "at": 1,
+   "built": true,
+   "does": "lift and throw"
+  },
+  "sunder": {
+   "domain": "alteration",
+   "label": "Sunder",
+   "at": 1,
+   "built": true,
+   "does": "draw a blade"
+  },
+  "swell": {
+   "domain": "alteration",
+   "label": "Swell",
+   "at": 1,
+   "built": true,
+   "does": "grow or shrink"
+  },
+  "wring": {
+   "domain": "alteration",
+   "label": "Wring",
+   "at": 1,
+   "built": true,
+   "does": "twist the clay"
+  },
+  "manifest": {
+   "domain": "manifestation",
+   "label": "Manifest",
+   "at": 1,
+   "built": true,
+   "does": "raise clay"
+  },
+  "scoop": {
+   "domain": "psychokinesis",
+   "label": "Scoop",
+   "at": 1,
+   "built": true,
+   "does": "take matter up and pour it out",
+   "made": 0.5
+  },
+  "shape": {
+   "domain": "alteration",
+   "label": "Shape",
+   "at": 1,
+   "built": true,
+   "does": "raise or lower the ground; Shift to level it",
+   "made": 0.5
+  },
+  "carve": {
+   "domain": "alteration",
+   "label": "Carve",
+   "at": 40,
+   "built": true,
+   "does": "cut a channel"
+  },
+  "miracle": {
+   "domain": "spellscription",
+   "label": "Miracles",
+   "at": 1,
+   "built": true,
+   "does": "draw a feeling's sign to call its weather down"
+  },
+  "portal": {
+   "domain": "ouranurgy",
+   "label": "Portal",
+   "at": 40,
+   "built": true,
+   "does": "a linked pair of holes: what goes in one comes out the other"
+  },
+  "fold": {
+   "domain": "ouranurgy",
+   "label": "Swap",
+   "at": 50,
+   "built": true,
+   "does": "two patches of ground trade places"
+  },
+  "hasten": {
+   "domain": "ouranurgy",
+   "label": "Hasten / Stay",
+   "at": 20,
+   "built": true,
+   "does": "matter's time over a patch runs four times as fast, or stops"
+  },
+  "sculpt": {
+   "domain": "manifestation",
+   "label": "Sculpt",
+   "at": 20,
+   "built": true,
+   "does": "raise a pillar, an arch, a bridge or a ramp of clay",
+   "made": 0.6
+  },
+  "setfast": {
+   "domain": "manifestation",
+   "label": "Lock",
+   "at": 40,
+   "built": true,
+   "does": "set a creation so the mending leaves it be"
+  },
+  "totem": {
+   "domain": "manifestation",
+   "label": "Weather Anchor",
+   "at": 50,
+   "built": true,
+   "does": "hold a miracle's weather on one spot for a game hour"
+  },
+  "strata": {
+   "domain": "divination",
+   "label": "Layer View",
+   "at": 20,
+   "built": true,
+   "does": "see the layers under the hand"
+  },
+  "course": {
+   "domain": "divination",
+   "label": "Flow Preview",
+   "at": 40,
+   "built": true,
+   "does": "see where a pour will run before it falls"
+  },
+  "read": {
+   "domain": "divination",
+   "label": "Scan Intent",
+   "at": 50,
+   "built": true,
+   "does": "see a creature's next intent from above"
+  },
+  "gust": {
+   "domain": "psychokinesis",
+   "label": "Gust",
+   "at": 20,
+   "built": true,
+   "does": "a stroke of wind"
+  },
+  "slab": {
+   "domain": "psychokinesis",
+   "label": "Lift Ground",
+   "at": 40,
+   "built": true,
+   "does": "lift a slab of ground and set it down elsewhere"
+  },
+  "herd": {
+   "domain": "possession",
+   "label": "Herd",
+   "at": 20,
+   "built": true,
+   "does": "creatures near a drawn line walk it"
+  },
+  "take": {
+   "domain": "possession",
+   "label": "Possess",
+   "at": 40,
+   "built": true,
+   "does": "play a creature from above"
+  },
+  "muster": {
+   "domain": "possession",
+   "label": "Rally",
+   "at": 50,
+   "built": true,
+   "does": "hatched clapperjars carry matter where the hand points"
+  },
+  "transmute": {
+   "domain": "alteration",
+   "label": "Transmute",
+   "at": 20,
+   "built": true,
+   "does": "sand to clay and back; a pool to your draught's feeling"
+  },
+  "ward": {
+   "domain": "spellscription",
+   "label": "Barrier",
+   "at": 20,
+   "built": true,
+   "does": "a circle creatures cannot cross"
+  },
+  "stamp": {
+   "domain": "spellscription",
+   "label": "Copy Terrain",
+   "at": 40,
+   "built": true,
+   "does": "copy a patch of terrain and press it down elsewhere"
+  }
+ },
+ "MIRACLES": {
+  "wonder": {
+   "label": "Aurora",
+   "status": "halt",
+   "r": [
+    6,
+    20
+   ],
+   "dur": [
+    10,
+    30
+   ],
+   "cost": [
+    10,
+    40
+   ]
+  },
+  "mirth": {
+   "label": "Fizz",
+   "status": "stun",
+   "r": [
+    6,
+    20
+   ],
+   "dur": [
+    10,
+    30
+   ],
+   "cost": [
+    10,
+    40
+   ]
+  },
+  "desire": {
+   "label": "Pull",
+   "status": null,
+   "r": [
+    6,
+    20
+   ],
+   "dur": [
+    10,
+    30
+   ],
+   "cost": [
+    10,
+    40
+   ]
+  },
+  "fury": {
+   "label": "Storm",
+   "status": null,
+   "r": [
+    6,
+    20
+   ],
+   "dur": [
+    10,
+    30
+   ],
+   "cost": [
+    12,
+    45
+   ],
+   "every": 1.2,
+   "power": 3
+  },
+  "gall": {
+   "label": "Blight",
+   "status": "halt",
+   "r": [
+    6,
+    20
+   ],
+   "dur": [
+    10,
+    30
+   ],
+   "cost": [
+    10,
+    40
+   ],
+   "every": 1.5,
+   "retch": 0.6,
+   "corrode": 0.04
+  },
+  "grief": {
+   "label": "Rain",
+   "status": "slow",
+   "r": [
+    6,
+    20
+   ],
+   "dur": [
+    10,
+    30
+   ],
+   "cost": [
+    10,
+    40
+   ],
+   "rain": 0.012
+  },
+  "dread": {
+   "label": "Eclipse",
+   "status": "flee",
+   "r": [
+    6,
+    20
+   ],
+   "dur": [
+    10,
+    30
+   ],
+   "cost": [
+    10,
+    40
+   ]
+  }
+ },
+ "MIRACLE_SIGNS": {
+  "caret": "wonder",
+  "vee": "mirth",
+  "heart": "desire",
+  "bolt": "fury",
+  "spiral": "gall",
+  "line|": "grief",
+  "circle": "dread"
+ },
+ "POWER_EVENTS": [
+  "portal",
+  "fold",
+  "hasten",
+  "setfast",
+  "totem",
+  "strata",
+  "course",
+  "read",
+  "gust",
+  "slab",
+  "herd",
+  "take",
+  "muster",
+  "transmute",
+  "ward",
+  "stamp"
+ ],
+ "RAMP": {
+  "scoop": {
+   "carry": [
+    20,
+    400
+   ],
+   "made": [
+    0.5,
+    0
+   ]
+  },
+  "shape": {
+   "r": [
+    1.6,
+    6
+   ],
+   "made": [
+    0.5,
+    0
+   ]
+  },
+  "carve": {
+   "w": [
+    1.4,
+    5
+   ],
+   "depth": [
+    1.2,
+    6
+   ],
+   "len": [
+    18,
+    64
+   ]
+  },
+  "sculpt": {
+   "len": [
+    16,
+    64
+   ],
+   "scale": [
+    1,
+    3
+   ],
+   "made": [
+    0.6,
+    0
+   ]
+  },
+  "miracle": {
+   "cost": [
+    1,
+    0.2
+   ],
+   "size": [
+    1,
+    2
+   ]
+  },
+  "portal": {
+   "pairs": [
+    1,
+    4
+   ],
+   "dur": [
+    60,
+    1200
+   ],
+   "r": [
+    1.5,
+    4
+   ]
+  },
+  "fold": {
+   "side": [
+    4,
+    24
+   ]
+  },
+  "hasten": {
+   "r": [
+    4,
+    20
+   ],
+   "scale": [
+    4,
+    16
+   ],
+   "dur": [
+    20,
+    300
+   ]
+  },
+  "setfast": {
+   "hold": [
+    150,
+    3600
+   ],
+   "r": [
+    3,
+    12
+   ]
+  },
+  "totem": {
+   "n": [
+    1,
+    5
+   ],
+   "dur": [
+    150,
+    3600
+   ],
+   "r": [
+    6,
+    16
+   ]
+  },
+  "strata": {
+   "len": [
+    12,
+    60
+   ]
+  },
+  "course": {
+   "steps": [
+    80,
+    600
+   ]
+  },
+  "read": {
+   "r": [
+    20,
+    80
+   ]
+  },
+  "gust": {
+   "len": [
+    10,
+    40
+   ],
+   "power": [
+    6,
+    24
+   ]
+  },
+  "slab": {
+   "side": [
+    3,
+    16
+   ]
+  },
+  "herd": {
+   "r": [
+    6,
+    24
+   ],
+   "n": [
+    4,
+    30
+   ],
+   "dur": [
+    20,
+    120
+   ]
+  },
+  "take": {
+   "dur": [
+    20,
+    600
+   ]
+  },
+  "muster": {
+   "n": [
+    2,
+    12
+   ],
+   "rate": [
+    0.5,
+    6
+   ],
+   "dur": [
+    60,
+    900
+   ]
+  },
+  "transmute": {
+   "r": [
+    2,
+    10
+   ]
+  },
+  "ward": {
+   "n": [
+    1,
+    6
+   ],
+   "r": [
+    6,
+    18
+   ],
+   "dur": [
+    60,
+    1200
+   ]
+  },
+  "stamp": {
+   "side": [
+    4,
+    24
+   ],
+   "made": [
+    0.5,
+    0
+   ]
+  },
+  "dissonance": {
+   "scale": [
+    1,
+    0.1
+   ]
+  },
+  "tools": {
+   "ouranurgy.reach": {
+    "domain": "ouranurgy",
+    "row": [
+     1,
+     1.5
+    ],
+    "does": "blink and grapple reach (an art: the core movement is untouched)"
+   },
+   "ouranurgy.still": {
+    "domain": "ouranurgy",
+    "row": [
+     1,
+     1.3
+    ],
+    "does": "how long time stays slowed or stopped (blade mode, the reprogramming window, Celestial mode)"
+   },
+   "ouranurgy.lane": {
+    "domain": "ouranurgy",
+    "row": [
+     1,
+     1.5
+    ],
+    "does": "the ship's lane-change speed on the rail"
+   },
+   "manifestation.span": {
+    "domain": "manifestation",
+    "row": [
+     1,
+     1.5
+    ],
+    "does": "how long a manifested structure stands"
+   },
+   "manifestation.count": {
+    "domain": "manifestation",
+    "row": [
+     0,
+     2
+    ],
+    "plus": true,
+    "does": "how many manifested structures stand at once"
+   },
+   "divination.survey": {
+    "domain": "divination",
+    "row": [
+     1,
+     1.6
+    ],
+    "does": "a survey pulse's radius (charting, the Well's floors)"
+   },
+   "divination.reveal": {
+    "domain": "divination",
+    "row": [
+     1,
+     1.5
+    ],
+    "does": "the radius veiled crystal is revealed in"
+   },
+   "divination.reckon": {
+    "domain": "divination",
+    "row": [
+     1,
+     1.5
+    ],
+    "does": "how far ahead a reckoning marks a wave's lane (RECKON.lead)"
+   },
+   "divination.forecast": {
+    "domain": "divination",
+    "row": [
+     1,
+     4
+    ],
+    "does": "how far ahead the weather can be known (progress/weather.js forecast)"
+   },
+   "divination.angling": {
+    "domain": "divination",
+    "row": [
+     1,
+     1.5
+    ],
+    "does": "how long a hooked fish's next pull is seen coming (the fight's LOOK window, to 2.1 s: tools/sondelass/angling/fight.js)"
+   },
+   "psychokinesis.weight": {
+    "domain": "psychokinesis",
+    "row": [
+     1,
+     2
+    ],
+    "does": "how heavy a thing the god hand can lift"
+   },
+   "psychokinesis.throw": {
+    "domain": "psychokinesis",
+    "row": [
+     1,
+     1.5
+    ],
+    "does": "how far the god hand throws"
+   },
+   "possession.macro": {
+    "domain": "possession",
+    "row": [
+     1,
+     1.5
+    ],
+    "does": "how long a macro a mind will take"
+   },
+   "possession.hold": {
+    "domain": "possession",
+    "row": [
+     0,
+     2
+    ],
+    "plus": true,
+    "does": "how many Figments a Lockheart holds when summoning"
+   },
+   "possession.song": {
+    "domain": "possession",
+    "row": [
+     1,
+     1.5
+    ],
+    "does": "how long a Crucibelle song's hold lasts: Lullaby's sleep, Seeming's forgetting (TOOLS-TOGETHER.md K1)"
+   },
+   "alteration.cuts": {
+    "domain": "alteration",
+    "row": [
+     0,
+     3
+    ],
+    "plus": true,
+    "does": "how many cuts a sunder makes"
+   },
+   "alteration.swell": {
+    "domain": "alteration",
+    "row": [
+     1,
+     1.5
+    ],
+    "does": "how far a swell or a wring reshapes"
+   },
+   "alteration.paint": {
+    "domain": "alteration",
+    "row": [
+     1,
+     1.4
+    ],
+    "does": "the Soul Brush's paint spread (TOOLS-TOGETHER.md K1)"
+   },
+   "spellscription.slots": {
+    "domain": "spellscription",
+    "row": [
+     0,
+     3
+    ],
+    "plus": true,
+    "does": "how many macros the Veritome keeps"
+   },
+   "spellscription.copy": {
+    "domain": "spellscription",
+    "row": [
+     0,
+     3
+    ],
+    "plus": true,
+    "does": "how many copies of a Cogitomap can be transcribed (the owner: Spellscription duplicates maps)"
+   }
+  }
+ },
+ "RAMP_CURVE": 1.6,
+ "SET_FOREVER": 99
+}

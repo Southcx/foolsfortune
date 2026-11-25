@@ -1,0 +1,52 @@
+{
+ "FIRST": {
+  "path": [
+   "sr1",
+   "gw1",
+   "gw2",
+   "gw3",
+   "fk1",
+   "sk12",
+   "br1",
+   "tc1",
+   "pl6",
+   "jl1",
+   "sf1",
+   "an1",
+   "cx3"
+  ],
+  "where": {
+   "sr1": "The Shrine is next to where you wake. Press {use} at it.",
+   "gw1": "Press {use} at the Shrine and choose YOUR SPIRIT GARDEN.",
+   "gw2": "The seed is in the shed by the gate. Carry it into open sky and let go.",
+   "gw3": "The slab is at the plate shrine on the Athanor. A launch lotus flies you there.",
+   "fk1": "Mistress Saggar is on the workshop floor, by the kiln.",
+   "sk12": "The atrium rail, upstairs in the workshop, is a vantage point.",
+   "br1": "Pots are all over the workshop. Press {use} to pick one up and {primary} to throw it.",
+   "tc1": "A chest is in the basement's hub. Drop through the hole in the workshop floor.",
+   "pl6": "Use the Index in the basement's hub and choose the Dunes.",
+   "jl1": "Slip jellies are on the sand past the Weir.",
+   "sf1": "On the Dunes, press {skiff} to call the Solar Skiff.",
+   "an1": "Go to the Weir's pier. Open the Pneuka Box ({box}), set the Sondelass as Main, draw it ({draw}) and switch to the rod.",
+   "cx3": "The course circles the basement's hub. Pass all eight stations."
+  },
+  "enough": 40
+ },
+ "GOALS": {
+  "near": 0.25,
+  "elsewhere": 5,
+  "stretch": {
+   "tier": 3,
+   "of": 3
+  },
+  "look": 1,
+  "never": [
+   "general"
+  ]
+ },
+ "SLOTS": [
+  "near",
+  "elsewhere",
+  "stretch"
+ ]
+}

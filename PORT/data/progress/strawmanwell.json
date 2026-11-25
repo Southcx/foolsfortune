@@ -1,0 +1,746 @@
+{
+ "CELL": {
+  "empty": 0,
+  "stone": 1,
+  "sand": 2,
+  "clay": 3,
+  "lachryma": 4,
+  "crude": 5,
+  "ice": 6
+ },
+ "FLOAT": {
+  "lift": 1.9,
+  "damp": 3
+ },
+ "GRAB": {
+  "reach": 1,
+  "hold": 6,
+  "power": 2,
+  "slam": 14
+ },
+ "GRID": {
+  "w": 160,
+  "h": 90,
+  "size": 0.25,
+  "rate": 30,
+  "share": 0.25
+ },
+ "GUIDE": {
+  "speed": 5,
+  "hop": 0.6,
+  "alpha": 0.4,
+  "lead": 0
+ },
+ "MATTER": {
+  "stone": {
+   "solid": true
+  },
+  "clay": {
+   "solid": true
+  },
+  "ice": {
+   "solid": true,
+   "melts": "lachryma"
+  },
+  "sand": {
+   "falls": true,
+   "heavy": 3
+  },
+  "lachryma": {
+   "falls": true,
+   "flows": true,
+   "spread": 6,
+   "heavy": 1,
+   "freezes": "ice"
+  },
+  "crude": {
+   "falls": true,
+   "flows": true,
+   "spread": 2,
+   "heavy": 0.8,
+   "burns": true
+  }
+ },
+ "PERCENT": {
+  "perPower": 8,
+  "base": 2,
+  "growth": 0.06,
+  "angle": 40,
+  "blast": 14,
+  "max": 999,
+  "trophyAt": 100
+ },
+ "PIT": {
+  "retry": 0.4,
+  "ghosts": 64
+ },
+ "POGO": {
+  "speed": 11.5,
+  "reach": 2.2,
+  "side": 0.9,
+  "cd": 0.25
+ },
+ "PULLEY": {
+  "speed": 1.8,
+  "crate": 2,
+  "courier": 1
+ },
+ "ROPE": {
+  "pump": 1.6,
+  "launch": 0.95,
+  "cap": 12,
+  "min": 2
+ },
+ "STAGES": [
+  {
+   "id": "run",
+   "wave": 1,
+   "family": "The Run",
+   "par": 60,
+   "verbs": [
+    "run",
+    "jump",
+    "doubleJump",
+    "dash",
+    "slide",
+    "crawl",
+    "wallJump",
+    "wallRun",
+    "mantle",
+    "dropThrough",
+    "spring",
+    "slope",
+    "ice",
+    "goo"
+   ]
+  },
+  {
+   "id": "climb",
+   "wave": 1,
+   "family": "The Climb",
+   "par": 60,
+   "verbs": [
+    "ladder",
+    "vine",
+    "swingRope",
+    "ropeLaunch",
+    "hang",
+    "beam",
+    "pole"
+   ]
+  },
+  {
+   "id": "stomp",
+   "wave": 1,
+   "family": "The Stomp",
+   "par": 50,
+   "verbs": [
+    "stomp",
+    "groundPound",
+    "pogo",
+    "bonk"
+   ]
+  },
+  {
+   "id": "brawl",
+   "wave": 1,
+   "family": "The Brawl",
+   "par": 90,
+   "verbs": [
+    "string",
+    "juggle",
+    "launch",
+    "ringOut",
+    "grabThrow",
+    "trophy"
+   ]
+  },
+  {
+   "id": "machine",
+   "wave": 1,
+   "family": "The Machine",
+   "par": 90,
+   "verbs": [
+    "push",
+    "seesaw",
+    "pulley",
+    "conveyor",
+    "crumble",
+    "mover",
+    "switch",
+    "onOff",
+    "key",
+    "cannon",
+    "carry"
+   ]
+  },
+  {
+   "id": "flood",
+   "wave": 1,
+   "family": "The Flood",
+   "par": 120,
+   "verbs": [
+    "pour",
+    "carve",
+    "float",
+    "dig",
+    "freeze",
+    "raise"
+   ]
+  },
+  {
+   "id": "arsenal",
+   "wave": 2,
+   "family": "The Arsenal",
+   "par": 60,
+   "verbs": [
+    "shoot8",
+    "chargeShot",
+    "bomb"
+   ]
+  },
+  {
+   "id": "swing",
+   "wave": 2,
+   "family": "The Swing",
+   "par": 60,
+   "verbs": [
+    "grapple",
+    "elastic",
+    "zip"
+   ]
+  },
+  {
+   "id": "flip",
+   "wave": 2,
+   "family": "The Flip",
+   "par": 60,
+   "verbs": [
+    "flip",
+    "flick",
+    "portal"
+   ]
+  },
+  {
+   "id": "pit",
+   "wave": 2,
+   "family": "The Pit",
+   "par": 120,
+   "verbs": [
+    "retry",
+    "shootSave",
+    "troll",
+    "ghosts",
+    "rival"
+   ]
+  },
+  {
+   "id": "jar",
+   "wave": 2,
+   "family": "The Jar",
+   "par": 60,
+   "verbs": [
+    "jarRoll",
+    "jarThrow"
+   ]
+  },
+  {
+   "id": "troupe",
+   "wave": 3,
+   "family": "The Troupe",
+   "par": 150,
+   "verbs": [
+    "jobs"
+   ]
+  },
+  {
+   "id": "script",
+   "wave": 3,
+   "family": "The Script",
+   "par": 150,
+   "verbs": [
+    "rules",
+    "drawLine"
+   ]
+  },
+  {
+   "id": "depth",
+   "wave": 3,
+   "family": "The Depth",
+   "par": 60,
+   "verbs": [
+    "lanes"
+   ]
+  },
+  {
+   "id": "chase",
+   "wave": 3,
+   "family": "The Chase",
+   "par": 90,
+   "verbs": [
+    "chase",
+    "autoscroll",
+    "beat"
+   ]
+  },
+  {
+   "id": "wall",
+   "wave": 3,
+   "family": "The Wall",
+   "par": 90,
+   "verbs": [
+    "wallFace"
+   ]
+  },
+  {
+   "id": "maze",
+   "wave": 3,
+   "family": "The Maze",
+   "par": 180,
+   "verbs": [
+    "seeded"
+   ]
+  },
+  {
+   "id": "arena",
+   "wave": 4,
+   "family": "The Arena",
+   "par": 180,
+   "verbs": [
+    "shield",
+    "spotDodge",
+    "roll",
+    "airDodge",
+    "wavedash",
+    "shortHop",
+    "fastFall",
+    "lCancel",
+    "grab",
+    "pummel",
+    "throw",
+    "jab",
+    "tilt",
+    "smash",
+    "aerial",
+    "special",
+    "ledgeGrab",
+    "ledgeGetup",
+    "tech",
+    "di",
+    "crouchCancel",
+    "powerShield",
+    "shieldBreak",
+    "edgeguard",
+    "stock"
+   ]
+  },
+  {
+   "id": "flatstage",
+   "wave": 4,
+   "family": "The Flat Stage",
+   "par": 180,
+   "verbs": "[cycle]"
+  }
+ ],
+ "TURRET": {
+  "every": 2.6,
+  "speed": 7,
+  "stun": 6,
+  "knock": 6.5,
+  "r": 0.32
+ },
+ "VERB": {
+  "run": {
+   "name": "Run",
+   "from": "Super Mario Bros"
+  },
+  "jump": {
+   "name": "Variable jump",
+   "from": "Super Mario Bros"
+  },
+  "doubleJump": {
+   "name": "Double jump",
+   "from": "Kid Icarus"
+  },
+  "dash": {
+   "name": "Air dash",
+   "from": "Mega Man X, Celeste"
+  },
+  "slide": {
+   "name": "Slide",
+   "from": "Mega Man 3"
+  },
+  "crawl": {
+   "name": "Crawl",
+   "from": "Metroid"
+  },
+  "wallJump": {
+   "name": "Wall jump",
+   "from": "Mega Man X"
+  },
+  "wallRun": {
+   "name": "Back-wall run",
+   "from": "Prince of Persia"
+  },
+  "mantle": {
+   "name": "Ledge grab",
+   "from": "Prince of Persia"
+  },
+  "dropThrough": {
+   "name": "Drop through",
+   "from": "Super Mario Bros 2"
+  },
+  "spring": {
+   "name": "Spring",
+   "from": "Sonic"
+  },
+  "slope": {
+   "name": "Slope speed",
+   "from": "Sonic"
+  },
+  "ice": {
+   "name": "Ice",
+   "from": "Super Mario Bros 3"
+  },
+  "goo": {
+   "name": "Goo",
+   "from": "Super Meat Boy"
+  },
+  "ropeLaunch": {
+   "name": "Rope launch",
+   "from": "Bionic Commando, Donkey Kong Country"
+  },
+  "rival": {
+   "name": "Beat the rival",
+   "from": "Mario Kart, Celeste"
+  },
+  "ladder": {
+   "name": "Ladder",
+   "from": "Donkey Kong"
+  },
+  "vine": {
+   "name": "Vine",
+   "from": "Tomba!"
+  },
+  "swingRope": {
+   "name": "Rope swing",
+   "from": "Donkey Kong Country"
+  },
+  "hang": {
+   "name": "Monkey bars",
+   "from": "Bionic Commando"
+  },
+  "beam": {
+   "name": "Balance beam",
+   "from": "Prince of Persia"
+  },
+  "pole": {
+   "name": "Pole swing",
+   "from": "Strider"
+  },
+  "stomp": {
+   "name": "Stomp",
+   "from": "Super Mario Bros"
+  },
+  "groundPound": {
+   "name": "Ground pound",
+   "from": "Super Mario 64"
+  },
+  "pogo": {
+   "name": "Pogo",
+   "from": "Shovel Knight"
+  },
+  "bonk": {
+   "name": "Bonk a block",
+   "from": "Super Mario Bros"
+  },
+  "string": {
+   "name": "Combo string",
+   "from": "Elsword"
+  },
+  "juggle": {
+   "name": "Air juggle",
+   "from": "Devil May Cry"
+  },
+  "launch": {
+   "name": "Knockback",
+   "from": "Super Smash Bros."
+  },
+  "ringOut": {
+   "name": "Ring out",
+   "from": "Super Smash Bros."
+  },
+  "grabThrow": {
+   "name": "Grab and throw",
+   "from": "Tomba!, Smash"
+  },
+  "trophy": {
+   "name": "Trophy",
+   "from": "Subspace Emissary"
+  },
+  "shoot8": {
+   "name": "Eight-way shot",
+   "from": "Contra"
+  },
+  "chargeShot": {
+   "name": "Charge shot",
+   "from": "Mega Man"
+  },
+  "bomb": {
+   "name": "Terrain bomb",
+   "from": "Spelunky, Worms"
+  },
+  "grapple": {
+   "name": "Grapple swing",
+   "from": "Bionic Commando"
+  },
+  "elastic": {
+   "name": "Elastic line",
+   "from": "Umihara Kawase"
+  },
+  "zip": {
+   "name": "Zip line",
+   "from": "Spider-Man"
+  },
+  "push": {
+   "name": "Push and pull",
+   "from": "Limbo"
+  },
+  "seesaw": {
+   "name": "Seesaw",
+   "from": "LittleBigPlanet"
+  },
+  "pulley": {
+   "name": "Pulley",
+   "from": "Limbo"
+  },
+  "conveyor": {
+   "name": "Conveyor",
+   "from": "Mega Man"
+  },
+  "crumble": {
+   "name": "Crumbling floor",
+   "from": "Super Mario Bros 3"
+  },
+  "mover": {
+   "name": "Moving platform",
+   "from": "every platformer"
+  },
+  "switch": {
+   "name": "Switch and door",
+   "from": "Super Mario Maker"
+  },
+  "onOff": {
+   "name": "On/off blocks",
+   "from": "Super Mario Maker"
+  },
+  "key": {
+   "name": "Key and lock",
+   "from": "Spelunky"
+  },
+  "cannon": {
+   "name": "Cannon",
+   "from": "Super Mario Bros"
+  },
+  "carry": {
+   "name": "Carry it there",
+   "from": "Spelunky"
+  },
+  "pour": {
+   "name": "Pour liquid",
+   "from": "Where's My Water?"
+  },
+  "carve": {
+   "name": "Carve a channel",
+   "from": "From Dust"
+  },
+  "float": {
+   "name": "Float a crate",
+   "from": "Inside"
+  },
+  "dig": {
+   "name": "Dig through",
+   "from": "Lemmings"
+  },
+  "freeze": {
+   "name": "Freeze a liquid",
+   "from": "Ice Climber"
+  },
+  "raise": {
+   "name": "Raise clay",
+   "from": "Drawn to Life"
+  },
+  "flip": {
+   "name": "Gravity flip",
+   "from": "VVVVVV"
+  },
+  "flick": {
+   "name": "Flick-screen room",
+   "from": "VVVVVV"
+  },
+  "portal": {
+   "name": "Portal momentum",
+   "from": "Portal"
+  },
+  "jobs": {
+   "name": "Dummy jobs",
+   "from": "Lemmings"
+  },
+  "rules": {
+   "name": "Rule words",
+   "from": "Baba Is You"
+  },
+  "drawLine": {
+   "name": "Draw a platform",
+   "from": "Crayon Physics"
+  },
+  "retry": {
+   "name": "Instant retry",
+   "from": "Super Meat Boy"
+  },
+  "shootSave": {
+   "name": "Shoot to save",
+   "from": "I Wanna Be the Guy"
+  },
+  "troll": {
+   "name": "Troll trap",
+   "from": "I Wanna Be the Guy"
+  },
+  "ghosts": {
+   "name": "Every death replayed",
+   "from": "Super Meat Boy"
+  },
+  "jarRoll": {
+   "name": "Jar roll",
+   "from": "Metroid's morph ball"
+  },
+  "jarThrow": {
+   "name": "Throw the Jar",
+   "from": "Kirby: Canvas Curse"
+  },
+  "lanes": {
+   "name": "Lane hop",
+   "from": "Tomba!, Klonoa"
+  },
+  "chase": {
+   "name": "Chase",
+   "from": "Rayman"
+  },
+  "autoscroll": {
+   "name": "Auto-scroll",
+   "from": "Super Mario Bros 3"
+  },
+  "beat": {
+   "name": "Beat blocks",
+   "from": "Super Mario 3D World"
+  },
+  "wallFace": {
+   "name": "Into the wall",
+   "from": "Zelda: A Link Between Worlds"
+  },
+  "seeded": {
+   "name": "The day's maze",
+   "from": "Spelunky"
+  },
+  "shield": {
+   "name": "Shield",
+   "from": "Super Smash Bros. Melee"
+  },
+  "spotDodge": {
+   "name": "Spot dodge",
+   "from": "Melee"
+  },
+  "roll": {
+   "name": "Roll",
+   "from": "Melee"
+  },
+  "airDodge": {
+   "name": "Air dodge",
+   "from": "Melee"
+  },
+  "wavedash": {
+   "name": "Wavedash",
+   "from": "Melee"
+  },
+  "shortHop": {
+   "name": "Short hop",
+   "from": "Melee"
+  },
+  "fastFall": {
+   "name": "Fast fall",
+   "from": "Melee"
+  },
+  "lCancel": {
+   "name": "L-cancel",
+   "from": "Melee"
+  },
+  "grab": {
+   "name": "Grab",
+   "from": "Melee"
+  },
+  "pummel": {
+   "name": "Pummel",
+   "from": "Melee"
+  },
+  "throw": {
+   "name": "Throw",
+   "from": "Melee"
+  },
+  "jab": {
+   "name": "Jab",
+   "from": "Melee"
+  },
+  "tilt": {
+   "name": "Tilt",
+   "from": "Melee"
+  },
+  "smash": {
+   "name": "Charged smash",
+   "from": "Melee"
+  },
+  "aerial": {
+   "name": "Aerial",
+   "from": "Melee"
+  },
+  "special": {
+   "name": "Special",
+   "from": "Melee"
+  },
+  "ledgeGrab": {
+   "name": "Ledge hang",
+   "from": "Melee"
+  },
+  "ledgeGetup": {
+   "name": "Ledge getup",
+   "from": "Melee"
+  },
+  "tech": {
+   "name": "Tech",
+   "from": "Melee"
+  },
+  "di": {
+   "name": "Survival DI",
+   "from": "Melee"
+  },
+  "crouchCancel": {
+   "name": "Crouch cancel",
+   "from": "Melee"
+  },
+  "powerShield": {
+   "name": "Powershield",
+   "from": "Melee"
+  },
+  "shieldBreak": {
+   "name": "Shield break",
+   "from": "Melee"
+  },
+  "edgeguard": {
+   "name": "Edgeguard",
+   "from": "Melee"
+  },
+  "stock": {
+   "name": "Take a stock",
+   "from": "Melee"
+  }
+ }
+}

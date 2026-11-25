@@ -1,0 +1,141 @@
+{
+ "PARTS": {
+  "sail.standard": {
+   "slot": "sail",
+   "name": "Standard Sail",
+   "does": "As it came.",
+   "mult": {}
+  },
+  "sail.racing": {
+   "slot": "sail",
+   "name": "Racing Sail",
+   "does": "Faster at the top, slower to get there.",
+   "mult": {
+    "top": 1.03,
+    "accel": 0.8
+   },
+   "opens": "rw21"
+  },
+  "sail.storm": {
+   "slot": "sail",
+   "name": "Storm Sail",
+   "does": "Quick off the line, a lower top.",
+   "mult": {
+    "top": 0.98,
+    "accel": 1.3
+   },
+   "opens": "rw5"
+  },
+  "keel.standard": {
+   "slot": "keel",
+   "name": "Standard Keel",
+   "does": "As it came.",
+   "mult": {}
+  },
+  "keel.grind": {
+   "slot": "keel",
+   "name": "Grind Keel",
+   "does": "A steadier rail, a looser carve.",
+   "mult": {
+    "answer": 1.3,
+    "drift": 0.8,
+    "grip": 0.9
+   },
+   "opens": "rw9"
+  },
+  "keel.deep": {
+   "slot": "keel",
+   "name": "Deep Keel",
+   "does": "Holds the sand, wobbles on a rail.",
+   "mult": {
+    "grip": 1.2,
+    "drift": 1.2
+   },
+   "opens": "rw6"
+  },
+  "hull.standard": {
+   "slot": "hull",
+   "name": "Standard Hull",
+   "does": "As it came.",
+   "mult": {}
+  },
+  "hull.light": {
+   "slot": "hull",
+   "name": "Light Hull",
+   "does": "Light off the line, light in a bump.",
+   "mult": {
+    "mass": 0.7
+   },
+   "opens": "rw13"
+  },
+  "hull.heavy": {
+   "slot": "hull",
+   "name": "Heavy Hull",
+   "does": "Hits like a kiln door, slow to wind up.",
+   "mult": {
+    "mass": 1.5
+   },
+   "opens": "rw22"
+  },
+  "mast.standard": {
+   "slot": "mast",
+   "name": "Standard Mast",
+   "does": "As it came.",
+   "mult": {}
+  },
+  "mast.tall": {
+   "slot": "mast",
+   "name": "Tall Mast",
+   "does": "More sail up high: faster, and twitchier on a rail and a landing.",
+   "mult": {
+    "top": 1.02,
+    "wobble": 0.85
+   },
+   "opens": "rw44"
+  },
+  "mast.short": {
+   "slot": "mast",
+   "name": "Short Mast",
+   "does": "Quick to fill and steady, a lower top.",
+   "mult": {
+    "accel": 1.12,
+    "top": 0.99,
+    "wobble": 1.2
+   },
+   "opens": "rw45"
+  },
+  "fin.standard": {
+   "slot": "fin",
+   "name": "Standard Fin",
+   "does": "As it came.",
+   "mult": {}
+  },
+  "fin.surf": {
+   "slot": "fin",
+   "name": "Surf Fin",
+   "does": "Loads a carve quickly; lets go of the sand sooner.",
+   "mult": {
+    "carveRate": 1.2,
+    "grip": 0.9
+   },
+   "opens": "rw46"
+  },
+  "fin.race": {
+   "slot": "fin",
+   "name": "Race Fin",
+   "does": "Holds the sand hard; a carve loads slowly.",
+   "mult": {
+    "grip": 1.12,
+    "carveRate": 0.88
+   },
+   "opens": "rw47"
+  }
+ },
+ "SLOTS": [
+  "sail",
+  "keel",
+  "hull",
+  "mast",
+  "fin"
+ ]
+}

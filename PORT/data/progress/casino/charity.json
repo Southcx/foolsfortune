@@ -1,0 +1,20 @@
+{
+ "CHARITY": {
+  "id": "charity",
+  "seats": [
+   4,
+   6
+  ]
+ },
+ "CHARITY_RULES": {
+  "denoms": [
+   1,
+   5,
+   10
+  ],
+  "chips": 40,
+  "rounds": 8,
+  "cut": 0.1,
+  "mean": 5.333333333333333
+ }
+}

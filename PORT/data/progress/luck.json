@@ -1,0 +1,11 @@
+{
+ "UNLIKELY": {
+  "chest.open.prismatic": 0.013,
+  "chest.open.epic": 0.038,
+  "chest.near": 0.42,
+  "lockheart.out.nuke": 0.01,
+  "lockheart.out.bite": 0.05,
+  "fish.legend": 0.03,
+  "crystal.sweet.fragile": 0.15
+ }
+}

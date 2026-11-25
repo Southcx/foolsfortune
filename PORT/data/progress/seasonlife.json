@@ -1,0 +1,47 @@
+{
+ "GROUND_SEASON": {
+  "moss": "spring",
+  "loam": "autumn",
+  "silt": "winter"
+ },
+ "OWN": {
+  "own": 1.25,
+  "rest": 0.5
+ },
+ "PLANT_SEASON": {
+  "spring": {
+   "step": 1.5,
+   "seed": 1.5
+  },
+  "summer": {
+   "step": 1,
+   "seed": 1
+  },
+  "autumn": {
+   "step": 0.75,
+   "seed": 1.5
+  },
+  "winter": {
+   "step": 0,
+   "seed": 0
+  }
+ },
+ "VISITOR_SEASONS": {
+  "glint": [
+   "spring",
+   "summer"
+  ],
+  "clapperjar": [
+   "summer",
+   "autumn"
+  ],
+  "lobber": [
+   "autumn",
+   "winter"
+  ],
+  "wisp": [
+   "autumn",
+   "winter"
+  ]
+ }
+}

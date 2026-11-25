@@ -1,0 +1,9 @@
+{
+ "WELL_BOARD": {
+  "id": "wellboard",
+  "seats": [
+   1,
+   4
+  ]
+ }
+}

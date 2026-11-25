@@ -1,0 +1,91 @@
+{
+ "GIFTS": {
+  "folk.stoneware": {
+   "family": "rice",
+   "addin": "kombu",
+   "line": "Rice with kelp, as the stoneware folk cook it in a donabe."
+  },
+  "folk.porcelain": {
+   "family": "tea",
+   "addin": "mint",
+   "line": "A mint tea brewed gentle, the porcelain folk's afternoon."
+  },
+  "folk.fisher": {
+   "family": "broth",
+   "addin": null,
+   "line": "A plain kombu broth: the fisher's, drunk before a long cast."
+  },
+  "spirit.clapperjar": {
+   "family": "sweet",
+   "addin": "honey",
+   "line": "Honey candy to the crack, the clapperjar's spirit's favourite."
+  },
+  "spirit.wisp": {
+   "family": "smoke",
+   "addin": null,
+   "line": "Smoke thin and blue, the Lantern Wisp's lantern fuel."
+  }
+ },
+ "SLABS": [
+  {
+   "id": "rice",
+   "family": "rice",
+   "addin": "kombu",
+   "decoys": [
+    "bake",
+    "steep"
+   ],
+   "line": "A slab from the first kilns: the rice dish, half worn away."
+  },
+  {
+   "id": "broth",
+   "family": "broth",
+   "addin": "kombu",
+   "decoys": [
+    "roux",
+    "sear"
+   ],
+   "line": "A slab about kelp and a pot that must never roll."
+  },
+  {
+   "id": "tea",
+   "family": "tea",
+   "addin": "bitterleaf",
+   "decoys": [
+    "simmer",
+    "sugar"
+   ],
+   "line": "A slab with a single line left, the water's."
+  },
+  {
+   "id": "sauce",
+   "family": "sauce",
+   "addin": "butter",
+   "decoys": [
+    "emulsion",
+    "sugar"
+   ],
+   "line": "A slab of a sauce that starts with a paste."
+  },
+  {
+   "id": "candy",
+   "family": "sweet",
+   "addin": "honey",
+   "decoys": [
+    "roux",
+    "steep"
+   ],
+   "line": "A slab smelling faintly of caramel."
+  },
+  {
+   "id": "koji",
+   "family": "ferment",
+   "addin": "miso",
+   "decoys": [
+    "smoke",
+    "proof"
+   ],
+   "line": "A slab of the koji bed, the dish everything else begins from."
+  }
+ ]
+}

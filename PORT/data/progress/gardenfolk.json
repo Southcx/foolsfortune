@@ -1,0 +1,35 @@
+{
+ "FOLK": {
+  "pip": {
+   "name": "Pip",
+   "set": "teapath",
+   "why": "bloom"
+  },
+  "saggar": {
+   "name": "Mistress Saggar",
+   "set": "kilnyard",
+   "why": "pots"
+  },
+  "raku": {
+   "name": "Raku",
+   "set": "stargazer",
+   "why": "rating"
+  },
+  "sibling": {
+   "name": "a sibling",
+   "set": null,
+   "why": "party"
+  }
+ },
+ "GIFT": {
+  "every": 3
+ },
+ "OPINIONS": [
+  "bare",
+  "young",
+  "fair",
+  "lovely",
+  "splendid",
+  "wondrous"
+ ]
+}

@@ -1,0 +1,756 @@
+{
+ "PAIRS": [
+  {
+   "n": 1,
+   "card": "The Magician",
+   "label": "I · The Magician",
+   "tools": [
+    "psygun",
+    "sondelass"
+   ],
+   "why": "the first card, the new save's pair: the tools laid on the table",
+   "special": {
+    "label": "Hooked Shot",
+    "line": "A shot that drags what it hits to you.",
+    "main": [
+     "psygun",
+     "the shot"
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "card": "The High Priestess",
+   "label": "II · The High Priestess",
+   "tools": [
+    "veritome",
+    "dreamvane"
+   ],
+   "why": "the scroll and the veil: what is hidden, read",
+   "special": {
+    "label": "Revelation",
+    "line": "The Flash and the dowse at once: every hidden signature near you shown and tagged.",
+    "main": [
+     "dreamvane",
+     "the dowse"
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "card": "The Empress",
+   "label": "III · The Empress",
+   "tools": [
+    "soulbrush",
+    "lockheart"
+   ],
+   "why": "what the coffin draws in, the brush gives back: abundance",
+   "special": {
+    "label": "Coffin's Mop",
+    "line": "The coffin drinks spilled paint and crude as it passes, and the brush pours it back as paint.",
+    "main": [
+     "lockheart",
+     "the hoover"
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "card": "The Emperor",
+   "label": "IV · The Emperor",
+   "tools": [
+    "psygun",
+    "crucibelle"
+   ],
+   "why": "the beat commands and the gun keeps it: order",
+   "special": {
+    "label": "On the Beat",
+    "line": "Six shots fired on the bell's beat, each one staggering.",
+    "main": [
+     "psygun",
+     "the shot"
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "card": "The Hierophant",
+   "label": "V · The Hierophant",
+   "tools": [
+    "veritome",
+    "crucibelle"
+   ],
+   "why": "bell and book: the rite, the teaching",
+   "special": {
+    "label": "Rite",
+    "line": "A toll that reads every creature it reaches, knowing it better.",
+    "main": [
+     "crucibelle",
+     "the toll"
+    ]
+   }
+  },
+  {
+   "n": 6,
+   "card": "The Lovers",
+   "label": "VI · The Lovers",
+   "tools": [
+    "sondelass",
+    "crucibelle"
+   ],
+   "why": "the blade and the bell in time: a duet",
+   "special": {
+    "label": "Rung Line",
+    "line": "Hook a creature and the toll runs down the line, stunning it.",
+    "main": [
+     "sondelass",
+     "the hook form's throw"
+    ]
+   }
+  },
+  {
+   "n": 7,
+   "card": "The Chariot",
+   "label": "VII · The Chariot",
+   "tools": [
+    "sondelass",
+    "dreamvane"
+   ],
+   "why": "the hook and the vane: travel, two forces held in one hand",
+   "special": {
+    "label": "Slingshot",
+    "line": "Throw the fork far and hook to it, flung through the air.",
+    "main": [
+     "dreamvane",
+     "the fork's throw"
+    ]
+   }
+  },
+  {
+   "n": 8,
+   "card": "Strength",
+   "label": "VIII · Strength",
+   "tools": [
+    "sondelass",
+    "soulbrush"
+   ],
+   "why": "the edge tamed by the soft brush: gentle force",
+   "special": {
+    "label": "Gentle Edge",
+    "line": "A cutlass string whose blows calm instead of hurt.",
+    "main": [
+     "sondelass",
+     "the cutlass's string"
+    ]
+   }
+  },
+  {
+   "n": 9,
+   "card": "The Hermit",
+   "label": "IX · The Hermit",
+   "tools": [
+    "soulbrush",
+    "veritome"
+   ],
+   "why": "the scholar's desk: study alone, by lantern",
+   "special": {
+    "label": "Illumined Page",
+    "line": "Photograph a sigil and it is written on what you photographed.",
+    "main": [
+     "veritome",
+     "the photograph"
+    ]
+   }
+  },
+  {
+   "n": 10,
+   "card": "The Wheel of Fortune",
+   "label": "X · The Wheel of Fortune",
+   "tools": [
+    "lockheart",
+    "dreamvane"
+   ],
+   "why": "the wheel of odds and the turning weather",
+   "special": {
+    "label": "Turn of Weather",
+    "line": "Spin the wheel of odds to turn the weather where you stand for a game hour.",
+    "main": [
+     "lockheart",
+     "the wheel of odds"
+    ]
+   }
+  },
+  {
+   "n": 11,
+   "card": "Justice",
+   "label": "XI · Justice",
+   "tools": [
+    "sondelass",
+    "veritome"
+   ],
+   "why": "the sword and the scales: the blade and the appraisal",
+   "special": {
+    "label": "Appraised Cut",
+    "line": "A blow on a weak point you have photographed is always the right kind.",
+    "main": [
+     "sondelass",
+     "the cutlass's string"
+    ]
+   }
+  },
+  {
+   "n": 12,
+   "card": "The Hanged Man",
+   "label": "XII · The Hanged Man",
+   "tools": [
+    "veritome",
+    "lockheart"
+   ],
+   "why": "a moment held: the plate and the coffin",
+   "special": {
+    "label": "Held Plate",
+    "line": "A photograph holds a creature still in time for a moment.",
+    "main": [
+     "veritome",
+     "the photograph"
+    ]
+   }
+  },
+  {
+   "n": 13,
+   "card": "Death",
+   "label": "XIII · Death",
+   "tools": [
+    "sondelass",
+    "lockheart"
+   ],
+   "why": "the blade and the coffin",
+   "special": {
+    "label": "Reaper's Draw",
+    "line": "A blow that downs a creature drinks its Lachryma straight into the coffin.",
+    "main": [
+     "sondelass",
+     "the cutlass's string"
+    ]
+   }
+  },
+  {
+   "n": 14,
+   "card": "Temperance",
+   "label": "XIV · Temperance",
+   "tools": [
+    "soulbrush",
+    "crucibelle"
+   ],
+   "why": "pouring between two cups: paint and song, the healing pair",
+   "special": {
+    "label": "Healing Song",
+    "line": "Paint laid on the beat mends your cracks.",
+    "main": [
+     "soulbrush",
+     "paint laid"
+    ]
+   }
+  },
+  {
+   "n": 15,
+   "card": "The Devil",
+   "label": "XV · The Devil",
+   "tools": [
+    "psygun",
+    "lockheart"
+   ],
+   "why": "the chain",
+   "special": {
+    "label": "Chain Shot",
+    "line": "A shot that chains two creatures together where they stand.",
+    "main": [
+     "psygun",
+     "the shot"
+    ]
+   }
+  },
+  {
+   "n": 16,
+   "card": "The Tower",
+   "label": "XVI · The Tower",
+   "tools": [
+    "psygun",
+    "dreamvane"
+   ],
+   "why": "the bolt from the sky",
+   "special": {
+    "label": "Lightning Rod",
+    "line": "Where the fork sticks, a bolt comes down.",
+    "main": [
+     "dreamvane",
+     "the fork's throw"
+    ]
+   }
+  },
+  {
+   "n": 17,
+   "card": "The Star",
+   "label": "XVII · The Star",
+   "tools": [
+    "soulbrush",
+    "dreamvane"
+   ],
+   "why": "water poured on land and pool: the painted lure",
+   "special": {
+    "label": "Painted Lure",
+    "line": "The lure thrown leaves a stream of paint behind it.",
+    "main": [
+     "dreamvane",
+     "the lure's throw"
+    ]
+   }
+  },
+  {
+   "n": 18,
+   "card": "The Moon",
+   "label": "XVIII · The Moon",
+   "tools": [
+    "crucibelle",
+    "dreamvane"
+   ],
+   "why": "the mirage under the sky: illusion",
+   "special": {
+    "label": "Singing Mirage",
+    "line": "A decoy rises where the fork lands, singing so creatures go to it.",
+    "main": [
+     "dreamvane",
+     "the fork's throw"
+    ]
+   }
+  },
+  {
+   "n": 19,
+   "card": "The Sun",
+   "label": "XIX · The Sun",
+   "tools": [
+    "psygun",
+    "veritome"
+   ],
+   "why": "the flash and the shutter: all shown",
+   "special": {
+    "label": "The Mark",
+    "line": "The Flash marks a creature, and every chamber homes on the mark.",
+    "main": [
+     "psygun",
+     "the shot"
+    ]
+   }
+  },
+  {
+   "n": 20,
+   "card": "Judgement",
+   "label": "XX · Judgement",
+   "tools": [
+    "crucibelle",
+    "lockheart"
+   ],
+   "why": "the trumpet opens the coffin",
+   "special": {
+    "label": "Last Call",
+    "line": "The toll opens the coffin: all it drank bursts out as a wave.",
+    "main": [
+     "lockheart",
+     "the Opening"
+    ]
+   }
+  },
+  {
+   "n": 21,
+   "card": "The World",
+   "label": "XXI · The World",
+   "tools": [
+    "psygun",
+    "soulbrush"
+   ],
+   "why": "the first tool and the mending one: the circle closed",
+   "special": {
+    "label": "Full Circle",
+    "line": "A shot that paints where it lands and mends what it passes.",
+    "main": [
+     "psygun",
+     "the shot"
+    ]
+   }
+  }
+ ],
+ "PAIR_OPEN": {
+  "downs": 50,
+  "lends": 40
+ },
+ "PAIR_SPECIALS": {
+  "1": {
+   "label": "Hooked Shot",
+   "line": "A shot that drags what it hits to you.",
+   "main": [
+    "psygun",
+    "the shot"
+   ]
+  },
+  "2": {
+   "label": "Revelation",
+   "line": "The Flash and the dowse at once: every hidden signature near you shown and tagged.",
+   "main": [
+    "dreamvane",
+    "the dowse"
+   ]
+  },
+  "3": {
+   "label": "Coffin's Mop",
+   "line": "The coffin drinks spilled paint and crude as it passes, and the brush pours it back as paint.",
+   "main": [
+    "lockheart",
+    "the hoover"
+   ]
+  },
+  "4": {
+   "label": "On the Beat",
+   "line": "Six shots fired on the bell's beat, each one staggering.",
+   "main": [
+    "psygun",
+    "the shot"
+   ]
+  },
+  "5": {
+   "label": "Rite",
+   "line": "A toll that reads every creature it reaches, knowing it better.",
+   "main": [
+    "crucibelle",
+    "the toll"
+   ]
+  },
+  "6": {
+   "label": "Rung Line",
+   "line": "Hook a creature and the toll runs down the line, stunning it.",
+   "main": [
+    "sondelass",
+    "the hook form's throw"
+   ]
+  },
+  "7": {
+   "label": "Slingshot",
+   "line": "Throw the fork far and hook to it, flung through the air.",
+   "main": [
+    "dreamvane",
+    "the fork's throw"
+   ]
+  },
+  "8": {
+   "label": "Gentle Edge",
+   "line": "A cutlass string whose blows calm instead of hurt.",
+   "main": [
+    "sondelass",
+    "the cutlass's string"
+   ]
+  },
+  "9": {
+   "label": "Illumined Page",
+   "line": "Photograph a sigil and it is written on what you photographed.",
+   "main": [
+    "veritome",
+    "the photograph"
+   ]
+  },
+  "10": {
+   "label": "Turn of Weather",
+   "line": "Spin the wheel of odds to turn the weather where you stand for a game hour.",
+   "main": [
+    "lockheart",
+    "the wheel of odds"
+   ]
+  },
+  "11": {
+   "label": "Appraised Cut",
+   "line": "A blow on a weak point you have photographed is always the right kind.",
+   "main": [
+    "sondelass",
+    "the cutlass's string"
+   ]
+  },
+  "12": {
+   "label": "Held Plate",
+   "line": "A photograph holds a creature still in time for a moment.",
+   "main": [
+    "veritome",
+    "the photograph"
+   ]
+  },
+  "13": {
+   "label": "Reaper's Draw",
+   "line": "A blow that downs a creature drinks its Lachryma straight into the coffin.",
+   "main": [
+    "sondelass",
+    "the cutlass's string"
+   ]
+  },
+  "14": {
+   "label": "Healing Song",
+   "line": "Paint laid on the beat mends your cracks.",
+   "main": [
+    "soulbrush",
+    "paint laid"
+   ]
+  },
+  "15": {
+   "label": "Chain Shot",
+   "line": "A shot that chains two creatures together where they stand.",
+   "main": [
+    "psygun",
+    "the shot"
+   ]
+  },
+  "16": {
+   "label": "Lightning Rod",
+   "line": "Where the fork sticks, a bolt comes down.",
+   "main": [
+    "dreamvane",
+    "the fork's throw"
+   ]
+  },
+  "17": {
+   "label": "Painted Lure",
+   "line": "The lure thrown leaves a stream of paint behind it.",
+   "main": [
+    "dreamvane",
+    "the lure's throw"
+   ]
+  },
+  "18": {
+   "label": "Singing Mirage",
+   "line": "A decoy rises where the fork lands, singing so creatures go to it.",
+   "main": [
+    "dreamvane",
+    "the fork's throw"
+   ]
+  },
+  "19": {
+   "label": "The Mark",
+   "line": "The Flash marks a creature, and every chamber homes on the mark.",
+   "main": [
+    "psygun",
+    "the shot"
+   ]
+  },
+  "20": {
+   "label": "Last Call",
+   "line": "The toll opens the coffin: all it drank bursts out as a wave.",
+   "main": [
+    "lockheart",
+    "the Opening"
+   ]
+  },
+  "21": {
+   "label": "Full Circle",
+   "line": "A shot that paints where it lands and mends what it passes.",
+   "main": [
+    "psygun",
+    "the shot"
+   ]
+  }
+ },
+ "SPECIALS_BUILT": [
+  19,
+  6,
+  17,
+  3,
+  1,
+  2,
+  4,
+  5,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  18,
+  20,
+  21
+ ],
+ "SPECIAL_PLAY": {
+  "mark": {
+   "n": 19,
+   "rounds": 6,
+   "life": 8,
+   "cone": 0.35,
+   "range": 40
+  },
+  "rung": {
+   "n": 6,
+   "stun": 1.1,
+   "power": 0.6
+  },
+  "lure": {
+   "n": 17,
+   "every": 0.06,
+   "r": 0.7,
+   "cost": 0.2,
+   "drop": 8
+  },
+  "mop": {
+   "n": 3,
+   "every": 0.15,
+   "r": 1,
+   "want": 0.5,
+   "toBottle": 1.5,
+   "reach": 5
+  },
+  "hookedShot": {
+   "n": 1,
+   "window": 3,
+   "pull": 8,
+   "stop": 2,
+   "maxHp": 8
+  },
+  "revelation": {
+   "n": 2,
+   "reach": 20,
+   "life": 6
+  },
+  "onTheBeat": {
+   "n": 4,
+   "shots": 6,
+   "window": 0.1,
+   "stagger": 0.3,
+   "bars": 4
+  },
+  "rite": {
+   "n": 5,
+   "reach": 4.2,
+   "reads": 1
+  },
+  "slingshot": {
+   "n": 7,
+   "range": 30,
+   "fling": 18,
+   "carry": 0.6
+  },
+  "gentleEdge": {
+   "n": 8,
+   "life": 6,
+   "calm": 0.5,
+   "hurt": 0.25
+  },
+  "illuminedPage": {
+   "n": 9,
+   "window": 2,
+   "power": 0.5,
+   "reach": 18
+  },
+  "turnOfWeather": {
+   "n": 10,
+   "radius": 30,
+   "hours": 1
+  },
+  "appraisedCut": {
+   "n": 11,
+   "known": 2,
+   "mult": 1.5
+  },
+  "heldPlate": {
+   "n": 12,
+   "halt": 1.5,
+   "cool": 8
+  },
+  "reapersDraw": {
+   "n": 13,
+   "share": 1
+  },
+  "healingSong": {
+   "n": 14,
+   "window": 0.12,
+   "area": 10,
+   "mend": 1
+  },
+  "chainShot": {
+   "n": 15,
+   "reach": 6,
+   "halt": 2,
+   "length": 6
+  },
+  "lightningRod": {
+   "n": 16,
+   "delay": 0.6,
+   "radius": 3,
+   "power": 3,
+   "stun": 0.5
+  },
+  "singingMirage": {
+   "n": 18,
+   "lure": 12,
+   "life": 6
+  },
+  "lastCall": {
+   "n": 20,
+   "radius": 6,
+   "per": 0.1
+  },
+  "fullCircle": {
+   "n": 21,
+   "width": 0.5,
+   "length": 12,
+   "cost": 0.2,
+   "mendReach": 1,
+   "mend": 0.1
+  }
+ },
+ "START": {
+  "main": "psygun",
+  "sub": "sondelass"
+ },
+ "SUB_GIFTS": {
+  "psygun": {
+   "verb": "Snap shot",
+   "does": "one round where the main aims",
+   "passive": "the ship's gun on the rail"
+  },
+  "sondelass": {
+   "verb": "Grapple",
+   "does": "the hook, to a point or a creature",
+   "passive": null
+  },
+  "soulbrush": {
+   "verb": "Flick",
+   "does": "a flick of paint in the weather's feeling",
+   "passive": "kintsugi: the field mend"
+  },
+  "veritome": {
+   "verb": "Flash",
+   "does": "the Flash",
+   "passive": "a tag reads one line further"
+  },
+  "dreamvane": {
+   "verb": "Lure throw",
+   "does": "the fork, the lure thrown",
+   "passive": "the vane: the weather and the crystals' signatures"
+  },
+  "crucibelle": {
+   "verb": "Toll",
+   "does": "one toll, the stagger round you",
+   "passive": "the beat: a blow on it hits harder"
+  },
+  "lockheart": {
+   "verb": "Gulp",
+   "does": "the gulp, the parry that drinks",
+   "passive": "it drinks the pool's overflow"
+  }
+ },
+ "TOOL_IDS": [
+  "psygun",
+  "sondelass",
+  "soulbrush",
+  "veritome",
+  "dreamvane",
+  "crucibelle",
+  "lockheart"
+ ]
+}

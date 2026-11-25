@@ -1,0 +1,261 @@
+{
+ "AREA_KINDS": {
+  "weir": [
+   "slipjelly"
+  ],
+  "shore": [
+   "slipjelly"
+  ],
+  "ridges": [
+   "slipjelly",
+   "wisp"
+  ],
+  "flats": [
+   "wisp"
+  ],
+  "ruins": [
+   "wisp"
+  ]
+ },
+ "BEHAVIOURS": {
+  "slipjelly": [
+   {
+    "id": "wander",
+    "label": "wanders",
+    "rarity": "anywhere",
+    "acts": [
+     "wander",
+     "go home",
+     "investigate",
+     "idle"
+    ]
+   },
+   {
+    "id": "sleep",
+    "label": "rests in the dark",
+    "rarity": "condition",
+    "acts": [
+     "rest",
+     "huddle"
+    ],
+    "when": {
+     "phase": [
+      "night",
+      "dusk"
+     ]
+    }
+   },
+   {
+    "id": "play",
+    "label": "plays alone",
+    "rarity": "candid",
+    "acts": [
+     "play",
+     "drink",
+     "forage",
+     "fish",
+     "mourn"
+    ]
+   },
+   {
+    "id": "feed",
+    "label": "feeds at a lure",
+    "rarity": "lured",
+    "acts": []
+   }
+  ],
+  "wisp": [
+   {
+    "id": "drift",
+    "label": "drifts",
+    "rarity": "anywhere",
+    "acts": [
+     "wander",
+     "go home"
+    ]
+   },
+   {
+    "id": "gutter",
+    "label": "lets its lantern gutter",
+    "rarity": "condition",
+    "acts": [
+     "idle"
+    ],
+    "when": {
+     "phase": [
+      "dawn",
+      "dusk",
+      "night"
+     ]
+    }
+   },
+   {
+    "id": "circle",
+    "label": "circles a find",
+    "rarity": "candid",
+    "acts": [
+     "investigate",
+     "idle",
+     "wander"
+    ]
+   },
+   {
+    "id": "follow",
+    "label": "follows a lure",
+    "rarity": "lured",
+    "acts": []
+   }
+  ]
+ },
+ "FLIGHT": {
+  "base": 14,
+  "bold": 0.4,
+  "speedAt": 6.5,
+  "speed": [
+   0.75,
+   1.25
+  ],
+  "passBy": 0.69,
+  "posture": {
+   "stand": 1,
+   "crouch": 0.8,
+   "prone": 0.6
+  },
+  "habit": 0.5,
+  "cool": 20,
+  "floor": 2
+ },
+ "FRAMING": [
+  {
+   "below": 110,
+   "word": "poor"
+  },
+  {
+   "below": 170,
+   "word": "fair"
+  },
+  {
+   "below": 230,
+   "word": "good"
+  },
+  {
+   "below": "Infinity",
+   "word": "great"
+  }
+ ],
+ "HABITUATION": {
+  "gain": 0.011111111111111112,
+  "decay": 0.0016666666666666668,
+  "fright": 0.25,
+  "slow": 4
+ },
+ "KIND_FEELING": {
+  "slipjelly": "gall",
+  "wisp": "wonder"
+ },
+ "LURES": {
+  "wonder": {
+   "cost": 8,
+   "ttl": 30,
+   "radius": 16,
+   "hold": 7,
+   "kinds": [
+    "wisp"
+   ]
+  },
+  "mirth": {
+   "cost": 8,
+   "ttl": 30,
+   "radius": 16,
+   "hold": 7,
+   "kinds": []
+  },
+  "desire": {
+   "cost": 8,
+   "ttl": 30,
+   "radius": 16,
+   "hold": 7,
+   "kinds": []
+  },
+  "fury": {
+   "cost": 8,
+   "ttl": 30,
+   "radius": 16,
+   "hold": 7,
+   "kinds": []
+  },
+  "gall": {
+   "cost": 8,
+   "ttl": 30,
+   "radius": 16,
+   "hold": 7,
+   "kinds": [
+    "slipjelly"
+   ]
+  },
+  "grief": {
+   "cost": 8,
+   "ttl": 30,
+   "radius": 16,
+   "hold": 7,
+   "kinds": []
+  },
+  "dread": {
+   "cost": 8,
+   "ttl": 30,
+   "radius": 16,
+   "hold": 7,
+   "kinds": []
+  }
+ },
+ "LURE_FEELINGS": [
+  "wonder",
+  "mirth",
+  "desire",
+  "fury",
+  "gall",
+  "grief",
+  "dread"
+ ],
+ "RARITY_STARS": {
+  "anywhere": 1,
+  "condition": 2,
+  "lured": 3,
+  "candid": 4
+ },
+ "RESEARCH": {
+  "levels": [
+   1,
+   3,
+   5,
+   7
+  ],
+  "opens": [
+   {
+    "level": 2,
+    "what": "night"
+   },
+   {
+    "level": 3,
+    "what": "rare"
+   },
+   {
+    "level": 4,
+    "what": "all"
+   }
+  ]
+ },
+ "SAFARI_PAY": {
+  "behaviour": {
+   "anywhere": 0.5,
+   "condition": 1,
+   "lured": 1.5,
+   "candid": 2
+  },
+  "level": 0.25
+ },
+ "SCENT": {
+  "perMs": 6,
+  "max": 40
+ }
+}

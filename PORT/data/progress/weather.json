@@ -1,0 +1,93 @@
+{
+ "AGATES": {
+  "mirth+wonder": "delight",
+  "mirth+desire": "hope",
+  "mirth+dread": "guilt",
+  "wonder+grief": "disappointment",
+  "wonder+dread": "awe",
+  "desire+grief": "longing",
+  "desire+dread": "worry",
+  "grief+dread": "despair",
+  "mirth+fury": "pride",
+  "desire+fury": "zeal",
+  "wonder+fury": "outrage",
+  "grief+fury": "envy",
+  "gall+fury": "contempt",
+  "grief+gall": "remorse",
+  "dread+gall": "shame",
+  "wonder+gall": "disbelief",
+  "mirth+gall": "mockery",
+  "desire+gall": "cynicism"
+ },
+ "ASPECTS": [
+  "mirth",
+  "wonder",
+  "desire",
+  "grief",
+  "dread",
+  "gall",
+  "fury"
+ ],
+ "COLOR": {
+  "mirth": 15910986,
+  "wonder": 6211808,
+  "desire": 16742986,
+  "grief": 9416959,
+  "dread": 4155978,
+  "gall": 9067208,
+  "fury": 13107224
+ },
+ "DISPLAY_ORDER": [
+  "wonder",
+  "mirth",
+  "desire",
+  "fury",
+  "gall",
+  "grief",
+  "dread"
+ ],
+ "NAMES": {
+  "mirth": "the fox's wedding",
+  "wonder": "the aurora",
+  "desire": "the wanting wind",
+  "grief": "the long rain",
+  "dread": "the pall",
+  "gall": "the miasma",
+  "fury": "the hail",
+  "calm": "fair"
+ },
+ "NATIVE": [
+  "mirth",
+  "wonder",
+  "desire",
+  "grief",
+  "dread"
+ ],
+ "OPPOSITE": {
+  "mirth": "grief",
+  "grief": "mirth",
+  "wonder": "desire",
+  "desire": "wonder",
+  "dread": "fury",
+  "fury": "dread",
+  "gall": null
+ },
+ "TYPE_OF": {
+  "mirth": "impact",
+  "wonder": "ego",
+  "desire": "influence",
+  "grief": "illusion",
+  "dread": "delirium",
+  "fury": "impact",
+  "gall": "ego"
+ },
+ "VALENCE": {
+  "wonder": 2,
+  "mirth": 1.5,
+  "desire": 0,
+  "fury": -0.5,
+  "gall": -1,
+  "grief": -1.5,
+  "dread": -2
+ }
+}

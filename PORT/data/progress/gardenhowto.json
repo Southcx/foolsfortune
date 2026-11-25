@@ -1,0 +1,50 @@
+{
+ "GARDEN_HOWTO": {
+  "title": "Your Spirit Garden",
+  "steps": [
+   {
+    "say": "This is the world inside your Pneuka Jar. Here you play as the Jar. Use WASD to hop and Space to jump. Each small world is a planetoid.",
+    "touch": "This is the world inside your Pneuka Jar. Here you play as the Jar. With WALK on, tap the ground to hop there.",
+    "show": "jar"
+   },
+   {
+    "say": "You also control the god hand. It follows the cursor. Press 1 to 0 to choose what it does: 1 grabs and throws, 2 to 7 shape the clay, 8 pours water, 9 places, 0 paints.",
+    "touch": "You also control the god hand. It follows your finger. Tap a tile at the edge of the screen to choose what it does. GRAB picks things up and throws them. The others shape, water, place and paint.",
+    "show": "hand"
+   },
+   {
+    "say": "The shed is your storeroom. Press {use} at the shed to take your first seed.",
+    "show": "shed"
+   },
+   {
+    "say": "Carry the seed into open sky, away from the planetoids, and let go. It becomes a new planetoid in the ring. Feed it to make it grow.",
+    "show": "ring"
+   },
+   {
+    "say": "Hop onto a launch lotus to fly to another planetoid. This one goes to the Athanor.",
+    "show": "lotus"
+   },
+   {
+    "say": "Your first spirit slab is at the plate shrine on the Athanor. A spirit slab is a creature set in stone. Press {use} at the shrine and choose it.",
+    "show": "shrine"
+   },
+   {
+    "say": "Carve the creature out before the stone sets. Press 1 to 7 to choose a tool. The brush never cracks the fossil. The blast is fast but rough. A clean carving makes a stronger spirit.",
+    "touch": "Carve the creature out before the stone sets. Tap a tile to choose a tool. The brush never cracks the fossil. The blast is fast but rough. A clean carving makes a stronger spirit.",
+    "show": "bench"
+   }
+  ],
+  "card": [
+   "You are your Pneuka Jar (move) and the god hand (1 to 0: grab, shape, water, place, paint).",
+   "A planetoid's seed waits in the shed: let it go in the open sky and it is a new planetoid. Feed it to grow it.",
+   "Launch lotuses throw you between planetoids.",
+   "Photograph a creature with the Veritome, and the plate shrine sets the photo into a spirit slab.",
+   "Carve a slab at the bench below the shrine to summon its spirit: cleaner is stronger.",
+   "The shrine also reads a real barcode or QR code: a slab or a material, three new codes a game day."
+  ]
+ },
+ "GIFT": {
+  "kind": "clapperjar",
+  "stars": 1
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "CARRY": {
+  "ghostHz": 2,
+  "ghost": 960,
+  "fires": 240
+ },
+ "LOT": {
+  "x": -830,
+  "z": 240,
+  "half": 240,
+  "blend": 40,
+  "y": 20
+ },
+ "MADE": {
+  "slots": 3,
+  "points": [
+   4,
+   48
+  ],
+  "length": [
+   500,
+   3200
+  ],
+  "width": [
+   5,
+   16
+  ],
+  "defaultWidth": 10,
+  "rise": 30,
+  "climb": 0.35,
+  "bend": 14,
+  "gates": 8,
+  "budget": 100,
+  "margin": 6,
+  "startClear": 60,
+  "maxRules": 3
+ },
+ "MEDAL_K": {
+  "gold": 0.718,
+  "silver": 0.802,
+  "bronze": 0.929
+ },
+ "RULES": {
+  "noflare": {
+   "label": "No flares",
+   "line": "The flare will not light here."
+  },
+  "slick": {
+   "label": "Slick sand",
+   "line": "The sand holds two thirds as well."
+  },
+  "thirst": {
+   "label": "Thirst",
+   "line": "The pool drains as you ride."
+  },
+  "plates2": {
+   "label": "Bright plates",
+   "line": "Every sun plate pushes twice."
+  }
+ }
+}

@@ -1,0 +1,34 @@
+{
+ "LARGE": {
+  "djenne": {
+   "label": "Great mosque",
+   "size": "large",
+   "w": 34,
+   "d": 26
+  },
+  "pueblo": {
+   "label": "Terraced pueblo",
+   "size": "large",
+   "w": 32,
+   "d": 22
+  },
+  "kasbah": {
+   "label": "Kasbah",
+   "size": "large",
+   "w": 28,
+   "d": 28
+  },
+  "shibam": {
+   "label": "Tower houses",
+   "size": "large",
+   "w": 26,
+   "d": 18
+  },
+  "mission": {
+   "label": "Mission church",
+   "size": "large",
+   "w": 24,
+   "d": 34
+  }
+ }
+}

@@ -1,0 +1,334 @@
+{
+ "FAIR": {
+  "gapWidths": 3,
+  "reaction": 0.5,
+  "spawn": 4,
+  "turn": 1.5707963267948966,
+  "life": 2.5,
+  "aim": 0.10471975511965978,
+  "plane": 0.02
+ },
+ "GRID": 0.09375,
+ "PATTERNS": {
+  "ring": {
+   "ring": true,
+   "does": "a ring, all at once",
+   "defaults": {
+    "n": 16,
+    "speed": 14,
+    "seed": 0,
+    "every": 1.5,
+    "volleys": 4
+   }
+  },
+  "rotatingRing": {
+   "ring": true,
+   "does": "rings whose seed drifts by a delta that never divides the step (no blind spots)",
+   "defaults": {
+    "n": 18,
+    "speed": 13,
+    "delta": 7,
+    "every": 0.75,
+    "volleys": 8
+   }
+  },
+  "evenFan": {
+   "does": "an even fan: it constrains, nothing on the aim line",
+   "defaults": {
+    "n": 6,
+    "arc": 60,
+    "speed": 16,
+    "every": 1,
+    "volleys": 4
+   }
+  },
+  "oddFan": {
+   "does": "an odd fan: one shot on the aim line, it makes you move",
+   "defaults": {
+    "n": 5,
+    "arc": 50,
+    "speed": 16,
+    "every": 1,
+    "volleys": 4
+   }
+  },
+  "aimedBurst": {
+   "does": "a stream down the aim line",
+   "defaults": {
+    "n": 6,
+    "speed": 20,
+    "gap": 0.12,
+    "volleys": 3,
+    "every": 1.5
+   }
+  },
+  "offsetTwins": {
+   "does": "pairs aimed either side of you: slip between",
+   "defaults": {
+    "offset": 8,
+    "speed": 18,
+    "every": 0.5,
+    "volleys": 8
+   }
+  },
+  "stackFan": {
+   "does": "a fan at a stack of speeds: gaps that open further out",
+   "defaults": {
+    "n": 5,
+    "arc": 70,
+    "m": 3,
+    "vmin": 10,
+    "vmax": 20,
+    "every": 1.5,
+    "volleys": 3
+   }
+  },
+  "spiral": {
+   "ring": true,
+   "does": "one arm turning",
+   "defaults": {
+    "w": 160,
+    "speed": 14,
+    "every": 0.08,
+    "volleys": 50
+   }
+  },
+  "multiSpiral": {
+   "ring": true,
+   "does": "arms turning together",
+   "defaults": {
+    "arms": 4,
+    "w": 120,
+    "speed": 13,
+    "every": 0.1,
+    "volleys": 40
+   }
+  },
+  "doubleHelix": {
+   "ring": true,
+   "does": "arms that reverse their turn each half period",
+   "defaults": {
+    "arms": 3,
+    "w": 140,
+    "T": 2,
+    "speed": 13,
+    "every": 0.1,
+    "volleys": 40
+   }
+  },
+  "accelSpiral": {
+   "ring": true,
+   "does": "a spiral winding faster, to a cap",
+   "defaults": {
+    "arms": 2,
+    "w0": 60,
+    "alpha": 80,
+    "wmax": 260,
+    "speed": 13,
+    "every": 0.08,
+    "volleys": 50
+   }
+  },
+  "rose": {
+   "ring": true,
+   "does": "a flower: a ring whose speed follows a rose curve r = cos(k theta)",
+   "defaults": {
+    "n": 36,
+    "k": 3,
+    "speed": 9,
+    "swell": 9,
+    "every": 2,
+    "volleys": 3
+   }
+  },
+  "gapWall": {
+   "does": "a wall across the plane with a gap that snakes row by row (at least three ship widths)",
+   "defaults": {
+    "cols": 12,
+    "width": 24,
+    "gap": 3,
+    "step": 2,
+    "speed": 12,
+    "every": 1,
+    "volleys": 6
+   }
+  },
+  "sineCurtain": {
+   "does": "a curtain of shots weaving in antiphase: lanes that sway",
+   "defaults": {
+    "cols": 7,
+    "width": 28,
+    "A": 2,
+    "f": 0.6,
+    "speed": 11,
+    "every": 1.2,
+    "volleys": 5
+   }
+  },
+  "decelBurst": {
+   "does": "shells that slow to a stop, then burst into rings (BulletML)",
+   "defaults": {
+    "n": 4,
+    "arc": 80,
+    "speed": 16,
+    "T": 1.2,
+    "m": 10,
+    "childSpeed": 11,
+    "every": 2,
+    "volleys": 3
+   }
+  },
+  "accelRain": {
+   "does": "shots falling and gathering speed, placed on a jittered grid (no clumps, no holes)",
+   "defaults": {
+    "n": 7,
+    "width": 28,
+    "v0": 4,
+    "a": 12,
+    "vmax": 22,
+    "every": 0.6,
+    "volleys": 8
+   }
+  },
+  "curving": {
+   "does": "shots that arc round you after a straight start",
+   "defaults": {
+    "n": 6,
+    "arc": 90,
+    "speed": 14,
+    "omega": 50,
+    "delay": 0.5,
+    "every": 1.2,
+    "volleys": 4
+   }
+  },
+  "splitShell": {
+   "does": "a heavy shell that splits into a fan of children",
+   "defaults": {
+    "speed": 15,
+    "T": 0.9,
+    "m": 5,
+    "spread": 40,
+    "childSpeed": 13,
+    "every": 1,
+    "volleys": 4
+   }
+  },
+  "fragmentRing": {
+   "ring": true,
+   "does": "a ring whose every shot splits once (capped: a ring of 8 into 24)",
+   "defaults": {
+    "n": 8,
+    "speed": 12,
+    "T": 0.8,
+    "m": 3,
+    "spread": 30,
+    "childSpeed": 9,
+    "every": 2,
+    "volleys": 3
+   }
+  },
+  "crossGate": {
+   "does": "two streams from either side whose lines cross at you",
+   "defaults": {
+    "offset": 9,
+    "speed": 18,
+    "every": 0.15,
+    "volleys": 20,
+    "side": 10
+   }
+  },
+  "stratRain": {
+   "does": "a scatter on a jittered grid: random to the eye, fair to the hand",
+   "defaults": {
+    "n": 8,
+    "width": 28,
+    "speed": 13,
+    "every": 0.5,
+    "volleys": 8
+   }
+  },
+  "sweepBeam": {
+   "lead": 4,
+   "does": "a beam that warns, then burns, sweeping slower than the ship can run",
+   "defaults": {
+    "warn": 0.75,
+    "burn": 2,
+    "from": -50,
+    "to": 50,
+    "reach": 60,
+    "every": 4,
+    "volleys": 2
+   }
+  },
+  "snakeLaser": {
+   "lead": 4,
+   "does": "a laser that follows a weaving head (a ribbon over its trail)",
+   "defaults": {
+    "speed": 16,
+    "A": 5,
+    "f": 0.8,
+    "length": 14,
+    "every": 2.5,
+    "volleys": 3
+   }
+  },
+  "homingSalvo": {
+   "does": "missiles that home, turning no faster than a cap, for a lifetime, then fly dumb",
+   "defaults": {
+    "n": 4,
+    "arc": 120,
+    "speed": 12,
+    "turn": 80,
+    "life": 2.2,
+    "N": 3.5,
+    "every": 2,
+    "volleys": 3
+   }
+  },
+  "itano": {
+   "does": "the Itano circus: a fanned launch, an overshoot, three behaviours (straight, leading, weaving) homing at once",
+   "defaults": {
+    "n": 9,
+    "arc": 160,
+    "speed": 14,
+    "turn": 90,
+    "life": 2.5,
+    "wobble": 2.5,
+    "every": 3,
+    "volleys": 2
+   }
+  },
+  "cageRing": {
+   "does": "a ring thrown out round you from its thrower, then closing in with one sector open (the bait ball as a pattern)",
+   "defaults": {
+    "n": 20,
+    "radius": 14,
+    "coneRadius": 6,
+    "out": 1,
+    "open": 50,
+    "speed": 7,
+    "every": 3,
+    "volleys": 2
+   }
+  },
+  "frenzyDash": {
+   "does": "glints peel off one by one, glint a warning, then dash straight at where you are",
+   "defaults": {
+    "n": 6,
+    "warn": 0.25,
+    "speed": 24,
+    "every": 0.35,
+    "volleys": 6
+   }
+  },
+  "mixed": {
+   "lead": 2,
+   "does": "any pattern with a share of its shots outlined (only the roll answers them)",
+   "defaults": {
+    "of": "oddFan",
+    "share": 0.25
+   }
+  }
+ }
+}

@@ -1,0 +1,432 @@
+{
+ "BRAWLER": {
+  "jab1": {
+   "name": "Jab",
+   "from": "the brawler (Closers' J)",
+   "damage": 2,
+   "angle": 83,
+   "base": 0,
+   "growth": 50,
+   "startup": 2,
+   "active": [
+    2,
+    3
+   ],
+   "total": 14
+  },
+  "jab2": {
+   "name": "Jab 2",
+   "from": "the brawler",
+   "damage": 2,
+   "angle": 83,
+   "base": 0,
+   "growth": 50,
+   "startup": 3,
+   "active": [
+    3,
+    4
+   ],
+   "total": 16
+  },
+  "jab3": {
+   "name": "Barrage",
+   "from": "the brawler (Ultimate's rapid jab)",
+   "damage": 1,
+   "angle": 361,
+   "base": 5,
+   "growth": 20,
+   "startup": 4,
+   "active": [
+    4,
+    7
+   ],
+   "total": 12,
+   "loop": [
+    4,
+    7
+   ],
+   "every": 4,
+   "then": "jabEnd"
+  },
+  "jabEnd": {
+   "name": "Barrage finisher",
+   "from": "the brawler",
+   "damage": 5,
+   "angle": 361,
+   "base": 50,
+   "growth": 110,
+   "startup": 5,
+   "active": [
+    5,
+    7
+   ],
+   "total": 30
+  },
+  "utilt": {
+   "name": "Rising uppercut",
+   "from": "the brawler",
+   "damage": 11,
+   "angle": 88,
+   "base": 40,
+   "growth": 100,
+   "startup": 6,
+   "active": [
+    6,
+    10
+   ],
+   "total": 34
+  },
+  "dash": {
+   "name": "Dash straight",
+   "from": "the brawler",
+   "damage": 10,
+   "angle": 40,
+   "base": 60,
+   "growth": 70,
+   "startup": 7,
+   "active": [
+    7,
+    11
+   ],
+   "total": 40
+  },
+  "uspecial": {
+   "name": "Uppercut rising",
+   "from": "the brawler (the recovery)",
+   "damage": 10,
+   "angle": 85,
+   "base": 35,
+   "growth": 70,
+   "startup": 4,
+   "active": [
+    4,
+    9
+   ],
+   "total": 32,
+   "special": "recover"
+  },
+  "sspecial": {
+   "name": "Straight lunge",
+   "from": "the brawler (a 4 m lunge)",
+   "damage": 9,
+   "angle": 361,
+   "base": 45,
+   "growth": 60,
+   "startup": 9,
+   "active": [
+    9,
+    16
+   ],
+   "total": 42,
+   "special": "lunge",
+   "lunge": 4
+  },
+  "fair": {
+   "name": "Flying knee",
+   "from": "the brawler (Melee's Knee Smash: one clean frame)",
+   "damage": 20,
+   "angle": 361,
+   "base": 10,
+   "growth": 100,
+   "startup": 14,
+   "active": [
+    14,
+    30
+   ],
+   "total": 46,
+   "landing": 19,
+   "autoCancel": [
+    [
+     1,
+     2
+    ],
+    [
+     38,
+     99
+    ]
+   ],
+   "late": {
+    "at": 15,
+    "damage": 5,
+    "base": 0,
+    "growth": 100
+   }
+  },
+  "dair": {
+   "name": "Dive kick",
+   "from": "the brawler (Kamen Rider's Rider Kick; Sheik's and Zero Suit's stall and dive)",
+   "damage": 13,
+   "angle": 45,
+   "base": 30,
+   "growth": 80,
+   "startup": 12,
+   "active": [
+    12,
+    40
+   ],
+   "total": 52,
+   "landing": 28,
+   "autoCancel": [
+    [
+     1,
+     3
+    ]
+   ],
+   "special": "dive",
+   "dive": {
+    "angle": -50,
+    "speed": 16
+   },
+   "late": {
+    "at": 20,
+    "damage": 8,
+    "base": 20,
+    "growth": 70
+   }
+  },
+  "nair": {
+   "name": "Dropkick",
+   "from": "the brawler (the wrestler's dropkick; a sex kick's strong then weak)",
+   "damage": 12,
+   "angle": 361,
+   "base": 20,
+   "growth": 100,
+   "startup": 5,
+   "active": [
+    5,
+    22
+   ],
+   "total": 44,
+   "landing": 22,
+   "autoCancel": [
+    [
+     1,
+     3
+    ],
+    [
+     36,
+     99
+    ]
+   ],
+   "late": {
+    "at": 9,
+    "damage": 6,
+    "base": 0,
+    "growth": 100
+   }
+  }
+ },
+ "BRAWLER_BOXES": {
+  "jabEnd": [
+   [
+    0.82,
+    1.1,
+    0.42
+   ]
+  ],
+  "fair": [
+   [
+    0.42,
+    1.12,
+    0.44
+   ]
+  ],
+  "nair": [
+   [
+    0.72,
+    0.85,
+    0.5
+   ]
+  ],
+  "dair": [
+   [
+    0.5,
+    0.2,
+    0.48
+   ]
+  ]
+ },
+ "CAP": 30,
+ "PCT": 5,
+ "REACH": {
+  "sondelass": 1.35,
+  "dreamvane": 1.5,
+  "lockheart": 1.6,
+  "brush": 1.3,
+  "crucibelle": 1.1,
+  "veritome": 1.05,
+  "psygun": 1,
+  "unarmed": 1
+ },
+ "RULE_TOOL": {
+  "sondelass": "sondelass",
+  "soulbrush": "brush",
+  "dreamvane": "dreamvane",
+  "crucibelle": "crucibelle",
+  "lockheart": "lockheart",
+  "veritome": "veritome",
+  "psygun": "psygun"
+ },
+ "SLOTS": {
+  "sondelass": {
+   "utilt": {
+    "row": "launcher"
+   },
+   "dtilt": {
+    "row": "lowSweep"
+   },
+   "dash": {
+    "row": "dash"
+   },
+   "fsmash": {
+    "row": "charge",
+    "shatter": 0.4
+   },
+   "usmash": {
+    "row": "risingCut"
+   },
+   "dsmash": {
+    "row": "spinSlash"
+   },
+   "nair": {
+    "row": "air1"
+   },
+   "fair": {
+    "row": "air2"
+   },
+   "bair": {
+    "row": "backhand"
+   },
+   "uair": {
+    "row": "quickSlash",
+    "angle": 80
+   },
+   "dair": {
+    "row": "plunge",
+    "angle": 290
+   },
+   "sspecial": null,
+   "dspecialEmpty": "special"
+  },
+  "psygun": {
+   "jab1": {
+    "row": "whip"
+   },
+   "nspecial": {
+    "keep": true,
+    "charge": 1,
+    "chargeShot": true
+   },
+   "sspecial": {
+    "row": "special",
+    "special": null
+   }
+  },
+  "brush": {
+   "jab1": {
+    "row": "combo1"
+   },
+   "jab2": {
+    "row": "combo2"
+   },
+   "ftilt": {
+    "row": "combo3"
+   },
+   "dash": {
+    "row": "dash"
+   },
+   "dsmash": {
+    "row": "spin"
+   },
+   "nair": {
+    "row": "air1"
+   },
+   "fair": {
+    "row": "air2"
+   },
+   "uair": {
+    "row": "air3",
+    "angle": 80
+   },
+   "dair": {
+    "row": "airSlam",
+    "angle": 290
+   }
+  },
+  "dreamvane": {
+   "jab1": {
+    "row": "combo1"
+   },
+   "jab2": {
+    "row": "combo2"
+   },
+   "jab3": {
+    "row": "combo3"
+   },
+   "ftilt": {
+    "row": "pause3"
+   },
+   "utilt": {
+    "row": "launcher"
+   },
+   "fsmash": {
+    "row": "charge",
+    "shatter": 0.4
+   },
+   "nspecial": {
+    "row": "special",
+    "special": null
+   }
+  },
+  "crucibelle": {
+   "jab1": {
+    "row": "toll1"
+   },
+   "jab2": {
+    "row": "toll2"
+   },
+   "ftilt": {
+    "row": "toll3"
+   },
+   "nspecial": {
+    "row": "feverPeak",
+    "special": null
+   }
+  },
+  "lockheart": {
+   "jab1": {
+    "row": "flail1"
+   },
+   "jab2": {
+    "row": "flail2"
+   },
+   "ftilt": {
+    "row": "flail3"
+   },
+   "dair": {
+    "row": "flail3",
+    "angle": 280,
+    "name": "Anchor drop",
+    "from": "the Lockheart: the coffin dropped straight down on its chain (a meteor spike)"
+   }
+  },
+  "veritome": {
+   "jab1": {
+    "row": "bash1"
+   },
+   "ftilt": {
+    "row": "bash2"
+   }
+  }
+ },
+ "SLOT_RULES": {
+  "lockheart": {
+   "sspecial": {
+    "snare": true
+   },
+   "uspecial": {
+    "tether": true
+   }
+  }
+ }
+}

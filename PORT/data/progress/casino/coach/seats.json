@@ -1,0 +1,9 @@
+{
+ "PERSON_COLOURS": {
+  "you": "red",
+  "Raku": "black",
+  "Clink": "yellow",
+  "Celadon": "green",
+  "Crock": "blue"
+ }
+}

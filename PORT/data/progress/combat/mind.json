@@ -1,0 +1,39 @@
+{
+ "MIND": {
+  "perBlow": 0.12,
+  "perResist": -0.35,
+  "settlePerSec": 0.05
+ },
+ "STATES": [
+  {
+   "id": "stoic",
+   "name": "Stoic",
+   "take": 0.35,
+   "buff": 0.6
+  },
+  {
+   "id": "resolved",
+   "name": "Resolved",
+   "take": 0.7,
+   "buff": 0.85
+  },
+  {
+   "id": "balanced",
+   "name": "Balanced",
+   "take": 1,
+   "buff": 1
+  },
+  {
+   "id": "fluid",
+   "name": "Fluid",
+   "take": 1.4,
+   "buff": 1.2
+  },
+  {
+   "id": "prismatic",
+   "name": "Prismatic",
+   "take": 2,
+   "buff": 1.5
+  }
+ ]
+}

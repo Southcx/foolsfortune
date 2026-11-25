@@ -1,0 +1,244 @@
+{
+ "HOWTO": {
+  "querent": {
+   "title": "Querent",
+   "steps": [
+    {
+     "say": "Make 3 groups of 3 cards. A group is 3 of the same number (7, 7, 7) or 3 numbers in a row (4, 5, 6). Colours don't matter.",
+     "show": "goal"
+    },
+    {
+     "say": "You hold 8 cards. On your turn you take 1 (now you have 9), then throw 1 back. Cards that already make groups glow together.",
+     "show": "hand"
+    },
+    {
+     "say": "Take a card from your own pile, or steal the card someone just threw away. Careful: when you steal, they get a Major Arcana, a power-up card.",
+     "show": "moves"
+    },
+    {
+     "say": "When your 9 cards make 3 groups, you win the round! Fancy hands score more: all runs, all sets, or all one colour.",
+     "show": "hand"
+    },
+    {
+     "say": "One card away from winning? You can call the Fate Clause. Win on your very next turn for a big bonus, but your hand is locked until then.",
+     "show": "moves"
+    },
+    {
+     "say": "There are 4 rounds. Whoever has the most points at the end wins the table.",
+     "show": "seats"
+    }
+   ],
+   "card": [
+    "Goal: 3 groups of 3 (same number, or 3 in a row).",
+    "Turn: take 1 (draw or steal), throw 1 back.",
+    "Stealing gives the robbed player a Major Arcana.",
+    "Fate Clause: one card away, call it for a bonus.",
+    "4 rounds; most points wins."
+   ]
+  },
+  "zodiac": {
+   "title": "Zodiac",
+   "steps": [
+    {
+     "say": "You have 12 tiles, numbered 1 to 12. Shut all of yours before anyone else does.",
+     "show": "tiles"
+    },
+    {
+     "say": "You roll 2 dice. Shut tiles that add up to your dice. You can add the dice (3 + 4 = 7) or multiply them (3 × 4 = 12).",
+     "show": "dice"
+    },
+    {
+     "say": "Your gold attack die reopens someone else's shut tiles. If none fit, they pay chips into the pot instead.",
+     "show": "dice"
+    },
+    {
+     "say": "Roll doubles and pick a prize: lock a tile shut forever (with a power), a bigger attack die, or make someone pay.",
+     "show": "moves"
+    },
+    {
+     "say": "Shut all 12 first and the pot is yours.",
+     "show": "centre"
+    }
+   ],
+   "card": [
+    "Goal: shut your 12 tiles first.",
+    "Shut tiles that add up to your dice, added or multiplied.",
+    "Your gold attack die reopens others' tiles.",
+    "Doubles: lock a tile, grow your attack die, or make them pay."
+   ]
+  },
+  "eventhorizon": {
+   "title": "Event Horizon",
+   "steps": [
+    {
+     "say": "The house rolls secret dice and shows you the total. That is the target.",
+     "show": "centre"
+    },
+    {
+     "say": "Roll your own dice, a few at a time, to land on EXACTLY that number.",
+     "show": "dice"
+    },
+    {
+     "say": "Go over and you're out. Stay under and wait for your next turn. Each die can only be rolled once a round, so choose well.",
+     "show": "moves"
+    },
+    {
+     "say": "Every choice shows its chance to hit exactly and its chance to go over.",
+     "show": "moves"
+    },
+    {
+     "say": "Hit it exactly to win the pot. Use as many dice as the house and it pays 3 times your bet. Use the very same dice and it pays 5 times.",
+     "show": "goal"
+    }
+   ],
+   "card": [
+    "Goal: add up to exactly the target.",
+    "Roll some of your dice each turn; each die once a round.",
+    "Over the target: you're out.",
+    "Same number of dice as the house: ×3. Same dice: ×5."
+   ]
+  },
+  "supernova": {
+   "title": "Supernova Run",
+   "steps": [
+    {
+     "say": "You start with four 6-sided dice. The first to 500 points wins.",
+     "show": "goal"
+    },
+    {
+     "say": "Roll all your dice for points. A die that rolls its top number makes a copy of itself. A 1 makes it shrink (a 4-sided die that rolls 1 is gone).",
+     "show": "moves"
+    },
+    {
+     "say": "Or change your dice instead: fuse two into one bigger die (6 + 6 makes a 12), or split one into two.",
+     "show": "moves"
+    },
+    {
+     "say": "Build a 20-sided die. When it rolls a 20: SUPERNOVA! Your points double, and everyone's dice reset to four 6-sided dice.",
+     "show": "seats"
+    }
+   ],
+   "card": [
+    "Goal: 500 points first.",
+    "Roll: top numbers copy the die, 1s shrink it.",
+    "Or fuse two dice into a bigger one, or split one.",
+    "A d20 rolling 20: SUPERNOVA, points ×2, all dice reset."
+   ]
+  },
+  "nebula": {
+   "title": "Nebula Bluff",
+   "steps": [
+    {
+     "say": "You roll 6 secret dice. Add them up: that is what your hand is worth. A die on its top number is worth 10 more.",
+     "show": "hand"
+    },
+    {
+     "say": "Take turns claiming \"my hand is worth at least ___\". Tell the truth, or bluff! Bigger claims cost more chips.",
+     "show": "claim"
+    },
+    {
+     "say": "On your turn: claim higher, call the last claim a bluff, or fold (you lose 1 die).",
+     "show": "moves"
+    },
+    {
+     "say": "Call a bluff and their hand is shown. If they lied, they lose 2 dice. If they told the truth, you lose 2.",
+     "show": "moves"
+    },
+    {
+     "say": "Watch for tells: when someone lies, their top chip sometimes wiggles.",
+     "show": "tell"
+    },
+    {
+     "say": "The last player with dice wins.",
+     "show": "seats"
+    }
+   ],
+   "card": [
+    "Goal: be the last with dice.",
+    "Claim what your secret hand is worth, or bluff.",
+    "Raise, call the bluff, or fold (−1 die).",
+    "Wrong call or caught bluff: −2 dice.",
+    "Watch for tells."
+   ]
+  },
+  "charity": {
+   "title": "Charity Gamble",
+   "steps": [
+    {
+     "say": "Every round, each player secretly drops a chip into the charity jar: a 1, a 5 or a 10. Nobody sees which.",
+     "show": "moves"
+    },
+    {
+     "say": "Then each player SAYS what they dropped. You can tell the truth or lie: it costs nothing.",
+     "show": "seats"
+    },
+    {
+     "say": "The line is what the jar holds on average. Bet OVER or UNDER it. Your own chip is the one you know for sure.",
+     "show": "centre"
+    },
+    {
+     "say": "Everyone's chips are shown. Players who bet right share the jar, so it pays to be right when few others are. Nobody right, or exactly on the line? The jar waits for the next round.",
+     "show": "centre"
+    },
+    {
+     "say": "Watch who lies: each player's lie rate is shown on their plate. After 8 rounds, the most chips wins.",
+     "show": "seats"
+    }
+   ],
+   "card": [
+    "Goal: most chips after 8 rounds.",
+    "Drop 1, 5 or 10 in secret, then say what you dropped (lie if you like).",
+    "Bet over or under the line.",
+    "Right bets share the jar; charity keeps a tenth.",
+    "Watch the lie rates."
+   ]
+  },
+  "entropy": {
+   "title": "Entropy Tactics",
+   "steps": [
+    {
+     "say": "You and Dovina each have the same deck of 56 cards. The Grand Bomb sits in the middle of the board. When its counter runs out, whoever owns the tile under it loses.",
+     "show": "goal"
+    },
+    {
+     "say": "Every tile has a sum. Play a number card on a tile you own or next to one: its number adds to the sum. Hit exactly 21 and the tile turns yours. Go over 21 and the sum drops back to 0. Both of you add to the same sums!",
+     "show": "tiles"
+    },
+    {
+     "say": "A court card (page, knight, queen, king) becomes a token on your back row. Each turn it walks forward: a page 1 tile, a king 4. Its suit is its job: wands hit their Arcana, pentacles claim tiles, swords fight and shove the bomb, cups heal you and come home.",
+     "show": "hand"
+    },
+    {
+     "say": "Tokens have health: a page 3, a king 12. Play a number card on one of theirs in your reach (on or next to your ground) and it takes that much damage instead of adding to a tile. Double if your card's suit is its opposite: wands against cups, swords against pentacles. A token fights, strikes and heals with the health it has left.",
+     "show": "tiles"
+    },
+    {
+     "say": "Your Arcana is your class (/arcana to choose before you sit). Its suit's tokens walk one tile further, and its suit's number cards play one up or down: carve your deck toward your suit.",
+     "show": "seats"
+    },
+    {
+     "say": "Feed a card to your Hungry Die whenever it is your turn: it is gone for good, but the die grows, before you roll if you like. Cards you don't play: keep two for next turn and discard the rest.",
+     "show": "moves"
+    },
+    {
+     "say": "Then roll your Hungry Die: push the bomb toward them, or count its counter down. Your tokens move after.",
+     "show": "moves"
+    },
+    {
+     "say": "Out of cards? Take fatigue (it hurts more each time) or shuffle your discards back in (that hurts too). Feed too many and you run dry. Win by the bomb on their tile (on nobody's, the more tiles held), off their edge, or their health at 0.",
+     "show": "seats"
+    }
+   ],
+   "card": [
+    "Goal: the bomb goes off on their tile or off their edge, or their Arcana falls.",
+    "Number cards add to a tile's sum: exactly 21 turns it yours, over 21 resets it.",
+    "Court cards are tokens that walk forward; the suit says what they do.",
+    "A number card on their token in reach hurts it; double against the opposite suit.",
+    "Your class's suit: its tokens walk further, its cards play one up or down.",
+    "Feed the die any time in your turn (gone for good); keep two, discard the rest.",
+    "Roll: push the bomb or count it down.",
+    "An empty deck: fatigue, or a reshuffle for health."
+   ]
+  }
+ }
+}

@@ -1,0 +1,12 @@
+{
+ "EMO": {
+  "perBlow": 0.08,
+  "perSec": 0.01,
+  "decayPerSec": 0.03,
+  "optimal": [
+   0.35,
+   0.75
+  ],
+  "enrage": 0.85
+ }
+}

@@ -1,0 +1,522 @@
+{
+ "DODGE": {
+  "spot": {
+   "intangible": [
+    2,
+    15
+   ],
+   "total": 22
+  },
+  "roll": {
+   "intangible": [
+    4,
+    19
+   ],
+   "total": 31,
+   "distance": 2.6
+  },
+  "air": {
+   "intangible": [
+    4,
+    29
+   ],
+   "total": 49,
+   "speed": 7.652173913043479,
+   "decay": 0.9,
+   "landing": 10
+  }
+ },
+ "FRAME": 0.016666666666666666,
+ "GRAB": {
+  "startup": 7,
+  "active": [
+   7,
+   8
+  ],
+  "total": 30,
+  "reach": 1.2,
+  "mash": 6,
+  "pummel": {
+   "damage": 3,
+   "total": 24
+  }
+ },
+ "LANDING": {
+  "plain": 4,
+  "lCancelWindow": 7
+ },
+ "LAUNCH": {
+  "perKB": 0.03,
+  "decay": 8.514782608695652,
+  "landStop": 0.5
+ },
+ "LEDGE": {
+  "catch": 7,
+  "intangible": 30,
+  "regrab": 29,
+  "maxHang": [
+   11,
+   8
+  ],
+  "getup": {
+   "climb": [
+    34,
+    59
+   ],
+   "jump": [
+    51,
+    51
+   ],
+   "roll": [
+    49,
+    79
+   ],
+   "attack": [
+    54,
+    69
+   ]
+  }
+ },
+ "MOVES": {
+  "jab1": {
+   "name": "Jab",
+   "from": "Mario",
+   "damage": 3,
+   "angle": 83,
+   "base": 0,
+   "growth": 50,
+   "startup": 2,
+   "active": [
+    2,
+    3
+   ],
+   "total": 15
+  },
+  "jab2": {
+   "name": "Jab 2",
+   "from": "Mario",
+   "damage": 2,
+   "angle": 83,
+   "base": 0,
+   "growth": 50,
+   "startup": 3,
+   "active": [
+    3,
+    4
+   ],
+   "total": 18
+  },
+  "jab3": {
+   "name": "Jab 3",
+   "from": "Mario",
+   "damage": 5,
+   "angle": 361,
+   "base": 10,
+   "growth": 100,
+   "startup": 5,
+   "active": [
+    5,
+    9
+   ],
+   "total": 22
+  },
+  "ftilt": {
+   "name": "Forward tilt",
+   "from": "Mario",
+   "damage": 10,
+   "angle": 361,
+   "base": 6,
+   "growth": 100,
+   "startup": 5,
+   "active": [
+    5,
+    7
+   ],
+   "total": 32
+  },
+  "utilt": {
+   "name": "Up tilt",
+   "from": "Mario",
+   "damage": 8,
+   "angle": 96,
+   "base": 26,
+   "growth": 125,
+   "startup": 4,
+   "active": [
+    4,
+    12
+   ],
+   "total": 30
+  },
+  "dtilt": {
+   "name": "Down tilt",
+   "from": "Mario",
+   "damage": 9,
+   "angle": 80,
+   "base": 10,
+   "growth": 100,
+   "startup": 5,
+   "active": [
+    5,
+    8
+   ],
+   "total": 34
+  },
+  "dash": {
+   "name": "Dash attack",
+   "from": "Mario",
+   "damage": 9,
+   "angle": 110,
+   "base": 70,
+   "growth": 50,
+   "startup": 6,
+   "active": [
+    6,
+    9
+   ],
+   "total": 48
+  },
+  "fsmash": {
+   "name": "Forward smash",
+   "from": "Mario",
+   "damage": 19,
+   "angle": 361,
+   "base": 25,
+   "growth": 95,
+   "startup": 12,
+   "active": [
+    12,
+    16
+   ],
+   "total": 41,
+   "charge": 5
+  },
+  "usmash": {
+   "name": "Up smash",
+   "from": "Mario",
+   "damage": 15,
+   "angle": 83,
+   "base": 32,
+   "growth": 97,
+   "startup": 9,
+   "active": [
+    9,
+    11
+   ],
+   "total": 39,
+   "charge": 7
+  },
+  "dsmash": {
+   "name": "Down smash",
+   "from": "Mario",
+   "damage": 16,
+   "angle": 361,
+   "base": 40,
+   "growth": 75,
+   "startup": 5,
+   "active": [
+    5,
+    6
+   ],
+   "total": 37,
+   "charge": 3
+  },
+  "nair": {
+   "name": "Neutral air",
+   "from": "Mario",
+   "damage": 12,
+   "angle": 361,
+   "base": 10,
+   "growth": 100,
+   "startup": 3,
+   "active": [
+    3,
+    6
+   ],
+   "total": 45,
+   "landing": 16,
+   "autoCancel": [
+    [
+     1,
+     2
+    ],
+    [
+     36,
+     99
+    ]
+   ]
+  },
+  "fair": {
+   "name": "Forward air",
+   "from": "Mario",
+   "damage": 16,
+   "angle": 290,
+   "base": 10,
+   "growth": 80,
+   "startup": 18,
+   "active": [
+    18,
+    22
+   ],
+   "total": 74,
+   "landing": 21,
+   "autoCancel": [
+    [
+     1,
+     2
+    ],
+    [
+     43,
+     99
+    ]
+   ]
+  },
+  "bair": {
+   "name": "Back air",
+   "from": "Mario",
+   "damage": 14,
+   "angle": 361,
+   "base": 10,
+   "growth": 100,
+   "startup": 6,
+   "active": [
+    6,
+    8
+   ],
+   "total": 28,
+   "landing": 15,
+   "autoCancel": [
+    [
+     1,
+     5
+    ],
+    [
+     19,
+     99
+    ]
+   ]
+  },
+  "uair": {
+   "name": "Up air",
+   "from": "Mario",
+   "damage": 11,
+   "angle": 70,
+   "base": 15,
+   "growth": 100,
+   "startup": 4,
+   "active": [
+    4,
+    9
+   ],
+   "total": 33,
+   "landing": 15,
+   "autoCancel": [
+    [
+     1,
+     1
+    ],
+    [
+     16,
+     99
+    ]
+   ]
+  },
+  "dair": {
+   "name": "Down air",
+   "from": "Mario",
+   "damage": 2,
+   "angle": 70,
+   "base": 0,
+   "growth": 100,
+   "startup": 10,
+   "active": [
+    10,
+    29
+   ],
+   "total": 38,
+   "landing": 23,
+   "autoCancel": [
+    [
+     1,
+     5
+    ],
+    [
+     33,
+     99
+    ]
+   ],
+   "hits": 7
+  },
+  "nspecial": {
+   "name": "Neutral special",
+   "from": "the psygun's shot (Mario's fireball's timing)",
+   "damage": 5,
+   "angle": 361,
+   "base": 0,
+   "growth": 50,
+   "startup": 14,
+   "active": [
+    14,
+    14
+   ],
+   "total": 43,
+   "special": "shot"
+  },
+  "sspecial": {
+   "name": "Side special",
+   "from": "the Sondelass's hook (a tether, Link's and Samus's grapple)",
+   "damage": 4,
+   "angle": 361,
+   "base": 20,
+   "growth": 40,
+   "startup": 10,
+   "active": [
+    10,
+    18
+   ],
+   "total": 40,
+   "special": "hook"
+  },
+  "uspecial": {
+   "name": "Up special",
+   "from": "Mario's Super Jump Punch: the recovery, into special fall",
+   "damage": 9,
+   "angle": 80,
+   "base": 30,
+   "growth": 60,
+   "startup": 3,
+   "active": [
+    3,
+    6
+   ],
+   "total": 30,
+   "special": "recover"
+  },
+  "dspecial": {
+   "name": "Down special",
+   "from": "the Crucibelle's toll (Fox's reflector's place: it sends shots back)",
+   "damage": 5,
+   "angle": 361,
+   "base": 40,
+   "growth": 50,
+   "startup": 1,
+   "active": [
+    1,
+    4
+   ],
+   "total": 30,
+   "special": "reflect"
+  },
+  "fthrow": {
+   "name": "Forward throw",
+   "from": "Mario",
+   "damage": 9,
+   "angle": 45,
+   "base": 60,
+   "growth": 65,
+   "startup": 12,
+   "active": [
+    12,
+    12
+   ],
+   "total": 27,
+   "throw": true
+  },
+  "bthrow": {
+   "name": "Back throw",
+   "from": "Mario",
+   "damage": 12,
+   "angle": 135,
+   "base": 80,
+   "growth": 65,
+   "startup": 12,
+   "active": [
+    12,
+    12
+   ],
+   "total": 30,
+   "throw": true
+  },
+  "uthrow": {
+   "name": "Up throw",
+   "from": "Mario",
+   "damage": 8,
+   "angle": 90,
+   "base": 70,
+   "growth": 72,
+   "startup": 18,
+   "active": [
+    18,
+    18
+   ],
+   "total": 39,
+   "throw": true
+  },
+  "dthrow": {
+   "name": "Down throw",
+   "from": "Mario",
+   "damage": 6,
+   "angle": 90,
+   "base": 75,
+   "growth": 30,
+   "startup": 12,
+   "active": [
+    12,
+    12
+   ],
+   "total": 30,
+   "throw": true
+  }
+ },
+ "SA": 166.95652173913047,
+ "SDI": {
+  "push": 0.27826086956521745,
+  "asdi": 0.13913043478260873,
+  "minHitlag": 2
+ },
+ "SHIELD": {
+  "max": 60,
+  "drain": 0.28,
+  "regen": 0.07,
+  "takes": 0.7,
+  "reset": 30,
+  "powershield": 4,
+  "powershieldShot": 2,
+  "drop": 15,
+  "minHold": 8
+ },
+ "SMASH": {
+  "charge": 60,
+  "most": 1.3671
+ },
+ "SNAP": {
+  "lead": 2,
+  "strike": 1,
+  "follow": 3
+ },
+ "STALE": {
+  "size": 9,
+  "cut": [
+   0.09,
+   0.08,
+   0.07,
+   0.06,
+   0.05,
+   0.04,
+   0.03,
+   0.02,
+   0.01
+  ]
+ },
+ "SV": 2.7826086956521743,
+ "TECH": {
+  "window": 20,
+  "lockout": 40,
+  "roll": 2.6,
+  "getup": {
+   "stand": 30,
+   "roll": 36,
+   "attack": 30
+  }
+ }
+}

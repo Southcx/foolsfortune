@@ -1,0 +1,1199 @@
+{
+ "ENOUGH": 0.8,
+ "LOG_SECTIONS": [
+  {
+   "id": "fish",
+   "label": "Fish",
+   "slots": [
+    {
+     "id": "regret",
+     "label": "Pale Regret"
+    },
+    {
+     "id": "mirth",
+     "label": "Tin Mirth"
+    },
+    {
+     "id": "bellows",
+     "label": "Bellows Carp"
+    },
+    {
+     "id": "thread",
+     "label": "Widow's Thread"
+    },
+    {
+     "id": "comet",
+     "label": "Quiet Comet"
+    },
+    {
+     "id": "gall",
+     "label": "Sour Grudge"
+    },
+    {
+     "id": "wonder",
+     "label": "Wonder Ray"
+    },
+    {
+     "id": "hunger",
+     "label": "Hollow Hunger"
+    },
+    {
+     "id": "dread",
+     "label": "Lantern Dread"
+    },
+    {
+     "id": "fury",
+     "label": "Short Fuse"
+    },
+    {
+     "id": "hush",
+     "label": "Mother Hush"
+    },
+    {
+     "id": "lachryma",
+     "label": "The Drowned Lachryma"
+    }
+   ]
+  },
+  {
+   "id": "cards",
+   "label": "Cards",
+   "slots": [
+    {
+     "id": "arcana.fool",
+     "label": "The Fool"
+    },
+    {
+     "id": "arcana.magician",
+     "label": "The Magician"
+    },
+    {
+     "id": "arcana.priestess",
+     "label": "The High Priestess"
+    },
+    {
+     "id": "arcana.empress",
+     "label": "The Empress"
+    },
+    {
+     "id": "arcana.emperor",
+     "label": "The Emperor"
+    },
+    {
+     "id": "arcana.hierophant",
+     "label": "The Hierophant"
+    },
+    {
+     "id": "arcana.lovers",
+     "label": "The Lovers"
+    },
+    {
+     "id": "arcana.chariot",
+     "label": "The Chariot"
+    },
+    {
+     "id": "arcana.strength",
+     "label": "Strength"
+    },
+    {
+     "id": "arcana.hermit",
+     "label": "The Hermit"
+    },
+    {
+     "id": "arcana.wheel",
+     "label": "Wheel of Fortune"
+    },
+    {
+     "id": "arcana.justice",
+     "label": "Justice"
+    },
+    {
+     "id": "arcana.hanged",
+     "label": "The Hanged Man"
+    },
+    {
+     "id": "arcana.death",
+     "label": "Death"
+    },
+    {
+     "id": "arcana.temperance",
+     "label": "Temperance"
+    },
+    {
+     "id": "arcana.devil",
+     "label": "The Devil"
+    },
+    {
+     "id": "arcana.tower",
+     "label": "The Tower"
+    },
+    {
+     "id": "arcana.star",
+     "label": "The Star"
+    },
+    {
+     "id": "arcana.moon",
+     "label": "The Moon"
+    },
+    {
+     "id": "arcana.sun",
+     "label": "The Sun"
+    },
+    {
+     "id": "arcana.judgement",
+     "label": "Judgement"
+    },
+    {
+     "id": "arcana.world",
+     "label": "The World"
+    },
+    {
+     "id": "creature.clapper",
+     "label": "Clapperjar"
+    },
+    {
+     "id": "creature.slipjelly",
+     "label": "Slip Jelly"
+    },
+    {
+     "id": "creature.wisp",
+     "label": "Lantern Wisp"
+    },
+    {
+     "id": "creature.fish.regret",
+     "label": "Pale Regret"
+    },
+    {
+     "id": "creature.fish.mirth",
+     "label": "Tin Mirth"
+    },
+    {
+     "id": "creature.fish.bellows",
+     "label": "Bellows Carp"
+    },
+    {
+     "id": "creature.fish.thread",
+     "label": "Widow's Thread"
+    },
+    {
+     "id": "creature.fish.comet",
+     "label": "Quiet Comet"
+    },
+    {
+     "id": "creature.fish.gall",
+     "label": "Sour Grudge"
+    },
+    {
+     "id": "creature.fish.wonder",
+     "label": "Wonder Ray"
+    },
+    {
+     "id": "creature.fish.hunger",
+     "label": "Hollow Hunger"
+    },
+    {
+     "id": "creature.fish.dread",
+     "label": "Lantern Dread"
+    },
+    {
+     "id": "creature.fish.fury",
+     "label": "Short Fuse"
+    },
+    {
+     "id": "creature.fish.hush",
+     "label": "Mother Hush"
+    },
+    {
+     "id": "creature.fish.lachryma",
+     "label": "The Drowned Lachryma"
+    }
+   ]
+  },
+  {
+   "id": "habits",
+   "label": "Habits at sea",
+   "slots": [
+    {
+     "id": "sealFolk.shed",
+     "label": "seal folk: sheds its skin"
+    },
+    {
+     "id": "sealFolk.sing",
+     "label": "seal folk: sings"
+    },
+    {
+     "id": "sealFolk.bask",
+     "label": "seal folk: basks"
+    },
+    {
+     "id": "sealFolk.startle",
+     "label": "seal folk: startles"
+    },
+    {
+     "id": "seaLights.crown",
+     "label": "sea lights: crowns the mast"
+    },
+    {
+     "id": "seaLights.dance",
+     "label": "sea lights: dances in the storm"
+    },
+    {
+     "id": "seaLights.gather",
+     "label": "sea lights: gathers"
+    },
+    {
+     "id": "seaLights.fade",
+     "label": "sea lights: fades"
+    },
+    {
+     "id": "horseHerd.race",
+     "label": "horse herd: races the ship"
+    },
+    {
+     "id": "horseHerd.rear",
+     "label": "horse herd: rears"
+    },
+    {
+     "id": "horseHerd.gallop",
+     "label": "horse herd: gallops"
+    },
+    {
+     "id": "horseHerd.graze",
+     "label": "horse herd: grazes the swell"
+    },
+    {
+     "id": "fishPeople.weep",
+     "label": "fish people: weeps pearls"
+    },
+    {
+     "id": "fishPeople.comb",
+     "label": "fish people: combs its hair"
+    },
+    {
+     "id": "fishPeople.sing",
+     "label": "fish people: sings"
+    },
+    {
+     "id": "fishPeople.dive",
+     "label": "fish people: dives"
+    },
+    {
+     "id": "wolfWhale.howl",
+     "label": "wolf whale: howls"
+    },
+    {
+     "id": "wolfWhale.breach",
+     "label": "wolf whale: breaches"
+    },
+    {
+     "id": "wolfWhale.hunt",
+     "label": "wolf whale: hunts"
+    },
+    {
+     "id": "wolfWhale.patrol",
+     "label": "wolf whale: patrols"
+    },
+    {
+     "id": "seaSerpent.coil",
+     "label": "sea serpent: coils"
+    },
+    {
+     "id": "seaSerpent.spit",
+     "label": "sea serpent: spits"
+    },
+    {
+     "id": "seaSerpent.bask",
+     "label": "sea serpent: basks"
+    },
+    {
+     "id": "seaSerpent.swim",
+     "label": "sea serpent: swims"
+    },
+    {
+     "id": "seaMonk.ask",
+     "label": "sea monk: asks for a ladle"
+    },
+    {
+     "id": "seaMonk.stare",
+     "label": "sea monk: stares"
+    },
+    {
+     "id": "seaMonk.rise",
+     "label": "sea monk: rises"
+    },
+    {
+     "id": "seaMonk.sink",
+     "label": "sea monk: sinks"
+    },
+    {
+     "id": "islandWhale.sing",
+     "label": "island whale: sings"
+    },
+    {
+     "id": "islandWhale.spout",
+     "label": "island whale: spouts"
+    },
+    {
+     "id": "islandWhale.sleep",
+     "label": "island whale: sleeps"
+    },
+    {
+     "id": "islandWhale.surface",
+     "label": "island whale: surfaces"
+    },
+    {
+     "id": "ghostShip.hail",
+     "label": "ghost ship: hails you"
+    },
+    {
+     "id": "ghostShip.glow",
+     "label": "ghost ship: glows"
+    },
+    {
+     "id": "ghostShip.vanish",
+     "label": "ghost ship: vanishes"
+    },
+    {
+     "id": "ghostShip.sail",
+     "label": "ghost ship: sails"
+    },
+    {
+     "id": "bigSquid.ink",
+     "label": "big squid: inks"
+    },
+    {
+     "id": "bigSquid.grasp",
+     "label": "big squid: grasps"
+    },
+    {
+     "id": "bigSquid.rise",
+     "label": "big squid: rises"
+    },
+    {
+     "id": "bigSquid.drift",
+     "label": "big squid: drifts"
+    },
+    {
+     "id": "worldSerpent.ouroboros",
+     "label": "world serpent: bites its tail"
+    },
+    {
+     "id": "worldSerpent.rise",
+     "label": "world serpent: rises"
+    },
+    {
+     "id": "worldSerpent.sleep",
+     "label": "world serpent: sleeps"
+    },
+    {
+     "id": "worldSerpent.circle",
+     "label": "world serpent: circles"
+    }
+   ]
+  },
+  {
+   "id": "herds",
+   "label": "Herds at sea",
+   "slots": [
+    {
+     "id": "sealFolk",
+     "label": "seal folk"
+    },
+    {
+     "id": "seaLights",
+     "label": "sea lights"
+    },
+    {
+     "id": "horseHerd",
+     "label": "horse herd"
+    },
+    {
+     "id": "fishPeople",
+     "label": "fish people"
+    },
+    {
+     "id": "wolfWhale",
+     "label": "wolf whale"
+    },
+    {
+     "id": "seaSerpent",
+     "label": "sea serpent"
+    },
+    {
+     "id": "seaMonk",
+     "label": "sea monk"
+    },
+    {
+     "id": "islandWhale",
+     "label": "island whale"
+    },
+    {
+     "id": "ghostShip",
+     "label": "ghost ship"
+    },
+    {
+     "id": "bigSquid",
+     "label": "big squid"
+    },
+    {
+     "id": "worldSerpent",
+     "label": "world serpent"
+    }
+   ]
+  },
+  {
+   "id": "feelings",
+   "label": "Feelings awakened",
+   "slots": [
+    {
+     "id": "mirth",
+     "label": "mirth"
+    },
+    {
+     "id": "wonder",
+     "label": "wonder"
+    },
+    {
+     "id": "desire",
+     "label": "desire"
+    },
+    {
+     "id": "grief",
+     "label": "grief"
+    },
+    {
+     "id": "dread",
+     "label": "dread"
+    },
+    {
+     "id": "gall",
+     "label": "gall"
+    },
+    {
+     "id": "fury",
+     "label": "fury"
+    }
+   ]
+  },
+  {
+   "id": "weathers",
+   "label": "Weathers seen",
+   "slots": [
+    {
+     "id": "mirth",
+     "label": "mirth"
+    },
+    {
+     "id": "wonder",
+     "label": "wonder"
+    },
+    {
+     "id": "desire",
+     "label": "desire"
+    },
+    {
+     "id": "grief",
+     "label": "grief"
+    },
+    {
+     "id": "dread",
+     "label": "dread"
+    },
+    {
+     "id": "gall",
+     "label": "gall"
+    },
+    {
+     "id": "fury",
+     "label": "fury"
+    },
+    {
+     "id": "mirth+wonder",
+     "label": "mirth+wonder"
+    },
+    {
+     "id": "mirth+desire",
+     "label": "mirth+desire"
+    },
+    {
+     "id": "mirth+dread",
+     "label": "mirth+dread"
+    },
+    {
+     "id": "wonder+grief",
+     "label": "wonder+grief"
+    },
+    {
+     "id": "wonder+dread",
+     "label": "wonder+dread"
+    },
+    {
+     "id": "desire+grief",
+     "label": "desire+grief"
+    },
+    {
+     "id": "desire+dread",
+     "label": "desire+dread"
+    },
+    {
+     "id": "grief+dread",
+     "label": "grief+dread"
+    },
+    {
+     "id": "mirth+fury",
+     "label": "mirth+fury"
+    },
+    {
+     "id": "desire+fury",
+     "label": "desire+fury"
+    },
+    {
+     "id": "wonder+fury",
+     "label": "wonder+fury"
+    },
+    {
+     "id": "grief+fury",
+     "label": "grief+fury"
+    },
+    {
+     "id": "gall+fury",
+     "label": "gall+fury"
+    },
+    {
+     "id": "grief+gall",
+     "label": "grief+gall"
+    },
+    {
+     "id": "dread+gall",
+     "label": "dread+gall"
+    },
+    {
+     "id": "wonder+gall",
+     "label": "wonder+gall"
+    },
+    {
+     "id": "mirth+gall",
+     "label": "mirth+gall"
+    },
+    {
+     "id": "desire+gall",
+     "label": "desire+gall"
+    }
+   ]
+  },
+  {
+   "id": "powers",
+   "label": "God powers",
+   "slots": [
+    {
+     "id": "telekinesis",
+     "label": "Telekinesis"
+    },
+    {
+     "id": "sunder",
+     "label": "Sunder"
+    },
+    {
+     "id": "swell",
+     "label": "Swell"
+    },
+    {
+     "id": "wring",
+     "label": "Wring"
+    },
+    {
+     "id": "manifest",
+     "label": "Manifest"
+    },
+    {
+     "id": "scoop",
+     "label": "Scoop"
+    },
+    {
+     "id": "shape",
+     "label": "Shape"
+    },
+    {
+     "id": "carve",
+     "label": "Carve"
+    },
+    {
+     "id": "miracle",
+     "label": "Miracles"
+    },
+    {
+     "id": "portal",
+     "label": "Portal"
+    },
+    {
+     "id": "fold",
+     "label": "Swap"
+    },
+    {
+     "id": "hasten",
+     "label": "Hasten / Stay"
+    },
+    {
+     "id": "sculpt",
+     "label": "Sculpt"
+    },
+    {
+     "id": "setfast",
+     "label": "Lock"
+    },
+    {
+     "id": "totem",
+     "label": "Weather Anchor"
+    },
+    {
+     "id": "strata",
+     "label": "Layer View"
+    },
+    {
+     "id": "course",
+     "label": "Flow Preview"
+    },
+    {
+     "id": "read",
+     "label": "Scan Intent"
+    },
+    {
+     "id": "gust",
+     "label": "Gust"
+    },
+    {
+     "id": "slab",
+     "label": "Lift Ground"
+    },
+    {
+     "id": "herd",
+     "label": "Herd"
+    },
+    {
+     "id": "take",
+     "label": "Possess"
+    },
+    {
+     "id": "muster",
+     "label": "Rally"
+    },
+    {
+     "id": "transmute",
+     "label": "Transmute"
+    },
+    {
+     "id": "ward",
+     "label": "Barrier"
+    },
+    {
+     "id": "stamp",
+     "label": "Copy Terrain"
+    }
+   ]
+  },
+  {
+   "id": "epics",
+   "label": "Epic miracles",
+   "slots": [
+    {
+     "id": "stoppedHour",
+     "label": "Stopped Hour"
+    },
+    {
+     "id": "volcano",
+     "label": "Volcano"
+    },
+    {
+     "id": "prophecy",
+     "label": "Prophecy"
+    },
+    {
+     "id": "maelstrom",
+     "label": "Maelstrom"
+    },
+    {
+     "id": "stampede",
+     "label": "Stampede"
+    },
+    {
+     "id": "earthquake",
+     "label": "Earthquake"
+    },
+    {
+     "id": "deluge",
+     "label": "Deluge"
+    }
+   ]
+  },
+  {
+   "id": "songs",
+   "label": "Songs",
+   "slots": [
+    {
+     "id": "reveal",
+     "label": "THE SONG OF SEEING"
+    },
+    {
+     "id": "mirage",
+     "label": "THE SONG OF SEEMING"
+    },
+    {
+     "id": "rally",
+     "label": "THE RALLY"
+    },
+    {
+     "id": "lull",
+     "label": "THE LULLABY"
+    },
+    {
+     "id": "summon",
+     "label": "THE CALL"
+    }
+   ]
+  },
+  {
+   "id": "functions",
+   "label": "Functions",
+   "slots": [
+    {
+     "id": "stil",
+     "label": "STILL"
+    },
+    {
+     "id": "eza",
+     "label": "EASE"
+    },
+    {
+     "id": "husa",
+     "label": "HUSH"
+    },
+    {
+     "id": "melu",
+     "label": "MELT"
+    },
+    {
+     "id": "siva",
+     "label": "DRINK"
+    },
+    {
+     "id": "luno",
+     "label": "REST"
+    },
+    {
+     "id": "grav",
+     "label": "FORAGE"
+    },
+    {
+     "id": "pexa",
+     "label": "FISH"
+    },
+    {
+     "id": "kith",
+     "label": "HUDDLE"
+    },
+    {
+     "id": "romi",
+     "label": "PLAY"
+    },
+    {
+     "id": "shai",
+     "label": "FLEE"
+    },
+    {
+     "id": "hema",
+     "label": "HOME"
+    },
+    {
+     "id": "mor",
+     "label": "MOURN"
+    },
+    {
+     "id": "feta",
+     "label": "FETCH"
+    },
+    {
+     "id": "talo",
+     "label": "FOLLOW"
+    },
+    {
+     "id": "ami",
+     "label": "KIN"
+    },
+    {
+     "id": "riva",
+     "label": "RIVAL"
+    },
+    {
+     "id": "dipsa",
+     "label": "THIRST"
+    },
+    {
+     "id": "gula",
+     "label": "HUNGER"
+    },
+    {
+     "id": "voyd",
+     "label": "FORGET"
+    },
+    {
+     "id": "lon",
+     "label": "LONG"
+    },
+    {
+     "id": "deo",
+     "label": "DEEP"
+    },
+    {
+     "id": "wire",
+     "label": "WIRE"
+    },
+    {
+     "id": "turn",
+     "label": "TURN"
+    }
+   ]
+  },
+  {
+   "id": "spreads",
+   "label": "Spreads laid",
+   "slots": [
+    {
+     "id": "one",
+     "label": "One card"
+    },
+    {
+     "id": "three",
+     "label": "Three cards"
+    },
+    {
+     "id": "horseshoe",
+     "label": "The Horseshoe"
+    },
+    {
+     "id": "celtic",
+     "label": "The Celtic Cross"
+    }
+   ]
+  },
+  {
+   "id": "setpieces",
+   "label": "Crossings",
+   "slots": [
+    {
+     "id": "shoal",
+     "label": "shoal"
+    },
+    {
+     "id": "pirates",
+     "label": "pirates"
+    },
+    {
+     "id": "leviathan",
+     "label": "leviathan"
+    }
+   ]
+  },
+  {
+   "id": "parts",
+   "label": "Ship parts",
+   "slots": [
+    {
+     "id": "lateen",
+     "label": "Lateen sail"
+    },
+    {
+     "id": "spinnaker",
+     "label": "Spinnaker"
+    },
+    {
+     "id": "storm",
+     "label": "Storm sail"
+    },
+    {
+     "id": "krakenSail",
+     "label": "Kraken sail"
+    },
+    {
+     "id": "worldSail",
+     "label": "Jormungandr sail"
+    },
+    {
+     "id": "deep",
+     "label": "Deep keel"
+    },
+    {
+     "id": "shallow",
+     "label": "Shallow keel"
+    },
+    {
+     "id": "serpentKeel",
+     "label": "Sea serpent keel"
+    },
+    {
+     "id": "scaled",
+     "label": "Scaled hull"
+    },
+    {
+     "id": "light",
+     "label": "Light hull"
+    },
+    {
+     "id": "akhlutHull",
+     "label": "Akhlut hull"
+    },
+    {
+     "id": "monkHull",
+     "label": "Umibozu hull"
+    }
+   ]
+  },
+  {
+   "id": "secrets",
+   "label": "Islet secrets",
+   "slots": [
+    {
+     "id": "chest",
+     "label": "chest"
+    },
+    {
+     "id": "ostracon",
+     "label": "ostracon"
+    },
+    {
+     "id": "vantage",
+     "label": "vantage"
+    },
+    {
+     "id": "nest",
+     "label": "nest"
+    },
+    {
+     "id": "fuel",
+     "label": "fuel"
+    },
+    {
+     "id": "stele",
+     "label": "stele"
+    },
+    {
+     "id": "fishing",
+     "label": "fishing"
+    },
+    {
+     "id": "crystal",
+     "label": "crystal"
+    }
+   ]
+  },
+  {
+   "id": "strains",
+   "label": "Strains",
+   "slots": [
+    {
+     "id": "wonder",
+     "label": "wonder"
+    },
+    {
+     "id": "mirth",
+     "label": "mirth"
+    },
+    {
+     "id": "desire",
+     "label": "desire"
+    },
+    {
+     "id": "grief",
+     "label": "grief"
+    },
+    {
+     "id": "dread",
+     "label": "dread"
+    }
+   ]
+  },
+  {
+   "id": "decor",
+   "label": "Decor sets",
+   "slots": [
+    {
+     "id": "plain",
+     "label": "plain"
+    },
+    {
+     "id": "wonder",
+     "label": "wonder"
+    },
+    {
+     "id": "mirth",
+     "label": "mirth"
+    },
+    {
+     "id": "desire",
+     "label": "desire"
+    },
+    {
+     "id": "grief",
+     "label": "grief"
+    },
+    {
+     "id": "dread",
+     "label": "dread"
+    },
+    {
+     "id": "teapath",
+     "label": "teapath"
+    },
+    {
+     "id": "kilnyard",
+     "label": "kilnyard"
+    },
+    {
+     "id": "stargazer",
+     "label": "stargazer"
+    },
+    {
+     "id": "sound",
+     "label": "sound"
+    },
+    {
+     "id": "season",
+     "label": "season"
+    },
+    {
+     "id": "keepsake",
+     "label": "keepsake"
+    },
+    {
+     "id": "briar",
+     "label": "briar"
+    }
+   ]
+  },
+  {
+   "id": "aberrants",
+   "label": "Aberrants",
+   "slots": [
+    {
+     "id": "skill.hurl",
+     "label": "Hurl"
+    },
+    {
+     "id": "skill.petrify",
+     "label": "Petrify"
+    },
+    {
+     "id": "skill.seal",
+     "label": "Seal"
+    },
+    {
+     "id": "skill.sap",
+     "label": "Sap"
+    },
+    {
+     "id": "skill.reclaim",
+     "label": "Reclaim"
+    },
+    {
+     "id": "skill.spew",
+     "label": "Spew"
+    },
+    {
+     "id": "skill.harden",
+     "label": "Harden"
+    },
+    {
+     "id": "skill.shuffle",
+     "label": "Shuffle"
+    },
+    {
+     "id": "skill.syncopate",
+     "label": "Syncopate"
+    },
+    {
+     "id": "skill.kindle",
+     "label": "Kindle"
+    },
+    {
+     "id": "secret.snuff",
+     "label": "The Lantern Wisp's secret"
+    },
+    {
+     "id": "secret.dissolve",
+     "label": "The slip jelly's secret"
+    },
+    {
+     "id": "secret.clapback",
+     "label": "The clapperjar's secret"
+    },
+    {
+     "id": "shiny",
+     "label": "A shiny aberrant"
+    }
+   ]
+  },
+  {
+   "id": "learned",
+   "label": "Learned skills",
+   "slots": [
+    {
+     "id": "kindle",
+     "label": "Kindle"
+    },
+    {
+     "id": "absorb",
+     "label": "Absorb"
+    },
+    {
+     "id": "encore",
+     "label": "Encore"
+    }
+   ]
+  },
+  {
+   "id": "duelpowers",
+   "label": "Duel powers",
+   "slots": [
+    {
+     "id": "swap",
+     "label": "Swap"
+    },
+    {
+     "id": "manifest",
+     "label": "Manifest"
+    },
+    {
+     "id": "scan",
+     "label": "Scan"
+    },
+    {
+     "id": "lift",
+     "label": "Lift"
+    },
+    {
+     "id": "herd",
+     "label": "Herd"
+    },
+    {
+     "id": "transmute",
+     "label": "Transmute"
+    },
+    {
+     "id": "miracle",
+     "label": "Miracle"
+    },
+    {
+     "id": "kindle",
+     "label": "Kindle"
+    },
+    {
+     "id": "absorb",
+     "label": "Absorb"
+    },
+    {
+     "id": "encore",
+     "label": "Encore"
+    }
+   ]
+  }
+ ]
+}

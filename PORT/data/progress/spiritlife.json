@@ -1,0 +1,107 @@
+{
+ "FAREWELL": {
+  "bond": 100
+ },
+ "FAREWELL_LINES": {
+  "wonder": {
+   "ask": "I've seen everything your garden can show me. Let me go and see the rest.",
+   "go": "Look up sometimes. I'll be in the part you haven't seen yet."
+  },
+  "mirth": {
+   "ask": "I've laughed myself full. Time I took it home and shared it round.",
+   "go": "Ha! Don't go quiet without me."
+  },
+  "desire": {
+   "ask": "There's somewhere I want to be more than here, and it's home.",
+   "go": "I'll want to come back. That's how you'll know it was good."
+  },
+  "fury": {
+   "ask": "I've burned down to embers here. Let me go home and cool.",
+   "go": "No hard feelings. Not one left."
+  },
+  "gall": {
+   "ask": "Fine. It was better than I expected. Now let me go before I admit it.",
+   "go": "Don't make a thing of it."
+  },
+  "grief": {
+   "ask": "You held it with me long enough. I can carry it home now.",
+   "go": "It's lighter. Thank you for that."
+  },
+  "dread": {
+   "ask": "I'm not afraid any more, and that's how I know it's time to go.",
+   "go": "Leave a light on. Not for me. Just leave it on."
+  }
+ },
+ "MAIL": {
+  "postcards": 3,
+  "postcardEvery": 3,
+  "giftBond": 60,
+  "giftEvery": 3,
+  "keep": 30
+ },
+ "PLACES": [
+  "pond",
+  "lantern",
+  "spiritHouse",
+  "tree",
+  "terrace",
+  "free"
+ ],
+ "ROUTINE": {
+  "dawn": "pond",
+  "day": "terrace",
+  "dusk": "tree",
+  "night": "lantern",
+  "rain": {
+   "wonder": "spiritHouse",
+   "mirth": "spiritHouse",
+   "desire": "spiritHouse",
+   "grief": "pond",
+   "dread": "pond"
+  },
+  "stay": {
+   "base": 0.6,
+   "keep": 0.3,
+   "roam": 0.3
+  }
+ },
+ "TASTE": {
+  "orderly": "teapath",
+  "steady": "teapath",
+  "gentle": "teapath",
+  "wary": "teapath",
+  "bold": "kilnyard",
+  "erratic": "kilnyard",
+  "hostile": "kilnyard",
+  "curious": "stargazer",
+  "shy": "stargazer",
+  "skittish": "stargazer"
+ },
+ "WISH": {
+  "bond": 30,
+  "gift": 10,
+  "after": 1,
+  "look": 2
+ },
+ "WISH_KINDS": {
+  "feature": {
+   "features": [
+    "pond",
+    "lantern",
+    "incense",
+    "stone",
+    "spiritHouse"
+   ]
+  },
+  "decor": {},
+  "food": {},
+  "photo": {},
+  "visit": {
+   "phases": [
+    "dawn",
+    "dusk",
+    "night"
+   ]
+  }
+ }
+}

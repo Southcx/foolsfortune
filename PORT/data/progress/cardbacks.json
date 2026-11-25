@@ -1,0 +1,40 @@
+{
+ "CARD_BACKS": {
+  "wands": {
+   "hint": "Tend a planetoid into bloom."
+  },
+  "cups": {
+   "hint": "Cast the lure 100 times."
+  },
+  "swords": {
+   "hint": "Finish the lantern trial in silver time."
+  },
+  "pentacles": {
+   "hint": "Open 25 chests."
+  },
+  "clay": {
+   "hint": "Pass a tribulation (your second firing)."
+  },
+  "nacre": {
+   "hint": "Sail to another Island of Ego."
+  },
+  "glass": {
+   "hint": "Sail three crossings."
+  },
+  "brine": {
+   "hint": "Chart 5 squares of the open sea."
+  },
+  "spring": {
+   "hint": "Have three planetoids in bloom at once."
+  },
+  "summer": {
+   "hint": "See summer come to your Spirit Garden."
+  },
+  "autumn": {
+   "hint": "See autumn come to your Spirit Garden."
+  },
+  "winter": {
+   "hint": "See winter come to your Spirit Garden."
+  }
+ }
+}

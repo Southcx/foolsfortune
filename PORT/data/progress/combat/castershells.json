@@ -1,0 +1,2112 @@
+{
+ "CASTER_SHELLS": [
+  {
+   "no": 0,
+   "id": "slicer",
+   "label": "Cleave",
+   "tier": 1,
+   "family": "founding",
+   "carrier": "bolt",
+   "payloads": [
+    "cut"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "range": 40
+   },
+   "from": "the slicing plane"
+  },
+  {
+   "no": 1,
+   "id": "push",
+   "label": "Push",
+   "tier": 1,
+   "family": "founding",
+   "carrier": "cone",
+   "payloads": [
+    "blast"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "r": 6
+   },
+   "from": "force"
+  },
+  {
+   "no": 2,
+   "id": "well",
+   "label": "Singularity",
+   "tier": 2,
+   "family": "founding",
+   "carrier": "lob",
+   "payloads": [
+    "pull",
+    "blast"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "r": 6,
+    "dur": 2.5
+   },
+   "from": "Gravity Bomb"
+  },
+  {
+   "no": 3,
+   "id": "mark",
+   "label": "Mark",
+   "tier": 1,
+   "family": "founding",
+   "carrier": "bolt",
+   "payloads": [
+    "status"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "status": "stun"
+   },
+   "from": "the mark"
+  },
+  {
+   "no": 4,
+   "id": "bomb",
+   "label": "Bomb",
+   "tier": 1,
+   "family": "founding",
+   "carrier": "lob",
+   "payloads": [
+    "blast"
+   ],
+   "field": "pool",
+   "needs": [],
+   "n": {
+    "power": 4,
+    "r": 3
+   },
+   "from": "Bomb Glove"
+  },
+  {
+   "no": 5,
+   "id": "ricochet",
+   "label": "Bank",
+   "tier": 1,
+   "family": "founding",
+   "carrier": "bounce",
+   "payloads": [
+    "type"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "count": 4
+   },
+   "from": "the bank shot"
+  },
+  {
+   "no": 6,
+   "id": "homing",
+   "label": "Seek",
+   "tier": 1,
+   "family": "founding",
+   "carrier": "seek",
+   "payloads": [
+    "type"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {},
+   "from": "Seeker Gun"
+  },
+  {
+   "no": 7,
+   "id": "paint",
+   "label": "Paint",
+   "tier": 1,
+   "family": "founding",
+   "carrier": "lob",
+   "payloads": [
+    "paint"
+   ],
+   "field": "pool",
+   "needs": [],
+   "n": {
+    "r": 2.5
+   },
+   "from": "Splatoon",
+   "was": "slip"
+  },
+  {
+   "no": 8,
+   "id": "groove",
+   "label": "Groove",
+   "tier": 2,
+   "family": "founding",
+   "carrier": "lob",
+   "payloads": [
+    "status"
+   ],
+   "field": "zone",
+   "needs": [],
+   "n": {
+    "r": 8,
+    "dur": 6,
+    "status": "calm"
+   },
+   "from": "a mirror ball"
+  },
+  {
+   "no": 9,
+   "id": "anchor",
+   "label": "Anchor",
+   "tier": 2,
+   "family": "founding",
+   "carrier": "bolt",
+   "payloads": [
+    "pin"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "dur": 8
+   },
+   "from": "the anchor"
+  },
+  {
+   "no": 10,
+   "id": "hatch",
+   "label": "Hatch",
+   "tier": 2,
+   "family": "founding",
+   "carrier": "bolt",
+   "payloads": [
+    "charm",
+    "summon"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {},
+   "from": "kintsugi"
+  },
+  {
+   "no": 11,
+   "id": "ricochetSaw",
+   "label": "Ricochet Saw",
+   "tier": 1,
+   "family": "edge",
+   "carrier": "bounce",
+   "payloads": [
+    "blast",
+    "chain"
+   ],
+   "field": null,
+   "needs": [
+    "M2"
+   ],
+   "n": {
+    "power": 1.6,
+    "count": 5,
+    "type": "impact"
+   },
+   "from": "Chopper, Disc Blade Gun"
+  },
+  {
+   "no": 12,
+   "id": "skipstone",
+   "label": "Skipstone",
+   "tier": 1,
+   "family": "edge",
+   "carrier": "bounce",
+   "payloads": [
+    "blast"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "power": 1.2,
+    "r": 1.5,
+    "count": 5,
+    "water": 2
+   },
+   "from": "Bouncer"
+  },
+  {
+   "no": 13,
+   "id": "splitter",
+   "label": "Splitter",
+   "tier": 2,
+   "family": "edge",
+   "carrier": "bolt",
+   "payloads": [
+    "type",
+    "split"
+   ],
+   "field": null,
+   "needs": [
+    "M1"
+   ],
+   "n": {
+    "power": 2,
+    "count": 7,
+    "type": "impact"
+   },
+   "from": "Flux and Splitter Rifle"
+  },
+  {
+   "no": 14,
+   "id": "hailstorm",
+   "label": "Hailstorm",
+   "tier": 1,
+   "family": "edge",
+   "carrier": "cone",
+   "payloads": [
+    "blast"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "power": 0.4,
+    "count": 24,
+    "spread": 25
+   },
+   "from": "N60 Storm, Blitz Gun"
+  },
+  {
+   "no": 15,
+   "id": "piercer",
+   "label": "Piercer",
+   "tier": 2,
+   "family": "edge",
+   "carrier": "beam",
+   "payloads": [
+    "type"
+   ],
+   "field": null,
+   "needs": [
+    "S1"
+   ],
+   "n": {
+    "power": 5,
+    "wall": 3,
+    "dur": 2,
+    "type": "impact"
+   },
+   "from": "Flux Rifle"
+  },
+  {
+   "no": 16,
+   "id": "mallet",
+   "label": "Mallet",
+   "tier": 2,
+   "family": "edge",
+   "carrier": "lob",
+   "payloads": [
+    "blast",
+    "status"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "power": 5,
+    "r": 3,
+    "status": "stun"
+   },
+   "from": "Walloper"
+  },
+  {
+   "no": 17,
+   "id": "cartwheel",
+   "label": "Cartwheel",
+   "tier": 1,
+   "family": "edge",
+   "carrier": "bounce",
+   "payloads": [
+    "status",
+    "mass"
+   ],
+   "field": null,
+   "needs": [
+    "M8"
+   ],
+   "n": {
+    "power": 1,
+    "dur": 4,
+    "status": "soft",
+    "squash": 0.2
+   },
+   "from": "the Bouncer's roll"
+  },
+  {
+   "no": 18,
+   "id": "pinball",
+   "label": "Pinball",
+   "tier": 2,
+   "family": "edge",
+   "carrier": "bounce",
+   "payloads": [
+    "blast"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "power": 1,
+    "dur": 6,
+    "gain": 1.15
+   },
+   "from": "the arcade"
+  },
+  {
+   "no": 19,
+   "id": "petalRain",
+   "label": "Petal Rain",
+   "tier": 2,
+   "family": "edge",
+   "carrier": "lob",
+   "payloads": [
+    "split",
+    "blast"
+   ],
+   "field": null,
+   "needs": [
+    "M1"
+   ],
+   "n": {
+    "power": 0.5,
+    "count": 40,
+    "r": 5,
+    "hang": 0.5
+   },
+   "from": "Zodiac, in small"
+  },
+  {
+   "no": 20,
+   "id": "stake",
+   "label": "Stake",
+   "tier": 3,
+   "family": "edge",
+   "carrier": "bolt",
+   "payloads": [
+    "pin",
+    "type"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "power": 6,
+    "dur": 6,
+    "type": "impact"
+   },
+   "from": "Trigun's Cross Punisher"
+  },
+  {
+   "no": 21,
+   "id": "flamer",
+   "label": "Flamer",
+   "tier": 1,
+   "family": "ember",
+   "carrier": "cone",
+   "payloads": [
+    "type",
+    "world"
+   ],
+   "field": null,
+   "needs": [
+    "S1"
+   ],
+   "n": {
+    "power": 0.6,
+    "dur": 4,
+    "r": 5
+   },
+   "from": "Pyrocitor"
+  },
+  {
+   "no": 22,
+   "id": "meteor",
+   "label": "Meteor",
+   "tier": 2,
+   "family": "ember",
+   "carrier": "call",
+   "payloads": [
+    "blast"
+   ],
+   "field": "pool",
+   "needs": [
+    "M10",
+    "S9"
+   ],
+   "n": {
+    "power": 4,
+    "count": 3,
+    "r": 2.5,
+    "delay": 1,
+    "size": 3,
+    "mega": {
+     "delay": 2.5,
+     "size": 5,
+     "power": 14,
+     "r": 7
+    }
+   },
+   "from": "Lava Gun to Meteor Gun"
+  },
+  {
+   "no": 23,
+   "id": "lavaLamp",
+   "label": "Lava Lamp",
+   "tier": 2,
+   "family": "ember",
+   "carrier": "seek",
+   "payloads": [
+    "blast",
+    "split"
+   ],
+   "field": null,
+   "needs": [
+    "S9",
+    "M1"
+   ],
+   "n": {
+    "power": 3,
+    "count": 3,
+    "speed": 3
+   },
+   "from": "the Lava Gun's glob"
+  },
+  {
+   "no": 24,
+   "id": "napalm",
+   "label": "Napalm",
+   "tier": 2,
+   "family": "ember",
+   "carrier": "lob",
+   "payloads": [
+    "crude"
+   ],
+   "field": "pool",
+   "needs": [],
+   "n": {
+    "power": 0.8,
+    "r": 3,
+    "dur": 8,
+    "delay": 1
+   },
+   "from": "the Napalm mod"
+  },
+  {
+   "no": 25,
+   "id": "detonator",
+   "label": "Detonator",
+   "tier": 1,
+   "family": "ember",
+   "carrier": "bolt",
+   "payloads": [
+    "blast"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "power": 5,
+    "r": 3
+   },
+   "from": "Nitro Launcher"
+  },
+  {
+   "no": 26,
+   "id": "glassmaker",
+   "label": "Glassmaker",
+   "tier": 5,
+   "family": "ember",
+   "carrier": "lob",
+   "payloads": [
+    "world"
+   ],
+   "field": null,
+   "needs": [
+    "M12"
+   ],
+   "n": {
+    "size": 4,
+    "breaks": 3,
+    "need": 1
+   },
+   "from": "sand and heat"
+  },
+  {
+   "no": 27,
+   "id": "bisque",
+   "label": "Bisque",
+   "tier": 3,
+   "family": "ember",
+   "carrier": "bolt",
+   "payloads": [
+    "morph",
+    "status"
+   ],
+   "field": null,
+   "needs": [
+    "S4",
+    "M7"
+   ],
+   "n": {
+    "dur": 5,
+    "status": "halt",
+    "shatter": 2
+   },
+   "from": "firing"
+  },
+  {
+   "no": 28,
+   "id": "cinder",
+   "label": "Cinder",
+   "tier": 1,
+   "family": "ember",
+   "carrier": "swarm",
+   "payloads": [
+    "type"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "power": 0.4,
+    "dur": 10
+   },
+   "from": "the Pyrocitor's sparks"
+  },
+  {
+   "no": 29,
+   "id": "volcano",
+   "label": "Volcano",
+   "tier": 5,
+   "family": "ember",
+   "carrier": "deploy",
+   "payloads": [
+    "blast"
+   ],
+   "field": "pool",
+   "needs": [
+    "M4",
+    "S1",
+    "S9"
+   ],
+   "n": {
+    "power": 3,
+    "dur": 8,
+    "every": 1,
+    "r": 2,
+    "need": 2
+   },
+   "from": "the Lava Gun's ground"
+  },
+  {
+   "no": 30,
+   "id": "slagRain",
+   "label": "Slag Rain",
+   "tier": 2,
+   "family": "ember",
+   "carrier": "lob",
+   "payloads": [
+    "blast"
+   ],
+   "field": "cloud",
+   "needs": [
+    "S9"
+   ],
+   "n": {
+    "power": 0.5,
+    "r": 6,
+    "dur": 3
+   },
+   "from": "volcanic ash"
+  },
+  {
+   "no": 31,
+   "id": "teslaNode",
+   "label": "Tesla Node",
+   "tier": 1,
+   "family": "storm",
+   "carrier": "deploy",
+   "payloads": [
+    "chain"
+   ],
+   "field": null,
+   "needs": [
+    "S3",
+    "M2"
+   ],
+   "n": {
+    "power": 0.8,
+    "count": 2,
+    "every": 0.5,
+    "dur": 6
+   },
+   "from": "Tesla Claw"
+  },
+  {
+   "no": 32,
+   "id": "chainBolt",
+   "label": "Chain Bolt",
+   "tier": 2,
+   "family": "storm",
+   "carrier": "bolt",
+   "payloads": [
+    "chain",
+    "status"
+   ],
+   "field": null,
+   "needs": [
+    "S3"
+   ],
+   "n": {
+    "power": 3,
+    "count": 8,
+    "falloff": 0.8,
+    "status": "stun"
+   },
+   "from": "Shock Cannon"
+  },
+  {
+   "no": 33,
+   "id": "ballLightning",
+   "label": "Ball Lightning",
+   "tier": 2,
+   "family": "storm",
+   "carrier": "seek",
+   "payloads": [
+    "chain"
+   ],
+   "field": null,
+   "needs": [
+    "S3"
+   ],
+   "n": {
+    "power": 0.6,
+    "r": 4,
+    "speed": 2,
+    "dur": 8
+   },
+   "from": "Plasma Coil"
+  },
+  {
+   "no": 34,
+   "id": "thunderhead",
+   "label": "Thunderhead",
+   "tier": 5,
+   "family": "storm",
+   "carrier": "call",
+   "payloads": [
+    "chain"
+   ],
+   "field": "cloud",
+   "needs": [
+    "S3",
+    "M10"
+   ],
+   "n": {
+    "power": 4,
+    "every": 1.5,
+    "dur": 9,
+    "need": 1.5
+   },
+   "from": "Plasma Storm, Zodiac"
+  },
+  {
+   "no": 35,
+   "id": "lightningRod",
+   "label": "Lightning Rod",
+   "tier": 1,
+   "family": "storm",
+   "carrier": "bolt",
+   "payloads": [
+    "status"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "dur": 10,
+    "bend": 6
+   },
+   "from": "a conductor"
+  },
+  {
+   "no": 36,
+   "id": "faradayCage",
+   "label": "Faraday Cage",
+   "tier": 3,
+   "family": "storm",
+   "carrier": "deploy",
+   "payloads": [
+    "status"
+   ],
+   "field": "wall",
+   "needs": [
+    "S3",
+    "M4"
+   ],
+   "n": {
+    "size": 3,
+    "dur": 6,
+    "status": "halt",
+    "power": 1
+   },
+   "from": "Shield Charger, inside out"
+  },
+  {
+   "no": 37,
+   "id": "capacitor",
+   "label": "Capacitor",
+   "tier": 2,
+   "family": "storm",
+   "carrier": "beam",
+   "payloads": [
+    "type"
+   ],
+   "field": null,
+   "needs": [
+    "S3"
+   ],
+   "n": {
+    "power": 2,
+    "full": 12,
+    "charge": 2.5,
+    "height": 20
+   },
+   "from": "the charge"
+  },
+  {
+   "no": 38,
+   "id": "staticCling",
+   "label": "Static Cling",
+   "tier": 2,
+   "family": "storm",
+   "carrier": "bolt",
+   "payloads": [
+    "status"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "r": 8,
+    "dur": 6,
+    "status": "slow",
+    "power": 0.5
+   },
+   "from": "magnetism"
+  },
+  {
+   "no": 39,
+   "id": "lodestone",
+   "label": "Lodestone",
+   "tier": 2,
+   "family": "storm",
+   "carrier": "bolt",
+   "payloads": [
+    "world"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "dur": 30
+   },
+   "from": "the grapnel's need"
+  },
+  {
+   "no": 40,
+   "id": "twelve",
+   "label": "Twelve",
+   "tier": 3,
+   "family": "storm",
+   "carrier": "bolt",
+   "payloads": [
+    "status",
+    "dispel"
+   ],
+   "field": null,
+   "needs": [
+    "S3"
+   ],
+   "n": {
+    "r": 6,
+    "dur": 10,
+    "status": "sleep"
+   },
+   "from": "Outlaw Star #12"
+  },
+  {
+   "no": 41,
+   "id": "inhaler",
+   "label": "Inhaler",
+   "tier": 2,
+   "family": "pull",
+   "carrier": "cone",
+   "payloads": [
+    "pull"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "count": 5,
+    "r": 6
+   },
+   "from": "Suck Cannon"
+  },
+  {
+   "no": 42,
+   "id": "slingshot",
+   "label": "Slingshot",
+   "tier": 2,
+   "family": "pull",
+   "carrier": "lob",
+   "payloads": [
+    "pull",
+    "split"
+   ],
+   "field": null,
+   "needs": [
+    "M1"
+   ],
+   "n": {
+    "r": 6,
+    "dur": 1.5,
+    "fling": 18
+   },
+   "from": "Gravity Bomb, Vortex Cannon"
+  },
+  {
+   "no": 43,
+   "id": "rift",
+   "label": "Rift",
+   "tier": 5,
+   "family": "pull",
+   "carrier": "lob",
+   "payloads": [
+    "space"
+   ],
+   "field": "rift",
+   "needs": [
+    "S5",
+    "M5"
+   ],
+   "n": {
+    "dur": 6,
+    "drop": 8,
+    "need": 1
+   },
+   "from": "Rift Inducer"
+  },
+  {
+   "no": 44,
+   "id": "portal",
+   "label": "Portal",
+   "tier": 3,
+   "family": "pull",
+   "carrier": "bolt",
+   "payloads": [
+    "space"
+   ],
+   "field": "rift",
+   "needs": [
+    "S5",
+    "M5"
+   ],
+   "n": {
+    "pair": true,
+    "dur": 30
+   },
+   "from": "the portal gun"
+  },
+  {
+   "no": 45,
+   "id": "upfall",
+   "label": "Upfall",
+   "tier": 5,
+   "family": "pull",
+   "carrier": "lob",
+   "payloads": [
+    "mass"
+   ],
+   "field": "column",
+   "needs": [
+    "M8"
+   ],
+   "n": {
+    "r": 6,
+    "dur": 5,
+    "need": 1
+   },
+   "from": "gravity flip"
+  },
+  {
+   "no": 46,
+   "id": "balloon",
+   "label": "Balloon",
+   "tier": 1,
+   "family": "pull",
+   "carrier": "bolt",
+   "payloads": [
+    "mass",
+    "status"
+   ],
+   "field": null,
+   "needs": [
+    "M8"
+   ],
+   "n": {
+    "dur": 6
+   },
+   "from": "weightlessness"
+  },
+  {
+   "no": 47,
+   "id": "leadweight",
+   "label": "Leadweight",
+   "tier": 1,
+   "family": "pull",
+   "carrier": "bolt",
+   "payloads": [
+    "mass",
+    "status"
+   ],
+   "field": null,
+   "needs": [
+    "M8"
+   ],
+   "n": {
+    "dur": 6,
+    "status": "slow"
+   },
+   "from": "weight"
+  },
+  {
+   "no": 48,
+   "id": "moonlet",
+   "label": "Moonlet",
+   "tier": 3,
+   "family": "pull",
+   "carrier": "self",
+   "payloads": [
+    "pull"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "r": 3,
+    "dur": 12,
+    "holds": 8
+   },
+   "from": "orbiting shields"
+  },
+  {
+   "no": 49,
+   "id": "swap",
+   "label": "Swap",
+   "tier": 2,
+   "family": "pull",
+   "carrier": "bolt",
+   "payloads": [
+    "space"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "range": 40
+   },
+   "from": "the swapper"
+  },
+  {
+   "no": 50,
+   "id": "shrinker",
+   "label": "Shrinker",
+   "tier": 2,
+   "family": "pull",
+   "carrier": "bolt",
+   "payloads": [
+    "mass"
+   ],
+   "field": null,
+   "needs": [
+    "M8"
+   ],
+   "n": {
+    "dur": 8,
+    "scale": 0.33
+   },
+   "from": "the shrink ray"
+  },
+  {
+   "no": 51,
+   "id": "stasis",
+   "label": "Stasis",
+   "tier": 3,
+   "family": "clock",
+   "carrier": "lob",
+   "payloads": [
+    "time"
+   ],
+   "field": "zone",
+   "needs": [
+    "S2",
+    "S7",
+    "M6"
+   ],
+   "n": {
+    "r": 5,
+    "dur": 5,
+    "scale": 0
+   },
+   "from": "time stop"
+  },
+  {
+   "no": 52,
+   "id": "slowField",
+   "label": "Slow Field",
+   "tier": 2,
+   "family": "clock",
+   "carrier": "lob",
+   "payloads": [
+    "time"
+   ],
+   "field": "zone",
+   "needs": [
+    "S2",
+    "S7",
+    "M6"
+   ],
+   "n": {
+    "r": 6,
+    "dur": 8,
+    "scale": 0.25
+   },
+   "from": "slow time"
+  },
+  {
+   "no": 53,
+   "id": "overdrive",
+   "label": "Overdrive",
+   "tier": 2,
+   "family": "clock",
+   "carrier": "self",
+   "payloads": [
+    "time"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "dur": 6,
+    "tools": 1.5
+   },
+   "from": "haste (the tools only: the core movement is untouched)"
+  },
+  {
+   "no": 54,
+   "id": "rewind",
+   "label": "Rewind",
+   "tier": 3,
+   "family": "clock",
+   "carrier": "bolt",
+   "payloads": [
+    "time"
+   ],
+   "field": null,
+   "needs": [
+    "M9",
+    "S7"
+   ],
+   "n": {
+    "back": 3
+   },
+   "from": "rewind"
+  },
+  {
+   "no": 55,
+   "id": "echo",
+   "label": "Echo",
+   "tier": 2,
+   "family": "clock",
+   "carrier": "self",
+   "payloads": [
+    "time"
+   ],
+   "field": null,
+   "needs": [
+    "M9"
+   ],
+   "n": {
+    "dur": 5,
+    "lag": 1
+   },
+   "from": "afterimages"
+  },
+  {
+   "no": 56,
+   "id": "weatherAway",
+   "label": "Weather Away",
+   "tier": 5,
+   "family": "clock",
+   "carrier": "bolt",
+   "payloads": [
+    "status",
+    "world"
+   ],
+   "field": null,
+   "needs": [
+    "S4"
+   ],
+   "n": {
+    "dur": 4,
+    "status": "soft",
+    "need": 1
+   },
+   "from": "entropy"
+  },
+  {
+   "no": 57,
+   "id": "bloom",
+   "label": "Bloom",
+   "tier": 5,
+   "family": "clock",
+   "carrier": "lob",
+   "payloads": [
+    "world",
+    "dispel"
+   ],
+   "field": null,
+   "needs": [
+    "M12"
+   ],
+   "n": {
+    "r": 5,
+    "need": 0.75
+   },
+   "from": "youth"
+  },
+  {
+   "no": 58,
+   "id": "stopMotion",
+   "label": "Stop-Motion",
+   "tier": 2,
+   "family": "clock",
+   "carrier": "lob",
+   "payloads": [
+    "time"
+   ],
+   "field": "zone",
+   "needs": [
+    "M6",
+    "S7"
+   ],
+   "n": {
+    "r": 8,
+    "dur": 8,
+    "onBeat": 2
+   },
+   "from": "the metronome"
+  },
+  {
+   "no": 59,
+   "id": "bookmark",
+   "label": "Bookmark",
+   "tier": 2,
+   "family": "clock",
+   "carrier": "self",
+   "payloads": [
+    "space"
+   ],
+   "field": null,
+   "needs": [
+    "M9"
+   ],
+   "n": {
+    "dur": 10
+   },
+   "from": "a save state"
+  },
+  {
+   "no": 60,
+   "id": "lastWord",
+   "label": "Last Word",
+   "tier": 3,
+   "family": "clock",
+   "carrier": "bolt",
+   "payloads": [
+    "type"
+   ],
+   "field": null,
+   "needs": [
+    "M9"
+   ],
+   "n": {
+    "delay": 3,
+    "repeat": 1
+   },
+   "from": "delayed damage"
+  },
+  {
+   "no": 61,
+   "id": "infector",
+   "label": "Infector",
+   "tier": 2,
+   "family": "will",
+   "carrier": "bolt",
+   "payloads": [
+    "charm"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "dur": 8,
+    "jumps": true
+   },
+   "from": "Infector, Infecto-Bomb"
+  },
+  {
+   "no": 62,
+   "id": "tauntDoll",
+   "label": "Taunt Doll",
+   "tier": 1,
+   "family": "will",
+   "carrier": "deploy",
+   "payloads": [
+    "decoy",
+    "blast"
+   ],
+   "field": null,
+   "needs": [
+    "M4"
+   ],
+   "n": {
+    "r": 15,
+    "dur": 6,
+    "power": 3
+   },
+   "from": "Taunter"
+  },
+  {
+   "no": 63,
+   "id": "double",
+   "label": "Double",
+   "tier": 2,
+   "family": "will",
+   "carrier": "deploy",
+   "payloads": [
+    "decoy"
+   ],
+   "field": null,
+   "needs": [
+    "S8"
+   ],
+   "n": {
+    "dur": 10
+   },
+   "from": "Decoy Glove, a mirage"
+  },
+  {
+   "no": 64,
+   "id": "pottify",
+   "label": "Pottify",
+   "tier": 2,
+   "family": "will",
+   "carrier": "bolt",
+   "payloads": [
+    "morph"
+   ],
+   "field": null,
+   "needs": [
+    "M7"
+   ],
+   "n": {
+    "dur": 10
+   },
+   "from": "Morph-O-Ray, Sheepinator, Qwack-O-Ray"
+  },
+  {
+   "no": 65,
+   "id": "brainwash",
+   "label": "Brainwash",
+   "tier": 3,
+   "family": "will",
+   "carrier": "bolt",
+   "payloads": [
+    "charm"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "dur": "fight"
+   },
+   "from": "the Brainwash mod"
+  },
+  {
+   "no": 66,
+   "id": "stageFright",
+   "label": "Stage Fright",
+   "tier": 2,
+   "family": "will",
+   "carrier": "lob",
+   "payloads": [
+    "status"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "r": 10,
+    "dur": 5,
+    "status": "doubt"
+   },
+   "from": "humiliation"
+  },
+  {
+   "no": 67,
+   "id": "paranoia",
+   "label": "Paranoia",
+   "tier": 1,
+   "family": "will",
+   "carrier": "bolt",
+   "payloads": [
+    "status"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "dur": 8,
+    "status": "confusion"
+   },
+   "from": "confusion"
+  },
+  {
+   "no": 68,
+   "id": "lullaby",
+   "label": "Lullaby",
+   "tier": 1,
+   "family": "will",
+   "carrier": "lob",
+   "payloads": [
+    "status"
+   ],
+   "field": "cloud",
+   "needs": [],
+   "n": {
+    "r": 5,
+    "dur": 6,
+    "status": "sleep"
+   },
+   "from": "sleep"
+  },
+  {
+   "no": 69,
+   "id": "mindSwap",
+   "label": "Mind Swap",
+   "tier": 3,
+   "family": "will",
+   "carrier": "bolt",
+   "payloads": [
+    "space"
+   ],
+   "field": null,
+   "needs": [
+    "M11"
+   ],
+   "n": {
+    "dur": 12,
+    "pair": true
+   },
+   "from": "the body swap"
+  },
+  {
+   "no": 70,
+   "id": "forgetMe",
+   "label": "Forget Me",
+   "tier": 2,
+   "family": "will",
+   "carrier": "bolt",
+   "payloads": [
+    "status"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "dur": 10,
+    "status": "forget"
+   },
+   "from": "the forget status"
+  },
+  {
+   "no": 71,
+   "id": "shabti",
+   "label": "Shabti",
+   "tier": 2,
+   "family": "company",
+   "carrier": "lob",
+   "payloads": [
+    "summon"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "count": 3,
+    "dur": 20,
+    "power": 0.8
+   },
+   "from": "Synthenoid"
+  },
+  {
+   "no": 72,
+   "id": "agents",
+   "label": "Agents",
+   "tier": 2,
+   "family": "company",
+   "carrier": "swarm",
+   "payloads": [
+    "blast"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "count": 6,
+    "power": 2,
+    "r": 1.5
+   },
+   "from": "Glove of Doom, Agents of Doom"
+  },
+  {
+   "no": 73,
+   "id": "droneHalo",
+   "label": "Drone Halo",
+   "tier": 2,
+   "family": "company",
+   "carrier": "self",
+   "payloads": [
+    "summon"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "count": 3,
+    "dur": 15,
+    "power": 0.5
+   },
+   "from": "Drone Device"
+  },
+  {
+   "no": 74,
+   "id": "turret",
+   "label": "Turret",
+   "tier": 2,
+   "family": "company",
+   "carrier": "deploy",
+   "payloads": [
+    "blast"
+   ],
+   "field": null,
+   "needs": [
+    "M4"
+   ],
+   "n": {
+    "dur": 20,
+    "power": 0.6,
+    "every": 0.4
+   },
+   "from": "Mini-Turret Glove"
+  },
+  {
+   "no": 75,
+   "id": "hydra",
+   "label": "Hydra",
+   "tier": 3,
+   "family": "company",
+   "carrier": "bolt",
+   "payloads": [
+    "type"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "count": 6,
+    "power": 3
+   },
+   "from": "Spitting Hydra, Tempest"
+  },
+  {
+   "no": 76,
+   "id": "holowall",
+   "label": "Holowall",
+   "tier": 2,
+   "family": "company",
+   "carrier": "deploy",
+   "payloads": [],
+   "field": "wall",
+   "needs": [
+    "S2",
+    "S8",
+    "M4"
+   ],
+   "n": {
+    "w": 4,
+    "h": 2.5,
+    "dur": 10
+   },
+   "from": "Holoshield Glove"
+  },
+  {
+   "no": 77,
+   "id": "barrier",
+   "label": "Barrier",
+   "tier": 3,
+   "family": "company",
+   "carrier": "self",
+   "payloads": [
+    "status"
+   ],
+   "field": "dome",
+   "needs": [
+    "S2",
+    "S3",
+    "M4"
+   ],
+   "n": {
+    "r": 2,
+    "dur": 6,
+    "power": 1
+   },
+   "from": "Shield Charger, Tesla Barrier"
+  },
+  {
+   "no": 78,
+   "id": "golem",
+   "label": "Golem",
+   "tier": 5,
+   "family": "company",
+   "carrier": "lob",
+   "payloads": [
+    "summon",
+    "world"
+   ],
+   "field": null,
+   "needs": [
+    "M12"
+   ],
+   "n": {
+    "dur": 30,
+    "power": 3,
+    "h": 3,
+    "need": 2
+   },
+   "from": "the golem"
+  },
+  {
+   "no": 79,
+   "id": "minefield",
+   "label": "Minefield",
+   "tier": 1,
+   "family": "company",
+   "carrier": "deploy",
+   "payloads": [
+    "blast"
+   ],
+   "field": null,
+   "needs": [
+    "M4"
+   ],
+   "n": {
+    "count": 6,
+    "r": 2,
+    "arm": 1,
+    "power": 3,
+    "dur": 60
+   },
+   "from": "Mine Glove"
+  },
+  {
+   "no": 80,
+   "id": "marionette",
+   "label": "Marionette",
+   "tier": 3,
+   "family": "company",
+   "carrier": "bolt",
+   "payloads": [
+    "summon"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "dur": 20
+   },
+   "from": "Agents of Dread, a puppeteer"
+  },
+  {
+   "no": 81,
+   "id": "wonder",
+   "label": "Wonder",
+   "tier": 2,
+   "family": "feelings",
+   "carrier": "lob",
+   "payloads": [
+    "feel",
+    "status"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "r": 20,
+    "dur": 4,
+    "status": "halt",
+    "reveal": 40,
+    "feeling": "wonder"
+   },
+   "from": "the vantage"
+  },
+  {
+   "no": 82,
+   "id": "mirth",
+   "label": "Mirth",
+   "tier": 2,
+   "family": "feelings",
+   "carrier": "lob",
+   "payloads": [
+    "feel",
+    "status"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "r": 10,
+    "dur": 3,
+    "status": "stun",
+    "feeling": "mirth"
+   },
+   "from": "the pratfall"
+  },
+  {
+   "no": 83,
+   "id": "desire",
+   "label": "Desire",
+   "tier": 2,
+   "family": "feelings",
+   "carrier": "lob",
+   "payloads": [
+    "feel",
+    "pull"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "r": 20,
+    "dur": 5,
+    "feeling": "desire"
+   },
+   "from": "the lure"
+  },
+  {
+   "no": 84,
+   "id": "fury",
+   "label": "Fury",
+   "tier": 2,
+   "family": "feelings",
+   "carrier": "bolt",
+   "payloads": [
+    "feel"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "dur": 8,
+    "both": 2,
+    "feeling": "fury"
+   },
+   "from": "the berserk"
+  },
+  {
+   "no": 85,
+   "id": "gall",
+   "label": "Gall",
+   "tier": 2,
+   "family": "feelings",
+   "carrier": "lob",
+   "payloads": [
+    "feel"
+   ],
+   "field": "cloud",
+   "needs": [],
+   "n": {
+    "r": 5,
+    "dur": 6,
+    "feeling": "gall"
+   },
+   "from": "nausea"
+  },
+  {
+   "no": 86,
+   "id": "grief",
+   "label": "Grief",
+   "tier": 2,
+   "family": "feelings",
+   "carrier": "bolt",
+   "payloads": [
+    "feel",
+    "status"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "dur": 8,
+    "status": "slow",
+    "feeling": "grief"
+   },
+   "from": "the weeping"
+  },
+  {
+   "no": 87,
+   "id": "dread",
+   "label": "Dread",
+   "tier": 2,
+   "family": "feelings",
+   "carrier": "lob",
+   "payloads": [
+    "feel",
+    "status"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "r": 15,
+    "dur": 6,
+    "status": "flee",
+    "feeling": "dread"
+   },
+   "from": "the dark"
+  },
+  {
+   "no": 88,
+   "id": "agate",
+   "label": "Agate",
+   "tier": 3,
+   "family": "feelings",
+   "carrier": "bolt",
+   "payloads": [
+    "feel"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "feelings": 2
+   },
+   "from": "the agate"
+  },
+  {
+   "no": 89,
+   "id": "calm",
+   "label": "Calm",
+   "tier": 5,
+   "family": "feelings",
+   "carrier": "beam",
+   "payloads": [
+    "dispel"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "r": 8,
+    "fair": 1,
+    "need": 1
+   },
+   "from": "Outlaw Star #3 and #5"
+  },
+  {
+   "no": 90,
+   "id": "prismatic",
+   "label": "Prismatic",
+   "tier": 3,
+   "family": "feelings",
+   "carrier": "bolt",
+   "payloads": [
+    "feel"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "feelings": 7
+   },
+   "from": "the wheel of feelings"
+  },
+  {
+   "no": 91,
+   "id": "zodiac",
+   "label": "Zodiac",
+   "tier": 4,
+   "family": "caster",
+   "carrier": "call",
+   "payloads": [
+    "blast"
+   ],
+   "field": null,
+   "needs": [
+    "M10"
+   ],
+   "n": {
+    "count": 12,
+    "power": 10
+   },
+   "from": "Zodiac"
+  },
+  {
+   "no": 92,
+   "id": "ryno",
+   "label": "RYNO",
+   "tier": 4,
+   "family": "caster",
+   "carrier": "swarm",
+   "payloads": [
+    "blast"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "count": 24,
+    "power": 4,
+    "r": 2
+   },
+   "from": "the RYNO I to III"
+  },
+  {
+   "no": 93,
+   "id": "visibomb",
+   "label": "Visibomb",
+   "tier": 4,
+   "family": "caster",
+   "carrier": "steer",
+   "payloads": [
+    "blast"
+   ],
+   "field": null,
+   "needs": [
+    "M3",
+    "S8"
+   ],
+   "n": {
+    "dur": 8,
+    "power": 14,
+    "r": 5
+   },
+   "from": "Visibomb Gun"
+  },
+  {
+   "no": 94,
+   "id": "insideOut",
+   "label": "Inside Out",
+   "tier": 4,
+   "family": "caster",
+   "carrier": "lob",
+   "payloads": [
+    "pull",
+    "space"
+   ],
+   "field": null,
+   "needs": [
+    "S6"
+   ],
+   "n": {
+    "r": 3
+   },
+   "from": "Outlaw Star #4"
+  },
+  {
+   "no": 95,
+   "id": "leyline",
+   "label": "Leyline",
+   "tier": 4,
+   "family": "caster",
+   "carrier": "bolt",
+   "payloads": [
+    "space"
+   ],
+   "field": null,
+   "needs": [
+    "S6",
+    "M10"
+   ],
+   "n": {
+    "up": 30,
+    "dur": 4
+   },
+   "from": "Outlaw Star #9"
+  },
+  {
+   "no": 96,
+   "id": "thirteen",
+   "label": "Thirteen",
+   "tier": 4,
+   "family": "caster",
+   "carrier": "beam",
+   "payloads": [
+    "type"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "power": 60,
+    "types": "all"
+   },
+   "from": "Outlaw Star #13",
+   "backfire": true
+  },
+  {
+   "no": 97,
+   "id": "corrupt",
+   "label": "Corrupt",
+   "tier": 4,
+   "family": "caster",
+   "carrier": "bolt",
+   "payloads": [
+    "morph",
+    "status"
+   ],
+   "field": null,
+   "needs": [
+    "S10"
+   ],
+   "n": {
+    "dur": 6,
+    "status": "confusion"
+   },
+   "from": ".hack's data drain"
+  },
+  {
+   "no": 98,
+   "id": "godHand",
+   "label": "God Hand",
+   "tier": 4,
+   "family": "caster",
+   "carrier": "lob",
+   "payloads": [
+    "space"
+   ],
+   "field": null,
+   "needs": [],
+   "n": {
+    "r": 3,
+    "throw": 30
+   },
+   "from": "the god hand"
+  },
+  {
+   "no": 99,
+   "id": "theFool",
+   "label": "The Fool",
+   "tier": 4,
+   "family": "caster",
+   "carrier": "bolt",
+   "payloads": [],
+   "field": null,
+   "needs": [],
+   "n": {
+    "pick": "any",
+    "times": 2
+   },
+   "from": "the game's name"
+  }
+ ],
+ "FAMILIES": [
+  {
+   "id": "founding",
+   "from": 0,
+   "to": 10,
+   "label": "the founding eleven"
+  },
+  {
+   "id": "edge",
+   "from": 11,
+   "to": 20,
+   "label": "Edge"
+  },
+  {
+   "id": "ember",
+   "from": 21,
+   "to": 30,
+   "label": "Ember"
+  },
+  {
+   "id": "storm",
+   "from": 31,
+   "to": 40,
+   "label": "Storm"
+  },
+  {
+   "id": "pull",
+   "from": 41,
+   "to": 50,
+   "label": "Pull"
+  },
+  {
+   "id": "clock",
+   "from": 51,
+   "to": 60,
+   "label": "Clock"
+  },
+  {
+   "id": "will",
+   "from": 61,
+   "to": 70,
+   "label": "Will"
+  },
+  {
+   "id": "company",
+   "from": 71,
+   "to": 80,
+   "label": "Company"
+  },
+  {
+   "id": "feelings",
+   "from": 81,
+   "to": 90,
+   "label": "Feelings"
+  },
+  {
+   "id": "caster",
+   "from": 91,
+   "to": 99,
+   "label": "Caster's own"
+  }
+ ],
+ "TIERS": {
+  "1": {
+   "name": "common",
+   "worth": 6,
+   "share": 1,
+   "lachryma": 4,
+   "toll": false
+  },
+  "2": {
+   "name": "uncommon",
+   "worth": 20,
+   "share": 0.5,
+   "lachryma": 10,
+   "toll": false
+  },
+  "3": {
+   "name": "rare",
+   "worth": 80,
+   "holds": 2,
+   "lachryma": 25,
+   "toll": false
+  },
+  "4": {
+   "name": "the Caster's own",
+   "worth": 400,
+   "holds": 1,
+   "lachryma": 0,
+   "toll": true,
+   "sold": false
+  },
+  "5": {
+   "name": "World",
+   "worth": 400,
+   "holds": 1,
+   "lachryma": 0,
+   "toll": false,
+   "sold": false,
+   "draw": true
+  }
+ }
+}

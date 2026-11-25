@@ -1,0 +1,14 @@
+{
+ "FLEE": {
+  "dc": 15,
+  "cost": 3,
+  "perColumn": 1,
+  "perDepth": 3,
+  "perFail": 3,
+  "luckMax": 2
+ },
+ "FLEE_ACTION": {
+  "form": null,
+  "cost": 3
+ }
+}

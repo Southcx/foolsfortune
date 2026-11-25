@@ -1,0 +1,157 @@
+{
+ "MATTER_FEED": {
+  "perM3": 0.25,
+  "dayCap": 30
+ },
+ "SEEDS": {
+  "clay": {
+   "kind": "clay",
+   "key": "garden.enter",
+   "n": 1,
+   "line": "Anagami gives a clay seed the first time you enter your garden."
+  },
+  "crystal": {
+   "kind": "crystal",
+   "key": "well.foe",
+   "n": 1,
+   "line": "A FOE's core, the first time one is beaten in a Well."
+  },
+  "coral": {
+   "kind": "coral",
+   "key": "sea.square.done",
+   "n": 1,
+   "line": "The first square of the open sea completed."
+  },
+  "bowl": {
+   "kind": "bowl",
+   "key": "spirit.wish.done",
+   "n": 5,
+   "line": "A spirit's dream of a home, at the fifth wish you answer."
+  },
+  "ring": {
+   "kind": "ring",
+   "key": "god.mimic.perfect",
+   "n": 5,
+   "line": "The System's own ring, at the fifth mimicry puzzle copied for three stars."
+  },
+  "bone": {
+   "kind": "bone",
+   "key": "slab.flawless",
+   "n": 1,
+   "line": "The first slab carved flawless."
+  },
+  "moonlet.wonder": {
+   "kind": "moonlet",
+   "inner": true,
+   "feeling": "wonder",
+   "key": "feeling.known.wonder",
+   "n": 1,
+   "line": "Awakening to Wonder."
+  },
+  "moonlet.mirth": {
+   "kind": "moonlet",
+   "inner": true,
+   "feeling": "mirth",
+   "key": "feeling.known.mirth",
+   "n": 1,
+   "line": "Awakening to Mirth."
+  },
+  "moonlet.desire": {
+   "kind": "moonlet",
+   "inner": true,
+   "feeling": "desire",
+   "key": "feeling.known.desire",
+   "n": 1,
+   "line": "Awakening to Desire."
+  },
+  "moonlet.fury": {
+   "kind": "moonlet",
+   "inner": true,
+   "feeling": "fury",
+   "key": "feeling.known.fury",
+   "n": 1,
+   "line": "Awakening to Fury."
+  },
+  "moonlet.gall": {
+   "kind": "moonlet",
+   "inner": true,
+   "feeling": "gall",
+   "key": "feeling.known.gall",
+   "n": 1,
+   "line": "Awakening to Gall."
+  },
+  "moonlet.grief": {
+   "kind": "moonlet",
+   "inner": true,
+   "feeling": "grief",
+   "key": "feeling.known.grief",
+   "n": 1,
+   "line": "Awakening to Grief."
+  },
+  "moonlet.dread": {
+   "kind": "moonlet",
+   "inner": true,
+   "feeling": "dread",
+   "key": "feeling.known.dread",
+   "n": 1,
+   "line": "Awakening to Dread."
+  }
+ },
+ "SHAPES": {
+  "clay": {
+   "body": "sphere",
+   "line": "Round, all clay: the garden as it began."
+  },
+  "crystal": {
+   "body": "faceted",
+   "line": "Faceted; past medium it splits open like a geode and you can stand inside."
+  },
+  "coral": {
+   "body": "reef",
+   "line": "Grows branching reef arms out from a round heart."
+  },
+  "bowl": {
+   "body": "bowl",
+   "line": "A hemisphere, lived in from the inside."
+  },
+  "ring": {
+   "body": "torus",
+   "line": "A ring, walked on its inside and its outside (Galaxy's donut)."
+  },
+  "bone": {
+   "body": "sphere",
+   "line": "Round, its clay full of Lachrymite fossils to dig."
+  },
+  "moonlet": {
+   "body": "sphere",
+   "line": "Tiny, round, in its feeling's colour; hopped round in a second."
+  }
+ },
+ "SIZES": [
+  {
+   "id": "moonlet",
+   "r": 5,
+   "plots": 1,
+   "at": 0
+  },
+  {
+   "id": "small",
+   "r": 9,
+   "plots": 4,
+   "at": 60
+  },
+  {
+   "id": "medium",
+   "r": 14,
+   "plots": 6,
+   "at": 180
+  },
+  {
+   "id": "large",
+   "r": 20,
+   "plots": 8,
+   "at": 420,
+   "moon": true
+  }
+ ]
+}

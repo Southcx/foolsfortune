@@ -1,0 +1,180 @@
+{
+ "BREAK_AT": 3.6,
+ "FORMS": {
+  "courier": {
+   "regions": [
+    "mask",
+    "torso",
+    "armL",
+    "armR",
+    "legL",
+    "legR"
+   ],
+   "crack": 0.65,
+   "mendAfter": 6,
+   "mendRate": 0.025,
+   "pool": true
+  },
+  "jar": {
+   "regions": [
+    "lip",
+    "shoulder",
+    "belly",
+    "foot"
+   ],
+   "crack": 0.65,
+   "mendAfter": 6,
+   "mendRate": 0.025,
+   "pool": true
+  },
+  "sibling": {
+   "regions": [
+    "mask",
+    "torso",
+    "armL",
+    "armR",
+    "legL",
+    "legR"
+   ],
+   "crack": 0.65,
+   "mendAfter": 4,
+   "mendRate": 0.06,
+   "pool": false
+  },
+  "sloop": {
+   "regions": [
+    "bow",
+    "stern",
+    "port",
+    "starboard",
+    "mast",
+    "helm"
+   ],
+   "crack": 0.65,
+   "mendAfter": 0,
+   "mendRate": 0,
+   "pool": true
+  },
+  "frigate": {
+   "regions": [
+    "bow",
+    "stern",
+    "port",
+    "starboard",
+    "mast",
+    "helm"
+   ],
+   "crack": 0.45,
+   "mendAfter": 0,
+   "mendRate": 0,
+   "pool": true
+  },
+  "destroyer": {
+   "regions": [
+    "bow",
+    "stern",
+    "port",
+    "starboard",
+    "mast",
+    "helm"
+   ],
+   "crack": 0.72,
+   "mendAfter": 0,
+   "mendRate": 0,
+   "pool": true
+  },
+  "galleon": {
+   "regions": [
+    "bow",
+    "stern",
+    "port",
+    "starboard",
+    "mast",
+    "helm"
+   ],
+   "crack": 0.3,
+   "mendAfter": 0,
+   "mendRate": 0,
+   "pool": true
+  },
+  "tanker": {
+   "regions": [
+    "bow",
+    "stern",
+    "port",
+    "starboard",
+    "mast",
+    "helm"
+   ],
+   "crack": 0.26,
+   "mendAfter": 0,
+   "mendRate": 0,
+   "pool": true
+  },
+  "pot": {
+   "regions": [
+    "body"
+   ],
+   "crack": 0.65,
+   "mendAfter": 0,
+   "mendRate": 0,
+   "pool": false
+  },
+  "clapper": {
+   "regions": [
+    "body"
+   ],
+   "crack": 3.6,
+   "mendAfter": 0,
+   "mendRate": 0,
+   "pool": false
+  },
+  "dummy": {
+   "regions": [
+    "body"
+   ],
+   "crack": 0.08,
+   "mendAfter": 0,
+   "mendRate": 0,
+   "pool": false
+  },
+  "mech": {
+   "regions": [
+    "head",
+    "core",
+    "armL",
+    "armR",
+    "legs",
+    "back"
+   ],
+   "crack": 0.18,
+   "mendAfter": 0,
+   "mendRate": 0,
+   "pool": true
+  },
+  "giant": {
+   "regions": [
+    "head",
+    "body",
+    "armL",
+    "armR",
+    "legs"
+   ],
+   "crack": 0.045,
+   "mendAfter": 0,
+   "mendRate": 0,
+   "pool": false
+  },
+  "shell": {
+   "regions": [
+    "shell"
+   ],
+   "crack": 0.08,
+   "mendAfter": 1.4,
+   "mendRate": 0.32,
+   "pool": false
+  }
+ },
+ "REGION_BREAK": 0.95,
+ "SHIELD": 35
+}

@@ -1,0 +1,16 @@
+{
+ "DEMAND": {
+  "margarite": {
+   "wreck": 1.5,
+   "monument": 1.25
+  },
+  "anagami": {
+   "islet": 1.5,
+   "pair": 1.25
+  },
+  "entra": {
+   "phenomenon": 1.5,
+   "seep": 1.5
+  }
+ }
+}

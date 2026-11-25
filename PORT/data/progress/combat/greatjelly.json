@@ -1,0 +1,465 @@
+{
+ "CASTS": {
+  "crownBash": {
+   "windup": 1.4,
+   "mark": {
+    "type": "impact",
+    "status": "soaked",
+    "answer": "parry"
+   },
+   "area": {
+    "shape": "lunge",
+    "at": "courier",
+    "reach": 20
+   },
+   "effect": {
+    "pool": 0.6,
+    "soaked": 20
+   },
+   "answer": "parry (V) or roll",
+   "parry": true
+  },
+  "brineLine": {
+   "windup": 1.6,
+   "mark": {
+    "type": "impact",
+    "status": null,
+    "answer": "bait"
+   },
+   "area": {
+    "shape": "line",
+    "at": "courier",
+    "width": 14,
+    "length": 60
+   },
+   "effect": {
+    "hits": 1,
+    "crown": "pillar"
+   },
+   "answer": "stand before a pillar and step aside: it cracks its own crown"
+  },
+  "gelidRings": {
+   "windup": 2.5,
+   "mark": {
+    "type": "impact",
+    "status": "slow",
+    "answer": "out"
+   },
+   "area": {
+    "shape": "out-in",
+    "inner": 15,
+    "outer": [
+     15,
+     40
+    ]
+   },
+   "effect": {
+    "hits": 1,
+    "slow": 3
+   },
+   "answer": "out of the first ring, then back in"
+  },
+  "oozeRain": {
+   "windup": 0.9,
+   "mark": {
+    "type": "impact",
+    "status": null,
+    "answer": "out"
+   },
+   "area": {
+    "shape": "baited",
+    "drops": 3,
+    "every": 1,
+    "radius": 4,
+    "lasts": 60
+   },
+   "effect": {
+    "hits": 1
+   },
+   "answer": "lead the drops to the rim: each leaves a puddle for a real minute"
+  },
+  "crownGlare": {
+   "windup": 2,
+   "mark": {
+    "type": "ego",
+    "status": "stun",
+    "answer": "lookAway"
+   },
+   "area": {
+    "shape": "gaze"
+   },
+   "effect": {
+    "stunned": 3
+   },
+   "answer": "look away, or look through the Veritome: the lens turns the gaze back and stuns it 4 s",
+   "mirror": 4
+  },
+  "slipNova": {
+   "windup": 3,
+   "mark": {
+    "type": "impact",
+    "status": null,
+    "answer": "guard"
+   },
+   "area": {
+    "shape": "raidwide"
+   },
+   "effect": {
+    "pool": 0.4
+   },
+   "answer": "unavoidable; guard (V held) at the flash for half"
+  },
+  "sinkingSands": {
+   "windup": 2,
+   "mark": {
+    "type": null,
+    "status": null,
+    "answer": "highGround"
+   },
+   "area": {
+    "shape": "floor",
+    "slide": [
+     0.8,
+     1.5
+    ]
+   },
+   "effect": {
+    "drag": true
+   },
+   "answer": "stand on islands: rubble, fallen pillars"
+  },
+  "surfaceSlam": {
+   "windup": 1.8,
+   "mark": {
+    "type": "impact",
+    "status": null,
+    "answer": "out"
+   },
+   "area": {
+    "shape": "circle",
+    "at": "courier",
+    "radius": 9
+   },
+   "effect": {
+    "hits": 1
+   },
+   "answer": "off the rings: the slip rings before it surfaces"
+  },
+  "brineCascade": {
+   "windup": 2.4,
+   "mark": {
+    "type": "impact",
+    "status": null,
+    "answer": "behind"
+   },
+   "area": {
+    "shape": "cone",
+    "degrees": 120,
+    "length": 35
+   },
+   "effect": {
+    "hits": 1
+   },
+   "answer": "get behind it: its maw swells for a bar"
+  },
+  "broodCall": {
+   "windup": 2,
+   "mark": {
+    "type": null,
+    "status": null,
+    "answer": "killFirst"
+   },
+   "area": {
+    "shape": "adds",
+    "perClutch": 2,
+    "heal": 0.02
+   },
+   "effect": {
+    "adds": true
+   },
+   "answer": "kill the brood before they reach it: each heals it 2% and grows a crown plate back"
+  },
+  "calving": {
+   "windup": 3,
+   "mark": {
+    "type": null,
+    "status": null,
+    "answer": "killFirst"
+   },
+   "area": {
+    "shape": "split",
+    "calves": 4,
+    "within": 30,
+    "heal": 0.1
+   },
+   "effect": {
+    "split": true
+   },
+   "answer": "kill all four calves within 30 s, or they re-merge and heal it"
+  },
+  "overflow": {
+   "windup": 3,
+   "mark": {
+    "type": null,
+    "status": null,
+    "answer": "highGround"
+   },
+   "area": {
+    "shape": "floor",
+    "slip": "all"
+   },
+   "effect": {
+    "slip": true,
+    "hatchAll": true
+   },
+   "answer": "hold the islands; every clutch left hatches"
+  },
+  "swallow": {
+   "windup": 5,
+   "mark": null,
+   "area": {
+    "shape": "raidwide"
+   },
+   "effect": {
+    "wipe": true
+   },
+   "answer": "none: it is the enrage"
+  }
+ },
+ "DROPS": [
+  {
+   "id": "glaze.jellycrown",
+   "ach": "gj1",
+   "name": "the Jelly-crown glaze",
+   "give": {
+    "glaze": "jellycrown",
+    "label": "JELLY-CROWN",
+    "blurb": "placeholder: a slip-green celadon that pools thick and wet, as the crown sat in the jelly"
+   }
+  },
+  {
+   "id": "curio.crown",
+   "ach": "gj2",
+   "name": "the Crown of the Dunemaw",
+   "give": {
+    "curio": "crown",
+    "tier": 4,
+    "glyph": "♛",
+    "chest": false,
+    "blurb": "placeholder: the broken urn it wore, whole again in your hands, and lighter than it looked"
+   }
+  },
+  {
+   "id": "mount.slipjelly",
+   "ach": "gj3",
+   "name": "a slip jelly to ride",
+   "give": {
+    "mount": "slipjelly",
+    "open": true
+   }
+  },
+  {
+   "id": "title.jellybane",
+   "ach": "gj4",
+   "name": "the title Jellybane",
+   "give": {
+    "title": "Jellybane"
+   }
+  },
+  {
+   "id": "pattern.crowneye",
+   "ach": "gj5",
+   "name": "the Eye Cup glaze, its kiln pattern the crown's eye",
+   "give": {
+    "glaze": "eyecup",
+    "label": "EYE CUP",
+    "pattern": "eye",
+    "blurb": "placeholder: black-figure, a staring eye on every part, the evil looked back at"
+   }
+  }
+ ],
+ "ENRAGE": 570,
+ "HEALTH": 900,
+ "NAMES": {
+  "crownBash": "Lidfall",
+  "brineLine": "Shoulder Charge",
+  "gelidRings": "Throwing Rings",
+  "oozeRain": "Slick Trail",
+  "crownGlare": "Eye Cup",
+  "slipNova": "Blowout",
+  "sinkingSands": "Centring",
+  "surfaceSlam": "Wedge",
+  "brineCascade": "Decant",
+  "broodCall": "Broodwake",
+  "calving": "Sherds",
+  "overflow": "The Overflow",
+  "swallow": "The Dunemaw Swallows"
+ },
+ "NOVA_AT": 0.15,
+ "PHASES": [
+  {
+   "id": "crown",
+   "from": 1,
+   "loop": 120,
+   "casts": [
+    [
+     8,
+     "crownBash"
+    ],
+    [
+     20,
+     "brineLine"
+    ],
+    [
+     35,
+     "gelidRings"
+    ],
+    [
+     50,
+     "oozeRain"
+    ],
+    [
+     65,
+     "brineLine"
+    ],
+    [
+     68,
+     "brineLine"
+    ],
+    [
+     90,
+     "crownGlare"
+    ],
+    [
+     105,
+     "crownBash"
+    ]
+   ]
+  },
+  {
+   "id": "clutch",
+   "from": 0.65,
+   "loop": 30,
+   "casts": [
+    [
+     0,
+     "slipNova"
+    ],
+    [
+     4,
+     "broodCall"
+    ],
+    [
+     18,
+     "broodCall"
+    ]
+   ],
+   "untouchable": true,
+   "once": true
+  },
+  {
+   "id": "bare",
+   "from": 0.65,
+   "loop": 90,
+   "casts": [
+    [
+     6,
+     "sinkingSands"
+    ],
+    [
+     15,
+     "surfaceSlam"
+    ],
+    [
+     28,
+     "brineCascade"
+    ],
+    [
+     40,
+     "crownBash"
+    ],
+    [
+     42,
+     "gelidRings"
+    ],
+    [
+     60,
+     "broodCall"
+    ],
+    [
+     75,
+     "surfaceSlam"
+    ]
+   ]
+  },
+  {
+   "id": "calving",
+   "from": 0.3,
+   "loop": 75,
+   "casts": [
+    [
+     0,
+     "calving"
+    ],
+    [
+     36,
+     "crownBash"
+    ],
+    [
+     44,
+     "brineLine"
+    ],
+    [
+     52,
+     "oozeRain"
+    ],
+    [
+     60,
+     "gelidRings"
+    ],
+    [
+     68,
+     "broodCall"
+    ]
+   ]
+  },
+  {
+   "id": "overflow",
+   "from": 0.05,
+   "loop": 60,
+   "casts": [
+    [
+     0,
+     "overflow"
+    ],
+    [
+     10,
+     "crownBash"
+    ],
+    [
+     20,
+     "brineCascade"
+    ],
+    [
+     30,
+     "gelidRings"
+    ]
+   ],
+   "once": false
+  }
+ ],
+ "STATES": {
+  "clutch": "Unstopped",
+  "soaked": "Sodden",
+  "submerge": "Slake",
+  "calf": "sherd"
+ },
+ "SUSTAINED": {
+  "perSecond": 2.6,
+  "uptime": {
+   "good": 0.6,
+   "expert": 0.8
+  },
+  "untouchable": 50
+ }
+}

@@ -1,0 +1,98 @@
+{
+ "LINES": {
+  "curious": {
+   "like": "Oh, the {piece}! Where did you find it?",
+   "unsure": "The {piece}... I keep looking at it. Is it meant to do that?",
+   "moved": "You moved the {piece}! What does it do over there?",
+   "bare": "Nothing here yet. What will you put here?",
+   "plain": "The {piece}. Hm. I wonder what it is for."
+  },
+  "wary": {
+   "like": "The {piece} is all right. I can sit by it.",
+   "unsure": "I do not trust the {piece}.",
+   "moved": "The {piece} was somewhere else. I noticed.",
+   "bare": "It is quiet here. Too open.",
+   "plain": "The {piece}. Fine. It stays put, at least."
+  },
+  "orderly": {
+   "like": "The {piece} suits this corner exactly.",
+   "unsure": "The {piece} does not belong with the rest.",
+   "moved": "Good, the {piece} is better placed now.",
+   "bare": "This corner wants something. A plan, at least.",
+   "plain": "The {piece} is straight. Good."
+  },
+  "erratic": {
+   "like": "Ha, the {piece}! I like it crooked.",
+   "unsure": "The {piece} gives me a funny feeling. Not a bad one. Maybe.",
+   "moved": "The {piece} again! Over there now, is it?",
+   "bare": "Nothing here. I could put something here.",
+   "plain": "The {piece}. Hm. What was I saying?"
+  },
+  "bold": {
+   "like": "The {piece}! Now that is a good one.",
+   "unsure": "The {piece}? I will face it. Not sure I like it.",
+   "moved": "You moved the {piece}. Bold. I like it.",
+   "bare": "Plenty of room to run in here.",
+   "plain": "The {piece}. I could jump it."
+  },
+  "shy": {
+   "like": "The {piece}... I like it. A little.",
+   "unsure": "The {piece} is looking at me.",
+   "moved": "Oh. The {piece} moved. Did it?",
+   "bare": "It is a bit empty here. Quiet, though.",
+   "plain": "The {piece}. It is nice. I think."
+  },
+  "gentle": {
+   "like": "The {piece} is lovely. Thank you for it.",
+   "unsure": "The {piece} seems sad to me. Maybe it needs company.",
+   "moved": "The {piece} looks happier over there.",
+   "bare": "It would be nice to have something here.",
+   "plain": "The {piece} looks comfortable."
+  },
+  "hostile": {
+   "like": "The {piece}. Fine. Not bad.",
+   "unsure": "The {piece} is in my way.",
+   "moved": "You moved the {piece}. About time.",
+   "bare": "Empty. Good. Leave it.",
+   "plain": "The {piece}. Whatever."
+  },
+  "skittish": {
+   "like": "The {piece} is safe, right? It is safe?",
+   "unsure": "The {piece} scares me. Something about it.",
+   "moved": "The {piece} moved! When did it move?",
+   "bare": "There is nothing here. What if something comes?",
+   "plain": "The {piece}. Is it going to stay there?"
+  },
+  "steady": {
+   "like": "The {piece}. Good. I will rest by it.",
+   "unsure": "The {piece} is not for me. It can stay.",
+   "moved": "The {piece} is somewhere new. It will settle.",
+   "bare": "Empty ground is fine. It waits.",
+   "plain": "The {piece}. It will do."
+  },
+  "plain": {
+   "like": "The {piece} is a good one.",
+   "unsure": "The {piece} is not my favourite.",
+   "moved": "You moved the {piece}.",
+   "bare": "Nothing is near me.",
+   "plain": "The {piece}."
+  }
+ },
+ "NOTICE": {
+  "middle": 0.2,
+  "far": 1000
+ },
+ "REGISTERS": [
+  "curious",
+  "wary",
+  "orderly",
+  "erratic",
+  "bold",
+  "shy",
+  "gentle",
+  "hostile",
+  "skittish",
+  "steady",
+  "plain"
+ ]
+}

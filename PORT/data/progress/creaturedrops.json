@@ -1,0 +1,302 @@
+{
+ "DROP_CATEGORIES": {
+  "mat.provision": {
+   "label": "PROVISION",
+   "generic": "a heartfruit: a round fruit, a leaf on its stem",
+   "items": [
+    "mat.provision"
+   ]
+  },
+  "mat.art": {
+   "label": "ARTWORK",
+   "generic": "an origami crane",
+   "items": [
+    "mat.art"
+   ]
+  },
+  "mat.finery": {
+   "label": "FINERY",
+   "generic": "a charm on a cord, a dab of pigment",
+   "items": [
+    "mat.finery"
+   ]
+  },
+  "mat.arcane": {
+   "label": "ARCANE RELIC",
+   "generic": "a rune-cut lens in a brass rim",
+   "items": [
+    "mat.arcane"
+   ]
+  },
+  "mat.edge": {
+   "label": "EDGE",
+   "generic": "a curved claw",
+   "items": [
+    "mat.edge"
+   ]
+  },
+  "mat.mechanism": {
+   "label": "MECHANISM",
+   "generic": "a little gyroscope",
+   "items": [
+    "mat.mechanism"
+   ]
+  },
+  "mat.eldritch": {
+   "label": "ELDRITCH ARTEFACT",
+   "generic": "a squat idol with one eye",
+   "items": [
+    "mat.eldritch"
+   ]
+  },
+  "ing.cool": {
+   "label": "COOL",
+   "generic": "a sprig of mint",
+   "items": [
+    "ing.mint"
+   ]
+  },
+  "ing.sweet": {
+   "label": "SWEET",
+   "generic": "a piece of honeycomb",
+   "items": [
+    "ing.honey"
+   ]
+  },
+  "ing.rich": {
+   "label": "RICH",
+   "generic": "a pat of butter on a leaf",
+   "items": [
+    "ing.butter"
+   ]
+  },
+  "ing.heat": {
+   "label": "HEAT",
+   "generic": "a red chilli",
+   "items": [
+    "ing.chilli"
+   ]
+  },
+  "ing.bitter": {
+   "label": "BITTER",
+   "generic": "a dark serrated leaf",
+   "items": [
+    "ing.bitterleaf"
+   ]
+  },
+  "ing.salt": {
+   "label": "SALT",
+   "generic": "an onion, its skin split",
+   "items": [
+    "ing.onion"
+   ]
+  },
+  "ing.sour": {
+   "label": "SOUR",
+   "generic": "a stoppered cruet of vinegar",
+   "items": [
+    "ing.vinegar"
+   ]
+  },
+  "ing.umami": {
+   "label": "UMAMI",
+   "generic": "a folded strip of kombu",
+   "items": [
+    "ing.kombu"
+   ]
+  },
+  "ing.body": {
+   "label": "BODY",
+   "generic": "a small crock of miso",
+   "items": [
+    "ing.miso"
+   ]
+  },
+  "shard": {
+   "label": "SHARD",
+   "generic": "a spire of Lachrymite",
+   "items": [
+    "mat.shard"
+   ]
+  },
+  "roe": {
+   "label": "ROE",
+   "generic": "a quivering cluster of eggs",
+   "items": [
+    "roe.slip"
+   ]
+  },
+  "key": {
+   "label": "POSSIBILIKEY",
+   "generic": "a plain brass key",
+   "items": [
+    "key.*"
+   ]
+  },
+  "curio": {
+   "label": "CURIO",
+   "generic": "a small trinket on a ribbon",
+   "items": [
+    "curio.*"
+   ]
+  },
+  "shell": {
+   "label": "SHELL",
+   "generic": "a caster shell, brass-cased",
+   "items": [
+    "shell.*"
+   ]
+  },
+  "fish": {
+   "label": "FISH",
+   "generic": "a plain fish",
+   "items": [
+    "fish.*"
+   ]
+  },
+  "slab": {
+   "label": "SLAB",
+   "generic": "a banded block of stone",
+   "items": [
+    "slab"
+   ]
+  }
+ },
+ "DROP_TABLES": {
+  "slipjelly": {
+   "materials": {
+    "provision": 3,
+    "art": 1
+   },
+   "addin": 4,
+   "extra": [
+    {
+     "id": "roe.slip",
+     "w": 1
+    }
+   ],
+   "rare": [
+    {
+     "id": "mat.shard",
+     "p": 0.08333333333333333
+    },
+    {
+     "id": "key.brass",
+     "p": 0.016666666666666666
+    }
+   ]
+  },
+  "clutch": {
+   "materials": {
+    "provision": 2
+   },
+   "addin": 2,
+   "extra": [
+    {
+     "id": "roe.slip",
+     "w": 3
+    }
+   ],
+   "rare": []
+  },
+  "rolypoly": {
+   "materials": {
+    "mechanism": 2,
+    "edge": 1
+   },
+   "addin": 2,
+   "extra": [],
+   "rare": [
+    {
+     "id": "mat.shard",
+     "p": 0.0625
+    }
+   ]
+  },
+  "wisp": {
+   "materials": {
+    "finery": 2,
+    "arcane": 2
+   },
+   "addin": 3,
+   "extra": [
+    {
+     "id": "mat.shard",
+     "w": 1
+    }
+   ],
+   "rare": [
+    {
+     "id": "key.brass",
+     "p": 0.025
+    }
+   ]
+  },
+  "clapper": {
+   "materials": {
+    "art": 3,
+    "finery": 1
+   },
+   "addin": 2,
+   "extra": [],
+   "rare": []
+  },
+  "sentinel": {
+   "materials": {
+    "edge": 2,
+    "mechanism": 1,
+    "art": 1
+   },
+   "addin": 1,
+   "extra": [
+    {
+     "id": "mat.shard",
+     "w": 1
+    }
+   ],
+   "rare": [
+    {
+     "id": "mat.eldritch",
+     "p": 0.1
+    }
+   ]
+  },
+  "giant": {
+   "materials": {
+    "provision": 2,
+    "art": 2,
+    "mechanism": 1
+   },
+   "addin": 0,
+   "extra": [
+    {
+     "id": "mat.shard",
+     "w": 2
+    }
+   ],
+   "rare": [
+    {
+     "id": "key.brass",
+     "p": 0.16666666666666666
+    }
+   ]
+  },
+  "spirit": {
+   "materials": {
+    "eldritch": 1,
+    "arcane": 1
+   },
+   "addin": 2,
+   "extra": [],
+   "rare": []
+  }
+ },
+ "NO_DROPS": [
+  "dummy",
+  "strawman",
+  "target",
+  "greatjelly",
+  "sibling",
+  "beast"
+ ]
+}

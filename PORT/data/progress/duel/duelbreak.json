@@ -1,0 +1,30 @@
+{
+ "DUEL_BREAK": {
+  "junk": 8,
+  "emoPerJunk": 0.05,
+  "emoDecay": 0.1,
+  "turns": 2,
+  "apLost": [
+   0,
+   1,
+   2,
+   "Infinity"
+  ],
+  "orbsPer": 2,
+  "orb": 8,
+  "showerReach": 6,
+  "poolMax": 100
+ },
+ "FINISHER": {
+  "ap": 2,
+  "pool": [
+   60,
+   40,
+   20
+  ]
+ },
+ "FINISHER_ACTION": {
+  "form": "hand",
+  "cost": 2
+ }
+}

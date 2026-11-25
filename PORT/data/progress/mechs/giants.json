@@ -1,0 +1,117 @@
+{
+ "GIANTS": {
+  "straw": {
+   "id": "straw",
+   "label": "Straw giant",
+   "line": "Pip's biggest try at Strawman, stitched on a scaffold. It waits to be hit.",
+   "height": 16,
+   "radius": 5,
+   "reach": 14,
+   "speed": 2.2,
+   "barrier": true,
+   "wakes": "staggered",
+   "moves": {
+    "swipe": {
+     "k": 0.7,
+     "every": 4,
+     "windup": 1.1,
+     "reach": 14,
+     "region": "core",
+     "answer": "boost"
+    },
+    "slam": {
+     "k": 1.2,
+     "every": 9,
+     "windup": 1.8,
+     "reach": 10,
+     "region": "head",
+     "answer": "back"
+    }
+   }
+  },
+  "colossus": {
+   "id": "colossus",
+   "label": "Dune colossus",
+   "line": "The Dunes' sand risen into a body in Fury's weather. It hears you coming.",
+   "height": 22,
+   "radius": 6.5,
+   "reach": 16,
+   "speed": 3.2,
+   "barrier": true,
+   "wakes": "near",
+   "wakeAt": 90,
+   "body": "sand",
+   "opens": {
+    "count": [
+     "giant.down.straw",
+     3
+    ],
+    "feat": [
+     "giant.down.offcable",
+     1
+    ]
+   },
+   "moves": {
+    "sweep": {
+     "kind": "melee",
+     "k": 0.8,
+     "every": 5,
+     "windup": 1.2,
+     "reach": 16,
+     "region": "legs",
+     "answer": "jump"
+    },
+    "burrow": {
+     "kind": "ring",
+     "k": 1.4,
+     "every": 14,
+     "windup": 2.4,
+     "reach": 120,
+     "radius": 12,
+     "region": "core",
+     "answer": "boost",
+     "sinks": 3
+    },
+    "hurl": {
+     "kind": "hurl",
+     "k": 0.9,
+     "every": 7,
+     "windup": 1.4,
+     "reach": 140,
+     "min": 30,
+     "speed": 45,
+     "region": "head",
+     "answer": "boost"
+    },
+    "wave": {
+     "kind": "wave",
+     "k": 0.6,
+     "every": 10,
+     "windup": 1.6,
+     "reach": 40,
+     "angle": 0.6,
+     "region": "core",
+     "answer": "back",
+     "slow": 2
+    }
+   }
+  }
+ },
+ "GIANT_IDS": [
+  "straw",
+  "colossus"
+ ],
+ "GRAPPLE": {
+  "reach": 18,
+  "hold": 3,
+  "shake": 0.5,
+  "drain": 150,
+  "speed": 20,
+  "up": 0.5,
+  "carve": 5,
+  "selfK": 1.2,
+  "slamK": 1.6,
+  "kJ": 2500,
+  "load": 3
+ }
+}

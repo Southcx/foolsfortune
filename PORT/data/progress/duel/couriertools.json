@@ -1,0 +1,67 @@
+{
+ "COURIER_ACTIONS": {
+  "run": {
+   "form": "courier",
+   "tool": null,
+   "cost": 1,
+   "pool": 0
+  },
+  "shoot": {
+   "form": "courier",
+   "tool": "psygun",
+   "cost": 1,
+   "pool": 5
+  },
+  "grab": {
+   "form": "courier",
+   "tool": "sondelass",
+   "cost": 1,
+   "pool": 5
+  },
+  "drill": {
+   "form": "courier",
+   "tool": "dreamvane",
+   "cost": 1,
+   "pool": 3
+  },
+  "paint": {
+   "form": "courier",
+   "tool": "soulbrush",
+   "cost": 2,
+   "pool": 10
+  },
+  "tune": {
+   "form": "courier",
+   "tool": "crucibelle",
+   "cost": 1,
+   "pool": 8
+  },
+  "delay": {
+   "form": "courier",
+   "tool": "crucibelle",
+   "cost": 2,
+   "pool": 15
+  },
+  "hold": {
+   "form": "courier",
+   "tool": "lockheart",
+   "cost": 1,
+   "pool": 0
+  },
+  "send": {
+   "form": "courier",
+   "tool": "lockheart",
+   "cost": 1,
+   "pool": 5
+  },
+  "read": {
+   "form": "courier",
+   "tool": "veritome",
+   "cost": 1,
+   "pool": 0
+  }
+ },
+ "TOOL_RULES": {
+  "paintReach": 4
+ }
+}

@@ -1,0 +1,22 @@
+{
+ "LEARNED": {
+  "kindle": {
+   "from": "wisp",
+   "secret": "snuff",
+   "wins": 5,
+   "hint": "Learned from the aberrant Lantern Wisp."
+  },
+  "absorb": {
+   "from": "slipjelly",
+   "secret": "dissolve",
+   "wins": 5,
+   "hint": "Learned from an aberrant slip jelly."
+  },
+  "encore": {
+   "from": "clapper",
+   "secret": "clapback",
+   "wins": 5,
+   "hint": "Learned from an aberrant clapperjar."
+  }
+ }
+}

@@ -1,0 +1,109 @@
+{
+ "FIGMENT_ANSWERS": [
+  "out",
+  "in",
+  "sidestep",
+  "behind",
+  "lookAway",
+  "guard",
+  "parry",
+  "bait",
+  "killFirst",
+  "highGround"
+ ],
+ "FIGMENT_SHAPES": {
+  "circle": {
+   "answer": "out",
+   "ground": true
+  },
+  "ring": {
+   "answer": "in",
+   "ground": true
+  },
+  "out-in": {
+   "answer": "out",
+   "ground": true
+  },
+  "cone": {
+   "answer": "behind",
+   "ground": true
+  },
+  "line": {
+   "answer": "sidestep",
+   "ground": true
+  },
+  "lunge": {
+   "answer": "sidestep",
+   "ground": true
+  },
+  "baited": {
+   "answer": "out",
+   "ground": true
+  },
+  "left": {
+   "answer": "out",
+   "ground": true
+  },
+  "tracked": {
+   "answer": "out",
+   "ground": true
+  },
+  "floor": {
+   "answer": "highGround",
+   "ground": true
+  },
+  "gaze": {
+   "answer": "lookAway",
+   "ground": false
+  },
+  "raidwide": {
+   "answer": "guard",
+   "ground": false
+  },
+  "adds": {
+   "answer": "killFirst",
+   "ground": false
+  },
+  "split": {
+   "answer": "killFirst",
+   "ground": false
+  }
+ },
+ "FIGMENT_TELEGRAPH": {
+  "steps": [
+   {
+    "id": "where",
+    "at": 2,
+    "label": "Area",
+    "line": "See where a blow lands.",
+    "said": "Figment telegraphs show the area now."
+   },
+   {
+    "id": "when",
+    "at": 8,
+    "label": "Timing",
+    "line": "See when a blow lands.",
+    "said": "Figment telegraphs show the timing now."
+   },
+   {
+    "id": "kind",
+    "at": 20,
+    "label": "Type",
+    "line": "See its damage type and status.",
+    "said": "Figment telegraphs show the damage type now."
+   },
+   {
+    "id": "answer",
+    "at": 35,
+    "label": "Answer",
+    "line": "See how to answer it.",
+    "said": "Figment telegraphs show the answer now."
+   }
+  ],
+  "tells": {
+   "label": "Tells",
+   "line": "Read the body. No marks yet."
+  },
+  "max": 6
+ }
+}

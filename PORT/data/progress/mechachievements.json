@@ -1,0 +1,8 @@
+{
+ "MECH_LEGS": [
+  "biped",
+  "reverse",
+  "tetra",
+  "tank"
+ ]
+}

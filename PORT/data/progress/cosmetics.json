@@ -1,0 +1,386 @@
+{
+ "COSMETICS": {
+  "toolSkins": {
+   "psygun.stock": {
+    "hint": ""
+   },
+   "sondelass.stock": {
+    "hint": ""
+   },
+   "soulbrush.stock": {
+    "hint": ""
+   },
+   "veritome.stock": {
+    "hint": ""
+   },
+   "dreamvane.stock": {
+    "hint": ""
+   },
+   "crucibelle.stock": {
+    "hint": ""
+   },
+   "lockheart.stock": {
+    "hint": ""
+   },
+   "psygun.walnut": {
+    "hint": "Fire 500 shots, or fully charge 25."
+   },
+   "psygun.blued": {
+    "hint": "Land 300 shots, or a five-type volley 5 times."
+   },
+   "psygun.porcelain": {
+    "hint": "Fire 3 looks at the kiln."
+   },
+   "psygun.raku": {
+    "hint": "Fire 10 looks at the kiln."
+   },
+   "psygun.kintsugi": {
+    "hint": "Have the kiln mend your cracks in gold."
+   },
+   "psygun.reef": {
+    "hint": "Hit a sea serpent 10 times from the helm."
+   },
+   "psygun.data": {
+    "hint": "Win a puzzle duel."
+   },
+   "sondelass.tamahagane": {
+    "hint": "Cut 500 things with the cutlass, or take 10 cores."
+   },
+   "sondelass.obsidian": {
+    "hint": "Go down into the Great Dunemaw 3 times."
+   },
+   "sondelass.bamboo": {
+    "hint": "Plant 20 times in your Spirit Garden."
+   },
+   "sondelass.moonlit": {
+    "hint": "Look out from 3 vantage points."
+   },
+   "sondelass.motley": {
+    "hint": "Haggle Raku down 3 times."
+   },
+   "sondelass.molten": {
+    "hint": "Beat the Great Slip Jelly."
+   },
+   "soulbrush.lacquer": {
+    "hint": "Swing the brush 300 times, or erase 4 with one mark."
+   },
+   "soulbrush.peacock": {
+    "hint": "Awaken to all seven feelings."
+   },
+   "soulbrush.bone": {
+    "hint": "Bat 50 clapperjars away."
+   },
+   "soulbrush.jade": {
+    "hint": "Fire 6 looks at the kiln."
+   },
+   "soulbrush.night": {
+    "hint": "See 3 nights fall."
+   },
+   "veritome.jade": {
+    "hint": "Learn 3 glazes from photographs."
+   },
+   "veritome.camera": {
+    "hint": "Take 100 photographs, or one of five kinds of thing."
+   },
+   "veritome.grimoire": {
+    "hint": "Learn 20 facts from your photographs."
+   },
+   "veritome.ouroboros": {
+    "hint": "Bring down a sea serpent."
+   },
+   "veritome.codex": {
+    "hint": "Run 10 reprogramming macros."
+   },
+   "dreamvane.weathervane": {
+    "hint": "Read the sky 20 times."
+   },
+   "dreamvane.driftwood": {
+    "hint": "Dowse 25 things out."
+   },
+   "dreamvane.meteor": {
+    "hint": "Open 25 crystals, or 3 sweet spots in a row."
+   },
+   "dreamvane.reef": {
+    "hint": "Dig up a buried cache in the open sea."
+   },
+   "dreamvane.lightning": {
+    "hint": "See Fury's weather fall 3 times."
+   },
+   "crucibelle.temple": {
+    "hint": "Toll 200 times, or 50 on the beat."
+   },
+   "crucibelle.glass": {
+    "hint": "Play 3 songs in full fever."
+   },
+   "crucibelle.clay": {
+    "hint": "Play 500 notes, or 200 on the beat."
+   },
+   "crucibelle.celadon": {
+    "hint": "Mend 25 cracks."
+   },
+   "crucibelle.blacksun": {
+    "hint": "Burn the bell with fever 25 times."
+   },
+   "lockheart.bronze": {
+    "hint": "Swing it 200 times, or land a rank 3 outcome."
+   },
+   "lockheart.ebony": {
+    "hint": "Open it 25 times, or 10 with three keys."
+   },
+   "lockheart.reliquary": {
+    "hint": "Let an Overload out of a Lockheart."
+   },
+   "lockheart.wicker": {
+    "hint": "Fill it with 500 Lachryma in all."
+   },
+   "lockheart.ossuary": {
+    "hint": "Strike 100 things with the coffin."
+   },
+   "lockheart.motley": {
+    "hint": "Draw a dud or a bite 5 times."
+   }
+  },
+  "jar": {
+   "lid.none": {
+    "hint": ""
+   },
+   "lid.cork": {
+    "hint": ""
+   },
+   "handle.none": {
+    "hint": ""
+   },
+   "handle.ears": {
+    "hint": ""
+   },
+   "shape.owner": {
+    "hint": ""
+   },
+   "shape.tall": {
+    "hint": ""
+   },
+   "shape.squat": {
+    "hint": ""
+   },
+   "foot.plain": {
+    "hint": ""
+   },
+   "foot.scallop": {
+    "hint": ""
+   },
+   "pendant.none": {
+    "hint": ""
+   },
+   "pendant.tassel": {
+    "hint": ""
+   },
+   "burst.motes": {
+    "hint": ""
+   },
+   "burst.dye": {
+    "hint": ""
+   },
+   "lid.lotus": {
+    "hint": "Let a lotus open on the garden's lake."
+   },
+   "lid.crown": {
+    "hint": "Face 10 raid waves, or put down the island's answer."
+   },
+   "lid.roof": {
+    "hint": "Find all three Shrines out in the world."
+   },
+   "lid.teardrop": {
+    "hint": "Open 25 crystals at their sweet spot."
+   },
+   "handle.rings": {
+    "hint": "Parry 100 times, or 10 in a row."
+   },
+   "handle.dragon": {
+    "hint": "Burst the Great Slip Jelly's crown, or beat it 5 times."
+   },
+   "handle.basket": {
+    "hint": "Carry 30 things round your garden with the hand."
+   },
+   "shape.gourd": {
+    "hint": "Harvest 10 times from your garden's beds."
+   },
+   "shape.faceted": {
+    "hint": "Cut 500 things with the cutlass, or come up out of the Great Dunemaw unbroken."
+   },
+   "shape.melon": {
+    "hint": "Press 20 materials at the Athanor."
+   },
+   "foot.gold": {
+    "hint": "Fire 10 looks at the kiln."
+   },
+   "foot.claws": {
+    "hint": "Put out 10 Lantern Wisps."
+   },
+   "foot.lotus": {
+    "hint": "Let a spirit go home."
+   },
+   "pendant.bell": {
+    "hint": "Play a song on the Crucibelle."
+   },
+   "pendant.moon": {
+    "hint": "See 2 nights fall."
+   },
+   "pendant.fish": {
+    "hint": "Land a fish."
+   },
+   "pendant.die": {
+    "hint": "Grow your palm die to a d20."
+   },
+   "pendant.coin": {
+    "hint": "Cash 1,000 chips back at Raku's cage."
+   },
+   "pendant.gourd": {
+    "hint": "Open your storage at a Shrine 10 times."
+   },
+   "pendant.lantern": {
+    "hint": "An aberrant Lantern Wisp keeps it, and gives it up only one way."
+   },
+   "burst.petals": {
+    "hint": "Tend a planetoid into bloom."
+   },
+   "burst.sparks": {
+    "hint": "Pass a tribulation (your second firing)."
+   },
+   "burst.bubbles": {
+    "hint": "Fire a true firing at the Athanor."
+   },
+   "burst.confetti": {
+    "hint": "Awaken to all seven feelings."
+   }
+  },
+  "flourishes": {
+   "footprints.stock": {
+    "hint": ""
+   },
+   "dash.stock": {
+    "hint": ""
+   },
+   "shatter.stock": {
+    "hint": ""
+   },
+   "aura.off": {
+    "hint": ""
+   },
+   "arrival.stock": {
+    "hint": ""
+   },
+   "footprints.blossom": {
+    "hint": "Tend a planetoid into bloom."
+   },
+   "footprints.scorch": {
+    "hint": "Fire a look at the kiln."
+   },
+   "footprints.comb": {
+    "hint": "Find an ostracon."
+   },
+   "footprints.paw": {
+    "hint": "Travel 10 km."
+   },
+   "footprints.puddle": {
+    "hint": "Have the kiln mend your cracks in gold."
+   },
+   "dash.shards": {
+    "hint": "Dash 100 times."
+   },
+   "dash.ribbon": {
+    "hint": "Fire an attribute at the Athanor."
+   },
+   "dash.talismans": {
+    "hint": "Lift 50 sigils with the Soul Brush."
+   },
+   "dash.feelings": {
+    "hint": "Awaken to all seven feelings."
+   },
+   "dash.dice": {
+    "hint": "Blink 100 times."
+   },
+   "shatter.porcelain": {
+    "hint": "Shatter 5 times."
+   },
+   "shatter.kintsugi": {
+    "hint": "Have the kiln mend your cracks in gold."
+   },
+   "shatter.ink": {
+    "hint": "Have 25 Celestial drawings read."
+   },
+   "shatter.moths": {
+    "hint": "Draw a dud from a Lockheart 3 times."
+   },
+   "shatter.leaves": {
+    "hint": "See autumn come to your Spirit Garden."
+   },
+   "aura.motes": {
+    "hint": "Press 10 materials at the Athanor."
+   },
+   "aura.comb": {
+    "hint": "Find 3 ostraca."
+   },
+   "aura.embers": {
+    "hint": "Pass a tribulation (your second firing)."
+   },
+   "aura.die": {
+    "hint": "Re-roll a failed flee with Luck."
+   },
+   "arrival.column": {
+    "hint": "Fire a look at the kiln."
+   },
+   "arrival.petals": {
+    "hint": "Have six planetoids in bloom at once."
+   },
+   "arrival.talismans": {
+    "hint": "Find 2 Shrines."
+   },
+   "arrival.smoke": {
+    "hint": "Rest at a Shrine."
+   }
+  },
+  "instruments": {
+   "brass": {
+    "hint": ""
+   },
+   "bone": {
+    "hint": "Bring down 100 clapperjars, or come up out of the Great Dunemaw unbroken."
+   },
+   "jade": {
+    "hint": "Open 20 crystals at their sweet spot, or 5 in a row."
+   },
+   "obsidian": {
+    "hint": "Reach Dissonance Level 5."
+   },
+   "porcelain": {
+    "hint": "Sail 3 crossings."
+   },
+   "raku": {
+    "hint": "Mend 10 cracks."
+   },
+   "coral": {
+    "hint": "Chart 20 squares of the open sea, or land a tier 5 fish."
+   },
+   "clockwork": {
+    "hint": "See 3 dawns."
+   },
+   "living": {
+    "hint": "Tend 3 planetoids into bloom."
+   },
+   "mimic": {
+    "hint": "Open 100 chests."
+   }
+  },
+  "seaLooks": {
+   "bottle": {
+    "hint": "Finish the tall tale The Bottle's Cargo."
+   },
+   "ladle": {
+    "hint": "Finish the tall tale The Ladle with No Bottom."
+   },
+   "song": {
+    "hint": "Finish the tall tale The Wind That Was Asked."
+   }
+  }
+ }
+}

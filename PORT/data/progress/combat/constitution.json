@@ -1,0 +1,89 @@
+{
+ "CONSTITUTION": {
+  "slipjelly": {
+   "affinity": "impact",
+   "body": 0.85,
+   "line": "a body of slip: force made flesh"
+  },
+  "greatjelly": {
+   "affinity": "impact",
+   "body": 0.9,
+   "line": "the Great Slip Jelly: slip grown round a broken urn"
+  },
+  "clutch": {
+   "affinity": "impact",
+   "body": 0.8,
+   "line": "a clutch of slip, not yet minded"
+  },
+  "rolypoly": {
+   "affinity": "impact",
+   "body": 0.75,
+   "line": "a shell that rolls"
+  },
+  "dummy": {
+   "affinity": "impact",
+   "body": 1,
+   "line": "straw and stitching"
+  },
+  "strawman": {
+   "affinity": "impact",
+   "body": 1,
+   "line": "straw and stitching, and Pip's care"
+  },
+  "wisp": {
+   "affinity": "illusion",
+   "body": 0.2,
+   "line": "a mind round a flame: a light that misleads"
+  },
+  "spirit": {
+   "affinity": "illusion",
+   "body": 0.15,
+   "line": "smoke with a will"
+  },
+  "clapper": {
+   "affinity": "influence",
+   "body": 0.6,
+   "line": "clay folk: they clap and they follow"
+  },
+  "sibling": {
+   "affinity": "influence",
+   "body": 0.6,
+   "line": "a Courier, a division's voice in clay"
+  },
+  "beast": {
+   "affinity": "ego",
+   "body": 0.55,
+   "line": "an Egregore: a myth that knows what it is"
+  },
+  "seaSerpent": {
+   "affinity": "ego",
+   "body": 0.7,
+   "line": "the sea serpent: a myth with scales"
+  },
+  "akhlut": {
+   "affinity": "ego",
+   "body": 0.75,
+   "line": "the akhlut: an orca that walks as a wolf"
+  },
+  "worldSerpent": {
+   "affinity": "ego",
+   "body": 0.6,
+   "line": "Jormungandr: the myth that circles the world"
+  },
+  "umibozu": {
+   "affinity": "ego",
+   "body": 0.35,
+   "line": "the umibozu: a sea monk, more shadow than flesh"
+  },
+  "bigSquid": {
+   "affinity": "ego",
+   "body": 0.8,
+   "line": "the kraken: a myth with arms"
+  },
+  "aberrant": {
+   "affinity": "delirium",
+   "body": null,
+   "line": "a mind come apart: its data showing through"
+  }
+ }
+}

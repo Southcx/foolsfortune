@@ -1,0 +1,101 @@
+{
+ "PIECES": {
+  "kicker": {
+   "label": "Kicker",
+   "line": "A lip across the whole track: a pop off it goes high.",
+   "power": "sculpt",
+   "cost": 3
+  },
+  "ramp": {
+   "label": "Side ramp",
+   "line": "A kicker over part of the track: taking it is a choice.",
+   "power": "sculpt",
+   "cost": 3
+  },
+  "whoops": {
+   "label": "Whoops",
+   "line": "A run of crests: pump them, or hop them.",
+   "power": "shape",
+   "cost": 4,
+   "span": true
+  },
+  "bowl": {
+   "label": "Bowl",
+   "line": "A stretch banked steep: lean on its wall.",
+   "power": "shape",
+   "cost": 3,
+   "span": true
+  },
+  "lip": {
+   "label": "Glide lip",
+   "line": "Air over this stretch opens the glide by itself.",
+   "power": "gust",
+   "cost": 3,
+   "span": true
+  },
+  "plate": {
+   "label": "Boost pad",
+   "line": "A sun plate: a flare's push for free.",
+   "power": "manifest",
+   "cost": 2
+  },
+  "lane": {
+   "label": "Recharge strip",
+   "line": "A vein lane: ride it and the pool refills.",
+   "power": "transmute",
+   "cost": 3
+  },
+  "geyser": {
+   "label": "Geyser",
+   "line": "A slip geyser: it throws the board high on its cycle.",
+   "power": "scoop",
+   "cost": 4
+  },
+  "rail": {
+   "label": "Rail",
+   "line": "A ruin's lintel along the line: grind it.",
+   "power": "sculpt",
+   "cost": 4,
+   "span": true
+  },
+  "ring": {
+   "label": "Sun ring",
+   "line": "A ring in the air: fly through it for a push.",
+   "power": "manifest",
+   "cost": 2
+  },
+  "column": {
+   "label": "Column",
+   "line": "A standing stone to weave round (a near miss past it counts).",
+   "power": "sculpt",
+   "cost": 2
+  },
+  "wall": {
+   "label": "Wall",
+   "line": "A clay wall across part of the track: a lane closed.",
+   "power": "manifest",
+   "cost": 3
+  },
+  "arch": {
+   "label": "Arch",
+   "line": "Two posts and a lintel: thread it.",
+   "power": "sculpt",
+   "cost": 4
+  }
+ },
+ "PIECE_KINDS": [
+  "kicker",
+  "ramp",
+  "whoops",
+  "bowl",
+  "lip",
+  "plate",
+  "lane",
+  "geyser",
+  "rail",
+  "ring",
+  "column",
+  "wall",
+  "arch"
+ ]
+}

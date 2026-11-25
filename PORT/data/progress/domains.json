@@ -1,0 +1,658 @@
+{
+ "CATCH_UP": {
+  "below": 10,
+  "mult": 1.5
+ },
+ "DOMAINS": {
+  "ouranurgy": {
+   "id": "ouranurgy",
+   "name": "Ouranurgy",
+   "does": "the rules of the space around you: displacement through it, and time slowed or stopped in it (the owner, 2026-10-08)"
+  },
+  "manifestation": {
+   "id": "manifestation",
+   "name": "Manifestation",
+   "does": "solidifying thought into structures"
+  },
+  "divination": {
+   "id": "divination",
+   "name": "Divination",
+   "does": "perceiving the hidden: signatures, habits, the true pitch"
+  },
+  "psychokinesis": {
+   "id": "psychokinesis",
+   "name": "Psychokinesis",
+   "does": "moving things by will"
+  },
+  "possession": {
+   "id": "possession",
+   "name": "Possession",
+   "does": "exerting will over other minds"
+  },
+  "alteration": {
+   "id": "alteration",
+   "name": "Alteration",
+   "does": "reshaping what already is"
+  },
+  "spellscription": {
+   "id": "spellscription",
+   "name": "Spellscription",
+   "does": "transcribing a thing down: glyphs, macros, maps"
+  }
+ },
+ "DOWN_DOMAIN": {
+  "impact": "psychokinesis",
+  "ego": "divination",
+  "influence": "possession",
+  "illusion": "manifestation",
+  "delirium": "alteration"
+ },
+ "MAX_LEVEL": 99,
+ "PACE": {
+  "hours99": 100,
+  "actsPerMin": 6
+ },
+ "SKILL": {
+  "floor": 0.4,
+  "ceil": 5,
+  "power": 3
+ },
+ "SOURCES": [
+  {
+   "event": "move.blink",
+   "domain": "ouranurgy",
+   "base": 6
+  },
+  {
+   "event": "grapple.swing",
+   "domain": "ouranurgy",
+   "base": 10
+  },
+  {
+   "event": "god.manifest",
+   "domain": "manifestation",
+   "base": 18
+  },
+  {
+   "event": "map.surveyed",
+   "domain": "divination",
+   "base": 8
+  },
+  {
+   "event": "crystal.strike",
+   "domain": "divination",
+   "base": 6
+  },
+  {
+   "event": "photo.take",
+   "domain": "divination",
+   "base": 8
+  },
+  {
+   "event": "move.parry",
+   "domain": "divination",
+   "base": 6
+  },
+  {
+   "event": "windup.read",
+   "domain": "divination",
+   "base": 6
+  },
+  {
+   "event": "god.grab",
+   "domain": "psychokinesis",
+   "base": 4
+  },
+  {
+   "event": "god.throw",
+   "domain": "psychokinesis",
+   "base": 8
+  },
+  {
+   "event": "drill.end",
+   "domain": "psychokinesis",
+   "base": 12
+  },
+  {
+   "event": "blade.exit",
+   "domain": "ouranurgy",
+   "base": 12
+  },
+  {
+   "event": "creature.zandatsu",
+   "domain": "ouranurgy",
+   "base": 10
+  },
+  {
+   "event": "reprogram.run",
+   "domain": "ouranurgy",
+   "base": 8
+  },
+  {
+   "event": "brush.canvas",
+   "domain": "ouranurgy",
+   "base": 6
+  },
+  {
+   "event": "reprogram.run",
+   "domain": "possession",
+   "base": 20
+  },
+  {
+   "event": "lockheart.drain",
+   "domain": "possession",
+   "base": 6
+  },
+  {
+   "event": "angle.catch",
+   "domain": "possession"
+  },
+  {
+   "event": "angle.release",
+   "domain": "possession"
+  },
+  {
+   "event": "god.sunder",
+   "domain": "alteration",
+   "base": 10
+  },
+  {
+   "event": "god.swell",
+   "domain": "alteration",
+   "base": 8
+  },
+  {
+   "event": "god.wring",
+   "domain": "alteration",
+   "base": 8
+  },
+  {
+   "event": "garden.sculpt",
+   "domain": "alteration",
+   "base": 4
+  },
+  {
+   "event": "brush.inscribe",
+   "domain": "alteration",
+   "base": 6
+  },
+  {
+   "event": "reprogram.run",
+   "domain": "spellscription",
+   "base": 14
+  },
+  {
+   "event": "brush.glyph",
+   "domain": "spellscription",
+   "base": 10
+  },
+  {
+   "event": "brush.glyph",
+   "domain": "manifestation",
+   "base": 6
+  },
+  {
+   "event": "song.play",
+   "domain": "spellscription",
+   "base": 8
+  },
+  {
+   "event": "rhythm.score",
+   "domain": "spellscription",
+   "acts": 12
+  },
+  {
+   "event": "emocean.stage",
+   "domain": "ouranurgy",
+   "acts": 12
+  },
+  {
+   "event": "emocean.reckon",
+   "domain": "divination",
+   "acts": 4
+  },
+  {
+   "event": "well.charted",
+   "domain": "divination",
+   "acts": 6
+  },
+  {
+   "event": "god.scoop",
+   "domain": "psychokinesis",
+   "base": 6
+  },
+  {
+   "event": "god.pour",
+   "domain": "psychokinesis",
+   "base": 6
+  },
+  {
+   "event": "god.shape",
+   "domain": "alteration",
+   "base": 8
+  },
+  {
+   "event": "god.carve",
+   "domain": "alteration",
+   "base": 8
+  },
+  {
+   "event": "god.sculpt",
+   "domain": "manifestation",
+   "base": 12
+  },
+  {
+   "event": "god.portal",
+   "domain": "ouranurgy",
+   "base": 10
+  },
+  {
+   "event": "god.fold",
+   "domain": "ouranurgy",
+   "base": 12
+  },
+  {
+   "event": "god.hasten",
+   "domain": "ouranurgy",
+   "base": 6
+  },
+  {
+   "event": "god.setfast",
+   "domain": "manifestation",
+   "base": 8
+  },
+  {
+   "event": "god.totem",
+   "domain": "manifestation",
+   "base": 12
+  },
+  {
+   "event": "god.strata",
+   "domain": "divination",
+   "base": 4
+  },
+  {
+   "event": "god.course",
+   "domain": "divination",
+   "base": 3
+  },
+  {
+   "event": "god.read",
+   "domain": "divination",
+   "base": 4
+  },
+  {
+   "event": "god.gust",
+   "domain": "psychokinesis",
+   "base": 6
+  },
+  {
+   "event": "god.slab",
+   "domain": "psychokinesis",
+   "base": 8
+  },
+  {
+   "event": "god.herd",
+   "domain": "possession",
+   "base": 8
+  },
+  {
+   "event": "god.take",
+   "domain": "possession",
+   "base": 8
+  },
+  {
+   "event": "god.muster",
+   "domain": "possession",
+   "base": 10
+  },
+  {
+   "event": "god.transmute",
+   "domain": "alteration",
+   "base": 6
+  },
+  {
+   "event": "god.ward",
+   "domain": "spellscription",
+   "base": 8
+  },
+  {
+   "event": "god.stamp",
+   "domain": "spellscription",
+   "base": 10
+  },
+  {
+   "event": "god.miracle",
+   "domain": "spellscription",
+   "base": 12
+  },
+  {
+   "event": "god.epic",
+   "domain": "ouranurgy",
+   "acts": 10
+  },
+  {
+   "event": "god.epic",
+   "domain": "manifestation",
+   "acts": 10
+  },
+  {
+   "event": "god.epic",
+   "domain": "divination",
+   "acts": 10
+  },
+  {
+   "event": "god.epic",
+   "domain": "psychokinesis",
+   "acts": 10
+  },
+  {
+   "event": "god.epic",
+   "domain": "possession",
+   "acts": 10
+  },
+  {
+   "event": "god.epic",
+   "domain": "alteration",
+   "acts": 10
+  },
+  {
+   "event": "god.epic",
+   "domain": "spellscription",
+   "acts": 10
+  },
+  {
+   "event": "creature.struck",
+   "domain": "psychokinesis"
+  },
+  {
+   "event": "creature.struck",
+   "domain": "divination"
+  },
+  {
+   "event": "creature.struck",
+   "domain": "possession"
+  },
+  {
+   "event": "creature.struck",
+   "domain": "manifestation"
+  },
+  {
+   "event": "creature.struck",
+   "domain": "alteration"
+  },
+  {
+   "event": "race.finish",
+   "domain": "ouranurgy"
+  },
+  {
+   "event": "skiff.combo.bank",
+   "domain": "psychokinesis",
+   "base": 6
+  },
+  {
+   "event": "race.finish",
+   "domain": "divination",
+   "acts": 2
+  },
+  {
+   "event": "skiff.grind.end",
+   "domain": "spellscription",
+   "base": 6
+  },
+  {
+   "event": "ship.part",
+   "domain": "manifestation",
+   "acts": 6
+  },
+  {
+   "event": "ship.part",
+   "domain": "alteration",
+   "acts": 2
+  },
+  {
+   "event": "mech.sync",
+   "domain": "possession",
+   "acts": 1
+  },
+  {
+   "event": "mech.assemble",
+   "domain": "manifestation",
+   "acts": 2
+  },
+  {
+   "event": "mech.barrier",
+   "domain": "alteration",
+   "acts": 4
+  },
+  {
+   "event": "giant.down",
+   "domain": "psychokinesis",
+   "acts": 10
+  },
+  {
+   "event": "track.validate",
+   "domain": "manifestation",
+   "acts": 4
+  },
+  {
+   "event": "haunt.end",
+   "domain": "possession"
+  },
+  {
+   "event": "sea.salvage",
+   "domain": "psychokinesis",
+   "base": 8
+  },
+  {
+   "event": "seaserpent.down",
+   "domain": "psychokinesis",
+   "acts": 12
+  },
+  {
+   "event": "seabeast.down",
+   "domain": "psychokinesis",
+   "acts": 16
+  },
+  {
+   "event": "sea.habit",
+   "domain": "divination",
+   "base": 8
+  },
+  {
+   "event": "sea.dig",
+   "domain": "divination",
+   "base": 8
+  },
+  {
+   "event": "sea.lineup",
+   "domain": "divination",
+   "acts": 4
+  },
+  {
+   "event": "sea.square.done",
+   "domain": "divination",
+   "acts": 6
+  },
+  {
+   "event": "sea.echo",
+   "domain": "spellscription",
+   "base": 8
+  },
+  {
+   "event": "garden.tend",
+   "domain": "alteration",
+   "base": 4
+  },
+  {
+   "event": "spore.inoculate",
+   "domain": "alteration",
+   "base": 6
+  },
+  {
+   "event": "spirit.bind",
+   "domain": "possession",
+   "acts": 3
+  },
+  {
+   "event": "spirit.wish.done",
+   "domain": "possession",
+   "acts": 2
+  },
+  {
+   "event": "spirit.farewell",
+   "domain": "possession",
+   "acts": 10
+  },
+  {
+   "event": "brush.paint",
+   "domain": "manifestation",
+   "base": 4
+  },
+  {
+   "event": "stain.wash",
+   "domain": "alteration",
+   "base": 6
+  },
+  {
+   "event": "dreamvane.unearth",
+   "domain": "divination",
+   "base": 6
+  },
+  {
+   "event": "fork.catch",
+   "domain": "psychokinesis",
+   "base": 4
+  },
+  {
+   "event": "duel.secret",
+   "domain": "divination",
+   "acts": 6
+  },
+  {
+   "event": "impact.hit",
+   "domain": "psychokinesis",
+   "base": 6
+  },
+  {
+   "event": "impact.strike",
+   "domain": "psychokinesis",
+   "acts": 4
+  },
+  {
+   "event": "mimic.solve",
+   "domain": "ouranurgy"
+  },
+  {
+   "event": "mimic.solve",
+   "domain": "manifestation"
+  },
+  {
+   "event": "mimic.solve",
+   "domain": "psychokinesis"
+  },
+  {
+   "event": "mimic.solve",
+   "domain": "possession"
+  },
+  {
+   "event": "mimic.solve",
+   "domain": "alteration"
+  },
+  {
+   "event": "mimic.solve",
+   "domain": "divination"
+  },
+  {
+   "event": "mimic.solve",
+   "domain": "spellscription"
+  },
+  {
+   "event": "duel.power",
+   "domain": "ouranurgy",
+   "base": 6
+  },
+  {
+   "event": "duel.power",
+   "domain": "manifestation",
+   "base": 6
+  },
+  {
+   "event": "duel.power",
+   "domain": "divination",
+   "base": 6
+  },
+  {
+   "event": "duel.power",
+   "domain": "psychokinesis",
+   "base": 6
+  },
+  {
+   "event": "duel.power",
+   "domain": "possession",
+   "base": 6
+  },
+  {
+   "event": "duel.power",
+   "domain": "alteration",
+   "base": 6
+  },
+  {
+   "event": "duel.power",
+   "domain": "spellscription",
+   "base": 6
+  },
+  {
+   "event": "domain.art.use",
+   "domain": "ouranurgy",
+   "base": 8
+  },
+  {
+   "event": "domain.art.use",
+   "domain": "manifestation",
+   "base": 8
+  },
+  {
+   "event": "domain.art.use",
+   "domain": "divination",
+   "base": 8
+  },
+  {
+   "event": "domain.art.use",
+   "domain": "psychokinesis",
+   "base": 8
+  },
+  {
+   "event": "domain.art.use",
+   "domain": "possession",
+   "base": 8
+  },
+  {
+   "event": "domain.art.use",
+   "domain": "alteration",
+   "base": 8
+  },
+  {
+   "event": "domain.art.use",
+   "domain": "spellscription",
+   "base": 8
+  },
+  {
+   "event": "domain.down",
+   "domain": "ouranurgy"
+  },
+  {
+   "event": "domain.down",
+   "domain": "spellscription"
+  },
+  {
+   "event": "well.stage.clear",
+   "domain": "ouranurgy"
+  },
+  {
+   "event": "well.fighter.ko",
+   "domain": "psychokinesis",
+   "acts": 3
+  }
+ ]
+}

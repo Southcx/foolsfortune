@@ -1,0 +1,200 @@
+{
+ "ADOBE": {
+  "djenne": {
+   "label": "Great mosque",
+   "size": "large",
+   "w": 34,
+   "d": 26
+  },
+  "pueblo": {
+   "label": "Terraced pueblo",
+   "size": "large",
+   "w": 32,
+   "d": 22
+  },
+  "kasbah": {
+   "label": "Kasbah",
+   "size": "large",
+   "w": 28,
+   "d": 28
+  },
+  "shibam": {
+   "label": "Tower houses",
+   "size": "large",
+   "w": 26,
+   "d": 18
+  },
+  "mission": {
+   "label": "Mission church",
+   "size": "large",
+   "w": 24,
+   "d": 34
+  },
+  "courtyard": {
+   "label": "Courtyard house",
+   "size": "medium",
+   "w": 16,
+   "d": 16
+  },
+  "badgir": {
+   "label": "Windcatcher house",
+   "size": "medium",
+   "w": 14,
+   "d": 12
+  },
+  "bazaar": {
+   "label": "Domed bazaar row",
+   "size": "medium",
+   "w": 20,
+   "d": 9
+  },
+  "ghorfa": {
+   "label": "Vaulted granary",
+   "size": "medium",
+   "w": 13,
+   "d": 11
+  },
+  "gate": {
+   "label": "Caravanserai gate",
+   "size": "medium",
+   "w": 18,
+   "d": 10
+  },
+  "hausa": {
+   "label": "Hausa house",
+   "size": "medium",
+   "w": 12,
+   "d": 10
+  },
+  "ksar": {
+   "label": "Ksar gate",
+   "size": "medium",
+   "w": 20,
+   "d": 7
+  },
+  "casa": {
+   "label": "Casa with balcony",
+   "size": "medium",
+   "w": 12,
+   "d": 11
+  },
+  "horno": {
+   "label": "Horno oven",
+   "size": "small",
+   "w": 5,
+   "d": 5
+  },
+  "musgum": {
+   "label": "Shell hut",
+   "size": "small",
+   "w": 7,
+   "d": 7
+  },
+  "wellhouse": {
+   "label": "Well house",
+   "size": "small",
+   "w": 6,
+   "d": 6
+  },
+  "souk": {
+   "label": "Market stall",
+   "size": "small",
+   "w": 7,
+   "d": 6,
+   "whole": true
+  },
+  "shrine": {
+   "label": "Wayside shrine",
+   "size": "small",
+   "w": 5,
+   "d": 5
+  },
+  "granary": {
+   "label": "Raised granary",
+   "size": "small",
+   "w": 6,
+   "d": 6,
+   "whole": true
+  },
+  "kiosk": {
+   "label": "Kiosk",
+   "size": "small",
+   "w": 6,
+   "d": 6
+  },
+  "dovecote": {
+   "label": "Pigeon tower",
+   "size": "small",
+   "w": 10,
+   "d": 10
+  },
+  "gatewall": {
+   "label": "Wall and gate",
+   "size": "small",
+   "w": 10,
+   "d": 3
+  },
+  "jars": {
+   "label": "Water jars",
+   "size": "small",
+   "w": 6,
+   "d": 6
+  }
+ },
+ "ADOBE_IDS": [
+  "djenne",
+  "pueblo",
+  "kasbah",
+  "shibam",
+  "mission",
+  "courtyard",
+  "badgir",
+  "bazaar",
+  "ghorfa",
+  "gate",
+  "hausa",
+  "ksar",
+  "casa",
+  "horno",
+  "musgum",
+  "wellhouse",
+  "souk",
+  "shrine",
+  "granary",
+  "kiosk",
+  "dovecote",
+  "gatewall",
+  "jars"
+ ],
+ "SIZES": {
+  "large": [
+   "djenne",
+   "pueblo",
+   "kasbah",
+   "shibam",
+   "mission"
+  ],
+  "medium": [
+   "courtyard",
+   "badgir",
+   "bazaar",
+   "ghorfa",
+   "gate",
+   "hausa",
+   "ksar",
+   "casa"
+  ],
+  "small": [
+   "horno",
+   "musgum",
+   "wellhouse",
+   "souk",
+   "shrine",
+   "granary",
+   "kiosk",
+   "dovecote",
+   "gatewall",
+   "jars"
+  ]
+ }
+}

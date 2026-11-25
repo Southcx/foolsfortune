@@ -1,0 +1,155 @@
+{
+ "BOARD": {
+  "dice": [
+   4,
+   6,
+   8,
+   10,
+   12,
+   20
+  ],
+  "fate": 100,
+  "bears": 4,
+  "need": 2,
+  "floors": 3,
+  "foeEvery": 3,
+  "main": 12,
+  "deck": {
+   "fight": 3,
+   "genre": 1,
+   "cache": 1,
+   "spring": 1,
+   "hazard": 1,
+   "shift": 1,
+   "arcana": 1,
+   "item": 1
+  },
+  "save": 0.6,
+  "saveDeeper": 0.05,
+  "saveFloor": 0.3,
+  "shift": [
+   -3,
+   -2,
+   2,
+   3,
+   4
+  ],
+  "side": {
+   "short": {
+    "from": [
+     1,
+     3
+    ],
+    "skips": [
+     4,
+     5
+    ],
+    "len": 2,
+    "deck": [
+     "hazard",
+     "fight"
+    ]
+   },
+   "long": {
+    "from": [
+     1,
+     3
+    ],
+    "skips": [
+     2,
+     3
+    ],
+    "len": 5,
+    "deck": [
+     "cache",
+     "shop",
+     "spring",
+     "fight",
+     "rest"
+    ]
+   }
+  },
+  "rerolls": 1,
+  "hold": 3,
+  "duel": 15,
+  "duelRest": 2,
+  "snare": 15,
+  "stray": {
+   "steps": 4,
+   "cubes": 15,
+   "from": [
+    4,
+    9
+   ]
+  },
+  "award": 15
+ },
+ "KINDS": {
+  "mouth": {
+   "label": "Mouth",
+   "line": "Where the run begins. The way up.",
+   "lands": null
+  },
+  "fight": {
+   "label": "Fight",
+   "line": "A floor of creatures. Clear it for a material; fail and take a crack.",
+   "lands": "floor"
+  },
+  "genre": {
+   "label": "Trial",
+   "line": "A floor of another kind of game. Clear it for a material of a tier higher.",
+   "lands": "floor"
+  },
+  "cache": {
+   "label": "Cache",
+   "line": "A material, taken once.",
+   "lands": "take"
+  },
+  "spring": {
+   "label": "Spring",
+   "line": "Mends one crack. With none, your smallest spent die comes back.",
+   "lands": "mend"
+  },
+  "hazard": {
+   "label": "Hazard",
+   "line": "Throw the fate die. Under its save, take a crack.",
+   "lands": "save"
+  },
+  "shift": {
+   "label": "Shift",
+   "line": "The Well moves you the spaces it shows.",
+   "lands": "move"
+  },
+  "rest": {
+   "label": "Rest",
+   "line": "Every spent die comes back.",
+   "lands": "recast"
+  },
+  "shop": {
+   "label": "Shop",
+   "line": "Buy one item with the cubes this run has found.",
+   "lands": "shop"
+  },
+  "item": {
+   "label": "Item",
+   "line": "A random item. With your hands full, cubes.",
+   "lands": "item"
+  },
+  "arcana": {
+   "label": "Arcana",
+   "line": "Draw a Major Arcana. It does what it says, for good or ill.",
+   "lands": "arcana"
+  },
+  "door": {
+   "label": "Door",
+   "line": "Stops you. Opens down once two floors here are cleared; shut, it sends you round again. The way up.",
+   "lands": "stop"
+  },
+  "foe": {
+   "label": "FOE",
+   "line": "Stops you. The FOE wakes once two floors here are cleared; asleep, the space sends you round again.",
+   "lands": "floor"
+  }
+ },
+ "MOUTH": "mouth"
+}

@@ -1,0 +1,40 @@
+{
+ "BARRIER": {
+  "reach": 40,
+  "press": 2,
+  "down": 12,
+  "pierce": 0.3333333333333333
+ },
+ "BERSERK": {
+  "sync": 0.8,
+  "odds": 3,
+  "for": 12
+ },
+ "ENERGY": {
+  "cable": 60,
+  "jolt": 0.15,
+  "low": 0.15
+ },
+ "POOL_KJ": 600,
+ "STAGGER": {
+  "full": 100,
+  "ebb": 8,
+  "quiet": 2,
+  "for": 3,
+  "mult": 2,
+  "crit": 3
+ },
+ "SYNC": {
+  "start": 0.3,
+  "rest": 0.4,
+  "settle": 0.02,
+  "beat": 0.04,
+  "fought": 0.06,
+  "hit": 0.05,
+  "staggerHit": 0.03,
+  "low": 0.01,
+  "window": 0.2,
+  "floor": 0.6,
+  "skate": 0.03
+ }
+}

@@ -1,0 +1,7 @@
+{
+ "SEAL_KINDS": [
+  "threshold",
+  "engine",
+  "body"
+ ]
+}

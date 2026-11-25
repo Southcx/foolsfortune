@@ -1,0 +1,1136 @@
+{
+ "BUILDINGS": {
+  "house": {
+   "label": "House",
+   "w": 8,
+   "h": 7,
+   "d": 8,
+   "floor": 3,
+   "bay": 0,
+   "shell": 3,
+   "frame": 2,
+   "glass": 0.25
+  },
+  "shop": {
+   "label": "Shop row",
+   "w": 18,
+   "h": 8,
+   "d": 8,
+   "floor": 4,
+   "bay": 6,
+   "shell": 3,
+   "frame": 2,
+   "glass": 0.45
+  },
+  "block": {
+   "label": "Block",
+   "w": 12,
+   "h": 20,
+   "d": 12,
+   "floor": 4,
+   "bay": 4,
+   "shell": 3,
+   "frame": 5,
+   "glass": 0.35
+  },
+  "tower": {
+   "label": "Tower",
+   "w": 10,
+   "h": 34,
+   "d": 10,
+   "floor": 4,
+   "bay": 3,
+   "shell": 1,
+   "frame": 5,
+   "glass": 0,
+   "base": {
+    "h": 4,
+    "mat": 4
+   }
+  },
+  "kiln": {
+   "label": "Bottle kiln",
+   "w": 10,
+   "h": 16,
+   "d": 10,
+   "floor": 0,
+   "bay": 0,
+   "shell": 3,
+   "frame": 0,
+   "glass": 0,
+   "round": true
+  },
+  "stall": {
+   "label": "Lantern stall",
+   "w": 6,
+   "h": 5,
+   "d": 6,
+   "floor": 0,
+   "bay": 5,
+   "shell": 6,
+   "frame": 2,
+   "glass": 0
+  },
+  "djenne": {
+   "label": "Great mosque",
+   "w": 34,
+   "d": 26,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "large",
+   "adobe": true,
+   "beam": true,
+   "whole": false
+  },
+  "pueblo": {
+   "label": "Terraced pueblo",
+   "w": 32,
+   "d": 22,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "large",
+   "adobe": true,
+   "beam": true,
+   "whole": false
+  },
+  "kasbah": {
+   "label": "Kasbah",
+   "w": 28,
+   "d": 28,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "large",
+   "adobe": true,
+   "beam": true,
+   "whole": false
+  },
+  "shibam": {
+   "label": "Tower houses",
+   "w": 26,
+   "d": 18,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "large",
+   "adobe": true,
+   "beam": true,
+   "whole": false
+  },
+  "mission": {
+   "label": "Mission church",
+   "w": 24,
+   "d": 34,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "large",
+   "adobe": true,
+   "beam": true,
+   "whole": false
+  },
+  "courtyard": {
+   "label": "Courtyard house",
+   "w": 16,
+   "d": 16,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "medium",
+   "adobe": true,
+   "beam": false,
+   "whole": false
+  },
+  "badgir": {
+   "label": "Windcatcher house",
+   "w": 14,
+   "d": 12,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "medium",
+   "adobe": true,
+   "beam": false,
+   "whole": false
+  },
+  "bazaar": {
+   "label": "Domed bazaar row",
+   "w": 20,
+   "d": 9,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "medium",
+   "adobe": true,
+   "beam": false,
+   "whole": false
+  },
+  "ghorfa": {
+   "label": "Vaulted granary",
+   "w": 13,
+   "d": 11,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "medium",
+   "adobe": true,
+   "beam": false,
+   "whole": false
+  },
+  "gate": {
+   "label": "Caravanserai gate",
+   "w": 18,
+   "d": 10,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "medium",
+   "adobe": true,
+   "beam": false,
+   "whole": false
+  },
+  "hausa": {
+   "label": "Hausa house",
+   "w": 12,
+   "d": 10,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "medium",
+   "adobe": true,
+   "beam": false,
+   "whole": false
+  },
+  "ksar": {
+   "label": "Ksar gate",
+   "w": 20,
+   "d": 7,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "medium",
+   "adobe": true,
+   "beam": false,
+   "whole": false
+  },
+  "casa": {
+   "label": "Casa with balcony",
+   "w": 12,
+   "d": 11,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "medium",
+   "adobe": true,
+   "beam": false,
+   "whole": false
+  },
+  "horno": {
+   "label": "Horno oven",
+   "w": 5,
+   "d": 5,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "small",
+   "adobe": true,
+   "beam": false,
+   "whole": false
+  },
+  "musgum": {
+   "label": "Shell hut",
+   "w": 7,
+   "d": 7,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "small",
+   "adobe": true,
+   "beam": false,
+   "whole": false
+  },
+  "wellhouse": {
+   "label": "Well house",
+   "w": 6,
+   "d": 6,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "small",
+   "adobe": true,
+   "beam": false,
+   "whole": false
+  },
+  "souk": {
+   "label": "Market stall",
+   "w": 7,
+   "d": 6,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "small",
+   "adobe": true,
+   "beam": false,
+   "whole": true
+  },
+  "shrine": {
+   "label": "Wayside shrine",
+   "w": 5,
+   "d": 5,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "small",
+   "adobe": true,
+   "beam": false,
+   "whole": false
+  },
+  "granary": {
+   "label": "Raised granary",
+   "w": 6,
+   "d": 6,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "small",
+   "adobe": true,
+   "beam": false,
+   "whole": true
+  },
+  "kiosk": {
+   "label": "Kiosk",
+   "w": 6,
+   "d": 6,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "small",
+   "adobe": true,
+   "beam": false,
+   "whole": false
+  },
+  "dovecote": {
+   "label": "Pigeon tower",
+   "w": 10,
+   "d": 10,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "small",
+   "adobe": true,
+   "beam": false,
+   "whole": false
+  },
+  "gatewall": {
+   "label": "Wall and gate",
+   "w": 10,
+   "d": 3,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "small",
+   "adobe": true,
+   "beam": false,
+   "whole": false
+  },
+  "jars": {
+   "label": "Water jars",
+   "w": 6,
+   "d": 6,
+   "floor": 0,
+   "bay": 0,
+   "shell": 8,
+   "frame": 2,
+   "glass": 0,
+   "size": "small",
+   "adobe": true,
+   "beam": false,
+   "whole": false
+  }
+ },
+ "CITY": {
+  "cell": 1,
+  "lots": [
+   {
+    "x": -157.5,
+    "z": -19.5,
+    "id": "horno",
+    "seed": 1
+   },
+   {
+    "x": -110,
+    "z": -20,
+    "id": "granary",
+    "seed": 2
+   },
+   {
+    "x": -87.5,
+    "z": -20.5,
+    "id": "musgum",
+    "seed": 3
+   },
+   {
+    "x": -70,
+    "z": -20.5,
+    "id": "ksar",
+    "seed": 4
+   },
+   {
+    "x": -54,
+    "z": -20,
+    "id": "granary",
+    "seed": 5
+   },
+   {
+    "x": -20.5,
+    "z": -17.5,
+    "id": "horno",
+    "seed": 6
+   },
+   {
+    "x": -6,
+    "z": -20.5,
+    "id": "bazaar",
+    "seed": 7
+   },
+   {
+    "x": 10.5,
+    "z": -19.5,
+    "id": "shrine",
+    "seed": 8
+   },
+   {
+    "x": 114.5,
+    "z": -19.5,
+    "id": "shrine",
+    "seed": 9
+   },
+   {
+    "x": 141,
+    "z": -29,
+    "id": "kasbah",
+    "seed": 10
+   },
+   {
+    "x": -153.5,
+    "z": -54.5,
+    "id": "ghorfa",
+    "seed": 11
+   },
+   {
+    "x": -139,
+    "z": -50,
+    "id": "wellhouse",
+    "seed": 12
+   },
+   {
+    "x": -130,
+    "z": -51,
+    "id": "wellhouse",
+    "seed": 13
+   },
+   {
+    "x": -113,
+    "z": -52,
+    "id": "gate",
+    "seed": 14
+   },
+   {
+    "x": -78,
+    "z": -51,
+    "id": "jars",
+    "seed": 15
+   },
+   {
+    "x": -59,
+    "z": -66,
+    "id": "mission",
+    "seed": 16
+   },
+   {
+    "x": -29,
+    "z": -53,
+    "id": "dovecote",
+    "seed": 17
+   },
+   {
+    "x": -10,
+    "z": -50.5,
+    "id": "ksar",
+    "seed": 18
+   },
+   {
+    "x": 7.5,
+    "z": -50,
+    "id": "souk",
+    "seed": 19
+   },
+   {
+    "x": 41,
+    "z": -59,
+    "id": "pueblo",
+    "seed": 20
+   },
+   {
+    "x": 64.5,
+    "z": -50.5,
+    "id": "shrine",
+    "seed": 21
+   },
+   {
+    "x": 73,
+    "z": -52,
+    "id": "wellhouse",
+    "seed": 22
+   },
+   {
+    "x": 93,
+    "z": -64,
+    "id": "mission",
+    "seed": 23
+   },
+   {
+    "x": 130,
+    "z": -51,
+    "id": "kiosk",
+    "seed": 24
+   },
+   {
+    "x": 141.5,
+    "z": -52.5,
+    "id": "ghorfa",
+    "seed": 25
+   },
+   {
+    "x": 156,
+    "z": -52,
+    "id": "kiosk",
+    "seed": 26
+   },
+   {
+    "x": -160.5,
+    "z": -91.5,
+    "id": "horno",
+    "seed": 27
+   },
+   {
+    "x": -151,
+    "z": -92,
+    "id": "kiosk",
+    "seed": 28
+   },
+   {
+    "x": -141.5,
+    "z": -90.5,
+    "id": "shrine",
+    "seed": 29
+   },
+   {
+    "x": -121,
+    "z": -97,
+    "id": "shibam",
+    "seed": 30
+   },
+   {
+    "x": -88.5,
+    "z": -91.5,
+    "id": "shrine",
+    "seed": 31
+   },
+   {
+    "x": -76,
+    "z": -94,
+    "id": "dovecote",
+    "seed": 32
+   },
+   {
+    "x": -63.5,
+    "z": -89.5,
+    "id": "shrine",
+    "seed": 33
+   },
+   {
+    "x": -52,
+    "z": -94,
+    "id": "dovecote",
+    "seed": 34
+   },
+   {
+    "x": -31.5,
+    "z": -91,
+    "id": "souk",
+    "seed": 35
+   },
+   {
+    "x": -19.5,
+    "z": -91.5,
+    "id": "horno",
+    "seed": 36
+   },
+   {
+    "x": -9.5,
+    "z": -90.5,
+    "id": "musgum",
+    "seed": 37
+   },
+   {
+    "x": 27.5,
+    "z": -91,
+    "id": "souk",
+    "seed": 38
+   },
+   {
+    "x": 39,
+    "z": -92,
+    "id": "dovecote",
+    "seed": 39
+   },
+   {
+    "x": 54.5,
+    "z": -93.5,
+    "id": "ghorfa",
+    "seed": 40
+   },
+   {
+    "x": 68,
+    "z": -91,
+    "id": "kiosk",
+    "seed": 41
+   },
+   {
+    "x": 78.5,
+    "z": -90.5,
+    "id": "horno",
+    "seed": 42
+   },
+   {
+    "x": 89,
+    "z": -93,
+    "id": "dovecote",
+    "seed": 43
+   },
+   {
+    "x": 101,
+    "z": -90,
+    "id": "kiosk",
+    "seed": 44
+   },
+   {
+    "x": 111,
+    "z": -90,
+    "id": "granary",
+    "seed": 45
+   },
+   {
+    "x": 135,
+    "z": -97,
+    "id": "courtyard",
+    "seed": 46
+   },
+   {
+    "x": 150,
+    "z": -92,
+    "id": "kiosk",
+    "seed": 47
+   },
+   {
+    "x": 161,
+    "z": -92,
+    "id": "granary",
+    "seed": 48
+   },
+   {
+    "x": -160,
+    "z": -114,
+    "id": "granary",
+    "seed": 49
+   },
+   {
+    "x": -138,
+    "z": -113.5,
+    "id": "gatewall",
+    "seed": 50
+   },
+   {
+    "x": -128,
+    "z": -114,
+    "id": "wellhouse",
+    "seed": 51
+   },
+   {
+    "x": -110,
+    "z": -115,
+    "id": "gate",
+    "seed": 52
+   },
+   {
+    "x": -82,
+    "z": -116,
+    "id": "gate",
+    "seed": 53
+   },
+   {
+    "x": -64,
+    "z": -117,
+    "id": "hausa",
+    "seed": 54
+   },
+   {
+    "x": -51,
+    "z": -114,
+    "id": "granary",
+    "seed": 55
+   },
+   {
+    "x": -31.5,
+    "z": -113,
+    "id": "souk",
+    "seed": 56
+   },
+   {
+    "x": -16,
+    "z": -116,
+    "id": "hausa",
+    "seed": 57
+   },
+   {
+    "x": 2,
+    "z": -118,
+    "id": "badgir",
+    "seed": 58
+   },
+   {
+    "x": 30,
+    "z": -118,
+    "id": "badgir",
+    "seed": 59
+   },
+   {
+    "x": 44,
+    "z": -113.5,
+    "id": "gatewall",
+    "seed": 60
+   },
+   {
+    "x": 58,
+    "z": -117.5,
+    "id": "casa",
+    "seed": 61
+   },
+   {
+    "x": 72,
+    "z": -114,
+    "id": "jars",
+    "seed": 62
+   },
+   {
+    "x": 86,
+    "z": -118,
+    "id": "badgir",
+    "seed": 63
+   },
+   {
+    "x": 104,
+    "z": -115,
+    "id": "hausa",
+    "seed": 64
+   },
+   {
+    "x": 134,
+    "z": -112.5,
+    "id": "gatewall",
+    "seed": 65
+   },
+   {
+    "x": 149,
+    "z": -116,
+    "id": "dovecote",
+    "seed": 66
+   },
+   {
+    "x": 161.5,
+    "z": -113.5,
+    "id": "musgum",
+    "seed": 67
+   },
+   {
+    "x": -162.5,
+    "z": 17.5,
+    "id": "horno",
+    "yaw": 3.141592653589793,
+    "seed": 68
+   },
+   {
+    "x": -153,
+    "z": 18,
+    "id": "jars",
+    "yaw": 3.141592653589793,
+    "seed": 69
+   },
+   {
+    "x": -110,
+    "z": 20,
+    "id": "wellhouse",
+    "yaw": 3.141592653589793,
+    "seed": 70
+   },
+   {
+    "x": -84,
+    "z": 21,
+    "id": "badgir",
+    "yaw": 3.141592653589793,
+    "seed": 71
+   },
+   {
+    "x": -70,
+    "z": 19,
+    "id": "wellhouse",
+    "yaw": 3.141592653589793,
+    "seed": 72
+   },
+   {
+    "x": -60.5,
+    "z": 18.5,
+    "id": "musgum",
+    "yaw": 3.141592653589793,
+    "seed": 73
+   },
+   {
+    "x": -51,
+    "z": 18,
+    "id": "jars",
+    "yaw": 3.141592653589793,
+    "seed": 74
+   },
+   {
+    "x": -30.5,
+    "z": 20,
+    "id": "souk",
+    "yaw": 3.141592653589793,
+    "seed": 75
+   },
+   {
+    "x": -20.5,
+    "z": 18.5,
+    "id": "musgum",
+    "yaw": 3.141592653589793,
+    "seed": 76
+   },
+   {
+    "x": -9.5,
+    "z": 19,
+    "id": "souk",
+    "yaw": 3.141592653589793,
+    "seed": 77
+   },
+   {
+    "x": 5,
+    "z": 22.5,
+    "id": "casa",
+    "yaw": 3.141592653589793,
+    "seed": 78
+   },
+   {
+    "x": 130.5,
+    "z": 19.5,
+    "id": "musgum",
+    "yaw": 3.141592653589793,
+    "seed": 79
+   },
+   {
+    "x": 146,
+    "z": 19.5,
+    "id": "ksar",
+    "yaw": 3.141592653589793,
+    "seed": 80
+   },
+   {
+    "x": -155,
+    "z": 39,
+    "id": "gate",
+    "yaw": 3.141592653589793,
+    "seed": 81
+   },
+   {
+    "x": -124,
+    "z": 46,
+    "id": "djenne",
+    "yaw": 3.141592653589793,
+    "seed": 82
+   },
+   {
+    "x": -56,
+    "z": 34.5,
+    "id": "gatewall",
+    "yaw": 3.141592653589793,
+    "seed": 83
+   },
+   {
+    "x": -23,
+    "z": 38.5,
+    "id": "bazaar",
+    "yaw": 3.141592653589793,
+    "seed": 84
+   },
+   {
+    "x": -3,
+    "z": 33.5,
+    "id": "gatewall",
+    "yaw": 3.141592653589793,
+    "seed": 85
+   },
+   {
+    "x": 133,
+    "z": 39.5,
+    "id": "casa",
+    "yaw": 3.141592653589793,
+    "seed": 86
+   },
+   {
+    "x": 151,
+    "z": 38.5,
+    "id": "bazaar",
+    "yaw": 3.141592653589793,
+    "seed": 87
+   },
+   {
+    "x": -156.5,
+    "z": 69.5,
+    "id": "ghorfa",
+    "yaw": 3.141592653589793,
+    "seed": 88
+   },
+   {
+    "x": -135,
+    "z": 67.5,
+    "id": "bazaar",
+    "yaw": 3.141592653589793,
+    "seed": 89
+   },
+   {
+    "x": -116,
+    "z": 70.5,
+    "id": "casa",
+    "yaw": 3.141592653589793,
+    "seed": 90
+   },
+   {
+    "x": -88,
+    "z": 66,
+    "id": "jars",
+    "yaw": 3.141592653589793,
+    "seed": 91
+   },
+   {
+    "x": -68,
+    "z": 78,
+    "id": "kasbah",
+    "yaw": 3.141592653589793,
+    "seed": 92
+   },
+   {
+    "x": -48,
+    "z": 67,
+    "id": "jars",
+    "yaw": 3.141592653589793,
+    "seed": 93
+   },
+   {
+    "x": -26,
+    "z": 69,
+    "id": "hausa",
+    "yaw": 3.141592653589793,
+    "seed": 94
+   },
+   {
+    "x": -3,
+    "z": 72,
+    "id": "shibam",
+    "yaw": 3.141592653589793,
+    "seed": 95
+   },
+   {
+    "x": 45,
+    "z": 64.5,
+    "id": "gatewall",
+    "yaw": 3.141592653589793,
+    "seed": 96
+   },
+   {
+    "x": 70,
+    "z": 68.5,
+    "id": "ksar",
+    "yaw": 3.141592653589793,
+    "seed": 97
+   },
+   {
+    "x": 98,
+    "z": 72,
+    "id": "courtyard",
+    "yaw": 3.141592653589793,
+    "seed": 98
+   },
+   {
+    "x": 148,
+    "z": 71,
+    "id": "courtyard",
+    "yaw": 3.141592653589793,
+    "seed": 99
+   },
+   {
+    "x": -81,
+    "z": 105,
+    "id": "courtyard",
+    "yaw": 3.141592653589793,
+    "seed": 100
+   },
+   {
+    "x": 41,
+    "z": 128,
+    "id": "pueblo",
+    "yaw": 3.141592653589793,
+    "seed": 101
+   }
+  ]
+ },
+ "FOOT": {
+  "foundation": 0.7,
+  "min": 3
+ },
+ "FURNISH": {
+  "house": 0.12,
+  "shop": 0.14,
+  "block": 0.06,
+  "tower": 0.04,
+  "kiln": 0,
+  "stall": 0.18
+ },
+ "GLASS": {
+  "shatter": 4
+ },
+ "MAT": {
+  "glass": 1,
+  "timber": 2,
+  "brick": 3,
+  "stone": 4,
+  "steel": 5,
+  "paper": 6,
+  "furnishing": 7,
+  "adobe": 8
+ },
+ "MATERIALS": {
+  "0": null,
+  "1": {
+   "id": "glass",
+   "hp": 0.15,
+   "density": 0.3,
+   "span": 0,
+   "look": "glass"
+  },
+  "2": {
+   "id": "timber",
+   "hp": 0.6,
+   "density": 0.4,
+   "span": 3,
+   "look": "timber"
+  },
+  "3": {
+   "id": "brick",
+   "hp": 1.2,
+   "density": 1.2,
+   "span": 2,
+   "look": "brick"
+  },
+  "4": {
+   "id": "stone",
+   "hp": 2.4,
+   "density": 2.2,
+   "span": 1,
+   "look": "stone"
+  },
+  "5": {
+   "id": "steel",
+   "hp": 4,
+   "density": 1.6,
+   "span": 6,
+   "look": "steel"
+  },
+  "6": {
+   "id": "paper",
+   "hp": 0.1,
+   "density": 0.1,
+   "span": 1,
+   "look": "paper"
+  },
+  "7": {
+   "id": "furnishing",
+   "hp": 0.3,
+   "density": 0.3,
+   "span": 0,
+   "look": "furnishing"
+  },
+  "8": {
+   "id": "adobe",
+   "hp": 1,
+   "density": 1.4,
+   "span": 2,
+   "look": "adobe"
+  }
+ },
+ "SCORE": {
+  "felled": 0.25,
+  "topple": 0.5
+ },
+ "SOFT": 3,
+ "SPLIT": {
+  "fall": 8,
+  "min": 24,
+  "pieces": 3
+ }
+}

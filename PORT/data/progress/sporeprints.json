@@ -1,0 +1,49 @@
+{
+ "DAMP": {
+  "floors": [
+   2,
+   3
+  ],
+  "k": 1.5
+ },
+ "WILD_PRINTS": {
+  "ridgeLichen": {
+   "strain": "wonder",
+   "where": "ridges",
+   "odds": 0.5,
+   "does": "lichen grey on a ridge crystal"
+  },
+  "weirKoji": {
+   "strain": "mirth",
+   "where": "weir",
+   "odds": 0.5,
+   "does": "koji bloom on a damp jetty post"
+  },
+  "ruinInkcap": {
+   "strain": "desire",
+   "where": "ruins",
+   "odds": 0.45,
+   "does": "inkcaps among the ruin stones"
+  },
+  "dampOyster": {
+   "strain": "grief",
+   "where": "well",
+   "floors": [
+    2,
+    3
+   ],
+   "odds": 0.4,
+   "does": "oyster shelves on a streaming wall"
+  },
+  "dampButter": {
+   "strain": "dread",
+   "where": "well",
+   "floors": [
+    2,
+    3
+   ],
+   "odds": 0.4,
+   "does": "witches' butter in a floor's wet dark"
+  }
+ }
+}

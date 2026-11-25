@@ -1,0 +1,34 @@
+{
+ "ENCOUNTERS": {
+  "jelly": {
+   "id": "jelly",
+   "name": "the slip jellies",
+   "cat": "battle",
+   "sub": "Slip Jellies"
+  },
+  "crystal": {
+   "id": "crystal",
+   "name": "the crystal formations",
+   "cat": "explore",
+   "sub": "The Dreamvane"
+  },
+  "well": {
+   "id": "well",
+   "name": "the Great Dunemaw",
+   "cat": "explore",
+   "sub": "The Wells"
+  },
+  "lockheart": {
+   "id": "lockheart",
+   "name": "the Lockheart",
+   "cat": "battle",
+   "sub": "The Lockheart"
+  },
+  "angling": {
+   "id": "angling",
+   "name": "the catch",
+   "cat": "angle",
+   "sub": "The Catch"
+  }
+ }
+}

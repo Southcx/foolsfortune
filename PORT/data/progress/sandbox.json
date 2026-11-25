@@ -1,0 +1,109 @@
+{
+ "BALL": {
+  "r": 0.32,
+  "density": 9,
+  "restitution": 0.62,
+  "friction": 0.7,
+  "linearDamping": 0.12,
+  "angularDamping": 0.4,
+  "spot": {
+   "x": 15,
+   "z": -4
+  },
+  "respawn": 4
+ },
+ "GOAL": {
+  "x": 15,
+  "z": -17.5,
+  "w": 3.6,
+  "h": 2,
+  "depth": 1.2,
+  "juggleGap": 2.5
+ },
+ "IMPACT": {
+  "speed": 6,
+  "unit": 40,
+  "max": 3,
+  "heavy": 250,
+  "panic": 0.2,
+  "cool": 0.6,
+  "strike": 2
+ },
+ "SANDBOX": {
+  "at": {
+   "x": 3080,
+   "y": 200,
+   "z": -3000
+  },
+  "size": {
+   "w": 48,
+   "d": 40,
+   "h": 14
+  },
+  "arrive": {
+   "x": 0,
+   "z": 16,
+   "yaw": 3.141592653589793
+  },
+  "lecterns": {
+   "rack": {
+    "x": -16,
+    "z": 14,
+    "line": "Restock the yard: crates, bricks and pots."
+   },
+   "pen": {
+    "x": -4,
+    "z": 14,
+    "line": "Call three slip jellies into the pen (training bodies: they count nothing)."
+   },
+   "ground": {
+    "x": 8,
+    "z": 14,
+    "line": "Put the ground back as it was."
+   }
+  },
+  "yard": {
+   "x": -12,
+   "z": -4,
+   "w": 16,
+   "d": 14
+  },
+  "pen": {
+   "x": -2,
+   "z": -12,
+   "r": 6
+  },
+  "pitch": {
+   "x": 15,
+   "z": -4,
+   "w": 16,
+   "d": 28
+  }
+ },
+ "STOCK": [
+  {
+   "kind": "crate",
+   "size": 0.6,
+   "n": 8
+  },
+  {
+   "kind": "crate",
+   "size": 1.1,
+   "n": 3
+  },
+  {
+   "kind": "brick",
+   "size": [
+    0.5,
+    0.25,
+    0.25
+   ],
+   "n": 18,
+   "tower": true
+  },
+  {
+   "kind": "pot",
+   "n": 6
+  }
+ ]
+}

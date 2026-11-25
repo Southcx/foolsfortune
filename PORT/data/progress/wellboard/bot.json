@@ -1,0 +1,74 @@
+{
+ "RIVAL_STYLES": {
+  "petra": {
+   "plan": 1,
+   "skill": 0.85,
+   "nerve": 2,
+   "thrift": 20,
+   "stance": {
+    "strike": 1,
+    "feint": 1,
+    "guard": 2.2
+   }
+  },
+  "dovina": {
+   "plan": 1,
+   "skill": 0.75,
+   "nerve": 4,
+   "greed": 1.5,
+   "thrift": 0,
+   "stance": {
+    "strike": 1,
+    "feint": 2.2,
+    "guard": 1
+   }
+  },
+  "wanda": {
+   "plan": 0.7,
+   "skill": 0.8,
+   "nerve": 3,
+   "thrift": 10,
+   "stance": {
+    "strike": 2.2,
+    "feint": 1,
+    "guard": 1
+   }
+  },
+  "calissa": {
+   "plan": 0.6,
+   "skill": 0.8,
+   "nerve": 3,
+   "thrift": 5,
+   "stance": {
+    "strike": 1,
+    "feint": 1,
+    "guard": 1
+   }
+  },
+  "espada": {
+   "plan": 0.9,
+   "skill": 0.85,
+   "nerve": 3,
+   "thrift": 10,
+   "stance": {
+    "strike": 1.6,
+    "feint": 1.6,
+    "guard": 0.5
+   }
+  }
+ },
+ "STYLE": {
+  "plan": 1,
+  "skill": 0.8,
+  "deeper": 0.04,
+  "foe": 0.85,
+  "nerve": 3,
+  "greed": 1,
+  "thrift": 10,
+  "stance": {
+   "strike": 1,
+   "feint": 1,
+   "guard": 1
+  }
+ }
+}

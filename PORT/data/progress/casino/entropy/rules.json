@@ -1,0 +1,43 @@
+{
+ "ENTROPY": {
+  "id": "entropy",
+  "seats": [
+   2,
+   2
+  ]
+ },
+ "ENTROPY_RULES": {
+  "size": 7,
+  "bomb": [
+   3,
+   3
+  ],
+  "counter": 30,
+  "hand": 5,
+  "keep": 2,
+  "hermitKeep": 3,
+  "twentyOne": 21,
+  "feedAt": [
+   0,
+   4,
+   9,
+   15,
+   22,
+   30
+  ],
+  "reroll": 2,
+  "second": 2,
+  "secondCard": 1,
+  "push": 1,
+  "suitStep": 1,
+  "chariotStep": 1,
+  "empressRank": 1,
+  "charge": 3,
+  "lantern": 3,
+  "cycle": 3,
+  "lightning": 3,
+  "swordPush": 1,
+  "fatigue": 1,
+  "reshuffle": 2
+ }
+}

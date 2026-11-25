@@ -1,0 +1,111 @@
+{
+ "DUEL_POWERS": {
+  "swap": {
+   "domain": "ouranurgy",
+   "label": "Swap",
+   "line": "Two 2 x 2 patches of your half trade places",
+   "cost": 10,
+   "rest": 1,
+   "target": "two",
+   "size": 2
+  },
+  "manifest": {
+   "domain": "manifestation",
+   "label": "Manifest",
+   "line": "Turns up to 3 junk or holes in a 3 x 3 into gems of the colour you pick, or the one most round them",
+   "cost": 20,
+   "rest": 2,
+   "target": "cell",
+   "max": 3
+  },
+  "scan": {
+   "domain": "divination",
+   "label": "Scan",
+   "line": "Shows the aberrant's next skill and puts it off 2 turns",
+   "cost": 15,
+   "rest": 3,
+   "target": null,
+   "delay": 2
+  },
+  "lift": {
+   "domain": "psychokinesis",
+   "label": "Lift",
+   "line": "Lifts a row or a column of your half and sets it down shifted",
+   "cost": 10,
+   "rest": 1,
+   "target": "cell"
+  },
+  "herd": {
+   "domain": "possession",
+   "label": "Herd",
+   "line": "Gems of one colour within 2 of the row or column you draw come onto it",
+   "cost": 20,
+   "rest": 2,
+   "target": "cell",
+   "span": 2
+  },
+  "transmute": {
+   "domain": "alteration",
+   "label": "Transmute",
+   "line": "Every gem of one colour on your half turns to another, and none of the old colour falls for 2 turns",
+   "cost": 25,
+   "rest": 3,
+   "target": "cell",
+   "turns": 2
+  },
+  "miracle": {
+   "domain": "spellscription",
+   "label": "Miracle",
+   "line": "One colour's gems on your half clear at any 2 touching, this turn and your next",
+   "cost": 35,
+   "rest": 4,
+   "target": "cell",
+   "need": 2,
+   "turns": 2
+  },
+  "kindle": {
+   "domain": "alteration",
+   "label": "Kindle",
+   "line": "Lights every junk in a row or column of your half into an ember, and each cools into a gem at your turn's end",
+   "cost": 15,
+   "rest": 3,
+   "target": "cell",
+   "learned": true
+  },
+  "absorb": {
+   "domain": "possession",
+   "label": "Absorb",
+   "line": "Drinks every junk and slime in a 3 x 3 off your half; each gives 3 to your pool",
+   "cost": 5,
+   "rest": 3,
+   "target": "cell",
+   "learned": true,
+   "each": 3
+  },
+  "encore": {
+   "domain": "ouranurgy",
+   "label": "Encore",
+   "line": "Drag twice this turn",
+   "cost": 20,
+   "rest": 4,
+   "target": null,
+   "learned": true
+  }
+ },
+ "POWER_ACTION": {
+  "form": null,
+  "cost": 0
+ },
+ "POWER_IDS": [
+  "swap",
+  "manifest",
+  "scan",
+  "lift",
+  "herd",
+  "transmute",
+  "miracle",
+  "kindle",
+  "absorb",
+  "encore"
+ ]
+}

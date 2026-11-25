@@ -1,0 +1,35 @@
+{
+ "NEBULA": {
+  "id": "nebula",
+  "seats": [
+   2,
+   6
+  ]
+ },
+ "NEBULA_RULES": {
+  "set": [
+   4,
+   6,
+   8,
+   10,
+   12,
+   20
+  ],
+  "maxBonus": 10,
+  "price": 0.1,
+  "raiseCap": 12,
+  "capDiv": 3,
+  "revealBonus": 10,
+  "steps": [
+   1,
+   2,
+   3,
+   5,
+   8,
+   13,
+   21
+  ],
+  "chips": 60,
+  "low": 6
+ }
+}

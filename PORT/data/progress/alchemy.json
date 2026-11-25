@@ -1,0 +1,197 @@
+{
+ "ATTRIBUTES": {
+  "willpower": {
+   "name": "Willpower",
+   "does": "the shield's pool",
+   "widen": {
+    "willpower.shield": {
+     "mult": true,
+     "atMax": 1.5
+    }
+   },
+   "id": "willpower",
+   "hue": 20
+  },
+  "focus": {
+   "name": "Focus",
+   "does": "how long the statuses you build hold",
+   "widen": {
+    "focus.hold": {
+     "mult": true,
+     "atMax": 1.3
+    }
+   },
+   "id": "focus",
+   "hue": 71
+  },
+  "charisma": {
+   "name": "Charisma",
+   "does": "what the folk pay and ask (prices, the haggle)",
+   "widen": {
+    "charisma.trade": {
+     "mult": true,
+     "atMax": 1.15
+    }
+   },
+   "id": "charisma",
+   "hue": 123
+  },
+  "perception": {
+   "name": "Perception",
+   "does": "how far ahead a creature's intent shows, and how far the Dreamvane dowses",
+   "widen": {
+    "perception.notice": {
+     "mult": true,
+     "atMax": 1.5
+    },
+    "perception.dowse": {
+     "mult": true,
+     "atMax": 1.2
+    }
+   },
+   "id": "perception",
+   "hue": 174
+  },
+  "dexterity": {
+   "name": "Dexterity",
+   "does": "drawing and stowing a tool",
+   "widen": {
+    "dexterity.draw": {
+     "mult": true,
+     "atMax": 1.3
+    }
+   },
+   "id": "dexterity",
+   "hue": 226
+  },
+  "visualization": {
+   "name": "Visualization",
+   "does": "how fast what you imagine takes form, and the ink it costs",
+   "widen": {
+    "visualization.make": {
+     "mult": true,
+     "atMax": 2
+    },
+    "visualization.canvas": {
+     "mult": true,
+     "atMax": 1.4
+    }
+   },
+   "id": "visualization",
+   "hue": 277
+  },
+  "resilience": {
+   "name": "Resilience",
+   "does": "the clay mending, and the hits a ship bears",
+   "widen": {
+    "resilience.mend": {
+     "mult": true,
+     "atMax": 1.5
+    },
+    "resilience.bears": {
+     "plus": true,
+     "atMax": 2
+    }
+   },
+   "id": "resilience",
+   "hue": 329
+  }
+ },
+ "FEELING_HUE": {
+  "mirth": 45,
+  "wonder": 191,
+  "desire": 16,
+  "grief": 222,
+  "dread": 135,
+  "gall": 266,
+  "fury": 353
+ },
+ "RANK_LINES": {},
+ "SEASONING": [
+  {
+   "event": "vessel.shield",
+   "attribute": "willpower",
+   "points": 1
+  },
+  {
+   "event": "mind.settle",
+   "attribute": "willpower",
+   "points": 2
+  },
+  {
+   "event": "creature.status",
+   "attribute": "focus",
+   "points": 1
+  },
+  {
+   "event": "rhythm.score",
+   "attribute": "focus",
+   "points": 3
+  },
+  {
+   "event": "angle.catch",
+   "attribute": "focus",
+   "points": 2
+  },
+  {
+   "event": "npc.talk",
+   "attribute": "charisma",
+   "points": 1
+  },
+  {
+   "event": "shop.sell",
+   "attribute": "charisma",
+   "points": 1
+  },
+  {
+   "event": "shop.haggle",
+   "attribute": "charisma",
+   "points": 2
+  },
+  {
+   "event": "move.parry",
+   "attribute": "perception",
+   "points": 2
+  },
+  {
+   "event": "photo.appraise",
+   "attribute": "perception",
+   "points": 2
+  },
+  {
+   "event": "foe.dodge",
+   "attribute": "perception",
+   "points": 2
+  },
+  {
+   "event": "drill.end",
+   "attribute": "dexterity",
+   "points": 3
+  },
+  {
+   "event": "creature.zandatsu",
+   "attribute": "dexterity",
+   "points": 2
+  },
+  {
+   "event": "sigil.pop",
+   "attribute": "visualization",
+   "points": 2
+  },
+  {
+   "event": "garden.sculpt",
+   "attribute": "visualization",
+   "points": 1
+  },
+  {
+   "event": "vessel.mend",
+   "attribute": "resilience",
+   "points": 2
+  },
+  {
+   "event": "emocean.stage",
+   "attribute": "resilience",
+   "points": 4
+  }
+ ]
+}

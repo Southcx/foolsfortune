@@ -1,0 +1,132 @@
+{
+ "QUESTS": [
+  {
+   "id": "understudy",
+   "name": "The Understudy",
+   "who": "Strawman",
+   "points": 1,
+   "trouble": "Strawman has been everyone's practice dummy for so long that it only knows one part: getting knocked down. The show in its head never gets past rehearsal.",
+   "begin": "Strawman's in the Throwing Room, off the Workshop. For now, the way into its head is on the Index: STRAWMAN'S WELL.",
+   "steps": [
+    {
+     "say": "Get inside Strawman's head.",
+     "did": "You're in. It's a whole theatre in there!"
+    },
+    {
+     "say": "Clear any stage. Pick whichever looks fun.",
+     "did": "First stage cleared. Each one tests a different set of moves."
+    },
+    {
+     "say": "In The Brawl, knock a dummy past the blast line. The more damage it's taken, the further it flies.",
+     "did": "KO. That dummy's off the stage for good."
+    },
+    {
+     "say": "Clear all 6 open stages.",
+     "did": "Every open stage, cleared. Strawman's starting to learn some new lines."
+    },
+    {
+     "say": "Get an A or better on any 3 stages, then take a bow.",
+     "did": "Curtain call! For once, Strawman got to play the lead."
+    }
+   ]
+  },
+  {
+   "id": "tale.bottle",
+   "name": "The Bottle's Cargo",
+   "who": "A bottle on the swell",
+   "points": 1,
+   "trouble": "Someone corked a note and a promise into a bottle and set it adrift. The promise was never kept. The sea has had it a long time.",
+   "begin": "Any drift bottle on the open sea. Sail alongside it and press the use key.",
+   "steps": [
+    {
+     "say": "Read the note in a drift bottle.",
+     "did": "You read the note. It names an islet."
+    },
+    {
+     "say": "Dig up the cache the note points to. The Dreamvane's dowse finds it.",
+     "did": "A buried cache, dug. Someone's savings, sat in the sand."
+    },
+    {
+     "say": "Make a singing stone's phrase answer on the Crucibelle.",
+     "did": "The stone answered. Something rose out of the sand."
+    },
+    {
+     "say": "Photograph a herd at sea. The dock board says where one is today.",
+     "did": "A herd on a plate. The board pays for those."
+    },
+    {
+     "say": "Sink a sea serpent, or any of the sea's beasts.",
+     "did": "The beast is down. The promise is kept, in its way."
+    }
+   ],
+   "reward": {
+    "title": "Bottle Bearer",
+    "look": "bottle"
+   }
+  },
+  {
+   "id": "tale.ladle",
+   "name": "The Ladle with No Bottom",
+   "who": "A monk on the water",
+   "points": 1,
+   "trouble": "A monk rises out of calm night water and asks sailors for a ladle. Whoever gives him one is drowned in the water it fills. He wants to be given something that cannot fill.",
+   "begin": "Haul a crate up from any wreck, then read a stele on an islet.",
+   "steps": [
+    {
+     "say": "Haul a crate up from a wreck with the Sondelass worn.",
+     "did": "A crate, aboard. The wreck remembers who sank it."
+    },
+    {
+     "say": "Read a stele on an islet.",
+     "did": "Three words on a stone, in a sentence. One of them is a ladle."
+    },
+    {
+     "say": "Record 3 habits on plates. Creatures show them only under their own conditions.",
+     "did": "Three habits recorded. Habits are where the stories come from."
+    },
+    {
+     "say": "Drink the umibozu's pour with the Lockheart's gulp until its hands let go.",
+     "did": "A ladle with no bottom, and the Lockheart drank it. The hands let go."
+    },
+    {
+     "say": "Sink the umibozu.",
+     "did": "The monk goes under. Nobody drowned."
+    }
+   ],
+   "reward": {
+    "title": "Ladle Bearer",
+    "look": "ladle"
+   }
+  },
+  {
+   "id": "tale.song",
+   "name": "The Wind That Was Asked",
+   "who": "An old sailor at the quay",
+   "points": 1,
+   "trouble": "An old sailor says the wind is a creature too, and creatures can be asked. Nobody believes her, because she never leaves the quay.",
+   "begin": "Fit or make any ship's part at a quay, then sail until the sea is charted a little.",
+   "steps": [
+    {
+     "say": "Make a ship's part from its pieces at a quay (/shippart make).",
+     "did": "A part, made from pieces. The sailor nods once."
+    },
+    {
+     "say": "Play the wind a song on the Crucibelle at the helm.",
+     "did": "The wind turned. An hour of it, for a price."
+    },
+    {
+     "say": "Complete a square of the open sea: everything in it found, taken and salvaged.",
+     "did": "A square, finished. The sailor's chart has one more tick."
+    },
+    {
+     "say": "Tow a stunned beast home alive to a quay.",
+     "did": "A creature, asked and not killed. That is the point the old sailor was making."
+    }
+   ],
+   "reward": {
+    "title": "Wind Asker",
+    "look": "song"
+   }
+  }
+ ]
+}

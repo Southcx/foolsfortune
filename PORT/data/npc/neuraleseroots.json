@@ -1,0 +1,897 @@
+{
+ "COLOURS": {
+  "red": "IRIS-PIRO",
+  "yellow": "IRIS-HELI",
+  "green": "IRIS-FLORA",
+  "blue": "IRIS-MARI",
+  "brown": "IRIS-KLAI",
+  "white": "IRIS-HIKA",
+  "black": "IRIS-SKOTA",
+  "grey": "IRIS-SUNA",
+  "purple": "IRIS-NIKTA",
+  "gold": "IRIS-HELI-HIKA"
+ },
+ "COMPOUNDS": {
+  "LOGA-NUSA": "neuralese, as it calls itself: mind-speech",
+  "MARI-EMO": "the Emocean: the sea of feeling",
+  "NUSA-ATMA": "an Island of Ego: an island of self (NUSA alone is mind and island both)",
+  "LITHA-LAKRI": "Lachrymite: tear-stone",
+  "LAKRI-EMO-VOYD": "crude: Lachryma with no feeling",
+  "THERA-NUSA": "a Figment: a beast of the mind",
+  "THERA-MARI": "an Egregore: a beast of the sea",
+  "KERA-ATMA": "the Pneuka Jar: the jar of breath",
+  "HOMA-VADA": "the Courier: the one who goes",
+  "HEMA-MENDA": "a Shrine: the house of mending",
+  "HEMA-PIRO": "a kiln: the fire-house",
+  "TOPA-KERA": "a cradle: the jar's place",
+  "INKA-NOMA": "your seal: the name-seal",
+  "TOMA-VERA": "the Veritome: the true book",
+  "KLUZA-KORA": "the Lockheart: the shut heart",
+  "AMI-OMO": "a sibling: kin alike",
+  "EMO-PENTA-DUO": "the seven feelings"
+ },
+ "FEELINGS": {
+  "wonder": "MIRA",
+  "mirth": "HILA",
+  "desire": "POTHA",
+  "fury": "FURA",
+  "gall": "FELA",
+  "grief": "MOR",
+  "dread": "PAVA"
+ },
+ "NUMBERS": {
+  "1": "UNA",
+  "2": "DUO",
+  "3": "DUO-UNA",
+  "4": "DUO-DUO",
+  "5": "PENTA",
+  "6": "PENTA-UNA",
+  "7": "PENTA-DUO",
+  "8": "PENTA-DUO-UNA",
+  "9": "PENTA-DUO-DUO",
+  "10": "DEKA",
+  "11": "DEKA-UNA",
+  "12": "DEKA-DUO",
+  "13": "DEKA-DUO-UNA",
+  "14": "DEKA-DUO-DUO",
+  "15": "DEKA-PENTA",
+  "16": "DEKA-PENTA-UNA",
+  "17": "DEKA-PENTA-DUO",
+  "18": "DEKA-PENTA-DUO-UNA",
+  "19": "DEKA-PENTA-DUO-DUO",
+  "20": "DEKA-DEKA"
+ },
+ "PARTICLES": {
+  "NI": {
+   "role": "object",
+   "gloss": "marks what the deed is done to: IO SIVA NI UDA, I drink water"
+  },
+  "TE": {
+   "role": "context",
+   "gloss": "ends a setting: NIKTA TE, IO LUNO, at night, I rest"
+  },
+  "O": {
+   "role": "address",
+   "gloss": "before a deed, a command (O SIVA, drink); after a name, a call (AMI O, kin)"
+  },
+  "KE": {
+   "role": "question",
+   "gloss": "stands where the unknown would: TU KE? what are you?"
+  },
+  "SU": {
+   "role": "regroup",
+   "gloss": "of: the modifiers after it modify as one, HEMA-SU-HOMA-MEGA, the home of the great one"
+  },
+  "TA": {
+   "role": "and",
+   "gloss": "joins two who do, or two that are done to: IO TA TU KITH, you and I, together"
+  },
+  "VE": {
+   "role": "or",
+   "gloss": "between two choices; a yes-or-no question is SIVA VE SIVA-VOYD?"
+  },
+  "SED": {
+   "role": "but",
+   "gloss": "opens a sentence that turns against the last: IO SIVA. SED UDA VOYD. I drink. But there is no water."
+  }
+ },
+ "PHRASES": {
+  "VENA-KALO": "hello; welcome (a good coming)",
+  "VADA-KALO": "goodbye (a good going)",
+  "HELI-KALO": "good day",
+  "NIKTA-KALO": "good night",
+  "TU KALO": "thank you (you are good)",
+  "IO KRAKA": "sorry (I broke it)",
+  "SI": "yes",
+  "VOYD": "no",
+  "NOMA-IO X": "my name is X (my name: X)",
+  "NOMA-TU KE?": "what is your name?",
+  "IO SHIRA": "I understand (I know)",
+  "IO SHIRA-VOYD": "I do not understand",
+  "O LOGA-TAKA-VOYD": "please speak slowly (speak, not fast)",
+  "KO KE?": "what is this?",
+  "IO POTHA-SIVA": "I want to drink (I am a drinking want)",
+  "TU DUNA-VADA": "you can go",
+  "AMI O, VENA": "friend, come here",
+  "KRONA-KO TE, IO LUNO": "now, I rest"
+ },
+ "ROOTS": {
+  "STIL": {
+   "gloss": "still",
+   "sense": "still, stop, calm, motionless",
+   "from": "English still"
+  },
+  "EZA": {
+   "gloss": "ease",
+   "sense": "ease, gentle, soft, comfortable",
+   "from": "English ease"
+  },
+  "HUSA": {
+   "gloss": "hush",
+   "sense": "hush, quiet, silence, whisper",
+   "from": "English hush"
+  },
+  "MELU": {
+   "gloss": "melt",
+   "sense": "melt, soften, dissolve, turn liquid",
+   "from": "English melt"
+  },
+  "SIVA": {
+   "gloss": "drink",
+   "sense": "drink, sip, take in, liquid",
+   "from": "English sip; Latin sorbere"
+  },
+  "LUNO": {
+   "gloss": "rest",
+   "sense": "rest, sleep, lie down",
+   "from": "Latin luna: the moon, when things rest"
+  },
+  "GRAV": {
+   "gloss": "forage",
+   "sense": "forage, seek, search, dig",
+   "from": "English grub, grave (to dig)"
+  },
+  "PEXA": {
+   "gloss": "fish",
+   "sense": "fish, catch from water",
+   "from": "Latin piscis; Italian pesca"
+  },
+  "KITH": {
+   "gloss": "huddle",
+   "sense": "huddle, together, with, among, a group",
+   "from": "English kith"
+  },
+  "ROMI": {
+   "gloss": "play",
+   "sense": "play, game, fun",
+   "from": "English romp"
+  },
+  "SHAI": {
+   "gloss": "flee",
+   "sense": "flee, away, from, avoid",
+   "from": "English shy"
+  },
+  "HEMA": {
+   "gloss": "home",
+   "sense": "home, house, shelter, inside",
+   "from": "Old English ham; German Heim"
+  },
+  "MOR": {
+   "gloss": "mourn",
+   "sense": "mourn, grief, loss, death",
+   "from": "Latin mors, death; English mourn"
+  },
+  "FETA": {
+   "gloss": "fetch",
+   "sense": "fetch, bring, carry",
+   "from": "English fetch"
+  },
+  "TALO": {
+   "gloss": "follow",
+   "sense": "follow, after, behind",
+   "from": "English tail"
+  },
+  "AMI": {
+   "gloss": "kin",
+   "sense": "kin, friend, love, belong with",
+   "from": "French ami; Latin amicus"
+  },
+  "RIVA": {
+   "gloss": "rival",
+   "sense": "rival, fight, against, compete",
+   "from": "Latin rivalis: those who share a stream"
+  },
+  "DIPSA": {
+   "gloss": "thirst",
+   "sense": "thirst, lack, need",
+   "from": "Greek dipsa, thirst"
+  },
+  "GULA": {
+   "gloss": "hunger",
+   "sense": "hunger, appetite, crave",
+   "from": "Latin gula, the throat"
+  },
+  "VOYD": {
+   "gloss": "forget",
+   "sense": "forget, empty, nothing, not, zero",
+   "from": "English void"
+  },
+  "LON": {
+   "gloss": "long",
+   "sense": "long, far, lasting",
+   "from": "English long"
+  },
+  "DEO": {
+   "gloss": "deep",
+   "sense": "deep, below, under, within",
+   "from": "English deep"
+  },
+  "IO": {
+   "gloss": "I",
+   "sense": "I, me, we",
+   "from": "Italian io"
+  },
+  "TU": {
+   "gloss": "you",
+   "sense": "you",
+   "from": "Latin tu"
+  },
+  "ONO": {
+   "gloss": "it",
+   "sense": "it, that, they, the one there",
+   "from": "Japanese ano, sono: that"
+  },
+  "HOMA": {
+   "gloss": "person",
+   "sense": "person, someone, people, the folk",
+   "from": "Latin homo; Esperanto homo"
+  },
+  "ATMA": {
+   "gloss": "self",
+   "sense": "self, soul, breath, the Vessoul",
+   "from": "Sanskrit atman, breath and self"
+  },
+  "PAIDA": {
+   "gloss": "child",
+   "sense": "child, young one, small one",
+   "from": "Greek pais, paidos"
+  },
+  "NUSA": {
+   "gloss": "mind",
+   "sense": "mind, thought, to think, an island",
+   "from": "Greek nous, mind; Old Javanese nusa, island: a mind is an island"
+  },
+  "EMO": {
+   "gloss": "feeling",
+   "sense": "feeling, emotion, mood",
+   "from": "Latin emovere, to stir out; the Emocean"
+  },
+  "MIRA": {
+   "gloss": "wonder",
+   "sense": "wonder, awe, marvel",
+   "from": "Latin mirari, to wonder"
+  },
+  "HILA": {
+   "gloss": "mirth",
+   "sense": "mirth, cheer, laughter",
+   "from": "Latin hilaris"
+  },
+  "POTHA": {
+   "gloss": "desire",
+   "sense": "desire, longing, want",
+   "from": "Greek pothos, longing"
+  },
+  "FURA": {
+   "gloss": "fury",
+   "sense": "fury, anger, rage",
+   "from": "Latin furor"
+  },
+  "FELA": {
+   "gloss": "gall",
+   "sense": "gall, bitter, sour, disgust",
+   "from": "Latin fel, gall"
+  },
+  "PAVA": {
+   "gloss": "dread",
+   "sense": "dread, fear, terror",
+   "from": "Latin pavor, dread"
+  },
+  "SHIRA": {
+   "gloss": "know",
+   "sense": "know, understand, learn",
+   "from": "Japanese shiru, to know"
+  },
+  "MAIA": {
+   "gloss": "illusion",
+   "sense": "illusion, dream, false, mirage",
+   "from": "Sanskrit maya, illusion"
+  },
+  "VERA": {
+   "gloss": "true",
+   "sense": "true, real, so",
+   "from": "Latin verus; the Veritome"
+  },
+  "SOMA": {
+   "gloss": "body",
+   "sense": "body, vessel, flesh, shape of a creature",
+   "from": "Greek soma"
+  },
+  "KAPA": {
+   "gloss": "head",
+   "sense": "head, top, chief, leader",
+   "from": "Latin caput"
+  },
+  "KORA": {
+   "gloss": "heart",
+   "sense": "heart, middle, centre",
+   "from": "Latin cor; Japanese kokoro"
+  },
+  "MANU": {
+   "gloss": "hand",
+   "sense": "hand, hold, use, by means of",
+   "from": "Latin manus (the King's name, Manus)"
+  },
+  "VIDA": {
+   "gloss": "see",
+   "sense": "see, look, eye, sight",
+   "from": "Latin videre"
+  },
+  "KIKA": {
+   "gloss": "hear",
+   "sense": "hear, listen, ear",
+   "from": "Japanese kiku, to listen"
+  },
+  "STOMA": {
+   "gloss": "mouth",
+   "sense": "mouth, opening, to speak aloud",
+   "from": "Greek stoma"
+  },
+  "PEDA": {
+   "gloss": "foot",
+   "sense": "foot, leg, walk",
+   "from": "Latin pes, pedis"
+  },
+  "LAKRI": {
+   "gloss": "tear",
+   "sense": "tear, Lachryma",
+   "from": "Latin lacrima"
+  },
+  "MARI": {
+   "gloss": "sea",
+   "sense": "sea, the Emocean, wide water",
+   "from": "Latin mare, maria"
+  },
+  "UDA": {
+   "gloss": "water",
+   "sense": "water",
+   "from": "Sanskrit udan; Greek hydor"
+  },
+  "REA": {
+   "gloss": "flow",
+   "sense": "flow, stream, river, current",
+   "from": "Greek rheo, to flow"
+  },
+  "PLUVA": {
+   "gloss": "rain",
+   "sense": "rain, fall from the sky",
+   "from": "Latin pluvia"
+  },
+  "TERA": {
+   "gloss": "ground",
+   "sense": "ground, land, earth, floor",
+   "from": "Latin terra"
+  },
+  "KLAI": {
+   "gloss": "clay",
+   "sense": "clay, to shape, pottery",
+   "from": "English clay"
+  },
+  "SUNA": {
+   "gloss": "sand",
+   "sense": "sand, dust, grain, the Dunes",
+   "from": "Japanese suna, sand"
+  },
+  "LITHA": {
+   "gloss": "stone",
+   "sense": "stone, hard, crystal",
+   "from": "Greek lithos"
+  },
+  "OROS": {
+   "gloss": "mountain",
+   "sense": "mountain, hill, high ground",
+   "from": "Greek oros"
+  },
+  "KAVA": {
+   "gloss": "hole",
+   "sense": "hole, hollow, cave, a Well",
+   "from": "Latin cavus, hollow"
+  },
+  "PIRO": {
+   "gloss": "fire",
+   "sense": "fire, heat, burn, the kiln's fire",
+   "from": "Greek pyr"
+  },
+  "HELI": {
+   "gloss": "sun",
+   "sense": "sun, daytime",
+   "from": "Greek helios"
+  },
+  "SELE": {
+   "gloss": "moon",
+   "sense": "moon",
+   "from": "Greek selene"
+  },
+  "NIKTA": {
+   "gloss": "night",
+   "sense": "night, dark hours",
+   "from": "Greek nyx, nyktos"
+  },
+  "ASTRA": {
+   "gloss": "star",
+   "sense": "star, above the sky, the Astral",
+   "from": "Latin astrum; Greek astron"
+  },
+  "SORA": {
+   "gloss": "sky",
+   "sense": "sky, above, up, high",
+   "from": "Japanese sora, sky"
+  },
+  "VENTA": {
+   "gloss": "wind",
+   "sense": "wind, air, weather, blow",
+   "from": "Latin ventus"
+  },
+  "HIKA": {
+   "gloss": "light",
+   "sense": "light, bright, shine",
+   "from": "Japanese hikari"
+  },
+  "SKOTA": {
+   "gloss": "dark",
+   "sense": "dark, shadow, hidden, the Umbral",
+   "from": "Greek skotos"
+  },
+  "FRIGA": {
+   "gloss": "cold",
+   "sense": "cold, frost, ice",
+   "from": "Latin frigus"
+  },
+  "FLORA": {
+   "gloss": "plant",
+   "sense": "plant, flower, leaf",
+   "from": "Latin flos, floris"
+  },
+  "DENDRA": {
+   "gloss": "tree",
+   "sense": "tree, wood",
+   "from": "Greek dendron"
+  },
+  "THERA": {
+   "gloss": "beast",
+   "sense": "beast, animal, creature",
+   "from": "Greek ther, a wild beast"
+  },
+  "TORI": {
+   "gloss": "bird",
+   "sense": "bird, flyer",
+   "from": "Japanese tori"
+  },
+  "ZOE": {
+   "gloss": "life",
+   "sense": "life, live, alive",
+   "from": "Greek zoe"
+  },
+  "KERA": {
+   "gloss": "pot",
+   "sense": "pot, jar, vessel, container, the Pneuka Jar",
+   "from": "Greek keramos, pottery"
+  },
+  "INKA": {
+   "gloss": "seal",
+   "sense": "seal, stamp, signature",
+   "from": "Japanese inkan, a seal"
+  },
+  "NOMA": {
+   "gloss": "name",
+   "sense": "name, call by name",
+   "from": "Latin nomen"
+  },
+  "LOGA": {
+   "gloss": "word",
+   "sense": "word, speech, language, say",
+   "from": "Greek logos"
+  },
+  "SEMA": {
+   "gloss": "sign",
+   "sense": "sign, symbol, glyph, meaning",
+   "from": "Greek sema, a sign"
+  },
+  "GRAFA": {
+   "gloss": "write",
+   "sense": "write, draw, paint, mark, picture",
+   "from": "Greek graphein"
+  },
+  "TOMA": {
+   "gloss": "book",
+   "sense": "book, page, record",
+   "from": "English tome; Greek tomos, a cut"
+  },
+  "KANTA": {
+   "gloss": "song",
+   "sense": "song, music, sing",
+   "from": "Latin cantare"
+  },
+  "IRIS": {
+   "gloss": "colour",
+   "sense": "colour, hue, rainbow",
+   "from": "Greek iris"
+  },
+  "HODA": {
+   "gloss": "path",
+   "sense": "path, way, road, method",
+   "from": "Greek hodos"
+  },
+  "PORTA": {
+   "gloss": "door",
+   "sense": "door, gate, threshold",
+   "from": "Latin porta"
+  },
+  "MURA": {
+   "gloss": "wall",
+   "sense": "wall, barrier, edge",
+   "from": "Latin murus"
+  },
+  "NAVA": {
+   "gloss": "boat",
+   "sense": "boat, ship, sail",
+   "from": "Latin navis"
+  },
+  "TEKNA": {
+   "gloss": "make",
+   "sense": "make, build, craft, tool, machine",
+   "from": "Greek techne"
+  },
+  "SEKA": {
+   "gloss": "cut",
+   "sense": "cut, blade, sword",
+   "from": "Latin secare"
+  },
+  "RESA": {
+   "gloss": "thing",
+   "sense": "thing, object, stuff",
+   "from": "Latin res"
+  },
+  "MONA": {
+   "gloss": "money",
+   "sense": "money, a cube, price, worth",
+   "from": "Latin moneta"
+  },
+  "FORMA": {
+   "gloss": "shape",
+   "sense": "shape, form, outline",
+   "from": "Latin forma"
+  },
+  "TOPA": {
+   "gloss": "place",
+   "sense": "place, where; at, in",
+   "from": "Greek topos"
+  },
+  "KRONA": {
+   "gloss": "time",
+   "sense": "time, when, a while",
+   "from": "Greek chronos"
+  },
+  "VADA": {
+   "gloss": "go",
+   "sense": "go, move; to, toward, for",
+   "from": "Latin vadere"
+  },
+  "VENA": {
+   "gloss": "come",
+   "sense": "come, arrive, return",
+   "from": "Latin venire"
+  },
+  "EDA": {
+   "gloss": "eat",
+   "sense": "eat, food",
+   "from": "Latin edere"
+  },
+  "DONA": {
+   "gloss": "give",
+   "sense": "give, gift, offer",
+   "from": "Latin donare"
+  },
+  "PRENA": {
+   "gloss": "take",
+   "sense": "take, grab, catch",
+   "from": "French prendre"
+  },
+  "TENA": {
+   "gloss": "have",
+   "sense": "have, hold, keep",
+   "from": "Latin tenere"
+  },
+  "PATA": {
+   "gloss": "open",
+   "sense": "open, begin to show",
+   "from": "Latin patere, to lie open"
+  },
+  "KLUZA": {
+   "gloss": "close",
+   "sense": "close, shut, end",
+   "from": "Latin clausus"
+  },
+  "KRAKA": {
+   "gloss": "break",
+   "sense": "break, crack, shatter",
+   "from": "English crack"
+  },
+  "MENDA": {
+   "gloss": "mend",
+   "sense": "mend, heal, make whole",
+   "from": "English mend"
+  },
+  "META": {
+   "gloss": "change",
+   "sense": "change, become, turn into",
+   "from": "Greek meta"
+  },
+  "KRESA": {
+   "gloss": "grow",
+   "sense": "grow, rise, increase",
+   "from": "Latin crescere"
+  },
+  "AIDA": {
+   "gloss": "help",
+   "sense": "help, aid",
+   "from": "English aid"
+  },
+  "PONO": {
+   "gloss": "work",
+   "sense": "work, effort, task",
+   "from": "Greek ponos, toil"
+  },
+  "ARKA": {
+   "gloss": "begin",
+   "sense": "begin, first, origin, cause",
+   "from": "Greek arche"
+  },
+  "KALO": {
+   "gloss": "good",
+   "sense": "good, fine, beautiful, well",
+   "from": "Greek kalos"
+  },
+  "MALA": {
+   "gloss": "bad",
+   "sense": "bad, wrong, harmful",
+   "from": "Latin malus"
+  },
+  "MEGA": {
+   "gloss": "big",
+   "sense": "big, great, important",
+   "from": "Greek megas"
+  },
+  "MIKRA": {
+   "gloss": "small",
+   "sense": "small, little, few",
+   "from": "Greek mikros"
+  },
+  "NEA": {
+   "gloss": "new",
+   "sense": "new, fresh, young",
+   "from": "Greek neos"
+  },
+  "PALA": {
+   "gloss": "old",
+   "sense": "old, ancient, before",
+   "from": "Greek palaios"
+  },
+  "FORTA": {
+   "gloss": "strong",
+   "sense": "strong, power, hard to move",
+   "from": "Latin fortis"
+  },
+  "TAKA": {
+   "gloss": "fast",
+   "sense": "fast, quick",
+   "from": "Greek tachys"
+  },
+  "OMO": {
+   "gloss": "same",
+   "sense": "same, alike, like, as",
+   "from": "Greek homos"
+  },
+  "ALI": {
+   "gloss": "other",
+   "sense": "other, different, else",
+   "from": "Latin alius"
+  },
+  "SI": {
+   "gloss": "yes",
+   "sense": "yes, so, agreed",
+   "from": "Latin sic; Italian si"
+  },
+  "UNA": {
+   "gloss": "one",
+   "sense": "one, alone, a single",
+   "from": "Latin una"
+  },
+  "DUO": {
+   "gloss": "two",
+   "sense": "two, a pair",
+   "from": "Latin duo"
+  },
+  "PENTA": {
+   "gloss": "five",
+   "sense": "five, a hand of",
+   "from": "Greek pente"
+  },
+  "MULTA": {
+   "gloss": "many",
+   "sense": "many, much, a lot",
+   "from": "Latin multus"
+  },
+  "OMNI": {
+   "gloss": "all",
+   "sense": "all, every, whole",
+   "from": "Latin omnis"
+  },
+  "KO": {
+   "gloss": "this",
+   "sense": "this, here, now, the near one",
+   "from": "Japanese ko-: kore, koko, kono (this, here); ONO's near twin"
+  },
+  "DUNA": {
+   "gloss": "can",
+   "sense": "can, able, may, power to",
+   "from": "Greek dynamis, power (dynamo, dynamite)"
+  },
+  "DEKA": {
+   "gloss": "ten",
+   "sense": "ten, two hands of",
+   "from": "Greek deka (decade)"
+  }
+ },
+ "TITLES": {
+  "Adept": {
+   "neuralese": "HOMA-SHIRA-MEGA",
+   "read": "one of great knowing"
+  },
+  "Alchemist": {
+   "neuralese": "HOMA-META",
+   "read": "one who changes"
+  },
+  "Angler": {
+   "neuralese": "HOMA-PEXA",
+   "read": "one who fishes"
+  },
+  "Annihilator": {
+   "neuralese": "HOMA-KRAKA-OMNI",
+   "read": "one who breaks all"
+  },
+  "Cartographer": {
+   "neuralese": "HOMA-GRAFA-TERA",
+   "read": "one who draws the land"
+  },
+  "Clapperjar Bane": {
+   "neuralese": "MOR-SU-KERA-HOMA",
+   "read": "death of the pot-folk"
+  },
+  "Completionist": {
+   "neuralese": "HOMA-OMNI",
+   "read": "one of everything"
+  },
+  "Curator": {
+   "neuralese": "HOMA-TENA-RESA",
+   "read": "keeper of things"
+  },
+  "Demiurge": {
+   "neuralese": "HOMA-TEKNA-MEGA",
+   "read": "the great maker"
+  },
+  "Devout": {
+   "neuralese": "HOMA-DONA-MULTA",
+   "read": "one who gives much"
+  },
+  "Drowned King": {
+   "neuralese": "KAPA-UDA-DEO",
+   "read": "the chief deep in the water"
+  },
+  "Epigrapher": {
+   "neuralese": "HOMA-SHIRA-SEMA",
+   "read": "knower of signs"
+  },
+  "Hierophant of Spores": {
+   "neuralese": "KAPA-SU-FLORA-SKOTA",
+   "read": "chief of the plants of the dark"
+  },
+  "Hoarder": {
+   "neuralese": "HOMA-TENA-MONA",
+   "read": "keeper of cubes"
+  },
+  "Jellybane": {
+   "neuralese": "MOR-SU-THERA-MELU",
+   "read": "death of the melting beasts (slip jellies)"
+  },
+  "Lamplighter": {
+   "neuralese": "HOMA-HIKA",
+   "read": "one of light"
+  },
+  "Landslide": {
+   "neuralese": "TERA-REA",
+   "read": "the ground flowing"
+  },
+  "Lifer": {
+   "neuralese": "HOMA-KRONA-LON",
+   "read": "one of the long time"
+  },
+  "Mycologist": {
+   "neuralese": "HOMA-SHIRA-SU-FLORA-SKOTA",
+   "read": "knower of the plants of the dark"
+  },
+  "Naturalist": {
+   "neuralese": "HOMA-SHIRA-PEXA",
+   "read": "knower of fish"
+  },
+  "Refired": {
+   "neuralese": "SOMA-PIRO-PENTA-UNA",
+   "read": "a body fired six times"
+  },
+  "Ringrunner": {
+   "neuralese": "HOMA-VADA-TAKA",
+   "read": "one who goes fast"
+  },
+  "Sandsailor": {
+   "neuralese": "HOMA-NAVA-SUNA",
+   "read": "one who sails the sand"
+  },
+  "Shatterer": {
+   "neuralese": "HOMA-KRAKA",
+   "read": "one who breaks"
+  },
+  "Siege Breaker": {
+   "neuralese": "HOMA-KRAKA-MURA",
+   "read": "breaker of walls"
+  },
+  "Silo Warden": {
+   "neuralese": "HOMA-TENA-PORTA",
+   "read": "keeper of the gate"
+  },
+  "Slipmonger": {
+   "neuralese": "HOMA-THERA-MELU",
+   "read": "one of the melting beasts"
+  },
+  "Spring Cleaner": {
+   "neuralese": "HOMA-HEMA-NEA",
+   "read": "one who makes the home new"
+  },
+  "Stormrider": {
+   "neuralese": "HOMA-VENTA-MEGA",
+   "read": "one of the great wind"
+  },
+  "The World": {
+   "neuralese": "NUSA-OMNI",
+   "read": "every island; the whole mind"
+  },
+  "Wayfarer": {
+   "neuralese": "HOMA-HODA-LON",
+   "read": "one of the long road"
+  },
+  "Wonderworker": {
+   "neuralese": "HOMA-TEKNA-MIRA",
+   "read": "maker of wonder"
+  },
+  "the Fool Who Read the World": {
+   "neuralese": "PAIDA-SHIRA-SU-NUSA-OMNI",
+   "read": "the knowing child of the whole world"
+  },
+  "the Naturalist": {
+   "neuralese": "HOMA-SHIRA-ZOE",
+   "read": "knower of life"
+  },
+  "the Unrejected": {
+   "neuralese": "HOMA-AMI-SU-NUSA",
+   "read": "one kin to the island"
+  }
+ }
+}

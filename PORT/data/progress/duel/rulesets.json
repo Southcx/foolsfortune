@@ -1,0 +1,393 @@
+{
+ "KIND_RULESETS": {
+  "wisp": "lanternwisp",
+  "strawman": "strawman",
+  "slipjelly": "slipjelly",
+  "clapper": "clapperjar"
+ },
+ "PRACTICE": {
+  "idle": "strawmanIdle",
+  "plain": "strawman",
+  "wisp": "lanternwisp",
+  "jelly": "slipjelly",
+  "clap": "clapperjar"
+ },
+ "RULESETS": {
+  "fury": {
+   "feeling": "fury",
+   "match": 3,
+   "cluster": 0,
+   "bombs": 0.06,
+   "crash": 0.05,
+   "blast": 2,
+   "colours": 4,
+   "drip": 4,
+   "bot": {
+    "junk": 12
+   }
+  },
+  "grief": {
+   "feeling": "grief",
+   "match": 0,
+   "cluster": 4,
+   "pincer": true,
+   "colours": 6,
+   "bot": {
+    "pairs": 1
+   }
+  },
+  "mirth": {
+   "feeling": "mirth",
+   "match": 3,
+   "cluster": 4,
+   "colours": 5,
+   "drip": 3,
+   "ice": {
+    "share": 0.1
+   },
+   "launch": {
+    "at": 6,
+    "n": 2
+   }
+  },
+  "wonder": {
+   "feeling": "wonder",
+   "match": 3,
+   "cluster": 0,
+   "diagonal": 4,
+   "rainbow": 0.05,
+   "sweep": {
+    "step": 3
+   },
+   "colours": 5,
+   "drip": 3
+  },
+  "desire": {
+   "feeling": "desire",
+   "match": 3,
+   "cluster": 4,
+   "magnets": 0.12,
+   "pincer": true,
+   "colours": 5,
+   "drip": 3
+  },
+  "gall": {
+   "feeling": "gall",
+   "match": 3,
+   "cluster": 4,
+   "hard": {
+    "from": 1,
+    "hits": 2
+   },
+   "corrode": {
+    "p": 0.25,
+    "max": 2
+   },
+   "viruses": {
+    "n": 3,
+    "bonus": 4
+   },
+   "colours": 5,
+   "drip": 3
+  },
+  "dread": {
+   "feeling": "dread",
+   "match": 3,
+   "cluster": 0,
+   "colours": 5,
+   "drip": 3,
+   "fog": {
+    "side": 1,
+    "light": 3
+   },
+   "embers": {
+    "from": 1,
+    "count": 3
+   }
+  },
+  "lanternwisp": {
+   "feeling": "dread",
+   "board": {
+    "w": 12,
+    "h": 9,
+    "perColumn": 2,
+    "landCap": 6
+   },
+   "match": 3,
+   "cluster": 4,
+   "colours": 5,
+   "drip": 4,
+   "palette": [
+    "wonder",
+    "mirth",
+    "fury",
+    "grief",
+    "dread"
+   ],
+   "fog": {
+    "side": 1,
+    "light": 3
+   },
+   "embers": {
+    "from": 1,
+    "count": 3
+   },
+   "bot": {
+    "pairs": 0.8,
+    "sample": 8
+   },
+   "pve": {
+    "perColumn": 5
+   },
+   "secret": "snuff",
+   "foe": {
+    "moves": [
+     {
+      "skill": "hurl",
+      "every": 2,
+      "first": 1,
+      "n": 3
+     },
+     {
+      "skill": "petrify",
+      "every": 3,
+      "first": 2,
+      "n": 3
+     },
+     {
+      "skill": "seal",
+      "every": 4,
+      "first": 3
+     },
+     {
+      "skill": "reclaim",
+      "every": 5,
+      "first": 4
+     },
+     {
+      "skill": "kindle",
+      "every": 2,
+      "first": 1,
+      "n": 3,
+      "wake": "half"
+     }
+    ],
+    "desperate": {
+     "at": 2,
+     "moves": [
+      {
+       "skill": "hurl",
+       "n": 5
+      },
+      {
+       "skill": "petrify",
+       "n": 4
+      }
+     ]
+    }
+   }
+  },
+  "slipjelly": {
+   "feeling": "gall",
+   "board": {
+    "w": 12,
+    "h": 10,
+    "perColumn": 2,
+    "landCap": 8
+   },
+   "match": 3,
+   "cluster": 4,
+   "colours": 5,
+   "drip": 4,
+   "palette": [
+    "wonder",
+    "mirth",
+    "desire",
+    "gall",
+    "grief"
+   ],
+   "weak": false,
+   "slime": {
+    "from": 1
+   },
+   "bot": {
+    "pairs": 0.8,
+    "sample": 8
+   },
+   "pve": {
+    "perColumn": 5
+   },
+   "secret": "dissolve",
+   "foe": {
+    "moves": [
+     {
+      "skill": "hurl",
+      "every": 1,
+      "first": 1,
+      "n": 3
+     },
+     {
+      "skill": "spew",
+      "every": 3,
+      "first": 2,
+      "n": 7
+     },
+     {
+      "skill": "reclaim",
+      "every": 5,
+      "first": 4
+     },
+     {
+      "skill": "harden",
+      "every": 2,
+      "first": 1,
+      "n": 4,
+      "wake": "half"
+     }
+    ],
+    "desperate": {
+     "at": 2,
+     "moves": [
+      {
+       "skill": "spew",
+       "n": 9
+      }
+     ]
+    }
+   }
+  },
+  "clapperjar": {
+   "feeling": "mirth",
+   "board": {
+    "w": 12,
+    "h": 9,
+    "perColumn": 2,
+    "landCap": 6
+   },
+   "match": 3,
+   "cluster": 4,
+   "colours": 5,
+   "drip": 4,
+   "palette": [
+    "wonder",
+    "mirth",
+    "desire",
+    "fury",
+    "grief"
+   ],
+   "bot": {
+    "pairs": 0.8,
+    "sample": 8
+   },
+   "pve": {
+    "perColumn": 5
+   },
+   "secret": "clapback",
+   "foe": {
+    "moves": [
+     {
+      "skill": "hurl",
+      "every": 2,
+      "first": 1,
+      "n": 3
+     },
+     {
+      "skill": "shuffle",
+      "every": 3,
+      "first": 2,
+      "n": 6
+     },
+     {
+      "skill": "reclaim",
+      "every": 5,
+      "first": 4
+     },
+     {
+      "skill": "syncopate",
+      "every": 2,
+      "first": 1,
+      "wake": "half"
+     }
+    ],
+    "desperate": {
+     "at": 2,
+     "moves": [
+      {
+       "skill": "shuffle",
+       "n": 10
+      },
+      {
+       "skill": "hurl",
+       "n": 4
+      }
+     ]
+    }
+   }
+  },
+  "strawman": {
+   "feeling": "fury",
+   "board": {
+    "w": 10,
+    "h": 8,
+    "perColumn": 2,
+    "landCap": 5
+   },
+   "match": 3,
+   "cluster": 4,
+   "colours": 7,
+   "drip": 3,
+   "skyfall": {
+    "to": 0.5,
+    "calm": 0.95
+   },
+   "bot": {
+    "sample": 2,
+    "every": 2
+   },
+   "pve": {
+    "perColumn": 4
+   },
+   "foe": {
+    "moves": [
+     {
+      "skill": "hurl",
+      "every": 3,
+      "first": 2,
+      "n": 2
+     },
+     {
+      "skill": "petrify",
+      "every": 4,
+      "first": 3,
+      "n": 2
+     },
+     {
+      "skill": "seal",
+      "every": 5,
+      "first": 4
+     }
+    ]
+   }
+  },
+  "strawmanIdle": {
+   "feeling": "fury",
+   "board": {
+    "w": 10,
+    "h": 8,
+    "perColumn": 2,
+    "landCap": 5
+   },
+   "match": 3,
+   "cluster": 4,
+   "colours": 7,
+   "drip": 3,
+   "skyfall": {
+    "to": 0.5,
+    "calm": 0.95
+   },
+   "bot": {
+    "idle": true
+   }
+  }
+ }
+}

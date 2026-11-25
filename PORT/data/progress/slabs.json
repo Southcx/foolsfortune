@@ -1,0 +1,82 @@
+{
+ "SLAB": {
+  "w": 10,
+  "h": 7,
+  "d": 5,
+  "seconds": 90,
+  "perStar": 30,
+  "tolls": 3,
+  "integrity": 2,
+  "flawless": 0.97
+ },
+ "STRATA": [
+  {
+   "id": "loose",
+   "hp": 1
+  },
+  {
+   "id": "firm",
+   "hp": 2
+  },
+  {
+   "id": "hard",
+   "hp": 3
+  }
+ ],
+ "VERBS": {
+  "brush": {
+   "tool": "soulbrush",
+   "line": "Brushes loose stone away. Slow, never cracks.",
+   "reach": 0,
+   "dmg": 1,
+   "only": 1,
+   "cracks": false,
+   "secs": 0.35
+  },
+  "pick": {
+   "tool": "dreamvane",
+   "line": "Chips a cell and the one behind it. Fast; cracks the fossil if it reaches it.",
+   "reach": 1,
+   "dmg": 2,
+   "cracks": true,
+   "secs": 0.5
+  },
+  "blast": {
+   "tool": "psygun",
+   "line": "Blasts a round patch of crust. Quick and wide; cracks any fossil in it.",
+   "radius": 1.8,
+   "dmg": 1,
+   "cracks": true,
+   "secs": 0.8
+  },
+  "slice": {
+   "tool": "sondelass",
+   "line": "Slices one layer off flat across the slab; cracks the fossil where the layer crosses it.",
+   "layer": true,
+   "dmg": 1,
+   "cracks": true,
+   "secs": 1.5
+  },
+  "hoover": {
+   "tool": "lockheart",
+   "line": "Draws out loose stone round a cell. Never cracks.",
+   "radius": 1.2,
+   "dmg": 1,
+   "only": 1,
+   "cracks": false,
+   "secs": 0.6
+  },
+  "toll": {
+   "tool": "crucibelle",
+   "line": "The fossil's outline rings through the stone for a moment. Three a slab.",
+   "reveal": 1.5,
+   "secs": 1.2
+  },
+  "silhouette": {
+   "tool": "veritome",
+   "line": "Holds the plate to the slab: the creature's shape drawn faintly on its face to aim by.",
+   "ghost": true,
+   "secs": 1
+  }
+ }
+}

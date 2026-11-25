@@ -1,0 +1,14 @@
+{
+ "ENDLESS": {
+  "lives": 3,
+  "skips": 1,
+  "grade": {
+   "gold": 0.9,
+   "silver": 1.05,
+   "bronze": 1.3
+  }
+ },
+ "SHELF": {
+  "cap": 10
+ }
+}

@@ -1,0 +1,33 @@
+{
+ "FEELING_WAKE": {
+  "wonder": {
+   "does": "Stand at a vantage point and look out.",
+   "line": "It feels like the sky goes on further than you ever knew."
+  },
+  "mirth": {
+   "does": "Play for a crowd, or make the folk laugh.",
+   "line": "Laughter fizzes up through you, a shaken bottle whose cork was never going to hold."
+  },
+  "desire": {
+   "does": "Want something, and have it.",
+   "line": "You lean toward it as a moth leans to a lamp, and having it only turns up the flame."
+  },
+  "grief": {
+   "does": "Lose what you staked, or what you carried.",
+   "line": "There is a hollow in you the exact shape of what you lost, and nothing else will fit."
+  },
+  "dread": {
+   "does": "Face what waits below.",
+   "line": "Every shadow holds its breath at once, and so do you."
+  },
+  "fury": {
+   "does": "Answer a blow with a blow.",
+   "line": "You steam and rattle like a kettle on the boil, and you have stopped wanting the lid on."
+  },
+  "gall": {
+   "does": "Clean up what rots.",
+   "line": "Your stomach curdles like milk gone sour, and you roll up your sleeves anyway."
+  }
+ },
+ "WAKE_COUNT": 5
+}

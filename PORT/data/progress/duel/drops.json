@@ -1,0 +1,62 @@
+{
+ "DROPS": {
+  "wisp": {
+   "kinds": [
+    "arcane",
+    "eldritch"
+   ],
+   "line": {
+    "rolls": 2,
+    "tiers": [
+     0.55,
+     0.3,
+     0.12,
+     0.03,
+     0
+    ]
+   },
+   "secret": {
+    "rolls": 2,
+    "tiers": [
+     0.2,
+     0.42,
+     0.26,
+     0.1,
+     0.02
+    ]
+   }
+  },
+  "slipjelly": {
+   "kinds": [
+    "provision",
+    "finery"
+   ],
+   "line": {
+    "rolls": 2,
+    "tiers": "[cycle]"
+   },
+   "secret": {
+    "rolls": 2,
+    "tiers": "[cycle]"
+   }
+  },
+  "clapper": {
+   "kinds": [
+    "art",
+    "finery"
+   ],
+   "line": {
+    "rolls": 2,
+    "tiers": "[cycle]"
+   },
+   "secret": {
+    "rolls": 2,
+    "tiers": "[cycle]"
+   }
+  }
+ },
+ "SHINY": {
+  "chance": 0.1,
+  "tier": 3
+ }
+}

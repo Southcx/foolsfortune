@@ -1,0 +1,270 @@
+{
+ "CATS": [
+  {
+   "id": "break",
+   "name": "BREAKING",
+   "subs": [
+    "Pots",
+    "Clapperjars",
+    "Shells",
+    "The Workshop"
+   ]
+  },
+  {
+   "id": "move",
+   "name": "MOVEMENT",
+   "subs": [
+    "Distance",
+    "Air",
+    "Ground",
+    "The Arts"
+   ]
+  },
+  {
+   "id": "skiff",
+   "name": "SOLAR SKIFFING",
+   "subs": [
+    "The Board",
+    "Tricks",
+    "The Sundial",
+    "The Raceway",
+    "The Build Lot"
+   ]
+  },
+  {
+   "id": "hand",
+   "name": "THE HAND",
+   "subs": [
+    "Reach",
+    "Arts",
+    "Matter",
+    "Miracles",
+    "Bracelet",
+    "Raids",
+    "Rejection",
+    "Lachryma",
+    "Mimicry",
+    "Physics",
+    "Strawman's Well",
+    "The Hangar"
+   ]
+  },
+  {
+   "id": "sond",
+   "name": "THE SONDELASS",
+   "subs": [
+    "Cutlass",
+    "Grapple"
+   ]
+  },
+  {
+   "id": "brush",
+   "name": "THE SOUL BRUSH",
+   "subs": [
+    "The Club",
+    "The Slide",
+    "The Canvas",
+    "Sigils"
+   ]
+  },
+  {
+   "id": "veritome",
+   "name": "THE VERITOME",
+   "subs": [
+    "The Lens",
+    "Fieldcraft",
+    "The Darkroom",
+    "The Bestiary",
+    "The Book"
+   ]
+  },
+  {
+   "id": "angle",
+   "name": "ANGLING",
+   "subs": [
+    "Casting",
+    "The Bite",
+    "The Fight",
+    "The Catch",
+    "Bestiary",
+    "The Deep"
+   ]
+  },
+  {
+   "id": "treasure",
+   "name": "TREASURE",
+   "subs": [
+    "Chests",
+    "Cubes",
+    "The Tithe",
+    "Curios",
+    "The Vessel",
+    "The Counters"
+   ]
+  },
+  {
+   "id": "circuit",
+   "name": "CIRCUITS",
+   "subs": [
+    "Laps",
+    "Medals",
+    "The Trial"
+   ]
+  },
+  {
+   "id": "battle",
+   "name": "BATTLE",
+   "subs": [
+    "Slip Jellies",
+    "Reprogramming",
+    "Out Cold",
+    "The Five Forces",
+    "The Crucibelle",
+    "The Lockheart",
+    "The Crowned",
+    "The Throwing Room",
+    "Puzzle Duels"
+   ]
+  },
+  {
+   "id": "explore",
+   "name": "EXPLORATION",
+   "subs": [
+    "Charting",
+    "Places",
+    "Shrines",
+    "The Dreamvane",
+    "The Wells",
+    "Folk",
+    "The Finds",
+    "Digging",
+    "The Seal Book"
+   ]
+  },
+  {
+   "id": "emocean",
+   "name": "THE EMOCEAN",
+   "subs": [
+    "Sailing",
+    "Sea Stages",
+    "Crude",
+    "The Open Sea"
+   ]
+  },
+  {
+   "id": "collect",
+   "name": "COLLECTION",
+   "subs": [
+    "Logged",
+    "The Collection Log"
+   ]
+  },
+  {
+   "id": "psyche",
+   "name": "THE DOMAINS",
+   "subs": [
+    "Levels",
+    "Rungs"
+   ]
+  },
+  {
+   "id": "garden",
+   "name": "THE SPIRIT GARDEN",
+   "subs": [
+    "The Press",
+    "The Garden",
+    "The Mycelium",
+    "The Spirits",
+    "The Firings",
+    "The Garden's Life",
+    "Seeds and Slabs",
+    "The Hearth"
+   ]
+  },
+  {
+   "id": "sky",
+   "name": "THE SKY",
+   "subs": [
+    "Weather",
+    "The Day"
+   ]
+  },
+  {
+   "id": "general",
+   "name": "GENERAL",
+   "subs": [
+    "Time",
+    "Persistence",
+    "The Spread",
+    "The Stones",
+    "Pairs",
+    "Achievements"
+   ]
+  }
+ ],
+ "RANKS": [
+  [
+   0,
+   "Sweeper"
+  ],
+  [
+   10,
+   "Apprentice"
+  ],
+  [
+   30,
+   "Journeyman"
+  ],
+  [
+   70,
+   "Potter"
+  ],
+  [
+   130,
+   "Master Potter"
+  ],
+  [
+   220,
+   "Kiln Warden"
+  ],
+  [
+   340,
+   "Fool's Fortune"
+  ]
+ ],
+ "TIERS": [
+  null,
+  {
+   "name": "Easy",
+   "pts": 1
+  },
+  {
+   "name": "Medium",
+   "pts": 2
+  },
+  {
+   "name": "Hard",
+   "pts": 3
+  },
+  {
+   "name": "Elite",
+   "pts": 4
+  },
+  {
+   "name": "Master",
+   "pts": 5
+  },
+  {
+   "name": "Grandmaster",
+   "pts": 6
+  }
+ ],
+ "TYPES": {
+  "count": "Count",
+  "speed": "Speed",
+  "perfect": "Perfection",
+  "mechanic": "Mechanic",
+  "endure": "Stamina",
+  "collect": "Collection"
+ }
+}

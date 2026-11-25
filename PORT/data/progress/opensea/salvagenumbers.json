@@ -1,0 +1,25 @@
+{
+ "SALVAGE": {
+  "crates": {
+   "common": 2,
+   "uncommon": 3,
+   "rare": 4,
+   "legend": 6
+  },
+  "daily": 1,
+  "cubes": {
+   "common": 1,
+   "uncommon": 1.5,
+   "rare": 2.5,
+   "legend": 4
+  },
+  "part": {
+   "common": 0.04,
+   "uncommon": 0.08,
+   "rare": 0.15,
+   "legend": 0.35
+  },
+  "reach": 30,
+  "haul": 2
+ }
+}

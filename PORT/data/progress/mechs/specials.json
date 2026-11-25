@@ -1,0 +1,149 @@
+{
+ "PART_SPECIALS": {
+  "clayHead": {
+   "power": "strata",
+   "domain": "divination",
+   "kind": "scan",
+   "label": "Layer View",
+   "line": "Mark the giant's weak point for 6 s.",
+   "kJ": 400,
+   "rest": 12,
+   "for": 6
+  },
+  "watcherHead": {
+   "power": "read",
+   "domain": "divination",
+   "kind": "scan",
+   "label": "Scan Intent",
+   "line": "Mark the giant's weak point for 12 s and read its next blow.",
+   "kJ": 600,
+   "rest": 14,
+   "for": 12,
+   "read": true
+  },
+  "clayCore": {
+   "power": "ward",
+   "domain": "spellscription",
+   "kind": "ward",
+   "label": "Barrier",
+   "line": "For 6 s every blow on the frame lands at half.",
+   "kJ": 1500,
+   "rest": 20,
+   "for": 6,
+   "k": 0.5
+  },
+  "kilnCore": {
+   "power": "ward",
+   "domain": "spellscription",
+   "kind": "ward",
+   "label": "Barrier",
+   "line": "For 8 s every blow on the frame lands at a third.",
+   "kJ": 2200,
+   "rest": 24,
+   "for": 8,
+   "k": 0.33
+  },
+  "lightCore": {
+   "power": "hasten",
+   "domain": "ouranurgy",
+   "kind": "hasten",
+   "label": "Hasten",
+   "line": "For 6 s the frame's walk and arms run at 1.5x.",
+   "kJ": 1800,
+   "rest": 22,
+   "for": 6,
+   "k": 1.5
+  },
+  "clayArms": {
+   "power": "sunder",
+   "domain": "alteration",
+   "kind": "sunder",
+   "label": "Sunder",
+   "line": "A clay blade 30 m long drawn from the arm: everything on its line cut.",
+   "kJ": 900,
+   "rest": 8,
+   "reach": 30,
+   "k": 0.9,
+   "stagger": 18,
+   "r": 2
+  },
+  "strongArms": {
+   "power": "telekinesis",
+   "domain": "psychokinesis",
+   "kind": "pull",
+   "label": "Telekinesis",
+   "line": "Draw the nearest loose thing within 60 m into your hand.",
+   "kJ": 500,
+   "rest": 6,
+   "reach": 60
+  },
+  "quickArms": {
+   "power": "gust",
+   "domain": "psychokinesis",
+   "kind": "gust",
+   "label": "Gust",
+   "line": "A cone of wind 45 m ahead: staggers the giant, breaks glass and timber.",
+   "kJ": 700,
+   "rest": 7,
+   "reach": 45,
+   "k": 0.25,
+   "stagger": 28,
+   "angle": 0.55
+  },
+  "clayLegs": {
+   "power": "shape",
+   "domain": "alteration",
+   "kind": "quake",
+   "label": "Shape",
+   "line": "Heave the ground round your feet: 12 m carved, the giant knocked off balance.",
+   "kJ": 1100,
+   "rest": 10,
+   "r": 12,
+   "k": 0.5,
+   "stagger": 32
+  },
+  "springLegs": {
+   "power": "portal",
+   "domain": "ouranurgy",
+   "kind": "blink",
+   "label": "Portal",
+   "line": "Step through a portal 40 m ahead.",
+   "kJ": 1200,
+   "rest": 9,
+   "reach": 40
+  },
+  "crabLegs": {
+   "power": "slab",
+   "domain": "psychokinesis",
+   "kind": "quake",
+   "label": "Lift Ground",
+   "line": "Lift the ground in a 16 m ring and drop it: the giant staggered.",
+   "kJ": 1400,
+   "rest": 12,
+   "r": 16,
+   "k": 0.4,
+   "stagger": 40
+  },
+  "treadLegs": {
+   "power": "carve",
+   "domain": "alteration",
+   "kind": "quake",
+   "label": "Carve",
+   "line": "Cut the ground open round the treads, 10 m: a heavy blow on the giant's legs.",
+   "kJ": 1000,
+   "rest": 9,
+   "r": 10,
+   "k": 0.7,
+   "stagger": 24
+  }
+ },
+ "SPECIAL_AMP": {
+  "amp": 1.6
+ },
+ "SPECIAL_KEYS": {
+  "head": "KeyE",
+  "arms": "KeyQ",
+  "legs": "KeyR",
+  "core": "KeyY"
+ }
+}

@@ -1,0 +1,282 @@
+{
+ "ANSWERS": {
+  "steer": null,
+  "speed": null,
+  "read": "dreamvane",
+  "parry": null,
+  "shoot": "psygun",
+  "gulp": "lockheart",
+  "harpoon": "sondelass",
+  "toll": "crucibelle",
+  "flash": "veritome",
+  "slick": "soulbrush",
+  "escape": null
+ },
+ "LAIRS": {
+  "worldSerpent": {
+   "daily": 1
+  },
+  "bigSquid": {
+   "every": 3
+  },
+  "seaMonk": {
+   "every": 3,
+   "when": {
+    "phase": "night",
+    "weather": "dread"
+   }
+  },
+  "wolfWhale": {
+   "every": 4
+  },
+  "seaSerpent": {
+   "every": 4
+  }
+ },
+ "SEA_BEASTS": {
+  "seaSerpent": {
+   "cls": 2,
+   "hp": 60,
+   "segments": 20,
+   "length": 105,
+   "speed": 9,
+   "weak": "head",
+   "sense": 200,
+   "give": {
+    "minutes": 6,
+    "kept": [
+     0.75,
+     1.25
+    ],
+    "bountyCls": 2,
+    "material": "serpent scale"
+   },
+   "moves": {
+    "ram": {
+     "windup": 1.4,
+     "hits": 1,
+     "answer": "steer",
+     "cooldown": 6
+    },
+    "spit": {
+     "windup": 0.9,
+     "shot": "outlined",
+     "answer": "parry",
+     "cooldown": 4
+    },
+    "coil": {
+     "windup": 2,
+     "hits": 1,
+     "answer": "shoot",
+     "cooldown": 10,
+     "hold": 5
+    },
+    "dive": {
+     "windup": 0.5,
+     "answer": "read",
+     "cooldown": 3
+    }
+   }
+  },
+  "wolfWhale": {
+   "cls": 2,
+   "hp": 45,
+   "speed": 11,
+   "zone": 60,
+   "leash": 1.6,
+   "weak": "head",
+   "give": {
+    "minutes": 5,
+    "kept": [
+     0.75,
+     1.25
+    ],
+    "material": "edge"
+   },
+   "moves": {
+    "ram": {
+     "windup": 1.2,
+     "hits": 1,
+     "answer": "steer",
+     "cooldown": 5
+    },
+    "dive": {
+     "windup": 0.5,
+     "answer": "read",
+     "cooldown": 3
+    },
+    "breach": {
+     "windup": 1.8,
+     "hits": 2,
+     "answer": "speed",
+     "cooldown": 9,
+     "lead": 1.8
+    }
+   }
+  },
+  "seaMonk": {
+   "cls": 2,
+   "hp": 50,
+   "speed": 4,
+   "zone": 50,
+   "leash": 1.4,
+   "weak": "eyes",
+   "give": {
+    "minutes": 5,
+    "kept": [
+     0.75,
+     1.25
+    ],
+    "material": "eldritch"
+   },
+   "moves": {
+    "rise": {
+     "windup": 2.5,
+     "answer": "read",
+     "cooldown": 6
+    },
+    "grip": {
+     "windup": 2,
+     "hits": 1,
+     "answer": "gulp",
+     "cooldown": 12,
+     "hold": 8,
+     "fill": 4
+    },
+    "dive": {
+     "windup": 0.5,
+     "answer": "read",
+     "cooldown": 4
+    }
+   }
+  },
+  "bigSquid": {
+   "cls": 3,
+   "hp": 120,
+   "speed": 6,
+   "zone": 90,
+   "leash": 1.5,
+   "weak": "head",
+   "parts": {
+    "arm": {
+     "n": 6,
+     "hp": 15,
+     "moves": [
+      "grasp",
+      "slam"
+     ]
+    },
+    "head": {
+     "hp": 30,
+     "moves": [
+      "ink"
+     ],
+     "open": "arms"
+    }
+   },
+   "give": {
+    "minutes": 12,
+    "kept": [
+     0.75,
+     1.25
+    ],
+    "material": "arcane"
+   },
+   "moves": {
+    "grasp": {
+     "windup": 1.6,
+     "hits": 1,
+     "answer": "shoot",
+     "cooldown": 7,
+     "hold": 4
+    },
+    "slam": {
+     "windup": 1.2,
+     "hits": 1,
+     "answer": "steer",
+     "cooldown": 6
+    },
+    "ink": {
+     "windup": 1,
+     "answer": "read",
+     "cooldown": 15,
+     "hold": 6
+    }
+   }
+  },
+  "worldSerpent": {
+   "cls": 4,
+   "hp": 300,
+   "speed": 14,
+   "sense": 300,
+   "weak": "head",
+   "once": "gameDay",
+   "phases": [
+    {
+     "until": 0.66,
+     "moves": [
+      "circle",
+      "dive"
+     ]
+    },
+    {
+     "until": 0.33,
+     "moves": [
+      "rise",
+      "spit",
+      "dive"
+     ]
+    },
+    {
+     "until": 0,
+     "moves": [
+      "coilWorld",
+      "rise"
+     ]
+    }
+   ],
+   "give": {
+    "minutes": 30,
+    "kept": [
+     0.75,
+     1.25
+    ],
+    "material": "eldritch",
+    "part": "legend"
+   },
+   "moves": {
+    "circle": {
+     "windup": 2,
+     "answer": "read",
+     "cooldown": 14,
+     "hold": 12
+    },
+    "dive": {
+     "windup": 0.6,
+     "answer": "read",
+     "cooldown": 4
+    },
+    "rise": {
+     "windup": 1.6,
+     "hits": 1,
+     "answer": "steer",
+     "cooldown": 7
+    },
+    "spit": {
+     "windup": 1.1,
+     "shot": "outlined",
+     "answer": "parry",
+     "cooldown": 6,
+     "every": 5
+    },
+    "coilWorld": {
+     "windup": 3,
+     "hits": 3,
+     "answer": "escape",
+     "cooldown": 24,
+     "hold": 20
+    }
+   }
+  }
+ }
+}
