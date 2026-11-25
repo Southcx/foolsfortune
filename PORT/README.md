@@ -264,7 +264,7 @@ Each line: what it is, where it lives, and its JSON data. "Brief 05" has a longe
   `node scripts/port/export-data.mjs` and `node scripts/port/filemap.mjs`.
 - `docs/` the glossary, lore, design, the AI doc, the economy, the OST notes, the art notes, and the system plans.
 - Module headers cite docs that were cut in the sunset (`docs/handoffs/`, `docs/ARCHITECTURE.md`, `docs/CASEBOOK*.md`, `docs/wiki/`,
-  images under `docs/plans/art/` and `docs/ref/`). They are in git history: `git show HEAD~1:<path>`.
+  images under `docs/plans/art/` and `docs/ref/`). They are in git history: `git show 9951d5f~1:<path>`.
 - `scripts/` the Blender exporters (`export_*.py`), the clip and texture bakers (`bake_*`), the port scripts.
 
 The last playable web build is v434, published at the artifact https://claude.ai/artifact/FjLfppJaKzUCZxoVBp9FE8 (play it to see how a
